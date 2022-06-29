@@ -22,7 +22,7 @@ class IOSDriver(
     }
 
     override fun close() {
-        iosDevice.clearChannel()
+        iosDevice.close()
 
         widthPixels = null
         heightPixels = null
