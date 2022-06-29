@@ -38,7 +38,7 @@ jreleaser {
     project {
         website = 'https://conductor.mobile.dev'
         description = 'Conductor CLI'
-        authors = ['Dmitry Zaytsev']
+        authors = ['Dmitry Zaytsev', 'Amanjeet Singh']
         license = 'Apache-2.0'
     }
 
