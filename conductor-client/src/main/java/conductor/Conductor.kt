@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory
 @Suppress("unused")
 class Conductor(private val driver: Driver) : AutoCloseable {
 
+    fun deviceName(): String {
+        return driver.name()
+    }
+
     fun deviceInfo(): DeviceInfo {
         LOGGER.info("Getting device info")
 

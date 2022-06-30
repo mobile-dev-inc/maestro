@@ -43,6 +43,8 @@ class TestCommand : Callable<Int> {
         val commands = readCommands(testFile)
 
         ConductorFactory.createConductor(target).use {
+            println("Running test on ${it.deviceName()}")
+
             try {
                 Orchestra(it).executeCommands(commands)
             } catch (e: Conductor.NotFoundException) {

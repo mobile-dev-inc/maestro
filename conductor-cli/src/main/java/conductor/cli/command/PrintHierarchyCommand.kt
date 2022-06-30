@@ -24,6 +24,8 @@ class PrintHierarchyCommand : Runnable {
         }
 
         ConductorFactory.createConductor(target).use {
+            println("Printing hierarchy from ${it.deviceName()}")
+
             val hierarchy = jacksonObjectMapper()
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(it.viewHierarchy())
