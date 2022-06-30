@@ -33,7 +33,13 @@ private fun printVersion() {
 @Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     val commandLine = CommandLine(App())
-        .setExitCodeExceptionMapper { 1 }
+        .setExecutionExceptionHandler { ex, cmd, parseResult ->
+            cmd.err.println(
+                cmd.colorScheme.errorText(ex.message)
+            )
+
+            1
+        }
 
     commandLine.parseArgs(*args)
     if (commandLine.isVersionHelpRequested) {
