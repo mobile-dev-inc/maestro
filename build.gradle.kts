@@ -16,7 +16,7 @@ buildscript {
 
 plugins {
     id("com.vanniktech.maven.publish") version "0.19.0"
-    id("io.gitlab.arturbosch.detekt") version "1.19.0"
+    id("io.gitlab.arturbosch.detekt") version "1.21.0-RC2"
     id("org.jetbrains.kotlin.jvm") version "1.5.31"
 
     `java-library`
@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.19.0")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0-RC2")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
