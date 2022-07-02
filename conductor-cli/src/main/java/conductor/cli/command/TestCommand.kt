@@ -1,6 +1,8 @@
 package conductor.cli.command
 
+import conductor.Conductor
 import conductor.ConductorException
+import conductor.cli.continuous.ContinuousTestRunner
 import conductor.cli.util.ConductorFactory
 import conductor.orchestra.CommandReader
 import conductor.orchestra.ConductorCommand
@@ -8,6 +10,7 @@ import conductor.orchestra.Orchestra
 import conductor.orchestra.yaml.YamlCommandReader
 import okio.source
 import picocli.CommandLine
+import picocli.CommandLine.Option
 import java.io.File
 import java.util.concurrent.Callable
 
@@ -19,8 +22,11 @@ class TestCommand : Callable<Int> {
     @CommandLine.Parameters
     private lateinit var testFile: File
 
-    @CommandLine.Option(names = ["-t", "--target"])
+    @Option(names = ["-t", "--target"])
     private var target: String? = null
+
+    @Option(names = ["-c", "--continuous"])
+    private var continuous: Boolean = false
 
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
@@ -40,9 +46,20 @@ class TestCommand : Callable<Int> {
             )
         }
 
+        val conductor = ConductorFactory.createConductor(target)
+
+        return if (continuous) {
+            ContinuousTestRunner(conductor, testFile).run()
+            0
+        } else {
+            runSingleTest(conductor)
+        }
+    }
+
+    private fun runSingleTest(conductor: Conductor): Int {
         val commands = readCommands(testFile)
 
-        ConductorFactory.createConductor(target).use {
+        conductor.use {
             println("Running test on ${it.deviceName()}")
 
             try {
