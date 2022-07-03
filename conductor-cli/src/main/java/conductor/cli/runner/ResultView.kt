@@ -24,17 +24,28 @@ class ResultView {
     private fun renderRunningState(state: UiState.Running) {
         clearScreen()
 
-        val statusColumnWidth = 13
+        val statusColumnWidth = 3
 
         state.commands.forEach {
+            val statusSymbol = status(it.status)
+
             println(
                 Ansi.ansi()
                     .fg(inferColor(it.status))
-                    .render(it.status.name)
-                    .render(String(CharArray(statusColumnWidth - it.status.name.length) { ' ' }))
+                    .render(statusSymbol)
+                    .render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
                     .fgDefault()
                     .render(it.command.description())
             )
+        }
+    }
+
+    private fun status(status: CommandStatus): String {
+        return when (status) {
+            CommandStatus.COMPLETED -> "✅"
+            CommandStatus.FAILED -> "❌"
+            CommandStatus.RUNNING -> "⏳"
+            CommandStatus.PENDING -> "\uD83D\uDD32"
         }
     }
 
