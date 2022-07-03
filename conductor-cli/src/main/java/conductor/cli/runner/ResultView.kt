@@ -31,10 +31,8 @@ class ResultView {
 
             println(
                 Ansi.ansi()
-                    .fg(inferColor(it.status))
                     .render(statusSymbol)
                     .render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
-                    .fgDefault()
                     .render(it.command.description())
             )
         }
@@ -55,15 +53,6 @@ class ResultView {
                 .eraseScreen()
                 .cursor(0, 0)
         )
-    }
-
-    private fun inferColor(status: CommandStatus): Int {
-        return when (status) {
-            CommandStatus.PENDING -> Ansi.Color.WHITE.value()
-            CommandStatus.RUNNING -> Ansi.Color.YELLOW.value()
-            CommandStatus.COMPLETED -> Ansi.Color.GREEN.value()
-            CommandStatus.FAILED -> Ansi.Color.RED.value()
-        }
     }
 
     sealed class UiState {
