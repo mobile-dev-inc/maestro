@@ -1,6 +1,7 @@
 package conductor.cli
 
 import conductor.cli.command.PrintHierarchyCommand
+import conductor.cli.command.QueryCommand
 import conductor.cli.command.TestCommand
 import picocli.CommandLine
 import picocli.CommandLine.Command
@@ -13,6 +14,7 @@ import kotlin.system.exitProcess
     subcommands = [
         TestCommand::class,
         PrintHierarchyCommand::class,
+        QueryCommand::class,
     ]
 )
 class App {
