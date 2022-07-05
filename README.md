@@ -50,7 +50,7 @@ idb_companion --udid {id of the iOS device}
 
 # Next steps
 
-- [Learn more about Conductor features](https://conductor.mobile.dev/guides/using-conductor)
-- 
+- [Learn more about Conductor features](https://conductor.mobile.dev/guides/using-conductor-cli)
+- [Learn how to use Conductor programmatically](https://conductor.mobile.dev/guides/using-conductor-programmatically)
 
-Documentation for Conductor can be found at [conductor.mobile.dev](https://conductor.mobile.dev).
+Documentation for Conductor can be found at [conductor.mobile.dev](https://conductor.mobile.dev)
