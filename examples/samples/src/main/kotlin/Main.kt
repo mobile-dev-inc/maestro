@@ -6,6 +6,10 @@ import conductor.orchestra.LaunchAppCommand
 import conductor.orchestra.Orchestra
 import conductor.orchestra.TapOnElementCommand
 import dadb.Dadb
+import io.grpc.ManagedChannelBuilder
+import ios.IOSDevice
+import ios.idb.IdbIOSDevice
+import java.io.File
 
 /*
  *
@@ -33,6 +37,8 @@ fun main() {
 
 private fun executeAndroidCommands() {
     val dadb = Dadb.create("localhost", 5555)
+    val androidApk = File("./examples/samples/src/main/resources/android-app-debug.apk")
+    dadb.install(androidApk)
     val conductor = Conductor.android(dadb)
     val launchAppCommand = ConductorCommand(launchAppCommand = LaunchAppCommand("dev.mobile.sample"))
     val tapViewDetailsCommand = ConductorCommand(
@@ -53,7 +59,14 @@ private fun executeAndroidCommands() {
 }
 
 private fun executeIOSCommands() {
-    val conductor = Conductor.ios("localhost", 10883)
+    val localhost = "localhost"
+    val port = 10883
+    val iosArchive = File("./examples/samples/src/main/resources/CovidCertificateVerifier.zip").inputStream()
+    val channel = ManagedChannelBuilder.forAddress(localhost, port)
+        .usePlaintext()
+        .build()
+    IdbIOSDevice(channel).use { it.install(iosArchive) }
+    val conductor = Conductor.ios(localhost, port)
     val launchAppCommand = ConductorCommand(
         launchAppCommand = LaunchAppCommand("ch.admin.bag.covidcertificate.verifier.dev")
     )
