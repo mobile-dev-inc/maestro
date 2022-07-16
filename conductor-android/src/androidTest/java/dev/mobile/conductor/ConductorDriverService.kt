@@ -2,6 +2,7 @@ package dev.mobile.conductor
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import conductor_android.ConductorAndroid
 import conductor_android.ConductorDriverGrpc
@@ -25,6 +26,11 @@ class ConductorDriverService {
 
     @Test
     fun grpcServer() {
+        Configurator.getInstance()
+            .setActionAcknowledgmentTimeout(0L)
+            .setWaitForIdleTimeout(0L)
+            .setWaitForSelectorTimeout(0L)
+
         val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
         NettyServerBuilder.forPort(7001)

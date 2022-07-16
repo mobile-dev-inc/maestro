@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - experimental/uiautomator-config
 
 jobs:
   publish:
