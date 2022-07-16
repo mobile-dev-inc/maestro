@@ -1,5 +1,6 @@
 package dev.mobile.conductor
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.Configurator
@@ -14,7 +15,7 @@ import io.grpc.stub.StreamObserver
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
-
+import kotlin.system.measureTimeMillis
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -67,7 +68,12 @@ class Service(
         responseObserver: StreamObserver<ConductorAndroid.ViewHierarchyResponse>
     ) {
         val stream = ByteArrayOutputStream()
-        uiDevice.dumpWindowHierarchy(stream)
+
+        Log.d("Conductor", "Requesting view hierarchy")
+        val ms = measureTimeMillis {
+            uiDevice.dumpWindowHierarchy(stream)
+        }
+        Log.d("Conductor", "View hierarchy received in $ms ms")
 
         responseObserver.onNext(
             viewHierarchyResponse {
