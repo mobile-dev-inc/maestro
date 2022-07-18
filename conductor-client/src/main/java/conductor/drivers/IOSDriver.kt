@@ -116,14 +116,14 @@ class IOSDriver(
             throw java.lang.IllegalArgumentException("x value of start point (${start.x}) needs to be between 0 and $screenWidth")
         }
         if (end.x < 0 || end.x > screenWidth) {
-            throw java.lang.IllegalArgumentException("x value of end point (${start.x}) needs to be between 0 and $screenWidth")
+            throw java.lang.IllegalArgumentException("x value of end point (${end.x}) needs to be between 0 and $screenWidth")
         }
 
         if (start.y < 0 || start.y > screenHeight) {
             throw java.lang.IllegalArgumentException("y value of start point (${start.y}) needs to be between 0 and $screenHeight")
         }
         if (end.y < 0 || end.y > screenHeight) {
-            throw java.lang.IllegalArgumentException("x value of end point (${start.y}) needs to be between 0 and $screenHeight")
+            throw java.lang.IllegalArgumentException("y value of end point (${end.y}) needs to be between 0 and $screenHeight")
         }
     }
 
