@@ -10,5 +10,5 @@ include("maestro-orchestra-proto")
 include("maestro-proto")
 include("maestro-test")
 include("examples:apps:android-app")
-include("examples:samples")
-findProject(":examples:samples")?.name = "samples"
+//include("examples:samples")
+//findProject(":examples:samples")?.name = "samples"
