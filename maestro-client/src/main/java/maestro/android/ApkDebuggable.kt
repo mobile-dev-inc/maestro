@@ -9,6 +9,7 @@ import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.writeBytes
 
 // https://developer.android.com/reference/android/R.attr#debuggable
@@ -57,7 +58,7 @@ object ApkDebuggable {
             override fun child(ns: String?, name: String?): NodeVisitor {
                 return object : NodeVisitor(super.child(ns, name)) {
 
-                    override fun child(ns: String?, name: String?): NodeVisitor {
+                    override fun child(ns: String?, name: String?): NodeVisitor? {
                         if (name != "application") return super.child(ns, name)
 
                         return object : NodeVisitor(super.child(ns, name)) {
@@ -83,6 +84,34 @@ object ApkDebuggable {
             }
         })
         return writer.toByteArray()
+    }
+
+    // Visible for testing
+    internal fun isManifestDebuggable(manifestBytes: ByteArray): Boolean {
+        val isDebuggable = AtomicBoolean(false)
+        val reader = AxmlReader(manifestBytes)
+        reader.accept(object : AxmlVisitor(null) {
+
+            override fun child(ns: String?, name: String?): NodeVisitor {
+                return object : NodeVisitor(super.child(ns, name)) {
+
+                    override fun child(ns: String?, name: String?): NodeVisitor? {
+                        if (name != "application") return super.child(ns, name)
+
+                        return object : NodeVisitor(super.child(ns, name)) {
+
+                            override fun attr(ns: String?, name: String?, resourceId: Int, type: Int, obj: Any?) {
+                                if (name == "debuggable") {
+                                    isDebuggable.set(obj == true)
+                                }
+                                super.attr(ns, name, resourceId, type, obj)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        return isDebuggable.get()
     }
 
     private fun requireAndroidHome(): File {

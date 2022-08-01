@@ -3,6 +3,9 @@ package maestro.android
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @Ignore("Local testing only")
 internal class ApkDebuggableTest {
@@ -15,5 +18,14 @@ internal class ApkDebuggableTest {
             apkFile = File("$home/Downloads/reddit.apk"),
             apkOutFile = File("$home/Downloads/reddit-debuggable.apk"),
         )
+    }
+
+    @Test
+    fun isDebuggable() {
+        val manifestBytes = FileSystems.newFileSystem(Paths.get("$home/Downloads/reddit-debuggable.apk"), null).use { fs ->
+            val manifestPath = fs.getPath("AndroidManifest.xml")
+            Files.readAllBytes(manifestPath)
+        }
+        println("is debuggable: " + ApkDebuggable.isManifestDebuggable(manifestBytes))
     }
 }
