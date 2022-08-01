@@ -21,7 +21,6 @@ package maestro.cli.runner
 
 import com.sun.nio.file.SensitivityWatchEventModifier
 import maestro.Maestro
-import maestro.orchestra.CommandReader
 import org.fusesource.jansi.Ansi.ansi
 import org.fusesource.jansi.AnsiConsole
 import java.io.File
@@ -35,7 +34,6 @@ import kotlin.io.path.name
 class ContinuousTestRunner(
     private val maestro: Maestro,
     private val testFile: File,
-    private val commandReader: CommandReader,
 ) {
 
     fun run() {
@@ -51,7 +49,6 @@ class ContinuousTestRunner(
             val commandRunner = MaestroCommandRunner(
                 maestro = maestro,
                 view = view,
-                commandReader = commandReader,
             )
 
             watchTestFile {

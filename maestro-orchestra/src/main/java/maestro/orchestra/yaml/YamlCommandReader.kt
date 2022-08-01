@@ -24,14 +24,15 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import maestro.orchestra.CommandReader
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.NoInputException
+import maestro.orchestra.SyntaxError
 import okio.Source
 import okio.buffer
 import okio.source
 import java.io.ByteArrayInputStream
 
-class YamlCommandReader : CommandReader {
+object YamlCommandReader {
 
     private val mapper by lazy {
         ObjectMapper(YAMLFactory())
@@ -40,7 +41,7 @@ class YamlCommandReader : CommandReader {
             }
     }
 
-    override fun readCommands(source: Source): Pair<List<MaestroCommand>, List<MaestroCommand>> {
+    fun readCommands(source: Source): Pair<List<MaestroCommand>, List<MaestroCommand>> {
         return try {
             val commands = readCommandsUnsafe(source)
             val initFlowCommands = getInitCommands(commands)
@@ -49,10 +50,10 @@ class YamlCommandReader : CommandReader {
             val message = e.message ?: throw e
 
             when {
-                message.contains("Unrecognized field") -> throw CommandReader.SyntaxError
-                message.contains("Cannot construct instance") -> throw CommandReader.SyntaxError
-                message.contains("Cannot deserialize") -> throw CommandReader.SyntaxError
-                message.contains("No content to map") -> throw CommandReader.NoInputException
+                message.contains("Unrecognized field") -> throw SyntaxError
+                message.contains("Cannot construct instance") -> throw SyntaxError
+                message.contains("Cannot deserialize") -> throw SyntaxError
+                message.contains("No content to map") -> throw NoInputException
                 else -> throw e
             }
         }

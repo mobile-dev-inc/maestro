@@ -20,27 +20,28 @@
 package maestro.cli.runner
 
 import maestro.Maestro
-import maestro.orchestra.CommandReader
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.NoInputException
 import maestro.orchestra.Orchestra
+import maestro.orchestra.SyntaxError
+import maestro.orchestra.yaml.YamlCommandReader
 import okio.source
 import java.io.File
 
 class MaestroCommandRunner(
     private val maestro: Maestro,
     private val view: ResultView,
-    private val commandReader: CommandReader,
 ) {
 
     fun run(testFile: File): Boolean {
         val (initCommands, commands) = try {
             testFile.source().use {
-                commandReader.readCommands(it)
+                YamlCommandReader.readCommands(it)
             }
         } catch (e: Exception) {
             val message = when {
-                e is CommandReader.SyntaxError -> "Syntax error"
-                e is CommandReader.NoInputException -> "No commands in the file"
+                e is SyntaxError -> "Syntax error"
+                e is NoInputException -> "No commands in the file"
                 e.message != null -> e.message!!
                 else -> "Failed to read commands"
             }

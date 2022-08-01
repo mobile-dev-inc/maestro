@@ -22,8 +22,6 @@ package maestro.cli.command
 import maestro.cli.runner.ContinuousTestRunner
 import maestro.cli.runner.SingleTestRunner
 import maestro.cli.util.MaestroFactory
-import maestro.orchestra.CommandReader
-import maestro.orchestra.yaml.YamlCommandReader
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -62,24 +60,12 @@ class TestCommand : Callable<Int> {
         }
 
         val maestro = MaestroFactory.createMaestro(target)
-        val commandReader = resolveCommandReader(testFile)
 
         return if (continuous) {
-            ContinuousTestRunner(maestro, testFile, commandReader).run()
+            ContinuousTestRunner(maestro, testFile).run()
             0
         } else {
-            SingleTestRunner(maestro, testFile, commandReader).run()
+            SingleTestRunner(maestro, testFile).run()
         }
-    }
-
-    private fun resolveCommandReader(file: File): CommandReader {
-        if (file.extension == "yaml") {
-            return YamlCommandReader()
-        }
-
-        throw CommandLine.ParameterException(
-            commandSpec.commandLine(),
-            "Test file extension is not supported: ${file.extension}"
-        )
     }
 }

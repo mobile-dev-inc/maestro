@@ -20,7 +20,6 @@
 package maestro.cli.runner
 
 import maestro.Maestro
-import maestro.orchestra.CommandReader
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
 import java.io.File
@@ -28,7 +27,6 @@ import java.io.File
 class SingleTestRunner(
     private val maestro: Maestro,
     private val testFile: File,
-    private val commandReader: CommandReader,
 ) {
 
     fun run(): Int {
@@ -41,7 +39,6 @@ class SingleTestRunner(
             val commandRunner = MaestroCommandRunner(
                 maestro = maestro,
                 view = view,
-                commandReader = commandReader,
             )
 
             val success = commandRunner.run(testFile)
