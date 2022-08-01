@@ -19,17 +19,12 @@
 
 package maestro.cli.runner
 
-import com.sun.nio.file.SensitivityWatchEventModifier
 import maestro.Maestro
 import org.fusesource.jansi.Ansi.ansi
 import org.fusesource.jansi.AnsiConsole
 import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import kotlin.io.path.name
 
 class ContinuousTestRunner(
     private val maestro: Maestro,
@@ -42,6 +37,7 @@ class ContinuousTestRunner(
 
         val view = ResultView()
 
+        val fileWatcher = FileWatcher()
         val executor = Executors.newSingleThreadExecutor()
         var future: Future<*>? = null
 
@@ -51,13 +47,15 @@ class ContinuousTestRunner(
                 view = view,
             )
 
-            watchTestFile {
+            fileWatcher.register(testFile.toPath()) {
                 cancelFuture(future)
 
                 future = executor.submit {
                     commandRunner.run(testFile)
                 }
             }
+
+            fileWatcher.start()
         }
     }
 
@@ -69,46 +67,4 @@ class ContinuousTestRunner(
             // Do nothing
         }
     }
-
-    private fun watchTestFile(block: () -> Unit) {
-        val watchService = FileSystems.getDefault().newWatchService()
-
-        val pathKey = testFile
-            .absoluteFile
-            .parentFile
-            .toPath()
-            .register(
-                watchService,
-                arrayOf(
-                    StandardWatchEventKinds.ENTRY_MODIFY,
-                ),
-                SensitivityWatchEventModifier.HIGH
-            )
-
-        try {
-            block()
-
-            while (!Thread.interrupted()) {
-                val watchKey = watchService.take()
-
-                watchKey.pollEvents().forEach {
-                    val modifiedPath = it.context() as Path
-                    if (modifiedPath.name == testFile.name) {
-                        block()
-                    }
-                }
-
-                if (!watchKey.reset()) {
-                    watchKey.cancel()
-                    watchService.close()
-                    break
-                }
-            }
-        } catch (ignored: InterruptedException) {
-            // Do nothing
-        }
-
-        pathKey.cancel()
-    }
-
 }
