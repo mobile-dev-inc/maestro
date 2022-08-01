@@ -62,6 +62,11 @@ object ApkDebuggable {
 
                         return object : NodeVisitor(super.child(ns, name)) {
 
+                            override fun attr(ns: String?, name: String?, resourceId: Int, type: Int, obj: Any?) {
+                                if (name == "debuggable") return
+                                super.attr(ns, name, resourceId, type, obj)
+                            }
+
                             override fun end() {
                                 super.attr(
                                     "http://schemas.android.com/apk/res/android",
