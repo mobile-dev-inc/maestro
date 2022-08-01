@@ -23,7 +23,7 @@ import okio.Source
 
 interface CommandReader {
 
-    fun readCommands(source: Source): List<MaestroCommand>
+    fun readCommands(source: Source): Pair<List<MaestroCommand>, List<MaestroCommand>>
 
     object SyntaxError : RuntimeException()
 

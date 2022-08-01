@@ -543,7 +543,7 @@ class IntegrationTest {
     }
 
     private fun readCommands(caseName: String): List<MaestroCommand> {
-        return YamlCommandReader().readCommands(openFile("$caseName.yaml"))
+        return YamlCommandReader().readCommands(openFile("$caseName.yaml")).second
     }
 
     private fun openFile(path: String): Source {

@@ -33,7 +33,7 @@ class MaestroCommandRunner(
 ) {
 
     fun run(testFile: File): Boolean {
-        val commands = try {
+        val (initCommands, commands) = try {
             testFile.source().use {
                 commandReader.readCommands(it)
             }
@@ -53,22 +53,31 @@ class MaestroCommandRunner(
             return false
         }
 
-        return runCommands(commands)
+        return runCommands(initCommands, commands)
     }
 
     private fun runCommands(
+        initCommands: List<MaestroCommand>,
         commands: List<MaestroCommand>,
     ): Boolean {
-        val indexToStatus = Array(commands.size) { CommandStatus.PENDING }
+        val initCommandStatuses = Array(initCommands.size) { CommandStatus.PENDING }
+        val commandStatuses = Array(commands.size) { CommandStatus.PENDING }
 
         fun refreshUi() {
             view.setState(
                 ResultView.UiState.Running(
+                    initCommands = initCommands
+                        .mapIndexed { idx, command ->
+                            CommandState(
+                                command = command,
+                                status = initCommandStatuses[idx]
+                            )
+                        },
                     commands = commands
                         .mapIndexed { idx, command ->
                             CommandState(
                                 command = command,
-                                status = indexToStatus[idx]
+                                status = commandStatuses[idx]
                             )
                         },
                 )
@@ -78,22 +87,31 @@ class MaestroCommandRunner(
         refreshUi()
 
         var success = true
-        Orchestra(
-            maestro,
-            onCommandStart = { idx, _ ->
-                indexToStatus[idx] = CommandStatus.RUNNING
-                refreshUi()
-            },
-            onCommandComplete = { idx, _ ->
-                indexToStatus[idx] = CommandStatus.COMPLETED
-                refreshUi()
-            },
-            onCommandFailed = { idx, _, _ ->
-                indexToStatus[idx] = CommandStatus.FAILED
-                refreshUi()
-                success = false
-            },
-        ).executeCommands(commands)
+
+        fun executeCommands(commands: List<MaestroCommand>, statuses: Array<CommandStatus>) {
+            Orchestra(
+                maestro,
+                onCommandStart = { idx, _ ->
+                    statuses[idx] = CommandStatus.RUNNING
+                    refreshUi()
+                },
+                onCommandComplete = { idx, _ ->
+                    statuses[idx] = CommandStatus.COMPLETED
+                    refreshUi()
+                },
+                onCommandFailed = { idx, _, _ ->
+                    statuses[idx] = CommandStatus.FAILED
+                    refreshUi()
+                    success = false
+                },
+            ).executeCommands(commands)
+        }
+
+        executeCommands(initCommands, initCommandStatuses)
+
+        if (!success) return false
+
+        executeCommands(commands, commandStatuses)
 
         return success
     }

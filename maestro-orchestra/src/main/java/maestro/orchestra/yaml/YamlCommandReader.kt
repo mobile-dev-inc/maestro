@@ -28,6 +28,8 @@ import maestro.orchestra.CommandReader
 import maestro.orchestra.MaestroCommand
 import okio.Source
 import okio.buffer
+import okio.source
+import java.io.ByteArrayInputStream
 
 class YamlCommandReader : CommandReader {
 
@@ -38,12 +40,11 @@ class YamlCommandReader : CommandReader {
             }
     }
 
-    override fun readCommands(source: Source): List<MaestroCommand> {
-        val fluentCommands = try {
-            mapper.readValue(
-                source.buffer().inputStream(),
-                object : TypeReference<List<YamlFluentCommand>>() {}
-            )
+    override fun readCommands(source: Source): Pair<List<MaestroCommand>, List<MaestroCommand>> {
+        return try {
+            val commands = readCommandsUnsafe(source)
+            val initFlowCommands = getInitCommands(commands)
+            initFlowCommands to commands
         } catch (e: MismatchedInputException) {
             val message = e.message ?: throw e
 
@@ -55,8 +56,20 @@ class YamlCommandReader : CommandReader {
                 else -> throw e
             }
         }
+    }
 
-        return fluentCommands
-            .map { it.toCommand() }
+    private fun readCommandsUnsafe(source: Source) = mapper.readValue(
+        source.buffer().inputStream(),
+        object : TypeReference<List<YamlFluentCommand>>() {}
+    ).map { it.toCommand() }
+
+    private fun getInitCommands(
+        commands: List<MaestroCommand>,
+    ): List<MaestroCommand> {
+        val config = commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config ?: return emptyList()
+        val initFlow = config["initFlow"] ?: return emptyList()
+        val initFlowBytes = mapper.writeValueAsBytes(initFlow)
+        val source = ByteArrayInputStream(initFlowBytes).source()
+        return readCommandsUnsafe(source)
     }
 }

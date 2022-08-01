@@ -38,8 +38,18 @@ class ResultView {
     }
 
     private fun renderRunningState(state: UiState.Running) = renderFrame {
+        if (state.initCommands.isNotEmpty()) {
+            render("[ Init Flow ]\n\n")
+            renderCommands(state.initCommands)
+            render("\n")
+        }
+        render("[ Flow ]\n\n")
+        renderCommands(state.commands)
+    }
+
+    private fun Ansi.renderCommands(commands: List<CommandState>) {
         val statusColumnWidth = 3
-        state.commands.forEach {
+        commands.forEach {
             val statusSymbol = status(it.status)
             fgDefault()
             render(statusSymbol)
@@ -91,6 +101,7 @@ class ResultView {
         data class Error(val message: String) : UiState()
 
         data class Running(
+            val initCommands: List<CommandState>,
             val commands: List<CommandState>,
         ) : UiState()
 
