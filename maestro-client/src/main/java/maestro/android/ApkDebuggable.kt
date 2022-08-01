@@ -9,6 +9,7 @@ import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.writeBytes
 
@@ -38,7 +39,7 @@ object ApkDebuggable {
             runShell(workDir, "zip $apkPath AndroidManifest.xml")
             runShell(workDir, "$buildToolsDir/zipalign -p -f 4 $apkPath $apkPath.aligned")
             runShell(workDir, "$buildToolsDir/apksigner sign --ks $debugKeystore --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android $apkPath.aligned")
-            runShell(workDir, "mv $apkPath.aligned $apkOutFile")
+            Files.move(Paths.get("$apkPath.aligned"), apkOutFile.toPath())
         }
     }
 
