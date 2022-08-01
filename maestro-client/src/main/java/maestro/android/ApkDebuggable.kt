@@ -18,10 +18,15 @@ private const val ANDROID_R_DEBUGGABLE = 16842767
 object ApkDebuggable {
 
     fun enable(apkFile: File, apkOutFile: File) {
+        val originalManifestBytes = getOriginalManifestBytes(apkFile)
+        if (isManifestDebuggable(originalManifestBytes)) {
+            apkFile.copyTo(apkOutFile, overwrite = true)
+            return
+        }
+
         val androidHome = requireAndroidHome()
         val debugKeystore = requireDebugKeystore()
         val buildToolsDir = AndroidBuildToolsDirectory.findBuildToolsDir(androidHome)
-        val originalManifestBytes = getOriginalManifestBytes(apkFile)
         val debuggableManifestBytes = createDebuggableManifestBytes(originalManifestBytes)
         TemporaryDirectory.use { workDir ->
             val apkPath = workDir.resolve("tmp.apk")
