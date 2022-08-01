@@ -11,6 +11,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
+// https://developer.android.com/reference/android/R.attr#debuggable
+private const val ANDROID_R_DEBUGGABLE = 16842767
+
 object ApkDebuggable {
 
     fun enable(apkFile: File, apkOutFile: File) {
@@ -63,9 +66,9 @@ object ApkDebuggable {
                                 super.attr(
                                     "http://schemas.android.com/apk/res/android",
                                     "debuggable",
-                                    16842767,
-                                    18,
-                                    -1
+                                    ANDROID_R_DEBUGGABLE,
+                                    TYPE_INT_BOOLEAN,
+                                    -1, // true
                                 )
                                 super.end()
                             }
