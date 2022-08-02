@@ -62,10 +62,10 @@ class TestCommand : Callable<Int> {
         val maestro = MaestroFactory.createMaestro(target)
 
         return if (continuous) {
-            ContinuousTestRunner(maestro, testFile).run()
+            ContinuousTestRunner.run(maestro, testFile)
             0
         } else {
-            SingleTestRunner(maestro, testFile).run()
+            SingleTestRunner.run(maestro, testFile)
         }
     }
 }

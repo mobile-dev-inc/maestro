@@ -24,24 +24,19 @@ import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
 import java.io.File
 
-class SingleTestRunner(
-    private val maestro: Maestro,
-    private val testFile: File,
-) {
+object SingleTestRunner {
 
-    fun run(): Int {
+    fun run(
+        maestro: Maestro,
+        testFile: File,
+    ): Int {
         AnsiConsole.systemInstall()
         println(Ansi.ansi().eraseScreen())
 
         val view = ResultView()
 
         return maestro.use {
-            val commandRunner = MaestroCommandRunner(
-                maestro = maestro,
-                view = view,
-            )
-
-            val success = commandRunner.run(testFile)
+            val success = MaestroCommandRunner.run(maestro, view, testFile)
 
             if (success) {
                 0

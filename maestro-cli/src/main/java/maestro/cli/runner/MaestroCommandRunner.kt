@@ -28,12 +28,13 @@ import maestro.orchestra.yaml.YamlCommandReader
 import okio.source
 import java.io.File
 
-class MaestroCommandRunner(
-    private val maestro: Maestro,
-    private val view: ResultView,
-) {
+object MaestroCommandRunner {
 
-    fun run(testFile: File): Boolean {
+    fun run(
+        maestro: Maestro,
+        view: ResultView,
+        testFile: File,
+    ): Boolean {
         val (initCommands, commands) = try {
             testFile.source().use {
                 YamlCommandReader.readCommands(it)
@@ -54,10 +55,12 @@ class MaestroCommandRunner(
             return false
         }
 
-        return runCommands(initCommands, commands)
+        return runCommands(maestro, view, initCommands, commands)
     }
 
     private fun runCommands(
+        maestro: Maestro,
+        view: ResultView,
         initCommands: List<MaestroCommand>,
         commands: List<MaestroCommand>,
     ): Boolean {

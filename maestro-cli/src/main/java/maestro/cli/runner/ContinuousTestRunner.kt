@@ -26,12 +26,12 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-class ContinuousTestRunner(
-    private val maestro: Maestro,
-    private val testFile: File,
-) {
+object ContinuousTestRunner {
 
-    fun run() {
+    fun run(
+        maestro: Maestro,
+        testFile: File,
+    ) {
         AnsiConsole.systemInstall()
         println(ansi().eraseScreen())
 
@@ -42,16 +42,11 @@ class ContinuousTestRunner(
         var future: Future<*>? = null
 
         maestro.use { maestro ->
-            val commandRunner = MaestroCommandRunner(
-                maestro = maestro,
-                view = view,
-            )
-
             fileWatcher.register(testFile.toPath()) {
                 cancelFuture(future)
 
                 future = executor.submit {
-                    commandRunner.run(testFile)
+                    MaestroCommandRunner.run(maestro, view, testFile)
                 }
             }
 
