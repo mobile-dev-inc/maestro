@@ -47,6 +47,8 @@ object MaestroCommandRunner {
                             )
                         },
                     commands = commands
+                        // Don't render configuration commands
+                        .filter { it.applyConfigurationCommand == null }
                         .mapIndexed { idx, command ->
                             CommandState(
                                 command = command,
