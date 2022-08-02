@@ -45,12 +45,16 @@ class ResultView {
 
     private fun renderRunningState(state: UiState.Running) = renderFrame {
         if (state.initCommands.isNotEmpty()) {
-            render("[ Init Flow ]\n\n")
+            render(" ║\n")
+            render(" ║  Init Flow\n")
+            render(" ║\n")
             renderCommands(state.initCommands)
-            render("\n")
         }
-        render("[ Flow ]\n\n")
+        render(" ║\n")
+        render(" ║  Flow\n")
+        render(" ║\n")
         renderCommands(state.commands)
+        render(" ║\n")
     }
 
     private fun Ansi.renderCommands(commands: List<CommandState>) {
@@ -58,6 +62,7 @@ class ResultView {
         commands.forEach {
             val statusSymbol = status(it.status)
             fgDefault()
+            render(" ║    ")
             render(statusSymbol)
             render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
             render(it.command.description())
