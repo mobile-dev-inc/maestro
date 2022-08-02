@@ -22,6 +22,7 @@ package maestro.cli.runner
 import maestro.Maestro
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
+import java.util.IdentityHashMap
 
 object MaestroCommandRunner {
 
@@ -32,24 +33,24 @@ object MaestroCommandRunner {
         commands: List<MaestroCommand>,
         skipInitFlow: Boolean,
     ): Result {
-        val initCommandStatuses = Array(initCommands.size) { CommandStatus.PENDING }
-        val commandStatuses = Array(commands.size) { CommandStatus.PENDING }
+        val initCommandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
+        val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
 
         fun refreshUi() {
             view.setState(
                 ResultView.UiState.Running(
                     initCommands = initCommands
-                        .mapIndexed { idx, command ->
+                        .mapIndexed { _, command ->
                             CommandState(
                                 command = command,
-                                status = initCommandStatuses[idx]
+                                status = initCommandStatuses[command] ?: CommandStatus.PENDING
                             )
                         },
                     commands = commands
                         .mapIndexed { idx, command ->
                             CommandState(
                                 command = command,
-                                status = commandStatuses[idx]
+                                status = commandStatuses[command] ?: CommandStatus.PENDING
                             )
                         },
                 )
@@ -60,19 +61,19 @@ object MaestroCommandRunner {
 
         var success = true
 
-        fun executeCommands(commands: List<MaestroCommand>, statuses: Array<CommandStatus>) {
+        fun executeCommands(commands: List<MaestroCommand>, statuses: MutableMap<MaestroCommand, CommandStatus>) {
             Orchestra(
                 maestro,
-                onCommandStart = { idx, _ ->
-                    statuses[idx] = CommandStatus.RUNNING
+                onCommandStart = { _, command ->
+                    statuses[command] = CommandStatus.RUNNING
                     refreshUi()
                 },
-                onCommandComplete = { idx, _ ->
-                    statuses[idx] = CommandStatus.COMPLETED
+                onCommandComplete = { _, command ->
+                    statuses[command] = CommandStatus.COMPLETED
                     refreshUi()
                 },
-                onCommandFailed = { idx, _, _ ->
-                    statuses[idx] = CommandStatus.FAILED
+                onCommandFailed = { _, command, _ ->
+                    statuses[command] = CommandStatus.FAILED
                     refreshUi()
                     success = false
                 },
@@ -80,7 +81,7 @@ object MaestroCommandRunner {
         }
 
         if (skipInitFlow) {
-            initCommandStatuses.fill(CommandStatus.COMPLETED)
+            initCommands.forEach { initCommandStatuses[it] = CommandStatus.COMPLETED }
         } else {
             executeCommands(initCommands, initCommandStatuses)
         }
