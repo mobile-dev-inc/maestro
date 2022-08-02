@@ -49,7 +49,7 @@ object YamlCommandReader {
         val commands = parser.readValueAs<List<YamlFluentCommand>>(
             object : TypeReference<List<YamlFluentCommand>>() {}
         ).map { it.toCommand() }
-        return resolveInitFlowCommands(flowFile, commands)
+        return listOfNotNull(config.toCommand(flowFile), *commands.toTypedArray())
     }
 
     // Parse out the init flow commands from the config. Assumes that initFlow commands are inlined into the config

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.node.TextNode
 sealed interface YamlInitFlowUnion
 
 class StringInitFlow(
-    val initFlow: String
+    val path: String
 ) : YamlInitFlowUnion
 
 class YamlInitFlow(
