@@ -2,12 +2,15 @@ package maestro.orchestra.yaml
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import maestro.orchestra.Command
+import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.NoInputException
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName
 import java.io.File
+import java.lang.IllegalArgumentException
 
 @Suppress("TestFunctionName")
 internal class YamlCommandReaderTest {
@@ -19,6 +22,11 @@ internal class YamlCommandReaderTest {
     @Test
     fun T001_empty() = expectException<NoInputException>()
 
+    @Test
+    fun T002_launchApp() = expectCommands(
+        LaunchAppCommand(appId = "com.example.app"),
+    )
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
@@ -29,10 +37,24 @@ internal class YamlCommandReaderTest {
         }
     }
 
-    private fun runTest(
-        expectedCommands: List<MaestroCommand>,
-    ) {
-        parseCommands()
+    private fun expectCommands(vararg expectedCommands: Command) {
+        val actualCommands = parseCommands()
+        val expectedMaestroCommands = expectedCommands.map(this::toMaestroCommand).toList()
+        assertThat(actualCommands).isEqualTo(expectedMaestroCommands)
+    }
+
+    private fun toMaestroCommand(command: Command): MaestroCommand {
+        val constructor = MaestroCommand::class.java.constructors[1]
+        val parameterIndex = constructor.parameterTypes.indexOf(command::class.java)
+        if (parameterIndex == -1) throw IllegalArgumentException("Unsupported command type: ${command::class.java}")
+        val args = constructor.parameters.map { parameter ->
+            when (parameter.type) {
+                command::class.java -> command
+                Int::class.java -> 0
+                else -> null
+            }
+        }
+        return constructor.newInstance(*args.toTypedArray()) as MaestroCommand
     }
 
     private fun parseCommands(): List<MaestroCommand> {
