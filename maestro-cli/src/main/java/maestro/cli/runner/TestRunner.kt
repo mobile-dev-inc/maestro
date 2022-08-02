@@ -1,11 +1,10 @@
 package maestro.cli.runner
 
 import maestro.Maestro
+import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.NoInputException
 import maestro.orchestra.SyntaxError
 import maestro.orchestra.yaml.YamlCommandReader
-import org.fusesource.jansi.Ansi
-import org.fusesource.jansi.AnsiConsole
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -65,8 +64,9 @@ object TestRunner {
             block()
         } catch (e: Exception) {
             val message = when (e) {
-                is SyntaxError -> "Syntax error"
-                is NoInputException -> "No commands in the file"
+                is SyntaxError -> "Could not parse Flow file:\n\n${e.message}"
+                is NoInputException -> "No commands found in Flow file"
+                is InvalidInitFlowFile -> "initFlow file is invalid: ${e.initFlowFile}"
                 else -> e.stackTraceToString()
             }
 

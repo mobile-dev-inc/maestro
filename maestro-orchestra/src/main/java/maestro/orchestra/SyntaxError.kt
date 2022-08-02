@@ -1,3 +1,3 @@
 package maestro.orchestra
 
-object SyntaxError : RuntimeException()
+class SyntaxError(override val message: String) : RuntimeException()

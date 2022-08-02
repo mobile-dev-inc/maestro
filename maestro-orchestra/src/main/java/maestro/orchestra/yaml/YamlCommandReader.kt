@@ -20,11 +20,16 @@
 package maestro.orchestra.yaml
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.NoInputException
+import maestro.orchestra.SyntaxError
 import okio.Source
 import okio.buffer
 import okio.source
@@ -68,10 +73,12 @@ object YamlCommandReader {
 
     // Parses the commands as-is
     private fun readCommandsRaw(source: Source): List<MaestroCommand> {
-        return mapper.readValue(
-            source.buffer().inputStream(),
-            object : TypeReference<List<YamlFluentCommand>>() {}
-        ).map { it.toCommand() }
+        return mapParsingErrors {
+            mapper.readValue(
+                source.buffer().inputStream(),
+                object : TypeReference<List<YamlFluentCommand>>() {}
+            ).map { it.toCommand() }
+        }
     }
 
     private fun resolveInitFlowCommands(flowFile: File, commands: List<MaestroCommand>): List<MaestroCommand> {
@@ -84,9 +91,11 @@ object YamlCommandReader {
             val newConfig = config.filterKeys { it != "initFlow" }.toMutableMap()
 
             val initFlowFile = getInitFlowFile(flowFile, initFlow)
-            if (!initFlowFile.exists() || initFlowFile.isDirectory) return newConfig
 
-            val initCommands = mapper.readValue(initFlowFile, object : TypeReference<List<*>>() {})
+            val initCommands = mapParsingErrors {
+                mapper.readValue(initFlowFile, object : TypeReference<List<*>>() {})
+            }
+
             newConfig["initFlow"] = initCommands
 
             return newConfig
@@ -117,11 +126,34 @@ object YamlCommandReader {
 
     private fun getInitFlowFile(flowFile: File, initFlow: String): File {
         val initFlowFile = File(initFlow)
-        if (initFlowFile.isAbsolute) return initFlowFile
-        return flowFile.parentFile.resolve(initFlowFile)
+        val absoluteInitFlowFile = if (initFlowFile.isAbsolute) {
+            initFlowFile
+        } else {
+            flowFile.parentFile.resolve(initFlowFile)
+        }
+        if (!absoluteInitFlowFile.exists() || absoluteInitFlowFile.isDirectory) {
+            throw InvalidInitFlowFile(absoluteInitFlowFile)
+        }
+        return absoluteInitFlowFile
     }
 
     private fun getConfig(commands: List<MaestroCommand>): Map<String, *>? {
         return commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config
+    }
+
+    private fun <T> mapParsingErrors(block: () -> T): T {
+        try {
+            return block()
+        } catch (e: JsonMappingException) {
+            val message = e.message ?: throw SyntaxError("Invalid syntax")
+
+            when {
+                message.contains("Unrecognized field") -> throw SyntaxError(message)
+                message.contains("Cannot construct instance") -> throw SyntaxError(message)
+                message.contains("Cannot deserialize") -> throw SyntaxError(message)
+                message.contains("No content to map") -> throw NoInputException
+                else -> throw SyntaxError(message)
+            }
+        }
     }
 }
