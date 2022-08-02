@@ -21,31 +21,17 @@ package maestro.cli.runner
 
 import maestro.Maestro
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.NoInputException
 import maestro.orchestra.Orchestra
-import maestro.orchestra.SyntaxError
-import maestro.orchestra.yaml.YamlCommandReader
-import okio.source
-import java.io.File
 
 object MaestroCommandRunner {
 
-    fun run(
-        maestro: Maestro,
-        view: ResultView,
-        flowFile: File,
-    ): Boolean {
-        val commands = YamlCommandReader.readCommands(flowFile)
-        val initCommands = YamlCommandReader.parseInitFlowCommands(commands)
-        return runCommands(maestro, view, initCommands, commands)
-    }
-
-    private fun runCommands(
+    fun runCommands(
         maestro: Maestro,
         view: ResultView,
         initCommands: List<MaestroCommand>,
         commands: List<MaestroCommand>,
-    ): Boolean {
+        skipInitFlow: Boolean,
+    ): Result {
         val initCommandStatuses = Array(initCommands.size) { CommandStatus.PENDING }
         val commandStatuses = Array(commands.size) { CommandStatus.PENDING }
 
@@ -93,13 +79,21 @@ object MaestroCommandRunner {
             ).executeCommands(commands)
         }
 
-        executeCommands(initCommands, initCommandStatuses)
+        if (skipInitFlow) {
+            initCommandStatuses.fill(CommandStatus.COMPLETED)
+        } else {
+            executeCommands(initCommands, initCommandStatuses)
+        }
 
-        if (!success) return false
+        if (!success) return Result(initFlowSuccess = false, flowSuccess = false)
 
         executeCommands(commands, commandStatuses)
 
-        return success
+        return Result(initFlowSuccess = true, flowSuccess = success)
     }
 
+    data class Result(
+        val initFlowSuccess: Boolean,
+        val flowSuccess: Boolean
+    )
 }

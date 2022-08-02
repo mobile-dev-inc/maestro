@@ -2,6 +2,7 @@ package maestro.cli.runner
 
 import maestro.Maestro
 import maestro.orchestra.InvalidInitFlowFile
+import maestro.orchestra.MaestroCommand
 import maestro.orchestra.NoInputException
 import maestro.orchestra.SyntaxError
 import maestro.orchestra.yaml.YamlCommandReader
@@ -15,7 +16,12 @@ object TestRunner {
         flowFile: File,
     ): Int {
         val view = ResultView()
-        return runFlow(maestro, view, flowFile)
+        val result = runCatching(view) {
+            val commands = YamlCommandReader.readCommands(flowFile)
+            val initCommands = YamlCommandReader.parseInitFlowCommands(commands)
+            MaestroCommandRunner.runCommands(maestro, view, initCommands, commands, skipInitFlow = false)
+        }
+        return if (result?.flowSuccess == true) 0 else 1
     }
 
     fun runContinuous(
@@ -26,6 +32,10 @@ object TestRunner {
 
         val fileWatcher = FileWatcher()
 
+        var previousCommands: List<MaestroCommand>? = null
+        var previousInitCommands: List<MaestroCommand>? = null
+        var previousResult: MaestroCommandRunner.Result? = null
+
         var ongoingTest: Thread? = null
         do {
             if (ongoingTest != null) {
@@ -34,7 +44,24 @@ object TestRunner {
             }
 
             ongoingTest = thread {
-                runFlow(maestro, view, flowFile)
+                runCatching(view) {
+                    val commands = YamlCommandReader.readCommands(flowFile)
+                    val initCommands = YamlCommandReader.parseInitFlowCommands(commands)
+
+                    if (previousCommands == commands && initCommands == previousInitCommands) return@runCatching
+
+                    previousResult = MaestroCommandRunner.runCommands(
+                        maestro,
+                        view,
+                        initCommands,
+                        commands,
+                        // Skip init flow if previous init flow was successful and there were no changes to the init flow
+                        skipInitFlow = previousResult?.initFlowSuccess == true && initCommands == previousInitCommands,
+                    )
+
+                    previousCommands = commands
+                    previousInitCommands = initCommands
+                }
             }
 
             val watchFiles = runCatching(view) {
@@ -43,17 +70,6 @@ object TestRunner {
 
             fileWatcher.waitForChange(watchFiles)
         } while (true)
-    }
-
-    private fun runFlow(
-        maestro: Maestro,
-        view: ResultView,
-        flowFile: File,
-    ): Int {
-        val result = runCatching(view) {
-            MaestroCommandRunner.run(maestro, view, flowFile)
-        }
-        return if (result == true) 0 else 1
     }
 
     private fun <T> runCatching(
