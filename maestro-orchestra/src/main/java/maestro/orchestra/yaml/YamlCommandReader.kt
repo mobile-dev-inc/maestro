@@ -37,18 +37,18 @@ import java.io.File
 
 object YamlCommandReader {
 
-    private val mapper by lazy {
-        ObjectMapper(YAMLFactory())
-            .apply {
-                registerModule(KotlinModule.Builder().build())
-            }
+    private val YAML = YAMLFactory()
+    private val MAPPER = ObjectMapper(YAML).apply {
+        registerModule(KotlinModule.Builder().build())
     }
 
     // If it exists, automatically resolves the initFlow file and inlines the commands into the config
     fun readCommands(flowFile: File): List<MaestroCommand> {
-        val commands = flowFile.source().use { source ->
-            readCommandsRaw(source)
-        }
+        val parser = YAML.createParser(flowFile)
+        val config = parser.readValueAs(YamlConfig::class.java)
+        val commands = parser.readValueAs<List<YamlFluentCommand>>(
+            object : TypeReference<List<YamlFluentCommand>>() {}
+        ).map { it.toCommand() }
         return resolveInitFlowCommands(flowFile, commands)
     }
 
@@ -57,7 +57,7 @@ object YamlCommandReader {
         val config = getConfig(commands) ?: return emptyList()
         val initFlow = config["initFlow"] ?: return emptyList()
         if (initFlow is String) throw IllegalArgumentException("initFlow file references aren't supported by this method")
-        val initFlowBytes = mapper.writeValueAsBytes(initFlow)
+        val initFlowBytes = MAPPER.writeValueAsBytes(initFlow)
         val source = ByteArrayInputStream(initFlowBytes).source()
         return readCommandsRaw(source)
     }
@@ -73,7 +73,7 @@ object YamlCommandReader {
     // Parses the commands as-is
     private fun readCommandsRaw(source: Source): List<MaestroCommand> {
         return mapParsingErrors {
-            mapper.readValue(
+            MAPPER.readValue(
                 source.buffer().inputStream(),
                 object : TypeReference<List<YamlFluentCommand>>() {}
             ).map { it.toCommand() }
@@ -88,7 +88,7 @@ object YamlCommandReader {
 
         val initFlowFile = getInitFlowFile(flowFile, initFlow)
         val initCommands = mapParsingErrors {
-            mapper.readValue(initFlowFile, object : TypeReference<List<*>>() {})
+            MAPPER.readValue(initFlowFile, object : TypeReference<List<*>>() {})
         }
 
         val newConfig = config.mapValues { (key, value) ->
