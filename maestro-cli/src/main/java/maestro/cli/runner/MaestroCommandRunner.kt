@@ -33,28 +33,9 @@ object MaestroCommandRunner {
     fun run(
         maestro: Maestro,
         view: ResultView,
-        testFile: File,
+        flowFile: File,
     ): Boolean {
-        val (initCommands, commands) = try {
-            testFile.source().use {
-                YamlCommandReader.readCommands(it)
-            }
-        } catch (e: Exception) {
-            val message = when {
-                e is SyntaxError -> "Syntax error"
-                e is NoInputException -> "No commands in the file"
-                e.message != null -> e.message!!
-                else -> "Failed to read commands"
-            }
-
-            view.setState(
-                ResultView.UiState.Error(
-                    message = message
-                )
-            )
-            return false
-        }
-
+        val (initCommands, commands) = YamlCommandReader.readCommands(flowFile)
         return runCommands(maestro, view, initCommands, commands)
     }
 

@@ -19,8 +19,7 @@
 
 package maestro.cli.command
 
-import maestro.cli.runner.ContinuousTestRunner
-import maestro.cli.runner.SingleTestRunner
+import maestro.cli.runner.TestRunner
 import maestro.cli.util.MaestroFactory
 import picocli.CommandLine
 import picocli.CommandLine.Option
@@ -61,11 +60,6 @@ class TestCommand : Callable<Int> {
 
         val maestro = MaestroFactory.createMaestro(target)
 
-        return if (continuous) {
-            ContinuousTestRunner.run(maestro, testFile)
-            0
-        } else {
-            SingleTestRunner.run(maestro, testFile)
-        }
+        return TestRunner.run(maestro, testFile, continuous)
     }
 }

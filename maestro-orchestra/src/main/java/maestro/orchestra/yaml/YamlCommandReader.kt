@@ -31,6 +31,7 @@ import okio.Source
 import okio.buffer
 import okio.source
 import java.io.ByteArrayInputStream
+import java.io.File
 
 object YamlCommandReader {
 
@@ -41,10 +42,20 @@ object YamlCommandReader {
             }
     }
 
-    fun readCommands(source: Source): Pair<List<MaestroCommand>, List<MaestroCommand>> {
+    // Files to watch for changes. Includes any referenced files.
+    fun getWatchFiles(flowFile: File): List<File> {
+        return listOfNotNull(
+            flowFile,
+            getInitFlowFile(flowFile)
+        ).filter { it.parentFile.isDirectory }
+    }
+
+    fun readCommands(flowFile: File): Pair<List<MaestroCommand>, List<MaestroCommand>> {
         return try {
-            val commands = readCommandsUnsafe(source)
-            val initFlowCommands = getInitCommands(commands)
+            val commands = flowFile.source().use {
+                readCommandsUnsafe(it)
+            }
+            val initFlowCommands = getInitCommands(flowFile, commands)
             initFlowCommands to commands
         } catch (e: MismatchedInputException) {
             val message = e.message ?: throw e
@@ -65,12 +76,39 @@ object YamlCommandReader {
     ).map { it.toCommand() }
 
     private fun getInitCommands(
+        flowFile: File,
         commands: List<MaestroCommand>,
     ): List<MaestroCommand> {
-        val config = commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config ?: return emptyList()
+        val config = getConfig(commands) ?: return emptyList()
         val initFlow = config["initFlow"] ?: return emptyList()
-        val initFlowBytes = mapper.writeValueAsBytes(initFlow)
-        val source = ByteArrayInputStream(initFlowBytes).source()
-        return readCommandsUnsafe(source)
+        return if (initFlow is String) {
+            val initFlowFile = getInitFlowFile(flowFile, initFlow)
+            if (!initFlowFile.exists() || initFlowFile.isDirectory) return emptyList()
+            readCommands(initFlowFile).second
+        } else {
+            val initFlowBytes = mapper.writeValueAsBytes(initFlow)
+            val source = ByteArrayInputStream(initFlowBytes).source()
+            readCommandsUnsafe(source)
+        }
+    }
+
+    private fun getInitFlowFile(flowFile: File): File? {
+        val commands = flowFile.source().use {
+            readCommandsUnsafe(it)
+        }
+        val config = getConfig(commands) ?: return null
+        val initFlow = config["initFlow"]
+        if (initFlow !is String) return null
+        return getInitFlowFile(flowFile, initFlow)
+    }
+
+    private fun getInitFlowFile(flowFile: File, initFlow: String): File {
+        val initFlowFile = File(initFlow)
+        if (initFlowFile.isAbsolute) return initFlowFile
+        return flowFile.parentFile.resolve(initFlowFile)
+    }
+
+    private fun getConfig(commands: List<MaestroCommand>): Map<String, *>? {
+        return commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config
     }
 }
