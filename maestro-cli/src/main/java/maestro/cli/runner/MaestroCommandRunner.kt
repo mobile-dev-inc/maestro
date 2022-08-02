@@ -49,7 +49,7 @@ object MaestroCommandRunner {
                     commands = commands
                         // Don't render configuration commands
                         .filter { it.applyConfigurationCommand == null }
-                        .mapIndexed { idx, command ->
+                        .mapIndexed { _, command ->
                             CommandState(
                                 command = command,
                                 status = commandStatuses[command] ?: CommandStatus.PENDING
