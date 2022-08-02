@@ -20,10 +20,16 @@
 package maestro.cli.runner
 
 import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.AnsiConsole
 
 class ResultView {
 
     private var previousFrame: String? = null
+
+    init {
+        AnsiConsole.systemInstall()
+        println(Ansi.ansi().eraseScreen())
+    }
 
     fun setState(state: UiState) {
         when (state) {

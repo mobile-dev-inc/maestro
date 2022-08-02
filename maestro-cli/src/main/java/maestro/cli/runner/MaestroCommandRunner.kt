@@ -35,7 +35,8 @@ object MaestroCommandRunner {
         view: ResultView,
         flowFile: File,
     ): Boolean {
-        val (initCommands, commands) = YamlCommandReader.readCommands(flowFile)
+        val commands = YamlCommandReader.readCommands(flowFile)
+        val initCommands = YamlCommandReader.parseInitFlowCommands(commands)
         return runCommands(maestro, view, initCommands, commands)
     }
 

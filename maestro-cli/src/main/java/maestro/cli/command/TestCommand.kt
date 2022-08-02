@@ -32,7 +32,7 @@ import java.util.concurrent.Callable
 class TestCommand : Callable<Int> {
 
     @CommandLine.Parameters
-    private lateinit var testFile: File
+    private lateinit var flowFile: File
 
     @Option(names = ["-t", "--target"])
     private var target: String? = null
@@ -51,15 +51,17 @@ class TestCommand : Callable<Int> {
             )
         }
 
-        if (!testFile.exists()) {
+        if (!flowFile.exists()) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
-                "File not found: $testFile"
+                "File not found: $flowFile"
             )
         }
 
         val maestro = MaestroFactory.createMaestro(target)
 
-        return TestRunner.run(maestro, testFile, continuous)
+        if (!continuous) return TestRunner.runSingle(maestro, flowFile)
+
+        TestRunner.runContinuous(maestro, flowFile)
     }
 }

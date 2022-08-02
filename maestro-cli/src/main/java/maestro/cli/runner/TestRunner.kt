@@ -11,26 +11,19 @@ import kotlin.concurrent.thread
 
 object TestRunner {
 
-    fun run(
+    fun runSingle(
         maestro: Maestro,
         flowFile: File,
-        continuous: Boolean,
     ): Int {
-        AnsiConsole.systemInstall()
-        println(Ansi.ansi().eraseScreen())
-
         val view = ResultView()
+        return runFlow(maestro, view, flowFile)
+    }
 
-        fun runFlow(): Int {
-            val result = runCatching(view) {
-                MaestroCommandRunner.run(maestro, view, flowFile)
-            }
-            return if (result == true) 0 else 1
-        }
-
-        if (!continuous) {
-            return runFlow()
-        }
+    fun runContinuous(
+        maestro: Maestro,
+        flowFile: File,
+    ): Nothing {
+        val view = ResultView()
 
         val fileWatcher = FileWatcher()
 
@@ -42,7 +35,7 @@ object TestRunner {
             }
 
             ongoingTest = thread {
-                runFlow()
+                runFlow(maestro, view, flowFile)
             }
 
             val watchFiles = runCatching(view) {
@@ -51,6 +44,17 @@ object TestRunner {
 
             fileWatcher.waitForChange(watchFiles)
         } while (true)
+    }
+
+    private fun runFlow(
+        maestro: Maestro,
+        view: ResultView,
+        flowFile: File,
+    ): Int {
+        val result = runCatching(view) {
+            MaestroCommandRunner.run(maestro, view, flowFile)
+        }
+        return if (result == true) 0 else 1
     }
 
     private fun <T> runCatching(

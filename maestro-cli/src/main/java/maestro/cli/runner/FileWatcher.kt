@@ -42,12 +42,16 @@ class FileWatcher {
 
         while (true) {
             val watchKey = watchService.take()
-            if (watchKey.isValid) {
-                if (isRelevantWatchKey(watchKey)) {
-                    break
+            try {
+                if (watchKey.isValid) {
+                    if (isRelevantWatchKey(watchKey)) {
+                        break
+                    }
+                } else {
+                    watchKeys.remove(watchKey)
                 }
-            } else {
-                watchKeys.remove(watchKey)
+            } finally {
+                watchKey.reset()
             }
         }
     }
