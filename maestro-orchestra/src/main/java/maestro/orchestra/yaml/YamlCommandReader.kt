@@ -22,7 +22,6 @@ package maestro.orchestra.yaml
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import maestro.orchestra.ApplyConfigurationCommand
@@ -87,21 +86,18 @@ object YamlCommandReader {
         val initFlow = config["initFlow"] ?: return commands
         if (initFlow !is String) return commands
 
-        fun createNewConfig(): Map<String, *> {
-            val newConfig = config.filterKeys { it != "initFlow" }.toMutableMap()
-
-            val initFlowFile = getInitFlowFile(flowFile, initFlow)
-
-            val initCommands = mapParsingErrors {
-                mapper.readValue(initFlowFile, object : TypeReference<List<*>>() {})
-            }
-
-            newConfig["initFlow"] = initCommands
-
-            return newConfig
+        val initFlowFile = getInitFlowFile(flowFile, initFlow)
+        val initCommands = mapParsingErrors {
+            mapper.readValue(initFlowFile, object : TypeReference<List<*>>() {})
         }
 
-        val newConfig = createNewConfig()
+        val newConfig = config.mapValues { (key, value) ->
+            if (key == "initFlow") {
+                initCommands
+            } else {
+                value
+            }
+        }
 
         return commands.map { command ->
             if (command.applyConfigurationCommand == null) {
