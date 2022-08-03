@@ -1,6 +1,4 @@
 - config:
     initFlow:
-      - launchApp: com.pinterest
-- launchApp: com.pinterest
-- tapOn:
-    id: com.pinterest:id/menu_notifications
+      - launchApp: com.example
+- launchApp: com.example
