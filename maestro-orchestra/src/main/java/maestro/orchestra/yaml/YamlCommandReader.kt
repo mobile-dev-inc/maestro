@@ -95,6 +95,7 @@ object YamlCommandReader {
 
             when {
                 message.contains("value failed for JSON property") -> throw SyntaxError(message)
+                message.contains("Unrecognized field") -> throw SyntaxError(message)
                 else -> throw e
             }
         }

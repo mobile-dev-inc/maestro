@@ -72,6 +72,11 @@ internal class YamlCommandReaderTest {
         ),
     )
 
+    @Test
+    fun T008_config_invalidKey() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("Unrecognized field \"invalid\"")
+    }
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
