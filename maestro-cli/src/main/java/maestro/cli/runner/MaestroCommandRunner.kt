@@ -23,6 +23,7 @@ import maestro.Maestro
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.Orchestra
+import java.io.File
 import java.util.IdentityHashMap
 
 object MaestroCommandRunner {
@@ -32,17 +33,15 @@ object MaestroCommandRunner {
         view: ResultView,
         initFlow: MaestroInitFlow?,
         commands: List<MaestroCommand>,
-        skipInitFlow: Boolean,
+        cachedAppState: File?,
     ): Result {
         val initCommandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
 
-        val initCommands = initFlow?.commands ?: emptyList()
-
         fun refreshUi() {
             view.setState(
                 ResultView.UiState.Running(
-                    initCommands = initCommands
+                    initCommands = (initFlow?.commands ?: emptyList())
                         // Don't render configuration commands
                         .filter { it.applyConfigurationCommand == null }
                         .mapIndexed { _, command ->
@@ -66,9 +65,8 @@ object MaestroCommandRunner {
 
         refreshUi()
 
-        var success = true
-
-        fun executeCommands(commands: List<MaestroCommand>, statuses: MutableMap<MaestroCommand, CommandStatus>) {
+        fun executeCommands(commands: List<MaestroCommand>, statuses: MutableMap<MaestroCommand, CommandStatus>): Boolean {
+            var success = true
             Orchestra(
                 maestro,
                 onCommandStart = { _, command ->
@@ -85,23 +83,39 @@ object MaestroCommandRunner {
                     success = false
                 },
             ).executeCommands(commands)
+            return success
         }
 
-        if (skipInitFlow) {
-            initFlow?.commands?.forEach { initCommandStatuses[it] = CommandStatus.COMPLETED }
+        val initAppState: File? = if (initFlow == null) {
+            null
         } else {
-            executeCommands(initCommands, initCommandStatuses)
+            val state = if (cachedAppState == null) {
+                val initFlowSuccess = executeCommands(initFlow.commands, initCommandStatuses)
+                if (!initFlowSuccess) return Result(flowSuccess = false, cachedAppState = null)
+
+                val appStateFile = File("/Users/leland/Downloads/state.zip")
+                maestro.stopApp(initFlow.appId)
+                maestro.pullAppState(initFlow.appId, appStateFile)
+                appStateFile
+            } else {
+                cachedAppState
+            }
+
+            initFlow.commands.forEach { initCommandStatuses[it] = CommandStatus.COMPLETED }
+
+            maestro.clearAppState(initFlow.appId)
+            maestro.pushAppState(initFlow.appId, state)
+
+            state
         }
 
-        if (!success) return Result(initFlowSuccess = false, flowSuccess = false)
+        val flowSuccess = executeCommands(commands, commandStatuses)
 
-        executeCommands(commands, commandStatuses)
-
-        return Result(initFlowSuccess = true, flowSuccess = success)
+        return Result(flowSuccess = flowSuccess, cachedAppState = initAppState)
     }
 
     data class Result(
-        val initFlowSuccess: Boolean,
-        val flowSuccess: Boolean
+        val flowSuccess: Boolean,
+        val cachedAppState: File?,
     )
 }

@@ -20,7 +20,7 @@ object TestRunner {
         val result = runCatching(view) {
             val commands = YamlCommandReader.readCommands(flowFile)
             val initFlow = getInitFlow(commands)
-            MaestroCommandRunner.runCommands(maestro, view, initFlow, commands, skipInitFlow = false)
+            MaestroCommandRunner.runCommands(maestro, view, initFlow, commands, cachedAppState = null)
         }
         return if (result?.flowSuccess == true) 0 else 1
     }
@@ -51,13 +51,19 @@ object TestRunner {
                 ongoingTest = thread {
                     if (previousCommands == commands && initFlow == previousInitFlow) return@thread
 
+                    // Reuse cached app state if previous init flow was successful and there were no changes to the init flow
+                    val cachedAppState: File? = if (initFlow == previousInitFlow) {
+                        previousResult?.cachedAppState
+                    } else {
+                        null
+                    }
+
                     previousResult = MaestroCommandRunner.runCommands(
                         maestro,
                         view,
                         initFlow,
                         commands,
-                        // Skip init flow if previous init flow was successful and there were no changes to the init flow
-                        skipInitFlow = previousResult?.initFlowSuccess == true && initFlow == previousInitFlow,
+                        cachedAppState = cachedAppState,
                     )
 
                     previousCommands = commands
