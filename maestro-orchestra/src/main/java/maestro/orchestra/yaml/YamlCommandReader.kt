@@ -24,116 +24,40 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import maestro.orchestra.ApplyConfigurationCommand
-import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.MaestroConfig
 import maestro.orchestra.NoInputException
 import maestro.orchestra.SyntaxError
-import okio.Source
-import okio.buffer
-import okio.source
-import java.io.ByteArrayInputStream
 import java.io.File
 
 object YamlCommandReader {
 
-    private val YAML = YAMLFactory()
-    private val MAPPER = ObjectMapper(YAML).apply {
+    private val YAML = YAMLFactory(ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
-    }
+    })
 
     // If it exists, automatically resolves the initFlow file and inlines the commands into the config
-    fun readCommands(flowFile: File): List<MaestroCommand> {
+    fun readCommands(flowFile: File): List<MaestroCommand> = mapParsingErrors {
         val parser = YAML.createParser(flowFile)
         val config = parser.readValueAs(YamlConfig::class.java)
         val commands = parser.readValueAs<List<YamlFluentCommand>>(
             object : TypeReference<List<YamlFluentCommand>>() {}
         ).map { it.toCommand() }
-        return listOfNotNull(config.toCommand(flowFile), *commands.toTypedArray())
-    }
-
-    // Parse out the init flow commands from the config. Assumes that initFlow commands are inlined into the config
-    fun parseInitFlowCommands(commands: List<MaestroCommand>): List<MaestroCommand> {
-        val config = getConfig(commands) ?: return emptyList()
-        val initFlow = config["initFlow"] ?: return emptyList()
-        if (initFlow is String) throw IllegalArgumentException("initFlow file references aren't supported by this method")
-        val initFlowBytes = MAPPER.writeValueAsBytes(initFlow)
-        val source = ByteArrayInputStream(initFlowBytes).source()
-        return readCommandsRaw(source)
+        listOfNotNull(config.toCommand(flowFile), *commands.toTypedArray())
     }
 
     // Files to watch for changes. Includes any referenced files.
-    fun getWatchFiles(flowFile: File): List<File> {
-        return listOfNotNull(
+    fun getWatchFiles(flowFile: File): List<File> = mapParsingErrors{
+        val parser = YAML.createParser(flowFile)
+        val config = parser.readValueAs(YamlConfig::class.java)
+        val initFlowFile = config.getInitFlowFile(flowFile)
+        listOfNotNull(
             flowFile,
-            getInitFlowFile(flowFile)
+            initFlowFile,
         ).filter { it.parentFile.isDirectory }
     }
 
-    // Parses the commands as-is
-    private fun readCommandsRaw(source: Source): List<MaestroCommand> {
-        return mapParsingErrors {
-            MAPPER.readValue(
-                source.buffer().inputStream(),
-                object : TypeReference<List<YamlFluentCommand>>() {}
-            ).map { it.toCommand() }
-        }
-    }
-
-    private fun resolveInitFlowCommands(flowFile: File, commands: List<MaestroCommand>): List<MaestroCommand> {
-        val config = getConfig(commands) ?: return commands
-
-        val initFlow = config["initFlow"] ?: return commands
-        if (initFlow !is String) return commands
-
-        val initFlowFile = getInitFlowFile(flowFile, initFlow)
-        val initCommands = mapParsingErrors {
-            MAPPER.readValue(initFlowFile, object : TypeReference<List<*>>() {})
-        }
-
-        val newConfig = config.mapValues { (key, value) ->
-            if (key == "initFlow") {
-                initCommands
-            } else {
-                value
-            }
-        }
-
-        return commands.map { command ->
-            if (command.applyConfigurationCommand == null) {
-                command
-            } else {
-                MaestroCommand(
-                    applyConfigurationCommand = ApplyConfigurationCommand(newConfig)
-                )
-            }
-        }
-    }
-
-    private fun getInitFlowFile(flowFile: File): File? {
-        val commands = flowFile.source().use {
-            readCommandsRaw(it)
-        }
-        val config = getConfig(commands) ?: return null
-        val initFlow = config["initFlow"]
-        if (initFlow !is String) return null
-        return getInitFlowFile(flowFile, initFlow)
-    }
-
-    private fun getInitFlowFile(flowFile: File, initFlow: String): File {
-        val initFlowFile = File(initFlow)
-        val absoluteInitFlowFile = if (initFlowFile.isAbsolute) {
-            initFlowFile
-        } else {
-            flowFile.parentFile.resolve(initFlowFile)
-        }
-        if (!absoluteInitFlowFile.exists() || absoluteInitFlowFile.isDirectory) {
-            throw InvalidInitFlowFile(absoluteInitFlowFile)
-        }
-        return absoluteInitFlowFile
-    }
-
-    private fun getConfig(commands: List<MaestroCommand>): Map<String, *>? {
+    fun getConfig(commands: List<MaestroCommand>): MaestroConfig? {
         return commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config
     }
 

@@ -3,6 +3,7 @@ package maestro.orchestra.yaml
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.MaestroConfig
 import java.io.File
 
 data class YamlConfig(
@@ -11,11 +12,18 @@ data class YamlConfig(
 ) {
 
     fun toCommand(flowFile: File): MaestroCommand {
-        val config = mapOf(
-            "appId" to appId,
-            "initFlow" to initFlow(initFlow, flowFile),
-        ).filterValues { it != null }
+        val config = MaestroConfig(
+            initFlow = initFlow(initFlow, flowFile)
+        )
         return MaestroCommand(applyConfigurationCommand = ApplyConfigurationCommand(config))
+    }
+
+    fun getInitFlowFile(flowFile: File): File? {
+        if (initFlow == null) return null
+        return when (initFlow) {
+            is StringInitFlow -> getInitFlowFile(flowFile, initFlow.path)
+            is YamlInitFlow -> null
+        }
     }
 
     companion object {

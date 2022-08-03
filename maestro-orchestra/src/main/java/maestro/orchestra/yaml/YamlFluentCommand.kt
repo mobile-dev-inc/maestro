@@ -20,7 +20,6 @@
 package maestro.orchestra.yaml
 
 import maestro.Point
-import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ElementSelector
@@ -39,7 +38,6 @@ data class YamlFluentCommand(
     val inputText: String? = null,
     val launchApp: YamlLaunchAppUnion? = null,
     val swipe: YamlElementSelectorUnion? = null,
-    val config: Map<String, *>? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -61,9 +59,6 @@ data class YamlFluentCommand(
                 "scroll" -> MaestroCommand(scrollCommand = ScrollCommand())
                 else -> throw IllegalStateException("Unknown navigation target: $action")
             }
-            config != null -> MaestroCommand(
-                applyConfigurationCommand = ApplyConfigurationCommand(config),
-            )
             else -> throw IllegalStateException("No mapping provided for $this")
         }
     }

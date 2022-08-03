@@ -6,6 +6,7 @@ import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.Command
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.MaestroConfig
 import maestro.orchestra.NoInputException
 import org.junit.Rule
 import org.junit.Test
@@ -25,15 +26,9 @@ internal class YamlCommandReaderTest {
 
     @Test
     fun T002_launchApp() = expectCommands(
-        config(
-            "appId" to "com.example.app"
-        ),
+        ApplyConfigurationCommand(MaestroConfig()),
         LaunchAppCommand(appId = "com.example.app"),
     )
-
-    private fun config(vararg entries: Pair<String, Any>): ApplyConfigurationCommand {
-        return ApplyConfigurationCommand(mapOf(*entries))
-    }
 
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
