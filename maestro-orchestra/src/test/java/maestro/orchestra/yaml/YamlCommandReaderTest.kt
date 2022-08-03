@@ -52,6 +52,11 @@ internal class YamlCommandReaderTest {
         assertThat(e.message).contains("appId due to missing (therefore NULL) value for creator parameter appId which is a non-nullable type")
     }
 
+    @Test
+    fun T006_emptyCommands() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("Flow files must contain a config section and a commands section")
+    }
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()

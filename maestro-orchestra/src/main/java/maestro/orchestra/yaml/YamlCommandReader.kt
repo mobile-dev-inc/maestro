@@ -42,7 +42,10 @@ object YamlCommandReader {
     // If it exists, automatically resolves the initFlow file and inlines the commands into the config
     fun readCommands(flowFile: File): List<MaestroCommand> = mapParsingErrors {
         val parser = YAML.createParser(flowFile)
-        val nodes = parser.readValuesAs(JsonNode::class.java).asSequence().toList()
+        val nodes = parser.readValuesAs(JsonNode::class.java)
+            .asSequence()
+            .toList()
+            .filter { !it.isNull }
         if (nodes.size != 2) {
             throw SyntaxError(
                 "Flow files must contain a config section and a commands section. " +
@@ -50,6 +53,7 @@ object YamlCommandReader {
             )
         }
         val config: YamlConfig = MAPPER.convertValue(nodes[0], YamlConfig::class.java)
+        println(nodes[1])
         val commands = MAPPER.convertValue(
             nodes[1],
             object : TypeReference<List<YamlFluentCommand>>() {}
