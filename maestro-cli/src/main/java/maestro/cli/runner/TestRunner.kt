@@ -3,6 +3,7 @@ package maestro.cli.runner
 import maestro.Maestro
 import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.NoInputException
 import maestro.orchestra.SyntaxError
 import maestro.orchestra.yaml.YamlCommandReader
@@ -18,8 +19,8 @@ object TestRunner {
         val view = ResultView()
         val result = runCatching(view) {
             val commands = YamlCommandReader.readCommands(flowFile)
-            val initCommands = getInitCommands(commands)
-            MaestroCommandRunner.runCommands(maestro, view, initCommands, commands, skipInitFlow = false)
+            val initFlow = getInitFlow(commands)
+            MaestroCommandRunner.runCommands(maestro, view, initFlow, commands, skipInitFlow = false)
         }
         return if (result?.flowSuccess == true) 0 else 1
     }
@@ -33,7 +34,7 @@ object TestRunner {
         val fileWatcher = FileWatcher()
 
         var previousCommands: List<MaestroCommand>? = null
-        var previousInitCommands: List<MaestroCommand>? = null
+        var previousInitFlow: MaestroInitFlow? = null
         var previousResult: MaestroCommandRunner.Result? = null
 
         var ongoingTest: Thread? = null
@@ -45,22 +46,22 @@ object TestRunner {
 
             runCatching(view) {
                 val commands = YamlCommandReader.readCommands(flowFile)
-                val initCommands = getInitCommands(commands)
+                val initFlow = getInitFlow(commands)
 
                 ongoingTest = thread {
-                    if (previousCommands == commands && initCommands == previousInitCommands) return@thread
+                    if (previousCommands == commands && initFlow == previousInitFlow) return@thread
 
                     previousResult = MaestroCommandRunner.runCommands(
                         maestro,
                         view,
-                        initCommands,
+                        initFlow,
                         commands,
                         // Skip init flow if previous init flow was successful and there were no changes to the init flow
-                        skipInitFlow = previousResult?.initFlowSuccess == true && initCommands == previousInitCommands,
+                        skipInitFlow = previousResult?.initFlowSuccess == true && initFlow == previousInitFlow,
                     )
 
                     previousCommands = commands
-                    previousInitCommands = initCommands
+                    previousInitFlow = initFlow
                 }
             }
 
@@ -72,8 +73,8 @@ object TestRunner {
         } while (true)
     }
 
-    private fun getInitCommands(commands: List<MaestroCommand>): List<MaestroCommand> {
-        return YamlCommandReader.getConfig(commands)?.initFlow ?: emptyList()
+    private fun getInitFlow(commands: List<MaestroCommand>): MaestroInitFlow? {
+        return YamlCommandReader.getConfig(commands)?.initFlow
     }
 
     private fun <T> runCatching(

@@ -21,6 +21,7 @@ package maestro.cli.runner
 
 import maestro.Maestro
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.Orchestra
 import java.util.IdentityHashMap
 
@@ -29,12 +30,14 @@ object MaestroCommandRunner {
     fun runCommands(
         maestro: Maestro,
         view: ResultView,
-        initCommands: List<MaestroCommand>,
+        initFlow: MaestroInitFlow?,
         commands: List<MaestroCommand>,
         skipInitFlow: Boolean,
     ): Result {
         val initCommandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
+
+        val initCommands = initFlow?.commands ?: emptyList()
 
         fun refreshUi() {
             view.setState(
@@ -85,7 +88,7 @@ object MaestroCommandRunner {
         }
 
         if (skipInitFlow) {
-            initCommands.forEach { initCommandStatuses[it] = CommandStatus.COMPLETED }
+            initFlow?.commands?.forEach { initCommandStatuses[it] = CommandStatus.COMPLETED }
         } else {
             executeCommands(initCommands, initCommandStatuses)
         }
