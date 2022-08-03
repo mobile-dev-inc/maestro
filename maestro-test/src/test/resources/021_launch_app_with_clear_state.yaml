@@ -1,3 +1,4 @@
+appId: com.example.app
+---
 - launchApp:
-    appId: "com.example.app"
     clearState: true
