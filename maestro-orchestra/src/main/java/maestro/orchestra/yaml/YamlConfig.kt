@@ -13,7 +13,7 @@ data class YamlConfig(
 
     fun toCommand(flowFile: File): MaestroCommand {
         val config = MaestroConfig(
-            initFlow = initFlow(initFlow, flowFile)
+            initFlow = initFlow(flowFile)
         )
         return MaestroCommand(applyConfigurationCommand = ApplyConfigurationCommand(config))
     }
@@ -26,16 +26,16 @@ data class YamlConfig(
         }
     }
 
-    companion object {
+    private fun initFlow(flowFile: File): List<MaestroCommand>? {
+        if (initFlow == null) return null
 
-        private fun initFlow(initFlow: YamlInitFlowUnion?, flowFile: File): List<MaestroCommand>? {
-            if (initFlow == null) return null
-
-            return when (initFlow) {
-                is StringInitFlow -> stringInitFlow(initFlow, flowFile)
-                is YamlInitFlow -> initFlow.commands.map { it.toCommand() }
-            }
+        return when (initFlow) {
+            is StringInitFlow -> stringInitFlow(initFlow, flowFile)
+            is YamlInitFlow -> initFlow.commands.map { it.toCommand(appId) }
         }
+    }
+
+    companion object {
 
         private fun stringInitFlow(initFlow: StringInitFlow, flowFile: File): List<MaestroCommand> {
             val initFlowFile = getInitFlowFile(flowFile, initFlow.path)

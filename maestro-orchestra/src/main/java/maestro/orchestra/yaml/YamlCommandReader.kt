@@ -42,7 +42,7 @@ object YamlCommandReader {
         val config = parser.readValueAs(YamlConfig::class.java)
         val commands = parser.readValueAs<List<YamlFluentCommand>>(
             object : TypeReference<List<YamlFluentCommand>>() {}
-        ).map { it.toCommand() }
+        ).map { it.toCommand(config.appId) }
         listOfNotNull(config.toCommand(flowFile), *commands.toTypedArray())
     }
 

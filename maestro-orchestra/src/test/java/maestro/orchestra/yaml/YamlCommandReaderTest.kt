@@ -27,7 +27,18 @@ internal class YamlCommandReaderTest {
     @Test
     fun T002_launchApp() = expectCommands(
         ApplyConfigurationCommand(MaestroConfig()),
-        LaunchAppCommand(appId = "com.example.app"),
+        LaunchAppCommand(
+            appId = "com.example.app"
+        ),
+    )
+
+    @Test
+    fun T003_launchApp_withClearState() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig()),
+        LaunchAppCommand(
+            appId = "com.example.app",
+            clearState = true,
+        ),
     )
 
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
