@@ -24,6 +24,7 @@ import maestro.Driver
 import maestro.MaestroException
 import maestro.Point
 import maestro.TreeNode
+import java.io.File
 
 class FakeDriver : Driver {
 
@@ -84,6 +85,18 @@ class FakeDriver : Driver {
             return
         }
         events.add(Event.ClearState(appId))
+    }
+
+    override fun pullAppState(appId: String, outFile: File) {
+        ensureOpen()
+
+        events.add(Event.PullAppState(appId, outFile))
+    }
+
+    override fun pushAppState(appId: String, stateFile: File) {
+        ensureOpen()
+
+        events.add(Event.PushAppState(appId, stateFile))
     }
 
     override fun tap(point: Point) {
@@ -174,6 +187,16 @@ class FakeDriver : Driver {
 
         data class ClearState(
             val appId: String
+        ) : Event()
+
+        data class PullAppState(
+            val appId: String,
+            val outFile: File,
+        ) : Event()
+
+        data class PushAppState(
+            val appId: String,
+            val stateFile: File,
         ) : Event()
 
         data class Swipe(

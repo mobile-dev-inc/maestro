@@ -27,6 +27,7 @@ import maestro.Point
 import maestro.TreeNode
 import ios.IOSDevice
 import maestro.MaestroException
+import java.io.File
 
 class IOSDriver(
     private val iosDevice: IOSDevice,
@@ -73,6 +74,14 @@ class IOSDriver(
     override fun clearAppState(appId: String) {
         iosDevice.clearAppState(appId)
     }
+
+    // TODO Implement pullAppState for iOS
+    override fun pullAppState(appId: String, outFile: File) {
+        if (!outFile.exists()) outFile.createNewFile()
+    }
+
+    // TODO Implement pushAppState for iOS
+    override fun pushAppState(appId: String, stateFile: File) {}
 
     override fun tap(point: Point) {
         iosDevice.tap(point.x, point.y).expect {}

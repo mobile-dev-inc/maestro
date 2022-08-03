@@ -32,6 +32,7 @@ import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
+import maestro.android.AndroidAppFiles
 import okio.buffer
 import okio.sink
 import okio.source
@@ -133,6 +134,14 @@ class AndroidDriver(
         }
 
         shell("pm clear $appId")
+    }
+
+    override fun pullAppState(appId: String, outFile: File) {
+        AndroidAppFiles.pull(dadb, appId, outFile)
+    }
+
+    override fun pushAppState(appId: String, stateFile: File) {
+        AndroidAppFiles.push(dadb, appId, stateFile)
     }
 
     override fun tap(point: Point) {

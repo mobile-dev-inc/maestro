@@ -27,6 +27,7 @@ import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
 import org.slf4j.LoggerFactory
+import java.io.File
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Maestro(private val driver: Driver) : AutoCloseable {
@@ -51,6 +52,18 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         LOGGER.info("Clearing app state $appId")
 
         driver.clearAppState(appId)
+    }
+
+    fun pullAppState(appId: String, outFile: File) {
+        LOGGER.info("Pulling app state: $appId")
+
+        driver.pullAppState(appId, outFile)
+    }
+
+    fun pushAppState(appId: String, stateFile: File) {
+        LOGGER.info("Pushing app state: $appId")
+
+        driver.pushAppState(appId, stateFile)
     }
 
     fun backPress() {
