@@ -29,7 +29,7 @@ object TestRunner {
         maestro: Maestro,
         flowFile: File,
     ): Nothing {
-        val view = ResultView()
+        val view = ResultView("> Press [ENTER] to restart the Flow\n\n")
 
         val fileWatcher = FileWatcher()
 
@@ -39,35 +39,37 @@ object TestRunner {
 
         var ongoingTest: Thread? = null
         do {
-            if (ongoingTest != null) {
-                ongoingTest.interrupt()
-                ongoingTest.join()
-            }
+            val commands = YamlCommandReader.readCommands(flowFile)
+            val initFlow = getInitFlow(commands)
 
-            runCatching(view) {
-                val commands = YamlCommandReader.readCommands(flowFile)
-                val initFlow = getInitFlow(commands)
+            // Restart the flow if anything has changed
+            if (commands != previousCommands || initFlow != previousInitFlow) {
+                if (ongoingTest != null) {
+                    ongoingTest.interrupt()
+                    ongoingTest.join()
+                }
 
-                ongoingTest = thread {
-                    if (previousCommands == commands && initFlow == previousInitFlow) return@thread
+                runCatching(view) {
+                    ongoingTest = thread {
+                        // If previous init flow was successful and there were no changes to the init flow,
+                        // then reuse cached app state (and skip the init commands)
+                        val cachedAppState: File? = if (initFlow == previousInitFlow) {
+                            previousResult?.cachedAppState
+                        } else {
+                            null
+                        }
 
-                    // Reuse cached app state if previous init flow was successful and there were no changes to the init flow
-                    val cachedAppState: File? = if (initFlow == previousInitFlow) {
-                        previousResult?.cachedAppState
-                    } else {
-                        null
+                        previousCommands = commands
+                        previousInitFlow = initFlow
+
+                        previousResult = MaestroCommandRunner.runCommands(
+                            maestro,
+                            view,
+                            initFlow,
+                            commands,
+                            cachedAppState = cachedAppState,
+                        )
                     }
-
-                    previousResult = MaestroCommandRunner.runCommands(
-                        maestro,
-                        view,
-                        initFlow,
-                        commands,
-                        cachedAppState = cachedAppState,
-                    )
-
-                    previousCommands = commands
-                    previousInitFlow = initFlow
                 }
             }
 
@@ -75,7 +77,10 @@ object TestRunner {
                 YamlCommandReader.getWatchFiles(flowFile)
             } ?: listOf(flowFile)
 
-            fileWatcher.waitForChange(watchFiles)
+            if (CliWatcher.waitForFileChangeOrEnter(fileWatcher, watchFiles) == CliWatcher.SignalType.ENTER) {
+                // On ENTER force re-run of flow even if commands have not changed
+                previousCommands = null
+            }
         } while (true)
     }
 
