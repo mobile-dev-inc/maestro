@@ -119,6 +119,11 @@ internal class YamlCommandReaderTest {
     @Test
     fun T014_initFlow_recursive() = expectException<InvalidInitFlowFile>()
 
+    @Test
+    fun T015_onlyCommands() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("Flow files must contain a config section and a commands section")
+    }
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()

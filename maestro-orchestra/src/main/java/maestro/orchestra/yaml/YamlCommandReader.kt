@@ -41,30 +41,14 @@ object YamlCommandReader {
 
     // If it exists, automatically resolves the initFlow file and inlines the commands into the config
     fun readCommands(flowFile: File): List<MaestroCommand> = mapParsingErrors {
-        val parser = YAML.createParser(flowFile)
-        val nodes = parser.readValuesAs(JsonNode::class.java)
-            .asSequence()
-            .toList()
-            .filter { !it.isNull }
-        if (nodes.size != 2) {
-            throw SyntaxError(
-                "Flow files must contain a config section and a commands section. " +
-                "Found ${nodes.size} section${if (nodes.size == 1) "" else "s"}: $flowFile"
-            )
-        }
-        val config: YamlConfig = MAPPER.convertValue(nodes[0], YamlConfig::class.java)
-        val commands = MAPPER.convertValue(
-            nodes[1],
-            object : TypeReference<List<YamlFluentCommand>>() {}
-        ).map { it.toCommand(config.appId) }
-
-        listOfNotNull(config.toCommand(flowFile), *commands.toTypedArray())
+        val (config, commands) = readConfigAndCommands(flowFile)
+        val maestroCommands = commands.map { it.toCommand(config.appId) }
+        listOfNotNull(config.toCommand(flowFile), *maestroCommands.toTypedArray())
     }
 
     // Files to watch for changes. Includes any referenced files.
     fun getWatchFiles(flowFile: File): List<File> = mapParsingErrors{
-        val parser = YAML.createParser(flowFile)
-        val config = parser.readValueAs(YamlConfig::class.java)
+        val (config, _) = readConfigAndCommands(flowFile)
         val initFlowFile = config.getInitFlowFile(flowFile)
         listOfNotNull(
             flowFile,
@@ -74,6 +58,26 @@ object YamlCommandReader {
 
     fun getConfig(commands: List<MaestroCommand>): MaestroConfig? {
         return commands.firstNotNullOfOrNull { it.applyConfigurationCommand }?.config
+    }
+
+    private fun readConfigAndCommands(flowFile: File): Pair<YamlConfig, List<YamlFluentCommand>> {
+        val parser = YAML.createParser(flowFile)
+        val nodes = parser.readValuesAs(JsonNode::class.java)
+            .asSequence()
+            .toList()
+            .filter { !it.isNull }
+        if (nodes.size != 2) {
+            throw SyntaxError(
+                "Flow files must contain a config section and a commands section. " +
+                    "Found ${nodes.size} section${if (nodes.size == 1) "" else "s"}: $flowFile"
+            )
+        }
+        val config: YamlConfig = MAPPER.convertValue(nodes[0], YamlConfig::class.java)
+        val commands = MAPPER.convertValue(
+            nodes[1],
+            object : TypeReference<List<YamlFluentCommand>>() {}
+        )
+        return config to commands
     }
 
     private fun <T> mapParsingErrors(block: () -> T): T {

@@ -43,12 +43,12 @@ object TestRunner {
                 ongoingTest.join()
             }
 
-            ongoingTest = thread {
-                runCatching(view) {
-                    val commands = YamlCommandReader.readCommands(flowFile)
-                    val initCommands = getInitCommands(commands)
+            runCatching(view) {
+                val commands = YamlCommandReader.readCommands(flowFile)
+                val initCommands = getInitCommands(commands)
 
-                    if (previousCommands == commands && initCommands == previousInitCommands) return@runCatching
+                ongoingTest = thread {
+                    if (previousCommands == commands && initCommands == previousInitCommands) return@thread
 
                     previousResult = MaestroCommandRunner.runCommands(
                         maestro,
