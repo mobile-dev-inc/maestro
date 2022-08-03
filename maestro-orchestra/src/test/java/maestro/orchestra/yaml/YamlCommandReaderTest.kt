@@ -3,11 +3,13 @@ package maestro.orchestra.yaml
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
 import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
+import maestro.orchestra.ScrollCommand
 import maestro.orchestra.SyntaxError
 import org.junit.Rule
 import org.junit.Test
@@ -146,6 +148,18 @@ internal class YamlCommandReaderTest {
         LaunchAppCommand(
             appId = "com.other.app"
         ),
+    )
+
+    @Test
+    fun T018_backPress_string() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig()),
+        BackPressCommand(),
+    )
+
+    @Test
+    fun T019_scroll_string() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig()),
+        ScrollCommand(),
     )
 
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {

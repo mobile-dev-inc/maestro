@@ -179,10 +179,19 @@ data class YamlFluentCommand(
         @JvmStatic
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun parse(stringCommand: String): YamlFluentCommand {
-            when (stringCommand) {
-                "launchApp" -> return YamlFluentCommand(
+            return when (stringCommand) {
+                "launchApp" -> YamlFluentCommand(
                     launchApp = YamlLaunchApp(appId = null, clearState = null)
                 )
+
+                "back" -> YamlFluentCommand(
+                    action = "back"
+                )
+
+                "scroll" -> YamlFluentCommand(
+                    action = "scroll"
+                )
+
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
             }
         }
