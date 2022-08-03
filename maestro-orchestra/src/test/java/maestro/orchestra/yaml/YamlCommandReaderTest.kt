@@ -7,13 +7,11 @@ import maestro.orchestra.Command
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
-import maestro.orchestra.NoInputException
 import maestro.orchestra.SyntaxError
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName
 import java.io.File
-import java.lang.IllegalArgumentException
 
 @Suppress("TestFunctionName")
 internal class YamlCommandReaderTest {
