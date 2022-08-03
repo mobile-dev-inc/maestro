@@ -71,6 +71,10 @@ class IOSDriver(
             }
     }
 
+    override fun stopApp(appId: String) {
+        iosDevice.stop(appId)
+    }
+
     override fun clearAppState(appId: String) {
         iosDevice.clearAppState(appId)
     }

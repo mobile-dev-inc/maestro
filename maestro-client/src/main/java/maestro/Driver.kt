@@ -33,6 +33,8 @@ interface Driver {
 
     fun launchApp(appId: String)
 
+    fun stopApp(appId: String)
+
     fun clearAppState(appId: String)
 
     fun pullAppState(appId: String, outFile: File)

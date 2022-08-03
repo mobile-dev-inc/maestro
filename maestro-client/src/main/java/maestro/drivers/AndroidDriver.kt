@@ -128,6 +128,11 @@ class AndroidDriver(
         shell("monkey --pct-syskeys 0 -p $appId 1")
     }
 
+    override fun stopApp(appId: String) {
+        // Note: If the package does not exist, this call does *not* throw an exception
+        shell("am force-stop $appId")
+    }
+
     override fun clearAppState(appId: String) {
         if (!isPackageInstalled(appId)) {
             return
