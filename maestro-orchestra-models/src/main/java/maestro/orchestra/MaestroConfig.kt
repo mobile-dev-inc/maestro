@@ -4,4 +4,5 @@ package maestro.orchestra
 // where appId is part of MaestroConfig (and factored out of MaestroCommands - eg: LaunchAppCommand).
 data class MaestroConfig(
     val initFlow: List<MaestroCommand>? = null,
+    val ext: Map<String, Any?> = emptyMap(),
 )

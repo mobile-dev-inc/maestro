@@ -1,5 +1,6 @@
 package maestro.orchestra.yaml
 
+import com.fasterxml.jackson.annotation.JsonAnySetter
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
@@ -11,9 +12,17 @@ data class YamlConfig(
     val initFlow: YamlInitFlowUnion?,
 ) {
 
+    private val ext = mutableMapOf<String, Any?>()
+
+    @JsonAnySetter
+    fun setOtherField(key: String, other: Any?) {
+        ext[key] = other
+    }
+
     fun toCommand(flowFile: File): MaestroCommand {
         val config = MaestroConfig(
-            initFlow = initFlow(flowFile)
+            initFlow = initFlow(flowFile),
+            ext = ext.toMap()
         )
         return MaestroCommand(applyConfigurationCommand = ApplyConfigurationCommand(config))
     }

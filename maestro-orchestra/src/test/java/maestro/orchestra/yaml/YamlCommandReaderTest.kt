@@ -74,9 +74,20 @@ internal class YamlCommandReaderTest {
     )
 
     @Test
-    fun T008_config_invalidKey() = expectException<SyntaxError> { e ->
-        assertThat(e.message).contains("Unrecognized field \"invalid\"")
-    }
+    fun T008_config_unknownKeys() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig(
+            ext = mapOf(
+                "extra" to true,
+                "extraMap" to mapOf(
+                    "keyA" to "valueB"
+                ),
+                "extraArray" to listOf("itemA")
+            )
+        )),
+        LaunchAppCommand(
+            appId = "com.example.app",
+        ),
+    )
 
     @Test
     fun T009_invalidCommand() = expectException<SyntaxError> { e ->
