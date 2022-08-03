@@ -183,7 +183,7 @@ data class YamlFluentCommand(
                 "launchApp" -> return YamlFluentCommand(
                     launchApp = YamlLaunchApp()
                 )
-                else -> throw SyntaxError("Invalid command: $stringCommand")
+                else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
             }
         }
     }

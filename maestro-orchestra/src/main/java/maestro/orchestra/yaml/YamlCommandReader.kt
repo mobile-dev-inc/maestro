@@ -53,7 +53,6 @@ object YamlCommandReader {
             )
         }
         val config: YamlConfig = MAPPER.convertValue(nodes[0], YamlConfig::class.java)
-        println(nodes[1])
         val commands = MAPPER.convertValue(
             nodes[1],
             object : TypeReference<List<YamlFluentCommand>>() {}
@@ -96,6 +95,7 @@ object YamlCommandReader {
             when {
                 message.contains("value failed for JSON property") -> throw SyntaxError(message)
                 message.contains("Unrecognized field") -> throw SyntaxError(message)
+                message.contains("Cannot construct instance") -> throw SyntaxError(message)
                 else -> throw e
             }
         }
