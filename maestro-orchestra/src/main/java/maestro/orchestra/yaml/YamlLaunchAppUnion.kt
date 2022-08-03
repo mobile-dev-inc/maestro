@@ -19,6 +19,22 @@
 
 package maestro.orchestra.yaml
 
+import com.fasterxml.jackson.annotation.JsonCreator
+
 data class YamlLaunchApp(
-    val clearState: Boolean? = null,
-)
+    val appId: String?,
+    val clearState: Boolean?,
+) {
+
+    companion object {
+
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        fun parse(appId: String): YamlLaunchApp {
+            return YamlLaunchApp(
+                appId = appId,
+                clearState = null,
+            )
+        }
+    }
+}

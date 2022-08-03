@@ -140,6 +140,14 @@ internal class YamlCommandReaderTest {
         assertThat(e.message).contains("No mapping provided for YamlFluentCommand")
     }
 
+    @Test
+    fun T017_launchApp_otherPackage() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig()),
+        LaunchAppCommand(
+            appId = "com.other.app"
+        ),
+    )
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()

@@ -68,7 +68,7 @@ data class YamlFluentCommand(
     private fun launchApp(command: YamlLaunchApp, appId: String): MaestroCommand {
         return MaestroCommand(
             launchAppCommand = LaunchAppCommand(
-                appId = appId,
+                appId = command.appId ?: appId,
                 clearState = command.clearState,
             )
         )
@@ -177,11 +177,11 @@ data class YamlFluentCommand(
 
         @Suppress("unused")
         @JvmStatic
-        @JsonCreator
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun parse(stringCommand: String): YamlFluentCommand {
             when (stringCommand) {
                 "launchApp" -> return YamlFluentCommand(
-                    launchApp = YamlLaunchApp()
+                    launchApp = YamlLaunchApp(appId = null, clearState = null)
                 )
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
             }
