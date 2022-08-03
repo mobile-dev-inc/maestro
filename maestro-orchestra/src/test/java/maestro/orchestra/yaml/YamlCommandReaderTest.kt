@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.Command
+import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
@@ -111,6 +112,9 @@ internal class YamlCommandReaderTest {
             appId = "com.example.app",
         ),
     )
+
+    @Test
+    fun T013_initFlow_invalidFile() = expectException<InvalidInitFlowFile>()
 
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
