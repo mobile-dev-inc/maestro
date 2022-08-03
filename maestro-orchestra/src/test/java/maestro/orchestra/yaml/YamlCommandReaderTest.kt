@@ -87,11 +87,29 @@ internal class YamlCommandReaderTest {
         assertThat(e.message).contains("Invalid command: \"invalid\"")
     }
 
+    @Test
+    fun T011_initFlow_file() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig(
+            initFlow = commands(
+                ApplyConfigurationCommand(
+                    config = MaestroConfig()
+                ),
+                LaunchAppCommand(
+                    appId = "com.example.app",
+                )
+            )
+        )),
+        LaunchAppCommand(
+            appId = "com.example.app",
+        ),
+    )
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
             assertWithMessage("Expected exception: ${T::class.java}").fail()
         } catch (e: Throwable) {
+            if (e is AssertionError) throw e
             assertThat(e).isInstanceOf(T::class.java)
             block(e as T)
         }
