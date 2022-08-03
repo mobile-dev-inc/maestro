@@ -61,7 +61,7 @@ data class YamlFluentCommand(
                 "scroll" -> MaestroCommand(scrollCommand = ScrollCommand())
                 else -> throw IllegalStateException("Unknown navigation target: $action")
             }
-            else -> throw IllegalStateException("No mapping provided for $this")
+            else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
 

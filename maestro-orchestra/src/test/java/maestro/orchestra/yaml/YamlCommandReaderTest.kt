@@ -124,6 +124,11 @@ internal class YamlCommandReaderTest {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
+    @Test
+    fun T016_launchApp_emptyString() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("No mapping provided for YamlFluentCommand")
+    }
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
