@@ -8,6 +8,7 @@ import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.NoInputException
+import maestro.orchestra.SyntaxError
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName
@@ -22,7 +23,9 @@ internal class YamlCommandReaderTest {
     val name: TestName = TestName()
 
     @Test
-    fun T001_empty() = expectException<NoInputException>()
+    fun T001_empty() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("Flow files must contain a config section and a commands section")
+    }
 
     @Test
     fun T002_launchApp() = expectCommands(
@@ -40,6 +43,16 @@ internal class YamlCommandReaderTest {
             clearState = true,
         ),
     )
+
+    @Test
+    fun T004_config_empty() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("Flow files must contain a config section and a commands section")
+    }
+
+    @Test
+    fun T005_config_noAppId() = expectException<SyntaxError> { e ->
+        assertThat(e.message).contains("appId due to missing (therefore NULL) value for creator parameter appId which is a non-nullable type")
+    }
 
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
