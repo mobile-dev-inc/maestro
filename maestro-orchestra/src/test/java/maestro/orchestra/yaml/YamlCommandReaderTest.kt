@@ -89,7 +89,7 @@ internal class YamlCommandReaderTest {
 
     private fun parseCommands(): List<MaestroCommand> {
         val resourceName = name.methodName.removePrefix("T") + ".yaml"
-        val resource = this::class.java.getResource("/$resourceName")!!
+        val resource = this::class.java.getResource("/YamlCommandReaderTest/$resourceName")!!
         val resourceFile = File(resource.toURI())
         return YamlCommandReader.readCommands(resourceFile)
     }
