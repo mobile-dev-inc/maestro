@@ -104,6 +104,14 @@ internal class YamlCommandReaderTest {
         ),
     )
 
+    @Test
+    fun T012_initFlow_emptyString() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig()),
+        LaunchAppCommand(
+            appId = "com.example.app",
+        ),
+    )
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
