@@ -49,8 +49,14 @@ data class YamlConfig(
             } else {
                 flowFile.parentFile.resolve(initFlowFile)
             }
-            if (!absoluteInitFlowFile.exists() || absoluteInitFlowFile.isDirectory) {
-                throw InvalidInitFlowFile(absoluteInitFlowFile)
+            if (absoluteInitFlowFile.compareTo(flowFile.absoluteFile) == 0) {
+                throw InvalidInitFlowFile("initFlow file can't be the same as the Flow file", absoluteInitFlowFile)
+            }
+            if (!absoluteInitFlowFile.exists()) {
+                throw InvalidInitFlowFile("initFlow file does not exist", absoluteInitFlowFile)
+            }
+            if (absoluteInitFlowFile.isDirectory) {
+                throw InvalidInitFlowFile("initFlow file can't be a directory", absoluteInitFlowFile)
             }
             return absoluteInitFlowFile
         }

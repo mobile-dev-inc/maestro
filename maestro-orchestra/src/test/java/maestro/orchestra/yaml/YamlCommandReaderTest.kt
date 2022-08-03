@@ -116,6 +116,9 @@ internal class YamlCommandReaderTest {
     @Test
     fun T013_initFlow_invalidFile() = expectException<InvalidInitFlowFile>()
 
+    @Test
+    fun T014_initFlow_recursive() = expectException<InvalidInitFlowFile>()
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
