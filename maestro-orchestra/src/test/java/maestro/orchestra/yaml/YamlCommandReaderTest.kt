@@ -57,6 +57,21 @@ internal class YamlCommandReaderTest {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
+    @Test
+    fun T007_initFlow() = expectCommands(
+        ApplyConfigurationCommand(MaestroConfig(
+            initFlow = commands(
+                LaunchAppCommand(
+                    appId = "com.example.app",
+                    clearState = true,
+                )
+            )
+        )),
+        LaunchAppCommand(
+            appId = "com.example.app",
+        ),
+    )
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
@@ -69,8 +84,12 @@ internal class YamlCommandReaderTest {
 
     private fun expectCommands(vararg expectedCommands: Command) {
         val actualCommands = parseCommands()
-        val expectedMaestroCommands = expectedCommands.map(this::toMaestroCommand).toList()
+        val expectedMaestroCommands = commands(*expectedCommands)
         assertThat(actualCommands).isEqualTo(expectedMaestroCommands)
+    }
+
+    private fun commands(vararg commands: Command): List<MaestroCommand> {
+        return commands.map(this::toMaestroCommand).toList()
     }
 
     private fun toMaestroCommand(command: Command): MaestroCommand {
