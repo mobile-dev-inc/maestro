@@ -5,10 +5,10 @@ import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.NoInputException
+import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.SyntaxError
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
-import java.nio.file.Path
 import kotlin.concurrent.thread
 
 object TestRunner {
@@ -20,8 +20,7 @@ object TestRunner {
         val view = ResultView()
         val result = runCatching(view) {
             val commands = YamlCommandReader.readCommands(flowFile.toPath())
-            val initFlow = getInitFlow(commands)
-            MaestroCommandRunner.runCommands(maestro, view, initFlow, commands, cachedAppState = null)
+            MaestroCommandRunner.runCommands(maestro, view, commands, cachedAppState = null)
         }
         return if (result?.flowSuccess == true) 0 else 1
     }
@@ -54,7 +53,7 @@ object TestRunner {
                     ongoingTest = thread {
                         // If previous init flow was successful and there were no changes to the init flow,
                         // then reuse cached app state (and skip the init commands)
-                        val cachedAppState: File? = if (initFlow == previousInitFlow) {
+                        val cachedAppState: OrchestraAppState? = if (initFlow == previousInitFlow) {
                             previousResult?.cachedAppState
                         } else {
                             null
@@ -66,7 +65,6 @@ object TestRunner {
                         previousResult = MaestroCommandRunner.runCommands(
                             maestro,
                             view,
-                            initFlow,
                             commands,
                             cachedAppState = cachedAppState,
                         )

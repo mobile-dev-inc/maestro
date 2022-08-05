@@ -44,7 +44,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -66,7 +66,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -88,7 +88,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -110,7 +110,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -131,7 +131,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -152,7 +152,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -173,7 +173,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -195,7 +195,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -217,7 +217,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -234,7 +234,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -252,7 +252,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -270,7 +270,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -289,7 +289,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -307,7 +307,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -361,7 +361,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -394,7 +394,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -412,7 +412,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -438,7 +438,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -463,7 +463,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -516,7 +516,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -535,7 +535,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).executeCommands(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
