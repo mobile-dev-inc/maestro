@@ -36,7 +36,7 @@ object MaestroCommandRunner {
         commands: List<MaestroCommand>,
         cachedAppState: OrchestraAppState?,
     ): Result {
-        var initFlow: MaestroInitFlow? = null
+        val initFlow = YamlCommandReader.getConfig(commands)?.initFlow
 
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
         fun refreshUi() {
@@ -68,10 +68,6 @@ object MaestroCommandRunner {
 
         val orchestra = Orchestra(
             maestro,
-            onInitFlowStart = {
-                initFlow = it
-                refreshUi()
-            },
             onCommandStart = { _, command ->
                 commandStatuses[command] = CommandStatus.RUNNING
                 refreshUi()
@@ -86,8 +82,13 @@ object MaestroCommandRunner {
             },
         )
 
-        val cachedState = cachedAppState ?: initFlow?.let {
-            orchestra.runInitFlow(it) ?: return Result(flowSuccess = false, cachedAppState = null)
+        val cachedState = if (cachedAppState == null) {
+            initFlow?.let {
+                orchestra.runInitFlow(it) ?: return Result(flowSuccess = false, cachedAppState = null)
+            }
+        } else {
+            initFlow?.commands?.forEach { commandStatuses[it] = CommandStatus.COMPLETED }
+            cachedAppState
         }
 
         val flowSuccess = orchestra.runFlow(commands, cachedState)

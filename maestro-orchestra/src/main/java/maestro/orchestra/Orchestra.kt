@@ -33,7 +33,6 @@ class Orchestra(
     private val stateDir: File? = null,
     private val lookupTimeoutMs: Long = 15000L,
     private val optionalLookupTimeoutMs: Long = 3000L,
-    private val onInitFlowStart: (MaestroInitFlow) -> Unit = {},
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
@@ -47,7 +46,6 @@ class Orchestra(
     fun runFlow(commands: List<MaestroCommand>, initState: OrchestraAppState? = null): Boolean {
         val config = YamlCommandReader.getConfig(commands)
         val state = initState ?: config?.initFlow?.let {
-            onInitFlowStart(it)
             runInitFlow(it) ?: return false
         }
 
@@ -56,12 +54,8 @@ class Orchestra(
             maestro.pushAppState(state.appId, state.file)
         }
 
-        try {
-            onFlowStart(commands)
-            return executeCommands(commands)
-        } finally {
-            state?.file?.delete()
-        }
+        onFlowStart(commands)
+        return executeCommands(commands)
     }
 
     /**

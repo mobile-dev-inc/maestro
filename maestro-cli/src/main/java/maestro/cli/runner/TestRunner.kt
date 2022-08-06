@@ -39,17 +39,17 @@ object TestRunner {
 
         var ongoingTest: Thread? = null
         do {
-            val commands = YamlCommandReader.readCommands(flowFile.toPath())
-            val initFlow = getInitFlow(commands)
+            val watchFiles = runCatching(view) {
+                val commands = YamlCommandReader.readCommands(flowFile.toPath())
+                val initFlow = getInitFlow(commands)
 
-            // Restart the flow if anything has changed
-            if (commands != previousCommands || initFlow != previousInitFlow) {
-                if (ongoingTest != null) {
-                    ongoingTest.interrupt()
-                    ongoingTest.join()
-                }
+                // Restart the flow if anything has changed
+                if (commands != previousCommands || initFlow != previousInitFlow) {
+                    ongoingTest?.apply {
+                        interrupt()
+                        join()
+                    }
 
-                runCatching(view) {
                     ongoingTest = thread {
                         // If previous init flow was successful and there were no changes to the init flow,
                         // then reuse cached app state (and skip the init commands)
@@ -62,17 +62,17 @@ object TestRunner {
                         previousCommands = commands
                         previousInitFlow = initFlow
 
-                        previousResult = MaestroCommandRunner.runCommands(
-                            maestro,
-                            view,
-                            commands,
-                            cachedAppState = cachedAppState,
-                        )
+                        previousResult = runCatching(view) {
+                            MaestroCommandRunner.runCommands(
+                                maestro,
+                                view,
+                                commands,
+                                cachedAppState = cachedAppState,
+                            )
+                        }
                     }
                 }
-            }
 
-            val watchFiles = runCatching(view) {
                 YamlCommandReader.getWatchFiles(flowFile.toPath())
             } ?: listOf(flowFile)
 
