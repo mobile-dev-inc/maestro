@@ -38,6 +38,10 @@ class Orchestra(
     private val onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit = { _, _, e -> throw e },
 ) {
 
+    /**
+     * If initState is provided, initialize app disk state with the provided OrchestraAppState and skip
+     * any initFlow execution. Otherwise, initialize app state with initFlow if defined.
+     */
     fun runFlow(commands: List<MaestroCommand>, initState: OrchestraAppState? = null): Boolean {
         val orchestra = Orchestra(maestro)
         val config = YamlCommandReader.getConfig(commands)
@@ -57,6 +61,10 @@ class Orchestra(
         }
     }
 
+    /**
+     * Run the initFlow and return the resulting app OrchestraAppState which can be used to initialize
+     * app disk state when past into Orchestra.runFlow.
+     */
     fun runInitFlow(initFlow: MaestroInitFlow): OrchestraAppState? {
         val success = runFlow(initFlow.commands, initState = null)
         if (!success) return null
