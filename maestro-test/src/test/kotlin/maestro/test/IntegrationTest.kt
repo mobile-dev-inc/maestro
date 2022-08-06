@@ -583,7 +583,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 023 - runFlow with initState`() {
+    fun `Case 024 - runFlow with initState`() {
         // Given
         val commands = readCommands("023_init_flow")
 
