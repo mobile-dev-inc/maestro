@@ -542,6 +542,32 @@ class IntegrationTest {
         // Test failure
     }
 
+    @Test
+    fun `Case 023 - initFlow`() {
+        // Given
+        val commands = readCommands("023_init_flow")
+
+        val driver = driver {
+            element {
+                text = "Hello"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertPushedAppState(listOf(
+            Event.LaunchApp("com.example.app"),
+        ))
+        driver.assertHasEvent(Event.Tap(Point(50, 50)))
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {
