@@ -20,8 +20,10 @@
 package ios
 
 import com.github.michaelbull.result.Result
+import idb.Idb
 import ios.device.AccessibilityNode
 import ios.device.DeviceInfo
+import java.io.File
 import java.io.InputStream
 
 interface IOSDevice : AutoCloseable {
@@ -46,6 +48,7 @@ interface IOSDevice : AutoCloseable {
      */
     fun install(stream: InputStream): Result<Unit, Throwable>
 
+
     /**
      * Uninstalls the app.
      *
@@ -54,6 +57,23 @@ interface IOSDevice : AutoCloseable {
      * @param id = bundle id of the app to uninstall
      */
     fun uninstall(id: String): Result<Unit, Throwable>
+
+
+    /**
+     * Pulls files from app container
+     *
+     * @param id bundle id of the app
+     * @param file output directory
+     */
+    fun pullAppState(id: String, file: File): Result<Idb.PullResponse, Throwable>
+
+    /**
+     * Pushes files to app container
+     *
+     * @param id bundle id of the app
+     * @param file file or directory (if directory, it pushes contents of that directory)
+     */
+    fun pushAppState(id: String, file: File): Result<Unit, Throwable>
 
     /**
      * Clears state of a given application.
