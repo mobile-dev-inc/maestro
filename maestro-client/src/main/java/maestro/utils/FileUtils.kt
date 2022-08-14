@@ -22,14 +22,14 @@ object FileUtils {
      * @param to output zip file
      */
     fun zipDir(from: Path, to: Path) {
-        val outStream = to.toFile().outputStream()
-        val file2Zip = Files.walk(from).filter { !it.isDirectory() }.toList()
-        ZipOutputStream(outStream).use { zs ->
+        val stream = to.toFile().outputStream()
+        val files = Files.walk(from).filter { !it.isDirectory() }.toList()
+        ZipOutputStream(stream).use { zs ->
             try {
-                file2Zip.forEach {
+                files.forEach {
                     val relativePath = from.relativize(it).toString()
-                    val zipEntry = ZipEntry(relativePath)
-                    zs.putNextEntry(zipEntry)
+                    val entry = ZipEntry(relativePath)
+                    zs.putNextEntry(entry)
                     Files.copy(it, zs)
                     zs.closeEntry()
                 }

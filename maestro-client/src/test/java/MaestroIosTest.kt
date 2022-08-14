@@ -1,11 +1,12 @@
 import io.grpc.Internal
 import maestro.Maestro
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import kotlin.io.path.createDirectories
 
-@Internal
+@Ignore("Local testing only")
 internal class MaestroIosTest {
 
     private lateinit var maestro: Maestro
