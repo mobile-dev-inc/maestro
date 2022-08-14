@@ -80,7 +80,7 @@ interface IOSDevice : AutoCloseable {
      *
      * @param id = bundle id of the app to clear
      */
-    fun clearAppState(id: String): Result<Unit, Throwable>
+    fun clearAppState(id: String): Result<Idb.RmResponse, Throwable>
 
     /**
      * Launches the app.

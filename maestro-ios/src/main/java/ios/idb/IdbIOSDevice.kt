@@ -32,6 +32,7 @@ import idb.fileContainer
 import idb.hIDEvent
 import idb.installRequest
 import idb.launchRequest
+import idb.mkdirRequest
 import idb.payload
 import idb.point
 import idb.pullRequest
@@ -250,8 +251,10 @@ class IdbIOSDevice(
         }
     }
 
-    override fun clearAppState(id: String): Result<Unit, Throwable> {
-        return runCatching {
+    override fun clearAppState(id: String): Result<Idb.RmResponse, Throwable> {
+
+        // deletes app data, including container folder
+        val result = runCatching {
             blockingStub.rm(rmRequest {
                 container = fileContainer {
                     kind = Idb.FileContainer.Kind.APPLICATION
@@ -260,6 +263,18 @@ class IdbIOSDevice(
                 paths.add("/")
             })
         }
+
+        // forces app container folder to be re-created
+        runCatching {
+            blockingStub.mkdir(mkdirRequest {
+                container = fileContainer {
+                    kind = Idb.FileContainer.Kind.APPLICATION
+                    bundleId = id
+                }
+                path = "tmp"
+            })
+        }
+        return result
     }
 
     override fun launch(id: String): Result<Unit, Throwable> {
