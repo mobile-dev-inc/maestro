@@ -25,28 +25,39 @@ import dadb.Dadb
 
 object MaestroFactory {
 
-    fun createMaestro(target: String?): Maestro {
-        if (target == null) {
-            findDevice()
-        } else if (target.startsWith("android")) {
-
-            val hostname = target.split(":").getOrNull(1) ?: "localhost"
-            val dadb = Dadb.discover(hostname)
-            if (dadb == null) {
-                println("No Android devices found")
-                throw IllegalStateException()
+    fun createMaestro(platform: String?, host: String?, port: Int?): Maestro {
+        return when (platform) {
+            null -> {
+                try {
+                    connectAndroid(host ?: "localhost")
+                } catch (e: Exception) {
+                    connectIos(host ?: "localhost", port ?: 10882)
+                }
             }
-
-            Maestro.android(dadb)
-        } else if (target.startsWith("ios")) {
-            val split = target.split(":")
-            val hostname = split.getOrNull(1) ?: "localhost"
-            val port = split.getOrNull(2)?.toIntOrNull() ?: 10882
-
-            Maestro.ios(hostname, port)
-        } else {
-            throw IllegalStateException("Unknown target: $target")
+            "android" -> {
+                connectAndroid(host ?: "localhost")
+            }
+            "ios" -> {
+                connectIos(host ?: "localhost", port ?: 10882)
+            }
+            else -> {
+                throw IllegalStateException("Unknown platform: $platform")
+            }
         }
+    }
+
+    private fun connectAndroid(host: String): Maestro {
+        val dadb = Dadb.discover(host)
+        return if (dadb != null) {
+            Maestro.android(dadb)
+        } else {
+            println("No Android devices found")
+            throw IllegalStateException()
+        }
+    }
+
+    private fun connectIos(host: String, port: Int): Maestro {
+        return Maestro.ios(host, port)
     }
 
     private fun findDevice(): Maestro {
