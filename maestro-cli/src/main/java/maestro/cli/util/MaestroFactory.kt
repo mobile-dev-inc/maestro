@@ -26,21 +26,26 @@ import dadb.Dadb
 object MaestroFactory {
 
     fun createMaestro(target: String?): Maestro {
-        return when (target) {
-            "android" -> {
-                val dadb = Dadb.discover("localhost")
-                if (dadb == null) {
-                    println("No Android devices found")
-                    throw IllegalStateException()
-                }
+        if (target == null) {
+            findDevice()
+        } else if (target.startsWith("android")) {
 
-                Maestro.android(dadb)
+            val hostname = target.split(":").getOrNull(1) ?: "localhost"
+            val dadb = Dadb.discover(hostname)
+            if (dadb == null) {
+                println("No Android devices found")
+                throw IllegalStateException()
             }
-            "ios" -> {
-                Maestro.ios("localhost", 10882)
-            }
-            null -> findDevice()
-            else -> throw IllegalStateException("Unknown target: $target")
+
+            Maestro.android(dadb)
+        } else if (target.startsWith("ios")) {
+            val split = target.split(":")
+            val hostname = split.getOrNull(1) ?: "localhost"
+            val port = split.getOrNull(2)?.toIntOrNull() ?: 10882
+
+            Maestro.ios(hostname, port)
+        } else {
+            throw IllegalStateException("Unknown target: $target")
         }
     }
 
