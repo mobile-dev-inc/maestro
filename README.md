@@ -65,9 +65,15 @@ idb_companion --udid {id of the iOS device}
 
 ### Android
 
-```yaml
-# flow_contacts_android.yaml
+<table>
+<tr>
+<th>flow_contacts_android.yaml</th>
+<th></th>
+</tr>
+<tr>
+<td>
 
+```yaml
 appId: com.android.contacts
 ---
 - launchApp
@@ -79,9 +85,24 @@ appId: com.android.contacts
 - tapOn: "Save"
 ```
 
+</td>
+<td>
+
 <img src='./assets/add_contact_android.gif' height='400'>
 
+</td>
+</tr>
+</table>
+
 ### iOS
+
+<table>
+<tr>
+<th>flow_contacts_android.yaml</th>
+<th></th>
+</tr>
+<tr>
+<td>
 
 ```yaml
 # flow_contacts_ios.yaml
@@ -96,7 +117,14 @@ appId: com.apple.MobileAddressBook
 - tapOn: "Done"
 ```
 
+</td>
+<td>
+
 <img src='./assets/edit_contacts_ios.gif' height='400'>
+
+</td>
+</tr>
+</table>
 
 # Next steps
 
