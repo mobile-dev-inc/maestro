@@ -105,8 +105,6 @@ appId: com.android.contacts
 <td>
 
 ```yaml
-# flow_contacts_ios.yaml
-
 appId: com.apple.MobileAddressBook
 ---
 - launchApp
