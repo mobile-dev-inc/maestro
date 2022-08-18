@@ -79,7 +79,7 @@ appId: com.android.contacts
 - tapOn: "Save"
 ```
 
-<img src='./assets/add_contact_android.gif' height='200'>
+<img src='./assets/add_contact_android.gif' height='400'>
 
 ```yaml
 # flow_contacts_ios.yaml
@@ -94,7 +94,7 @@ appId: com.apple.MobileAddressBook
 - tapOn: "Done"
 ```
 
-<img src='./assets/add_contact_ios.gif' height='200'>
+<img src='./assets/edit_contacts_ios.gif' height='400'>
 
 # Next steps
 
