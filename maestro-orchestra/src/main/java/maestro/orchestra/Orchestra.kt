@@ -153,7 +153,7 @@ class Orchestra(
     private fun assertNotVisible(selector: ElementSelector, timeoutMs: Long = lookupTimeoutMs) {
         val result = MaestroTimer.withTimeout(timeoutMs) {
             try {
-                findElement(selector)
+                findElement(selector, timeoutMs = 2000L)
 
                 // If we got to that point, the element is still visible.
                 // Returning null to keep waiting.
@@ -208,12 +208,13 @@ class Orchestra(
         )
     }
 
-    private fun findElement(selector: ElementSelector): UiElement {
-        val timeout = if (selector.optional) {
-            optionalLookupTimeoutMs
-        } else {
-            lookupTimeoutMs
-        }
+    private fun findElement(selector: ElementSelector, timeoutMs: Long? = null): UiElement {
+        val timeout = timeoutMs
+            ?: if (selector.optional) {
+                optionalLookupTimeoutMs
+            } else {
+                lookupTimeoutMs
+            }
 
         val predicates = mutableListOf<ElementLookupPredicate>()
         val descriptions = mutableListOf<String>()
