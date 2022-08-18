@@ -4,8 +4,8 @@ Maestro is a declarative UI automation library for Android and iOS.
 
 Documentation for Maestro can be found at [maestro.mobile.dev](https://maestro.mobile.dev)
 
-### Setup preview
-Create a flow for any app and any platform, with just a few lines of code.
+### Examples
+Create a flow for any app on Android and iOS, with just a few lines of YAML.
 
 <table>
 <tr>
@@ -17,6 +17,7 @@ Create a flow for any app and any platform, with just a few lines of code.
 
 ```yaml
 # flow_contacts_android.yaml
+
 appId: com.android.contacts
 ---
 - launchApp
@@ -44,6 +45,7 @@ appId: com.android.contacts
 
 ```yaml
 # flow_contacts_ios.yaml
+
 appId: com.apple.MobileAddressBook
 ---
 - launchApp
