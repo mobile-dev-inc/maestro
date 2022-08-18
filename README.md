@@ -6,7 +6,7 @@ Documentation for Maestro can be found at [maestro.mobile.dev](https://maestro.m
 
 ## Why Maestro?
 
-Maestro is built on learnings from its predessessors (Appium, Espresso, UIAutomator, XCTest)
+Maestro is built on learnings from its predecessors (Appium, Espresso, UIAutomator, XCTest)
 
 - Built-in tolerance to flakiness. UI elements will not always be where you expect them, screen tap will not always go through, etc. Maestro embrases the instability of mobile applications and devices and tries to counter it.
 - Built-in tolerance to delays. No need to pepper your tests with `sleep()` calls. Maestro knows that it might take time to load the content (i.e. over the network) and automaitcally waits for it (but no longer than required).
@@ -25,7 +25,7 @@ brew install maestro
 
 Write a simple test in a YAML file 
 
-```
+```yaml
 # flow.yaml
 
 appId: your.package.name
@@ -60,6 +60,41 @@ And launch it:
 ```
 idb_companion --udid {id of the iOS device}
 ```
+
+## Examples
+
+### Android
+
+```yaml
+# flow_contacts_android.yaml
+
+appId: com.android.contacts
+---
+- launchApp
+- tapOn: "Create new contact"
+- tapOn: "First Name"
+- inputText: "John"
+- tapOn: "Last Name"
+- inputText: "Snow"
+- tapOn: "Save"
+```
+
+<img src='./assets/add_contact_android.gif' height='200'>
+
+```yaml
+# flow_contacts_ios.yaml
+
+appId: com.apple.MobileAddressBook
+---
+- launchApp
+- tapOn: "John Appleseed"
+- tapOn: "Edit"
+- tapOn: "Add phone"
+- inputText: "123123"
+- tapOn: "Done"
+```
+
+<img src='./assets/add_contact_ios.gif' height='200'>
 
 # Next steps
 
