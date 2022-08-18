@@ -4,6 +4,17 @@ Maestro is a declarative UI automation library for Android and iOS.
 
 Documentation for Maestro can be found at [maestro.mobile.dev](https://maestro.mobile.dev)
 
+## Why Maestro?
+
+Maestro is build on learnings from its predessessors (Appium, Espresso, UIAutomator, XCTest)
+
+- Built in tolerance to flakiness. UI elements will not always be where you expect them, screen tap will not always go through, etc. Maestro embrases the instability of mobile applications and devices and tries to counter it.
+- Built in tolerance to delays. No need to pepper your tests with `sleep()` calls. Maestro knows that it might take time to load the content (i.e. over the network) and automaitcally waits for it (but no longer than required).
+- Blazingly fast iteration. Tests are interpreted, no need to compile anything. Maestro is able to continuously monitor your test files and rerun them as they change.
+- Declarative yet powerful syntax. Define your tests in a `yaml` file.
+- Or use a Kotlin API if you would like to cutomize your tests even further (or run them from JUnit).
+- Simple setup. Maestro is a single binary that works anywhere.
+
 ## Quick Start
 
 Get a CLI tool from homebrew
