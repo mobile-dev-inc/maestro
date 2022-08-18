@@ -47,11 +47,11 @@ class Orchestra(
     fun runFlow(
         commands: List<MaestroCommand>,
         initState: OrchestraAppState? = null,
-        secrets: Map<String, String> = emptyMap(),
+        env: Map<String, String> = emptyMap(),
     ): Boolean {
         val config = YamlCommandReader.getConfig(commands)
         val state = initState ?: config?.initFlow?.let {
-            runInitFlow(it, secrets = secrets) ?: return false
+            runInitFlow(it, env = env) ?: return false
         }
 
         if (state != null) {
@@ -60,7 +60,7 @@ class Orchestra(
         }
 
         onFlowStart(commands)
-        return executeCommands(commands, secrets)
+        return executeCommands(commands, env)
     }
 
     /**
@@ -69,12 +69,12 @@ class Orchestra(
      */
     fun runInitFlow(
         initFlow: MaestroInitFlow,
-        secrets: Map<String, String> = emptyMap(),
+        env: Map<String, String> = emptyMap(),
     ): OrchestraAppState? {
         val success = runFlow(
             initFlow.commands,
             initState = null,
-            secrets = secrets,
+            env = env,
         )
         if (!success) return null
 
@@ -95,12 +95,12 @@ class Orchestra(
 
     private fun executeCommands(
         commands: List<MaestroCommand>,
-        secrets: Map<String, String>
+        env: Map<String, String>
     ): Boolean {
         commands.forEachIndexed { index, command ->
             onCommandStart(index, command)
             try {
-                executeCommand(command, secrets)
+                executeCommand(command, env)
                 onCommandComplete(index, command)
             } catch (e: Throwable) {
                 onCommandFailed(index, command, e)
@@ -112,11 +112,11 @@ class Orchestra(
 
     private fun executeCommand(
         command: MaestroCommand,
-        secrets: Map<String, String>
+        env: Map<String, String>
     ) {
         when {
             command.tapOnElement != null -> command.tapOnElement
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let {
                     tapOnElement(
                         it,
@@ -125,7 +125,7 @@ class Orchestra(
                     )
                 }
             command.tapOnPoint != null -> command.tapOnPoint
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let {
                     tapOnPoint(
                         it,
@@ -135,19 +135,19 @@ class Orchestra(
             command.backPressCommand != null -> maestro.backPress()
             command.scrollCommand != null -> maestro.scrollVertical()
             command.swipeCommand != null -> command.swipeCommand
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let { swipeCommand(it) }
             command.assertCommand != null -> command.assertCommand
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let { assertCommand(it) }
             command.inputTextCommand != null -> command.inputTextCommand
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let { inputTextCommand(it) }
             command.launchAppCommand != null -> command.launchAppCommand
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let { launchAppCommand(it) }
             command.openLinkCommand != null -> command.openLinkCommand
-                ?.injectSecrets(secrets)
+                ?.injectSecrets(env)
                 ?.let { openLinkCommand(it) }
         }
     }

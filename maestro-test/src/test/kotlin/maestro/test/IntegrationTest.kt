@@ -743,7 +743,7 @@ class IntegrationTest {
     @Test
     fun `Case 028 - Secrets`() {
         // Given
-        val commands = readCommands("028_secrets")
+        val commands = readCommands("028_env")
 
         val driver = driver {
 
@@ -759,7 +759,7 @@ class IntegrationTest {
         Maestro(driver).use {
             orchestra(it).runFlow(
                 commands,
-                secrets = mapOf(
+                env = mapOf(
                     "BUTTON_ID" to "button_id",
                     "BUTTON_TEXT" to "button_text",
                     "PASSWORD" to "testPassword",

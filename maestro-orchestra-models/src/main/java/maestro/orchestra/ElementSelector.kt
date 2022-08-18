@@ -39,19 +39,19 @@ data class ElementSelector(
         val tolerance: Int? = null,
     )
 
-    fun injectSecrets(secrets: Map<String, String>): ElementSelector {
-        if (secrets.isEmpty()) {
+    fun injectSecrets(env: Map<String, String>): ElementSelector {
+        if (env.isEmpty()) {
             return this
         }
 
         return copy(
-            textRegex = textRegex?.injectSecrets(secrets),
-            idRegex = idRegex?.injectSecrets(secrets),
-            below = below?.injectSecrets(secrets),
-            above = above?.injectSecrets(secrets),
-            leftOf = leftOf?.injectSecrets(secrets),
-            rightOf = rightOf?.injectSecrets(secrets),
-            containsChild = containsChild?.injectSecrets(secrets),
+            textRegex = textRegex?.injectSecrets(env),
+            idRegex = idRegex?.injectSecrets(env),
+            below = below?.injectSecrets(env),
+            above = above?.injectSecrets(env),
+            leftOf = leftOf?.injectSecrets(env),
+            rightOf = rightOf?.injectSecrets(env),
+            containsChild = containsChild?.injectSecrets(env),
         )
     }
 

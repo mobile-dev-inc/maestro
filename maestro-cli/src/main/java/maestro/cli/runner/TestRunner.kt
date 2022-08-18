@@ -16,7 +16,7 @@ object TestRunner {
     fun runSingle(
         maestro: Maestro,
         flowFile: File,
-        secrets: Map<String, String>,
+        env: Map<String, String>,
     ): Int {
         val view = ResultView()
         val result = runCatching(view) {
@@ -25,7 +25,7 @@ object TestRunner {
                 maestro,
                 view,
                 commands,
-                secrets,
+                env,
                 cachedAppState = null
             )
         }
@@ -35,7 +35,7 @@ object TestRunner {
     fun runContinuous(
         maestro: Maestro,
         flowFile: File,
-        secrets: Map<String, String>,
+        env: Map<String, String>,
     ): Nothing {
         val view = ResultView("> Press [ENTER] to restart the Flow\n\n")
 
@@ -75,7 +75,7 @@ object TestRunner {
                                 maestro,
                                 view,
                                 commands,
-                                secrets,
+                                env,
                                 cachedAppState = cachedAppState,
                             )
                         }
