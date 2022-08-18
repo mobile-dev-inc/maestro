@@ -22,6 +22,7 @@ package maestro.orchestra
 import maestro.ElementLookupPredicate
 import maestro.Maestro
 import maestro.MaestroException
+import maestro.MaestroTimer
 import maestro.Predicates
 import maestro.UiElement
 import maestro.orchestra.yaml.YamlCommandReader
@@ -149,18 +150,26 @@ class Orchestra(
         command.notVisible?.let { assertNotVisible(it) }
     }
 
-    private fun assertNotVisible(selector: ElementSelector) {
-        try {
-            assertVisible(selector)
+    private fun assertNotVisible(selector: ElementSelector, timeoutMs: Long = lookupTimeoutMs) {
+        val result = MaestroTimer.withTimeout(timeoutMs) {
+            try {
+                findElement(selector)
 
+                // If we got to that point, the element is still visible.
+                // Returning null to keep waiting.
+                null
+            } catch (ignored: MaestroException.ElementNotFound) {
+                // Element was not visible, as we expected
+                true
+            }
+        }
+
+        if (result != true) {
             // If we got to this point, it means that element is actually visible
             throw MaestroException.AssertionFailure(
                 "${selector.description()} is visible",
                 maestro.viewHierarchy(),
             )
-        } catch (ignored: MaestroException.ElementNotFound) {
-            // Element was not visible, as we expected
-            return
         }
     }
 

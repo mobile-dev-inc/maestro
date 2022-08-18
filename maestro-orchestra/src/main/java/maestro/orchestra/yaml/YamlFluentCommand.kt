@@ -36,8 +36,8 @@ import maestro.orchestra.TapOnPointCommand
 
 data class YamlFluentCommand(
     val tapOn: YamlElementSelectorUnion? = null,
-    val assertVisible: YamlElementSelector? = null,
-    val assertNotVisible: YamlElementSelector? = null,
+    val assertVisible: YamlElementSelectorUnion? = null,
+    val assertNotVisible: YamlElementSelectorUnion? = null,
     val action: String? = null,
     val inputText: String? = null,
     val launchApp: YamlLaunchApp? = null,
