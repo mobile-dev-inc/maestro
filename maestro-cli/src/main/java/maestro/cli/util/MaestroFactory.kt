@@ -24,7 +24,6 @@ import maestro.utils.SocketUtils.isPortOpen
 import dadb.Dadb
 
 object MaestroFactory {
-
     @Suppress("NAME_SHADOWING")
     fun createMaestro(platform: String?, host: String?, port: Int?): Maestro {
         val host = host ?: "localhost"
@@ -32,35 +31,31 @@ object MaestroFactory {
 
         return when (platform) {
             null -> {
-                try {
-                    connectAndroid(host)
-                } catch (e: Exception) {
-                    connectIos(host, port)
+                val dadb = Dadb.discover(host)
+
+                if (dadb != null) {
+                    if (isPortOpen(host, port)) {
+                        throw IllegalStateException("Multiple devices found. Specify one with --platform <android|ios> --host and/or --port")
+                    }
+                    return Maestro.android(dadb)
+                } else if (isPortOpen(host, port)) {
+                    return Maestro.ios(host, port)
+                } else {
+                    throw IllegalStateException("No device found")
                 }
             }
             "android" -> {
-                connectAndroid(host)
+                val dadb = Dadb.discover(host)
+                    ?: throw IllegalStateException("No Android devices found")
+
+                return Maestro.android(dadb)
             }
             "ios" -> {
-                connectIos(host, port)
+                Maestro.ios(host, port)
             }
             else -> {
                 throw IllegalStateException("Unknown platform: $platform")
             }
         }
-    }
-
-    private fun connectAndroid(host: String): Maestro {
-        val dadb = Dadb.discover(host)
-        return if (dadb != null) {
-            Maestro.android(dadb)
-        } else {
-            println("No Android devices found")
-            throw IllegalStateException()
-        }
-    }
-
-    private fun connectIos(host: String, port: Int): Maestro {
-        return Maestro.ios(host, port)
     }
 }
