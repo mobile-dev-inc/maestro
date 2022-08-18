@@ -19,6 +19,8 @@
 
 package maestro.orchestra
 
+import maestro.orchestra.util.Secrets.injectSecrets
+
 data class ElementSelector(
     val textRegex: String? = null,
     val idRegex: String? = null,
@@ -36,6 +38,22 @@ data class ElementSelector(
         val height: Int? = null,
         val tolerance: Int? = null,
     )
+
+    fun injectSecrets(secrets: Map<String, String>): ElementSelector {
+        if (secrets.isEmpty()) {
+            return this
+        }
+
+        return copy(
+            textRegex = textRegex?.injectSecrets(secrets),
+            idRegex = idRegex?.injectSecrets(secrets),
+            below = below?.injectSecrets(secrets),
+            above = above?.injectSecrets(secrets),
+            leftOf = leftOf?.injectSecrets(secrets),
+            rightOf = rightOf?.injectSecrets(secrets),
+            containsChild = containsChild?.injectSecrets(secrets),
+        )
+    }
 
     fun description(): String {
         val descriptions = mutableListOf<String>()

@@ -20,10 +20,13 @@
 package maestro.orchestra
 
 import maestro.Point
+import maestro.orchestra.util.Secrets.injectSecrets
 
 interface Command {
 
     fun description(): String
+
+    fun injectSecrets(secrets: Map<String, String>): Command
 
 }
 
@@ -34,6 +37,10 @@ data class SwipeCommand(
 
     override fun description(): String {
         return "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y})"
+    }
+
+    override fun injectSecrets(secrets: Map<String, String>): SwipeCommand {
+        return this
     }
 
 }
@@ -58,6 +65,10 @@ class ScrollCommand : Command {
         return "Scroll vertically"
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): ScrollCommand {
+        return this
+    }
+
 }
 
 class BackPressCommand : Command {
@@ -80,6 +91,9 @@ class BackPressCommand : Command {
         return "Press back"
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): BackPressCommand {
+        return this
+    }
 }
 
 data class TapOnElementCommand(
@@ -92,6 +106,11 @@ data class TapOnElementCommand(
         return "Tap on ${selector.description()}"
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): TapOnElementCommand {
+        return copy(
+            selector = selector.injectSecrets(secrets),
+        )
+    }
 }
 
 data class TapOnPointCommand(
@@ -103,6 +122,10 @@ data class TapOnPointCommand(
 
     override fun description(): String {
         return "Tap on point ($x, $y)"
+    }
+
+    override fun injectSecrets(secrets: Map<String, String>): TapOnPointCommand {
+        return this
     }
 }
 
@@ -123,6 +146,12 @@ data class AssertCommand(
         return "No op"
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): AssertCommand {
+        return copy(
+            visible = visible?.injectSecrets(secrets),
+            notVisible = notVisible?.injectSecrets(secrets),
+        )
+    }
 }
 
 data class InputTextCommand(
@@ -133,6 +162,11 @@ data class InputTextCommand(
         return "Input text $text"
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): InputTextCommand {
+        return copy(
+            text = text.injectSecrets(secrets)
+        )
+    }
 }
 
 data class LaunchAppCommand(
@@ -148,6 +182,9 @@ data class LaunchAppCommand(
         }
     }
 
+    override fun injectSecrets(secrets: Map<String, String>): LaunchAppCommand {
+        return this
+    }
 }
 
 data class ApplyConfigurationCommand(
@@ -157,6 +194,10 @@ data class ApplyConfigurationCommand(
     override fun description(): String {
         return "Apply configuration"
     }
+
+    override fun injectSecrets(secrets: Map<String, String>): ApplyConfigurationCommand {
+        return this
+    }
 }
 
 data class OpenLinkCommand(
@@ -165,5 +206,11 @@ data class OpenLinkCommand(
 
     override fun description(): String {
         return "Open $link"
+    }
+
+    override fun injectSecrets(secrets: Map<String, String>): OpenLinkCommand {
+        return copy(
+            link = link.injectSecrets(secrets),
+        )
     }
 }

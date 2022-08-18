@@ -740,6 +740,48 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 028 - Secrets`() {
+        // Given
+        val commands = readCommands("028_secrets")
+
+        val driver = driver {
+
+            element {
+                id = "button_id"
+                text = "button_text"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(
+                commands,
+                secrets = mapOf(
+                    "BUTTON_ID" to "button_id",
+                    "BUTTON_TEXT" to "button_text",
+                    "PASSWORD" to "testPassword",
+                    "NON_EXISTENT_TEXT" to "nonExistentText",
+                    "NON_EXISTENT_ID" to "nonExistentId",
+                    "URL" to "secretUrl",
+                )
+            )
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.Tap(Point(50, 50)),
+                Event.Tap(Point(50, 50)),
+                Event.InputText("Password is testPassword"),
+                Event.OpenLink("https://example.com/secretUrl")
+            )
+        )
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {
