@@ -19,7 +19,7 @@
 
 package maestro.orchestra
 
-import maestro.orchestra.util.Secrets.injectSecrets
+import maestro.orchestra.util.Env.injectEnv
 
 data class ElementSelector(
     val textRegex: String? = null,
@@ -45,8 +45,8 @@ data class ElementSelector(
         }
 
         return copy(
-            textRegex = textRegex?.injectSecrets(env),
-            idRegex = idRegex?.injectSecrets(env),
+            textRegex = textRegex?.injectEnv(env),
+            idRegex = idRegex?.injectEnv(env),
             below = below?.injectSecrets(env),
             above = above?.injectSecrets(env),
             leftOf = leftOf?.injectSecrets(env),

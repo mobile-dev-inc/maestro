@@ -20,13 +20,13 @@
 package maestro.orchestra
 
 import maestro.Point
-import maestro.orchestra.util.Secrets.injectSecrets
+import maestro.orchestra.util.Env.injectEnv
 
 interface Command {
 
     fun description(): String
 
-    fun injectSecrets(env: Map<String, String>): Command
+    fun injectEnv(env: Map<String, String>): Command
 
 }
 
@@ -39,7 +39,7 @@ data class SwipeCommand(
         return "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y})"
     }
 
-    override fun injectSecrets(env: Map<String, String>): SwipeCommand {
+    override fun injectEnv(env: Map<String, String>): SwipeCommand {
         return this
     }
 
@@ -65,7 +65,7 @@ class ScrollCommand : Command {
         return "Scroll vertically"
     }
 
-    override fun injectSecrets(env: Map<String, String>): ScrollCommand {
+    override fun injectEnv(env: Map<String, String>): ScrollCommand {
         return this
     }
 
@@ -91,7 +91,7 @@ class BackPressCommand : Command {
         return "Press back"
     }
 
-    override fun injectSecrets(env: Map<String, String>): BackPressCommand {
+    override fun injectEnv(env: Map<String, String>): BackPressCommand {
         return this
     }
 }
@@ -106,7 +106,7 @@ data class TapOnElementCommand(
         return "Tap on ${selector.description()}"
     }
 
-    override fun injectSecrets(env: Map<String, String>): TapOnElementCommand {
+    override fun injectEnv(env: Map<String, String>): TapOnElementCommand {
         return copy(
             selector = selector.injectSecrets(env),
         )
@@ -124,7 +124,7 @@ data class TapOnPointCommand(
         return "Tap on point ($x, $y)"
     }
 
-    override fun injectSecrets(env: Map<String, String>): TapOnPointCommand {
+    override fun injectEnv(env: Map<String, String>): TapOnPointCommand {
         return this
     }
 }
@@ -146,7 +146,7 @@ data class AssertCommand(
         return "No op"
     }
 
-    override fun injectSecrets(env: Map<String, String>): AssertCommand {
+    override fun injectEnv(env: Map<String, String>): AssertCommand {
         return copy(
             visible = visible?.injectSecrets(env),
             notVisible = notVisible?.injectSecrets(env),
@@ -162,9 +162,9 @@ data class InputTextCommand(
         return "Input text $text"
     }
 
-    override fun injectSecrets(env: Map<String, String>): InputTextCommand {
+    override fun injectEnv(env: Map<String, String>): InputTextCommand {
         return copy(
-            text = text.injectSecrets(env)
+            text = text.injectEnv(env)
         )
     }
 }
@@ -182,7 +182,7 @@ data class LaunchAppCommand(
         }
     }
 
-    override fun injectSecrets(env: Map<String, String>): LaunchAppCommand {
+    override fun injectEnv(env: Map<String, String>): LaunchAppCommand {
         return this
     }
 }
@@ -195,7 +195,7 @@ data class ApplyConfigurationCommand(
         return "Apply configuration"
     }
 
-    override fun injectSecrets(env: Map<String, String>): ApplyConfigurationCommand {
+    override fun injectEnv(env: Map<String, String>): ApplyConfigurationCommand {
         return this
     }
 }
@@ -208,9 +208,9 @@ data class OpenLinkCommand(
         return "Open $link"
     }
 
-    override fun injectSecrets(env: Map<String, String>): OpenLinkCommand {
+    override fun injectEnv(env: Map<String, String>): OpenLinkCommand {
         return copy(
-            link = link.injectSecrets(env),
+            link = link.injectEnv(env),
         )
     }
 }

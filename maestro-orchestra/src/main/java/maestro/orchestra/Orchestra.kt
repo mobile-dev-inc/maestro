@@ -116,7 +116,7 @@ class Orchestra(
     ) {
         when {
             command.tapOnElement != null -> command.tapOnElement
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let {
                     tapOnElement(
                         it,
@@ -125,7 +125,7 @@ class Orchestra(
                     )
                 }
             command.tapOnPoint != null -> command.tapOnPoint
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let {
                     tapOnPoint(
                         it,
@@ -135,19 +135,19 @@ class Orchestra(
             command.backPressCommand != null -> maestro.backPress()
             command.scrollCommand != null -> maestro.scrollVertical()
             command.swipeCommand != null -> command.swipeCommand
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let { swipeCommand(it) }
             command.assertCommand != null -> command.assertCommand
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let { assertCommand(it) }
             command.inputTextCommand != null -> command.inputTextCommand
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let { inputTextCommand(it) }
             command.launchAppCommand != null -> command.launchAppCommand
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let { launchAppCommand(it) }
             command.openLinkCommand != null -> command.openLinkCommand
-                ?.injectSecrets(env)
+                ?.injectEnv(env)
                 ?.let { openLinkCommand(it) }
         }
     }

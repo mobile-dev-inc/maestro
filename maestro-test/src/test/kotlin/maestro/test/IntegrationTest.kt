@@ -741,7 +741,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 028 - Secrets`() {
+    fun `Case 028 - Env`() {
         // Given
         val commands = readCommands("028_env")
 
@@ -776,7 +776,7 @@ class IntegrationTest {
             listOf(
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
-                Event.InputText("Password is testPassword"),
+                Event.InputText("\${PASSWORD} is testPassword"),
                 Event.OpenLink("https://example.com/secretUrl")
             )
         )

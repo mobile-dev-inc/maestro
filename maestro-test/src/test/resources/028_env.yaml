@@ -14,5 +14,5 @@ appId: com.example.app
     text: .*${NON_EXISTENT_TEXT}.*
 - assertNotVisible:
     id: .*${NON_EXISTENT_ID}.*
-- inputText: Password is ${PASSWORD}
+- inputText: \${PASSWORD} is ${PASSWORD}
 - openLink: https://example.com/${URL}
