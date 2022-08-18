@@ -24,37 +24,48 @@ import maestro.utils.SocketUtils.isPortOpen
 import dadb.Dadb
 
 object MaestroFactory {
-    @Suppress("NAME_SHADOWING")
+    private const val defaultHost = "localhost"
+    private const val idbPort = 10882
+
     fun createMaestro(platform: String?, host: String?, port: Int?): Maestro {
-        val host = host ?: "localhost"
-        val port = port ?: 10882
 
         return when (platform) {
-            null -> {
-                val dadb = Dadb.discover(host)
-
-                if (dadb != null) {
-                    if (isPortOpen(host, port)) {
-                        throw IllegalStateException("Multiple devices found. Specify one with --platform <android|ios> --host and/or --port")
-                    }
-                    return Maestro.android(dadb)
-                } else if (isPortOpen(host, port)) {
-                    return Maestro.ios(host, port)
-                } else {
-                    throw IllegalStateException("No device found")
-                }
-            }
+            null -> { autoDetectPlatform(host, port) }
             "android" -> {
-                val dadb = Dadb.discover(host)
-                    ?: throw IllegalStateException("No Android devices found")
-
-                return Maestro.android(dadb)
+                createAndroid(host, port)
             }
             "ios" -> {
-                Maestro.ios(host, port)
+                createIos(host, port)
             }
             else -> {
                 throw IllegalStateException("Unknown platform: $platform")
+            }
+        }
+    }
+
+    private fun createAndroid(host: String?, port: Int?): Maestro {
+        val dadb = if (port != null) {
+            Dadb.create(host ?: defaultHost, port)
+        } else {
+            Dadb.discover(host ?: defaultHost)
+                ?: throw IllegalStateException("No android devices found.")
+        }
+
+        return Maestro.android(dadb)
+    }
+
+    private fun createIos(host: String?, port: Int?): Maestro {
+        return Maestro.ios(host ?: defaultHost, port ?: idbPort)
+    }
+
+    private fun autoDetectPlatform(host: String?, port: Int?): Maestro {
+        return try {
+            createAndroid(host, port)
+        } catch (_: Exception) {
+            try {
+                createIos(host, port)
+            } catch (_: Exception) {
+                throw IllegalStateException("No devices found. Select a platform by passing --platform <android|ios> for more details")
             }
         }
     }
