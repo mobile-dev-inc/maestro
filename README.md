@@ -98,7 +98,7 @@ appId: com.android.contacts
 
 <table>
 <tr>
-<th>flow_contacts_android.yaml</th>
+<th>flow_contacts_ios.yaml</th>
 <th></th>
 </tr>
 <tr>
