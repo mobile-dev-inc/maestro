@@ -81,6 +81,8 @@ appId: com.android.contacts
 
 <img src='./assets/add_contact_android.gif' height='400'>
 
+### iOS
+
 ```yaml
 # flow_contacts_ios.yaml
 
