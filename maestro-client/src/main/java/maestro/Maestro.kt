@@ -24,6 +24,7 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
 import maestro.UiElement.Companion.toUiElement
+import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
 import maestro.utils.ViewUtils
@@ -113,7 +114,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             ViewUtils
                 .refreshElement(hierarchyBeforeTap, element.treeNode)
                 ?.also { LOGGER.info("Refreshed element") }
-                ?.toUiElement()
+                ?.toUiElementOrNull()
                 ?: element
             ).bounds
             .center()
