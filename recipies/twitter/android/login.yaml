@@ -1,0 +1,6 @@
+appId: com.twitter.android
+name: Login
+---
+- launchApp:
+    clearState: true
+- tapOn: .*Log in
