@@ -31,6 +31,7 @@ data class ElementSelector(
     val rightOf: ElementSelector? = null,
     val containsChild: ElementSelector? = null,
     val optional: Boolean = false,
+    val traits: List<ElementTrait>? = null,
 ) {
 
     data class SizeSelector(

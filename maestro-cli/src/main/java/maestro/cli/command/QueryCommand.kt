@@ -21,7 +21,7 @@ package maestro.cli.command
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.ElementLookupPredicate
-import maestro.Predicates
+import maestro.Filters
 import maestro.cli.App
 import maestro.cli.util.MaestroFactory
 import maestro.orchestra.Orchestra
@@ -54,11 +54,11 @@ class QueryCommand : Runnable {
             val predicates = mutableListOf<ElementLookupPredicate>()
 
             text?.let {
-                predicates += Predicates.textMatches(it.toRegex(Orchestra.REGEX_OPTIONS))
+                predicates += Filters.textMatches(it.toRegex(Orchestra.REGEX_OPTIONS))
             }
 
             id?.let {
-                predicates += Predicates.idMatches(it.toRegex(Orchestra.REGEX_OPTIONS))
+                predicates += Filters.idMatches(it.toRegex(Orchestra.REGEX_OPTIONS))
             }
 
             if (predicates.isEmpty()) {
@@ -69,7 +69,7 @@ class QueryCommand : Runnable {
             }
 
             val elements = maestro.allElementsMatching(
-                Predicates.allOf(predicates)
+                Filters.allOf(predicates)
             )
 
             val mapper = jacksonObjectMapper()
