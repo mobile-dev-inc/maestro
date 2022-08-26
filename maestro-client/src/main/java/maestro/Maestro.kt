@@ -243,34 +243,6 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }?.toUiElementOrNull()
     }
 
-    private fun findClosestElement(
-        rootNode: TreeNode,
-        distanceFunc: (TreeNode) -> Float?
-    ): TreeNode? {
-        return rootNode
-            .aggregate()
-            .mapNotNull { node ->
-                distanceFunc(node)?.let { distance ->
-                    node to distance
-                }
-            }
-            .minByOrNull { (_, distance) -> distance }
-            ?.let { (node, _) -> node }
-    }
-
-    private fun findElementByPredicate(root: TreeNode, predicate: ElementLookupPredicate): TreeNode? {
-        if (predicate(root)) {
-            return root
-        }
-
-        root.children.forEach { node ->
-            findElementByPredicate(node, predicate)
-                ?.let { return@findElementByPredicate it }
-        }
-
-        return null
-    }
-
     fun allElementsMatching(filter: ElementFilter): List<TreeNode> {
         return filter(viewHierarchy().aggregate())
     }
