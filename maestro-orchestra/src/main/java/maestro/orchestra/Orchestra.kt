@@ -26,8 +26,8 @@ import maestro.Maestro
 import maestro.MaestroException
 import maestro.MaestroTimer
 import maestro.UiElement
-import maestro.orchestra.predicate.FilterWithDescription
-import maestro.orchestra.predicate.TraitFilters
+import maestro.orchestra.filter.FilterWithDescription
+import maestro.orchestra.filter.TraitFilters
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
 import java.nio.file.Files

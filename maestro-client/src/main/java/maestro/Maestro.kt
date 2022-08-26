@@ -271,25 +271,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return null
     }
 
-    fun allElementsMatching(predicate: ElementLookupPredicate): List<TreeNode> {
-        return allElementsMatching(
-            driver.contentDescriptor(),
-            predicate
-        )
-    }
-
-    private fun allElementsMatching(node: TreeNode, predicate: ElementLookupPredicate): List<TreeNode> {
-        val result = mutableListOf<TreeNode>()
-
-        if (predicate(node)) {
-            result += node
-        }
-
-        node.children.forEach { child ->
-            result += allElementsMatching(child, predicate)
-        }
-
-        return result
+    fun allElementsMatching(filter: ElementFilter): List<TreeNode> {
+        return filter(viewHierarchy().aggregate())
     }
 
     private fun waitForAppToSettle() {

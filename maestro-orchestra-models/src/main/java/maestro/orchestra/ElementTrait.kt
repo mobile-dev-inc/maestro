@@ -1,7 +1,7 @@
 package maestro.orchestra
 
-enum class ElementTrait {
-    TEXT,
-    SQUARE,
-    LONG_TEXT,
+enum class ElementTrait(val description: String) {
+    TEXT("Has text"),
+    SQUARE("Is square"),
+    LONG_TEXT("Has long text"),
 }

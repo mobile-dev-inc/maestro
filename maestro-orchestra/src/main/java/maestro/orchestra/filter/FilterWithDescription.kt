@@ -1,4 +1,4 @@
-package maestro.orchestra.predicate
+package maestro.orchestra.filter
 
 import maestro.ElementFilter
 

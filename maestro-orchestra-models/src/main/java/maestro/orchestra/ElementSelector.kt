@@ -92,6 +92,12 @@ data class ElementSelector(
             descriptions.add(description)
         }
 
+        traits?.let {
+            descriptions.add(
+                "Has traits: ${traits.joinToString(", ") { it.description }}"
+            )
+        }
+
         val combined = descriptions.joinToString(", ")
 
         return if (optional) {

@@ -1,4 +1,4 @@
-package maestro.orchestra.predicate
+package maestro.orchestra.filter
 
 import maestro.Filters
 import maestro.Filters.asFilter
@@ -11,15 +11,15 @@ object TraitFilters {
     ): FilterWithDescription {
         return when (trait) {
             ElementTrait.TEXT -> FilterWithDescription(
-                "Has text",
+                trait.description,
                 Filters.hasText().asFilter()
             )
             ElementTrait.SQUARE -> FilterWithDescription(
-                "Is square",
+                trait.description,
                 Filters.isSquare().asFilter()
             )
             ElementTrait.LONG_TEXT -> FilterWithDescription(
-                "Has long text",
+                trait.description,
                 Filters.hasLongText().asFilter()
             )
         }
