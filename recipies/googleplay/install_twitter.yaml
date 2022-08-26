@@ -6,6 +6,8 @@ name: Install Twitter
 ---
 - launchApp
 - tapOn: Search for apps & games
-- inputText: Twit
-- tapOn: twitter
+- inputText: Twitter
+- tapOn:
+    text: twitter
+    index: 1
 - tapOn: Install
