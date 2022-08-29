@@ -75,6 +75,9 @@ object TestRunner {
                             null
                         }
 
+                        previousCommands = commands
+                        previousInitFlow = initFlow
+
                         previousResult = runCatching(view) {
                             MaestroCommandRunner.runCommands(
                                 maestro,
@@ -82,12 +85,7 @@ object TestRunner {
                                 commands,
                                 cachedAppState = cachedAppState,
                             )
-                        }
-                            .onSuccess {
-                                previousCommands = commands
-                                previousInitFlow = initFlow
-                            }
-                            .get()
+                        }.get()
                     }
                 }
 
