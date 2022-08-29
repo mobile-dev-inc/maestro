@@ -107,7 +107,7 @@ object TestRunner {
                 is SyntaxError -> "Could not parse Flow file:\n\n${e.message}"
                 is NoInputException -> "No commands found in Flow file"
                 is InvalidInitFlowFile -> "initFlow file is invalid: ${e.initFlowPath}"
-                else -> e.stackTraceToString()
+                else -> throw e
             }
 
             view.setState(
