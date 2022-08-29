@@ -1,5 +1,12 @@
 package maestro.cli.runner
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getOr
+import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import maestro.Maestro
 import maestro.orchestra.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
@@ -29,7 +36,7 @@ object TestRunner {
                 cachedAppState = null
             )
         }
-        return if (result?.flowSuccess == true) 0 else 1
+        return if (result.get()?.flowSuccess == true) 0 else 1
     }
 
     fun runContinuous(
@@ -48,17 +55,17 @@ object TestRunner {
         var ongoingTest: Thread? = null
         do {
             val watchFiles = runCatching(view) {
+                ongoingTest?.apply {
+                    interrupt()
+                    join()
+                }
+
                 val commands = YamlCommandReader.readCommands(flowFile.toPath())
                     .map { it.injectEnv(env) }
                 val initFlow = getInitFlow(commands)
 
                 // Restart the flow if anything has changed
                 if (commands != previousCommands || initFlow != previousInitFlow) {
-                    ongoingTest?.apply {
-                        interrupt()
-                        join()
-                    }
-
                     ongoingTest = thread {
                         // If previous init flow was successful and there were no changes to the init flow,
                         // then reuse cached app state (and skip the init commands)
@@ -68,9 +75,6 @@ object TestRunner {
                             null
                         }
 
-                        previousCommands = commands
-                        previousInitFlow = initFlow
-
                         previousResult = runCatching(view) {
                             MaestroCommandRunner.runCommands(
                                 maestro,
@@ -79,11 +83,20 @@ object TestRunner {
                                 cachedAppState = cachedAppState,
                             )
                         }
+                            .onSuccess {
+                                previousCommands = commands
+                                previousInitFlow = initFlow
+                            }
+                            .get()
                     }
                 }
 
                 YamlCommandReader.getWatchFiles(flowFile.toPath())
-            } ?: listOf(flowFile)
+            }
+                .onFailure {
+                    previousCommands = null
+                }
+                .getOr(listOf(flowFile))
 
             if (CliWatcher.waitForFileChangeOrEnter(fileWatcher, watchFiles) == CliWatcher.SignalType.ENTER) {
                 // On ENTER force re-run of flow even if commands have not changed
@@ -99,15 +112,15 @@ object TestRunner {
     private fun <T> runCatching(
         view: ResultView,
         block: () -> T,
-    ): T? {
+    ): Result<T, Exception> {
         return try {
-            block()
+            Ok(block())
         } catch (e: Exception) {
             val message = when (e) {
                 is SyntaxError -> "Could not parse Flow file:\n\n${e.message}"
                 is NoInputException -> "No commands found in Flow file"
                 is InvalidInitFlowFile -> "initFlow file is invalid: ${e.initFlowPath}"
-                else -> throw e
+                else -> e.stackTraceToString()
             }
 
             view.setState(
@@ -115,7 +128,7 @@ object TestRunner {
                     message = message
                 )
             )
-            return null
+            return Err(e)
         }
     }
 }
