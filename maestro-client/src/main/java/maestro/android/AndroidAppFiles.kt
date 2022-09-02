@@ -39,9 +39,10 @@ object AndroidAppFiles {
 
     fun push(dadb: Dadb, packageName: String, appFilesZip: File) {
         val remoteZip = "/data/local/tmp/app.zip"
+        val appDataDir = "/data/data/"
         dadb.push(appFilesZip, remoteZip)
         try {
-            shell(dadb, "run-as $packageName unzip -o -d / $remoteZip")
+            shell(dadb, "run-as $packageName unzip -o -d $appDataDir $remoteZip")
         } finally {
             shell(dadb, "rm $remoteZip")
         }
@@ -55,10 +56,9 @@ object AndroidAppFiles {
 
     private fun listRemoteFiles(dadb: Dadb, packageName: String, options: String): List<String> {
         val result = shell(dadb, "run-as $packageName find $options")
-        val appDataDir = "/data/data/$packageName"
         return result.lines()
             .filter { it.isNotBlank() }
-            .map { "$appDataDir/${it.removePrefix("./")}" }
+            .map { "$packageName/${it.removePrefix("./")}" }
     }
 
     private fun shell(dadb: Dadb, command: String): String {
