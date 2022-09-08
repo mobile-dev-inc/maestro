@@ -7,12 +7,13 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.onFailure
 import maestro.Maestro
-import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
-import maestro.orchestra.error.NoInputException
 import maestro.orchestra.OrchestraAppState
+import maestro.orchestra.error.InvalidInitFlowFile
+import maestro.orchestra.error.NoInputException
 import maestro.orchestra.error.SyntaxError
+import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
 import kotlin.concurrent.thread
@@ -117,6 +118,7 @@ object TestRunner {
                 is SyntaxError -> "Could not parse Flow file:\n\n${e.message}"
                 is NoInputException -> "No commands found in Flow file"
                 is InvalidInitFlowFile -> "initFlow file is invalid: ${e.initFlowPath}"
+                is UnicodeNotSupportedError -> "Unicode character input is not supported: ${e.text}"
                 else -> e.stackTraceToString()
             }
 
