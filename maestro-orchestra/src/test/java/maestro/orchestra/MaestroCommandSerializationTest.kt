@@ -15,7 +15,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize TapOnElementCommand`() {
         // given
         val command = MaestroCommand(
-            tapOnElement = TapOnElementCommand(
+            TapOnElementCommand(
                 selector = ElementSelector(textRegex = "[A-f0-9]"),
                 retryIfNoChange = false,
                 waitUntilVisible = true,
@@ -49,7 +49,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize TapOnPointCommand`() {
         // given
         val command = MaestroCommand(
-            tapOnPoint = TapOnPointCommand(
+            TapOnPointCommand(
                 x = 100,
                 y = 100,
                 retryIfNoChange = false,
@@ -82,7 +82,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize ScrollCommand`() {
         // given
         val command = MaestroCommand(
-            scrollCommand = ScrollCommand()
+            ScrollCommand()
         )
 
         // when
@@ -103,7 +103,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize SwipeCommand`() {
         // given
         val command = MaestroCommand(
-            swipeCommand = SwipeCommand(
+            SwipeCommand(
                 Point(10, 10),
                 Point(100, 100),
             )
@@ -136,7 +136,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize BackPressCommand`() {
         // given
         val command = MaestroCommand(
-            backPressCommand = BackPressCommand()
+            BackPressCommand()
         )
 
         // when
@@ -157,7 +157,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize AssertCommand`() {
         // given
         val command = MaestroCommand(
-            assertCommand = AssertCommand(
+            AssertCommand(
                 ElementSelector(textRegex = "[A-f0-9]"),
                 ElementSelector(textRegex = "\\s")
             )
@@ -190,7 +190,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize InputTextCommand`() {
         // given
         val command = MaestroCommand(
-            inputTextCommand = InputTextCommand("Hello, world!")
+            InputTextCommand("Hello, world!")
         )
 
         // when
@@ -213,7 +213,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize LaunchAppCommand`() {
         // given
         val command = MaestroCommand(
-            launchAppCommand = LaunchAppCommand("com.twitter.android")
+            LaunchAppCommand("com.twitter.android")
         )
 
         // when
@@ -236,7 +236,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize ApplyConfigurationCommand`() {
         // given
         val command = MaestroCommand(
-            applyConfigurationCommand = ApplyConfigurationCommand(
+            ApplyConfigurationCommand(
                 MaestroConfig(
                     appId = "com.twitter.android",
                     name = "Twitter",
@@ -268,7 +268,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize OpenLinkCommand`() {
         // given
         val command = MaestroCommand(
-            openLinkCommand = OpenLinkCommand("https://mobile.dev")
+            OpenLinkCommand("https://mobile.dev")
         )
 
         // when
@@ -291,7 +291,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize PressKeyCommand`() {
         // given
         val command = MaestroCommand(
-            pressKeyCommand = PressKeyCommand(KeyCode.ENTER)
+            PressKeyCommand(KeyCode.ENTER)
         )
 
         // when
@@ -314,7 +314,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize EraseTextCommand`() {
         // given
         val command = MaestroCommand(
-            eraseTextCommand = EraseTextCommand(128)
+            EraseTextCommand(128)
         )
 
         // when

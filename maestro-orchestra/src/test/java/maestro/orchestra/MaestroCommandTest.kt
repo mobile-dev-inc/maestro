@@ -7,7 +7,7 @@ internal class MaestroCommandTest {
     @Test
     fun `description (no commands)`() {
         // given
-        val maestroCommand = MaestroCommand()
+        val maestroCommand = MaestroCommand(null)
 
         // when
         val description = maestroCommand.description()
@@ -20,7 +20,7 @@ internal class MaestroCommandTest {
     @Test
     fun `description (at least one command)`() {
         // given
-        val maestroCommand = MaestroCommand(backPressCommand = BackPressCommand())
+        val maestroCommand = MaestroCommand(BackPressCommand())
 
         // when
         val description = maestroCommand.description()
