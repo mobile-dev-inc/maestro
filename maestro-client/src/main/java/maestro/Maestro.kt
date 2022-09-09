@@ -28,7 +28,6 @@ import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
-import maestro.utils.ViewHierarchy
 import org.slf4j.LoggerFactory
 import java.io.File
 

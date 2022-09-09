@@ -17,10 +17,8 @@
  *
  */
 
-package maestro.utils
+package maestro
 
-import maestro.Driver
-import maestro.TreeNode
 import maestro.UiElement.Companion.toUiElement
 
 @JvmInline
