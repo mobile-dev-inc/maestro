@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.truth.Truth.assertThat
+import maestro.KeyCode
 import maestro.Point
 import org.intellij.lang.annotations.Language
 import org.junit.Test
@@ -279,6 +280,29 @@ internal class MaestroCommandSerializationTest {
             {
               "openLinkCommand" : {
                 "link" : "https://mobile.dev"
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
+    @Test
+    fun `serialize PressKeyCommand`() {
+        // given
+        val command = MaestroCommand(
+            pressKeyCommand = PressKeyCommand(KeyCode.ENTER)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "pressKeyCommand" : {
+                "code" : "ENTER"
               }
             }
           """.trimIndent()
