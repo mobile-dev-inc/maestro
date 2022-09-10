@@ -185,6 +185,29 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize InputTextCommand`() {
+        // given
+        val command = MaestroCommand(
+            inputTextCommand = InputTextCommand("Hello, world!")
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // the
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputTextCommand" : {
+                "text" : "Hello, world!"
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
