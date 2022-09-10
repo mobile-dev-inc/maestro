@@ -43,6 +43,39 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize TapOnPointCommand`() {
+        // given
+        val command = MaestroCommand(
+            tapOnPoint = TapOnPointCommand(
+                x = 100,
+                y = 100,
+                retryIfNoChange = false,
+                waitUntilVisible = true,
+                longPress = false,
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // the
+        @Language("json")
+        val expectedJson = """
+            {
+              "tapOnPoint" : {
+                "x" : 100,
+                "y" : 100,
+                "retryIfNoChange" : false,
+                "waitUntilVisible" : true,
+                "longPress" : false
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
