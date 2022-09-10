@@ -263,6 +263,29 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize OpenLinkCommand`() {
+        // given
+        val command = MaestroCommand(
+            openLinkCommand = OpenLinkCommand("https://mobile.dev")
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "openLinkCommand" : {
+                "link" : "https://mobile.dev"
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
