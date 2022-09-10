@@ -310,6 +310,29 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize EraseTextCommand`() {
+        // given
+        val command = MaestroCommand(
+            eraseTextCommand = EraseTextCommand(128)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "eraseTextCommand" : {
+                "charactersToErase" : 128
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
