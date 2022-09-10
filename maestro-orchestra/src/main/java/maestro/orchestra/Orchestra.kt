@@ -115,7 +115,7 @@ class Orchestra(
     }
 
     private fun executeCommand(command: Command?) {
-        when (command) {
+        return when (command) {
             is TapOnElementCommand -> {
                 tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
             }
@@ -129,6 +129,7 @@ class Orchestra(
             is OpenLinkCommand -> openLinkCommand(command)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
+            is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
     }
 
