@@ -152,6 +152,39 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize AssertCommand`() {
+        // given
+        val command = MaestroCommand(
+            assertCommand = AssertCommand(
+                ElementSelector(textRegex = "[A-f0-9]"),
+                ElementSelector(textRegex = "\\s")
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // the
+        @Language("json")
+        val expectedJson = """
+            {
+              "assertCommand" : {
+                "visible" : {
+                  "textRegex" : "[A-f0-9]",
+                  "optional" : false
+                },
+                "notVisible" : {
+                  "textRegex" : "\\s",
+                  "optional" : false
+                }
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
