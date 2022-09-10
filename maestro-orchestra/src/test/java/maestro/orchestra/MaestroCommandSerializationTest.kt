@@ -25,7 +25,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -60,7 +60,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -87,7 +87,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -111,7 +111,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -141,7 +141,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -165,7 +165,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
@@ -195,7 +195,7 @@ internal class MaestroCommandSerializationTest {
         // when
         val serializedCommandJson = command.toJson()
 
-        // the
+        // then
         @Language("json")
         val expectedJson = """
             {
