@@ -24,6 +24,12 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
+/**
+ * The Mobile.dev platform uses this class in the backend and hence the custom
+ * serialization logic. The earlier implementation of this class had a nullable field for
+ * each command. Sometime in the future we may move this serialization logic to the backend
+ * itself, where it would be more relevant.
+ */
 @JsonSerialize(using = MaestroCommandSerializer::class)
 data class MaestroCommand(
     val command: Command?,
