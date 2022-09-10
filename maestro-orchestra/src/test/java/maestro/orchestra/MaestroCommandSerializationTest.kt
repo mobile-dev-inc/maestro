@@ -131,6 +131,27 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize BackPressCommand`() {
+        // given
+        val command = MaestroCommand(
+            backPressCommand = BackPressCommand()
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // the
+        @Language("json")
+        val expectedJson = """
+            {
+              "backPressCommand" : { }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
