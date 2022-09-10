@@ -231,6 +231,38 @@ internal class MaestroCommandSerializationTest {
             .isEqualTo(expectedJson)
     }
 
+    @Test
+    fun `serialize ApplyConfigurationCommand`() {
+        // given
+        val command = MaestroCommand(
+            applyConfigurationCommand = ApplyConfigurationCommand(
+                MaestroConfig(
+                    appId = "com.twitter.android",
+                    name = "Twitter",
+                )
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "applyConfigurationCommand" : {
+                "config" : {
+                  "appId" : "com.twitter.android",
+                  "name" : "Twitter",
+                  "ext" : { }
+                }
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
     private fun MaestroCommand.toJson(): String =
         objectWriter().writeValueAsString(this)
 
