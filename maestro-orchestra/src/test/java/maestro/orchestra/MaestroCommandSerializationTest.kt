@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.truth.Truth.assertThat
+import maestro.Point
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 
@@ -91,6 +92,39 @@ internal class MaestroCommandSerializationTest {
         val expectedJson = """
             {
               "scrollCommand" : { }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
+    @Test
+    fun `serialize SwipeCommand`() {
+        // given
+        val command = MaestroCommand(
+            swipeCommand = SwipeCommand(
+                Point(10, 10),
+                Point(100, 100),
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // the
+        @Language("json")
+        val expectedJson = """
+            {
+              "swipeCommand" : {
+                "startPoint" : {
+                  "x" : 10,
+                  "y" : 10
+                },
+                "endPoint" : {
+                  "x" : 100,
+                  "y" : 100
+                }
+              }
             }
           """.trimIndent()
         assertThat(serializedCommandJson)
