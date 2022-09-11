@@ -128,14 +128,8 @@ class Orchestra(
             is LaunchAppCommand -> command.execute(OrchestraContext(maestro))
             is OpenLinkCommand -> command.execute(OrchestraContext(maestro))
             is PressKeyCommand -> command.execute(OrchestraContext(maestro))
-            is EraseTextCommand -> eraseTextCommand(command)
+            is EraseTextCommand -> command.execute(OrchestraContext(maestro))
             is ApplyConfigurationCommand, null -> { /* no-op */ }
-        }
-    }
-
-    private fun eraseTextCommand(command: EraseTextCommand) {
-        repeat(command.charactersToErase) {
-            maestro.pressKey(KeyCode.BACKSPACE)
         }
     }
 

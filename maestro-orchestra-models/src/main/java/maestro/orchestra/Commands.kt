@@ -292,4 +292,9 @@ data class EraseTextCommand(
         return this
     }
 
+    override fun execute(context: Context) {
+        repeat(charactersToErase) {
+            context.maestro.pressKey(KeyCode.BACKSPACE)
+        }
+    }
 }
