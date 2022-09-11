@@ -21,6 +21,7 @@ package maestro.orchestra
 
 import maestro.KeyCode
 import maestro.MaestroException
+import maestro.MaestroTimer
 import maestro.Point
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.util.Env.injectEnv
@@ -195,6 +196,38 @@ data class AssertCommand(
             visible = visible?.injectSecrets(env),
             notVisible = notVisible?.injectSecrets(env),
         )
+    }
+
+    override fun execute(context: Context) {
+        visible?.let { assertVisible(context, it) }
+        notVisible?.let { assertNotVisible(context, it) }
+    }
+
+    private fun assertVisible(context: Context, selector: ElementSelector) {
+        context.findElement(selector) // Throws if element is not found
+    }
+
+    private fun assertNotVisible(context: Context, selector: ElementSelector) {
+        val result = MaestroTimer.withTimeout(context.lookupTimeoutMs) {
+            try {
+                context.findElement(selector, timeoutMs = 2000L)
+
+                // If we got to that point, the element is still visible.
+                // Returning null to keep waiting.
+                null
+            } catch (ignored: MaestroException.ElementNotFound) {
+                // Element was not visible, as we expected
+                true
+            }
+        }
+
+        if (result != true) {
+            // If we got to this point, it means that element is actually visible
+            throw MaestroException.AssertionFailure(
+                "${selector.description()} is visible",
+                context.maestro.viewHierarchy().root,
+            )
+        }
     }
 }
 

@@ -20,8 +20,6 @@
 package maestro.orchestra
 
 import maestro.Maestro
-import maestro.MaestroException
-import maestro.MaestroTimer
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
 import java.nio.file.Files
@@ -29,7 +27,7 @@ import java.nio.file.Files
 class Orchestra(
     private val maestro: Maestro,
     private val stateDir: File? = null,
-    private val lookupTimeoutMs: Long = 15000L,
+    lookupTimeoutMs: Long = 15000L,
     optionalLookupTimeoutMs: Long = 3000L,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
@@ -112,7 +110,7 @@ class Orchestra(
             is BackPressCommand -> command.execute(context)
             is ScrollCommand -> command.execute(context)
             is SwipeCommand -> command.execute(context)
-            is AssertCommand -> assertCommand(command)
+            is AssertCommand -> command.execute(context)
             is InputTextCommand -> command.execute(context)
             is LaunchAppCommand -> command.execute(context)
             is OpenLinkCommand -> command.execute(context)
@@ -120,38 +118,6 @@ class Orchestra(
             is EraseTextCommand -> command.execute(context)
             is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
-    }
-
-    private fun assertCommand(command: AssertCommand) {
-        command.visible?.let { assertVisible(it) }
-        command.notVisible?.let { assertNotVisible(it) }
-    }
-
-    private fun assertNotVisible(selector: ElementSelector, timeoutMs: Long = lookupTimeoutMs) {
-        val result = MaestroTimer.withTimeout(timeoutMs) {
-            try {
-                context.findElement(selector, timeoutMs = 2000L)
-
-                // If we got to that point, the element is still visible.
-                // Returning null to keep waiting.
-                null
-            } catch (ignored: MaestroException.ElementNotFound) {
-                // Element was not visible, as we expected
-                true
-            }
-        }
-
-        if (result != true) {
-            // If we got to this point, it means that element is actually visible
-            throw MaestroException.AssertionFailure(
-                "${selector.description()} is visible",
-                maestro.viewHierarchy().root,
-            )
-        }
-    }
-
-    private fun assertVisible(selector: ElementSelector) {
-        context.findElement(selector) // Throws if element is not found
     }
 
     companion object {

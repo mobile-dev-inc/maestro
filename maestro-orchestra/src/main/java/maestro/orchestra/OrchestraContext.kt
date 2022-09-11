@@ -14,7 +14,7 @@ import maestro.orchestra.filter.TraitFilters
 class OrchestraContext(
     maestro: Maestro,
     private val optionalLookupTimeoutMs: Long,
-    private val lookupTimeoutMs: Long,
+    override val lookupTimeoutMs: Long,
 ) : Context(maestro) {
     override fun findElement(
         selector: ElementSelector,
