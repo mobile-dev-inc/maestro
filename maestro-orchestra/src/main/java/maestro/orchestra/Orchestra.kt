@@ -30,12 +30,13 @@ class Orchestra(
     private val maestro: Maestro,
     private val stateDir: File? = null,
     private val lookupTimeoutMs: Long = 15000L,
-    private val optionalLookupTimeoutMs: Long = 3000L,
+    optionalLookupTimeoutMs: Long = 3000L,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit = { _, _, e -> throw e },
 ) {
+    private val context = OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs)
 
     /**
      * If initState is provided, initialize app disk state with the provided OrchestraAppState and skip
@@ -109,16 +110,16 @@ class Orchestra(
             is TapOnElementCommand -> {
                 tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
             }
-            is TapOnPointCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is BackPressCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is ScrollCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is SwipeCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
+            is TapOnPointCommand -> command.execute(context)
+            is BackPressCommand -> command.execute(context)
+            is ScrollCommand -> command.execute(context)
+            is SwipeCommand -> command.execute(context)
             is AssertCommand -> assertCommand(command)
-            is InputTextCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is LaunchAppCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is OpenLinkCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is PressKeyCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
-            is EraseTextCommand -> command.execute(OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs))
+            is InputTextCommand -> command.execute(context)
+            is LaunchAppCommand -> command.execute(context)
+            is OpenLinkCommand -> command.execute(context)
+            is PressKeyCommand -> command.execute(context)
+            is EraseTextCommand -> command.execute(context)
             is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
     }
@@ -131,7 +132,7 @@ class Orchestra(
     private fun assertNotVisible(selector: ElementSelector, timeoutMs: Long = lookupTimeoutMs) {
         val result = MaestroTimer.withTimeout(timeoutMs) {
             try {
-                OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs).findElement(selector, timeoutMs = 2000L)
+                context.findElement(selector, timeoutMs = 2000L)
 
                 // If we got to that point, the element is still visible.
                 // Returning null to keep waiting.
@@ -152,7 +153,7 @@ class Orchestra(
     }
 
     private fun assertVisible(selector: ElementSelector) {
-        OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs).findElement(selector) // Throws if element is not found
+        context.findElement(selector) // Throws if element is not found
     }
 
     private fun tapOnElement(
@@ -161,7 +162,7 @@ class Orchestra(
         waitUntilVisible: Boolean,
     ) {
         try {
-            val element = OrchestraContext(maestro, optionalLookupTimeoutMs, lookupTimeoutMs).findElement(command.selector)
+            val element = context.findElement(command.selector)
             maestro.tap(
                 element,
                 retryIfNoChange,
