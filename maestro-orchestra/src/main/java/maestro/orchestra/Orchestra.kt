@@ -125,7 +125,7 @@ class Orchestra(
             is SwipeCommand -> command.execute(OrchestraContext(maestro))
             is AssertCommand -> assertCommand(command)
             is InputTextCommand -> inputTextCommand(command)
-            is LaunchAppCommand -> launchAppCommand(command)
+            is LaunchAppCommand -> command.execute(OrchestraContext(maestro))
             is OpenLinkCommand -> openLinkCommand(command)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
@@ -145,22 +145,6 @@ class Orchestra(
 
     private fun openLinkCommand(command: OpenLinkCommand) {
         maestro.openLink(command.link)
-    }
-
-    private fun launchAppCommand(it: LaunchAppCommand) {
-        try {
-            if (it.clearState == true) {
-                maestro.clearAppState(it.appId)
-            }
-        } catch (e: Exception) {
-            throw MaestroException.UnableToClearState("Unable to clear state for app ${it.appId}")
-        }
-
-        try {
-            maestro.launchApp(it.appId)
-        } catch (e: Exception) {
-            throw MaestroException.UnableToLaunchApp("Unable to launch app ${it.appId}: ${e.message}")
-        }
     }
 
     private fun inputTextCommand(command: InputTextCommand) {

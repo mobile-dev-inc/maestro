@@ -21,6 +21,7 @@ package maestro.orchestra
 
 import maestro.Context
 import maestro.KeyCode
+import maestro.MaestroException
 import maestro.Point
 import maestro.orchestra.util.Env.injectEnv
 
@@ -210,6 +211,22 @@ data class LaunchAppCommand(
 
     override fun injectEnv(env: Map<String, String>): LaunchAppCommand {
         return this
+    }
+
+    override fun execute(context: Context) {
+        try {
+            if (clearState == true) {
+                context.maestro.clearAppState(appId)
+            }
+        } catch (e: Exception) {
+            throw MaestroException.UnableToClearState("Unable to clear state for app ${appId}")
+        }
+
+        try {
+            context.maestro.launchApp(appId)
+        } catch (e: Exception) {
+            throw MaestroException.UnableToLaunchApp("Unable to launch app ${appId}: ${e.message}")
+        }
     }
 }
 
