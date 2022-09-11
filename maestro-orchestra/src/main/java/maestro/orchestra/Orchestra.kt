@@ -93,7 +93,7 @@ class Orchestra(
             .forEachIndexed { index, command ->
                 onCommandStart(index, command)
                 try {
-                    executeCommand(command.command)
+                    command.command?.execute(context)
                     onCommandComplete(index, command)
                 } catch (e: Throwable) {
                     onCommandFailed(index, command, e)
@@ -101,23 +101,6 @@ class Orchestra(
                 }
             }
         return true
-    }
-
-    private fun executeCommand(command: Command?) {
-        return when (command) {
-            is TapOnElementCommand -> command.execute(context)
-            is TapOnPointCommand -> command.execute(context)
-            is BackPressCommand -> command.execute(context)
-            is ScrollCommand -> command.execute(context)
-            is SwipeCommand -> command.execute(context)
-            is AssertCommand -> command.execute(context)
-            is InputTextCommand -> command.execute(context)
-            is LaunchAppCommand -> command.execute(context)
-            is OpenLinkCommand -> command.execute(context)
-            is PressKeyCommand -> command.execute(context)
-            is EraseTextCommand -> command.execute(context)
-            is ApplyConfigurationCommand, null -> { /* no-op */ }
-        }
     }
 
     companion object {
