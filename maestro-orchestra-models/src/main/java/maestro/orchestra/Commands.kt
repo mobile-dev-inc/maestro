@@ -19,7 +19,6 @@
 
 package maestro.orchestra
 
-import maestro.Context
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Point
@@ -128,6 +127,23 @@ data class TapOnElementCommand(
         return copy(
             selector = selector.injectSecrets(env),
         )
+    }
+
+    override fun execute(context: Context) {
+        try {
+            val element = context.findElement(selector)
+            context.maestro.tap(
+                element,
+                retryIfNoChange ?: true,
+                waitUntilVisible ?: true,
+                longPress ?: false,
+            )
+        } catch (e: MaestroException.ElementNotFound) {
+
+            if (!selector.optional) {
+                throw e
+            }
+        }
     }
 }
 

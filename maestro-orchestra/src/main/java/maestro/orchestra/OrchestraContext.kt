@@ -1,6 +1,5 @@
 package maestro.orchestra
 
-import maestro.Context
 import maestro.DeviceInfo
 import maestro.ElementFilter
 import maestro.Filters
@@ -17,9 +16,9 @@ class OrchestraContext(
     private val optionalLookupTimeoutMs: Long,
     private val lookupTimeoutMs: Long,
 ) : Context(maestro) {
-    fun findElement(
+    override fun findElement(
         selector: ElementSelector,
-        timeoutMs: Long? = null
+        timeoutMs: Long?
     ): UiElement {
         val timeout = timeoutMs
             ?: if (selector.optional) {

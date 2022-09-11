@@ -107,9 +107,7 @@ class Orchestra(
 
     private fun executeCommand(command: Command?) {
         return when (command) {
-            is TapOnElementCommand -> {
-                tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
-            }
+            is TapOnElementCommand -> command.execute(context)
             is TapOnPointCommand -> command.execute(context)
             is BackPressCommand -> command.execute(context)
             is ScrollCommand -> command.execute(context)
@@ -154,27 +152,6 @@ class Orchestra(
 
     private fun assertVisible(selector: ElementSelector) {
         context.findElement(selector) // Throws if element is not found
-    }
-
-    private fun tapOnElement(
-        command: TapOnElementCommand,
-        retryIfNoChange: Boolean,
-        waitUntilVisible: Boolean,
-    ) {
-        try {
-            val element = context.findElement(command.selector)
-            maestro.tap(
-                element,
-                retryIfNoChange,
-                waitUntilVisible,
-                command.longPress ?: false,
-            )
-        } catch (e: MaestroException.ElementNotFound) {
-
-            if (!command.selector.optional) {
-                throw e
-            }
-        }
     }
 
     companion object {
