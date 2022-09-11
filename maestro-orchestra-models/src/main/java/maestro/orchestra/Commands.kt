@@ -23,6 +23,7 @@ import maestro.Context
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Point
+import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.util.Env.injectEnv
 
 sealed interface Command {
@@ -193,6 +194,17 @@ data class InputTextCommand(
         return copy(
             text = text.injectEnv(env)
         )
+    }
+
+    override fun execute(context: Context) {
+        val isAscii = Charsets.US_ASCII.newEncoder()
+            .canEncode(text)
+
+        if (!isAscii) {
+            throw UnicodeNotSupportedError(text)
+        }
+
+        context.maestro.inputText(text)
     }
 }
 

@@ -23,13 +23,11 @@ import maestro.DeviceInfo
 import maestro.ElementFilter
 import maestro.Filters
 import maestro.Filters.asFilter
-import maestro.KeyCode
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.MaestroTimer
 import maestro.TreeNode
 import maestro.UiElement
-import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
 import maestro.orchestra.yaml.YamlCommandReader
@@ -124,24 +122,13 @@ class Orchestra(
             is ScrollCommand -> command.execute(OrchestraContext(maestro))
             is SwipeCommand -> command.execute(OrchestraContext(maestro))
             is AssertCommand -> assertCommand(command)
-            is InputTextCommand -> inputTextCommand(command)
+            is InputTextCommand -> command.execute(OrchestraContext(maestro))
             is LaunchAppCommand -> command.execute(OrchestraContext(maestro))
             is OpenLinkCommand -> command.execute(OrchestraContext(maestro))
             is PressKeyCommand -> command.execute(OrchestraContext(maestro))
             is EraseTextCommand -> command.execute(OrchestraContext(maestro))
             is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
-    }
-
-    private fun inputTextCommand(command: InputTextCommand) {
-        val isAscii = Charsets.US_ASCII.newEncoder()
-            .canEncode(command.text)
-
-        if (!isAscii) {
-            throw UnicodeNotSupportedError(command.text)
-        }
-
-        maestro.inputText(command.text)
     }
 
     private fun assertCommand(command: AssertCommand) {
