@@ -127,7 +127,7 @@ class Orchestra(
             is InputTextCommand -> inputTextCommand(command)
             is LaunchAppCommand -> command.execute(OrchestraContext(maestro))
             is OpenLinkCommand -> command.execute(OrchestraContext(maestro))
-            is PressKeyCommand -> pressKeyCommand(command)
+            is PressKeyCommand -> command.execute(OrchestraContext(maestro))
             is EraseTextCommand -> eraseTextCommand(command)
             is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
@@ -137,10 +137,6 @@ class Orchestra(
         repeat(command.charactersToErase) {
             maestro.pressKey(KeyCode.BACKSPACE)
         }
-    }
-
-    private fun pressKeyCommand(command: PressKeyCommand) {
-        maestro.pressKey(command.code)
     }
 
     private fun inputTextCommand(command: InputTextCommand) {

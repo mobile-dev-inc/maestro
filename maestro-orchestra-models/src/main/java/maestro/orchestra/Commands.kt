@@ -275,6 +275,9 @@ data class PressKeyCommand(
         return this
     }
 
+    override fun execute(context: Context) {
+        context.maestro.pressKey(code)
+    }
 }
 
 data class EraseTextCommand(
