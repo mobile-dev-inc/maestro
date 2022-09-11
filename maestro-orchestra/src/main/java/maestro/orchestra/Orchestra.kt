@@ -119,7 +119,7 @@ class Orchestra(
             is TapOnElementCommand -> {
                 tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
             }
-            is TapOnPointCommand -> tapOnPoint(command, command.retryIfNoChange ?: true)
+            is TapOnPointCommand -> command.execute(OrchestraContext(maestro))
             is BackPressCommand -> maestro.backPress()
             is ScrollCommand -> maestro.scrollVertical()
             is SwipeCommand -> swipeCommand(command)
@@ -225,18 +225,6 @@ class Orchestra(
                 throw e
             }
         }
-    }
-
-    private fun tapOnPoint(
-        command: TapOnPointCommand,
-        retryIfNoChange: Boolean,
-    ) {
-        maestro.tap(
-            command.x,
-            command.y,
-            retryIfNoChange,
-            command.longPress ?: false,
-        )
     }
 
     private fun findElement(

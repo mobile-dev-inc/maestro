@@ -19,6 +19,7 @@
 
 package maestro.orchestra
 
+import maestro.Context
 import maestro.KeyCode
 import maestro.Point
 import maestro.orchestra.util.Env.injectEnv
@@ -29,6 +30,9 @@ sealed interface Command {
 
     fun injectEnv(env: Map<String, String>): Command
 
+    fun execute(context: Context) {
+        /* default implementation until the contract is fulfilled by all existing implementations.  */
+    }
 }
 
 data class SwipeCommand(
@@ -129,6 +133,15 @@ data class TapOnPointCommand(
 
     override fun injectEnv(env: Map<String, String>): TapOnPointCommand {
         return this
+    }
+
+    override fun execute(context: Context) {
+        context.maestro.tap(
+            x = x,
+            y = y,
+            retryIfNoChange = retryIfNoChange ?: true,
+            longPress = longPress ?: false,
+        )
     }
 }
 
