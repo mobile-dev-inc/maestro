@@ -32,9 +32,7 @@ sealed interface Command {
 
     fun injectEnv(env: Map<String, String>): Command
 
-    fun execute(context: Context) {
-        /* default implementation until the contract is fulfilled by all existing implementations.  */
-    }
+    fun execute(context: Context)
 }
 
 data class SwipeCommand(
@@ -303,6 +301,10 @@ data class ApplyConfigurationCommand(
         return copy(
             config = config.injectEnv(env),
         )
+    }
+
+    override fun execute(context: Context) {
+        // No op
     }
 }
 
