@@ -258,6 +258,10 @@ data class OpenLinkCommand(
             link = link.injectEnv(env),
         )
     }
+
+    override fun execute(context: Context) {
+        context.maestro.openLink(link)
+    }
 }
 
 data class PressKeyCommand(

@@ -126,7 +126,7 @@ class Orchestra(
             is AssertCommand -> assertCommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is LaunchAppCommand -> command.execute(OrchestraContext(maestro))
-            is OpenLinkCommand -> openLinkCommand(command)
+            is OpenLinkCommand -> command.execute(OrchestraContext(maestro))
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is ApplyConfigurationCommand, null -> { /* no-op */ }
@@ -141,10 +141,6 @@ class Orchestra(
 
     private fun pressKeyCommand(command: PressKeyCommand) {
         maestro.pressKey(command.code)
-    }
-
-    private fun openLinkCommand(command: OpenLinkCommand) {
-        maestro.openLink(command.link)
     }
 
     private fun inputTextCommand(command: InputTextCommand) {
