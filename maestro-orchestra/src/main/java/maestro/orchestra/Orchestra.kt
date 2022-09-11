@@ -120,7 +120,7 @@ class Orchestra(
                 tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
             }
             is TapOnPointCommand -> command.execute(OrchestraContext(maestro))
-            is BackPressCommand -> maestro.backPress()
+            is BackPressCommand -> command.execute(OrchestraContext(maestro))
             is ScrollCommand -> maestro.scrollVertical()
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)

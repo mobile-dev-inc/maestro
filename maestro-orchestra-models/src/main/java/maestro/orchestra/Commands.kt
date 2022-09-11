@@ -99,6 +99,10 @@ class BackPressCommand : Command {
     override fun injectEnv(env: Map<String, String>): BackPressCommand {
         return this
     }
+
+    override fun execute(context: Context) {
+        context.maestro.backPress()
+    }
 }
 
 data class TapOnElementCommand(
