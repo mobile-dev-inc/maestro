@@ -74,6 +74,9 @@ class ScrollCommand : Command {
         return this
     }
 
+    override fun execute(context: Context) {
+        context.maestro.scrollVertical()
+    }
 }
 
 class BackPressCommand : Command {

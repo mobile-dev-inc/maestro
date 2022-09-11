@@ -121,7 +121,7 @@ class Orchestra(
             }
             is TapOnPointCommand -> command.execute(OrchestraContext(maestro))
             is BackPressCommand -> command.execute(OrchestraContext(maestro))
-            is ScrollCommand -> maestro.scrollVertical()
+            is ScrollCommand -> command.execute(OrchestraContext(maestro))
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is InputTextCommand -> inputTextCommand(command)
