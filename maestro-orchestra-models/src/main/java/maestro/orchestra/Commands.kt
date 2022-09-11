@@ -48,6 +48,9 @@ data class SwipeCommand(
         return this
     }
 
+    override fun execute(context: Context) {
+        context.maestro.swipe(startPoint, endPoint)
+    }
 }
 
 class ScrollCommand : Command {

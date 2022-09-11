@@ -122,7 +122,7 @@ class Orchestra(
             is TapOnPointCommand -> command.execute(OrchestraContext(maestro))
             is BackPressCommand -> command.execute(OrchestraContext(maestro))
             is ScrollCommand -> command.execute(OrchestraContext(maestro))
-            is SwipeCommand -> swipeCommand(command)
+            is SwipeCommand -> command.execute(OrchestraContext(maestro))
             is AssertCommand -> assertCommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
@@ -336,10 +336,6 @@ class Orchestra(
             descriptions.joinToString(", "),
             finalFilter,
         )
-    }
-
-    private fun swipeCommand(command: SwipeCommand) {
-        maestro.swipe(command.startPoint, command.endPoint)
     }
 
     companion object {
