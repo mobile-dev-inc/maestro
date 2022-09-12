@@ -220,7 +220,9 @@ class IOSDriver(
 
     override fun backPress() {}
 
-    override fun hideKeyboard() {}
+    override fun hideKeyboard() {
+        iosDevice.pressKey(41).expect {}
+    }
 
     override fun inputText(text: String) {
         iosDevice.input(text).expect {}
