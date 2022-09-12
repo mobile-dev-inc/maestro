@@ -283,7 +283,7 @@ class Orchestra(
         selector.idRegex
             ?.let {
                 descriptions += "Id matching regex: $it"
-                filters += Filters.idMatches(it.toRegex(REGEX_OPTIONS)).asFilter()
+                filters += Filters.idMatches(it.toRegex(REGEX_OPTIONS))
             }
 
         selector.size
