@@ -21,6 +21,7 @@ import maestro.test.drivers.FakeLayoutElement.Bounds
 import maestro.test.drivers.FakeTimer
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.nio.file.Paths
 
 class IntegrationTest {
@@ -1091,6 +1092,28 @@ class IntegrationTest {
 
         // Then
         driver.assertHasEvent(Event.Tap(Point(50, 50)))
+    }
+
+    @Test
+    fun `Case 041 - Take screenshot`() {
+        // Given
+        val commands = readCommands("041_take_screenshot")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.TakeScreenshot(File("/User/adamtornhill/screenshot.png")),
+            )
+        )
     }
 
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)

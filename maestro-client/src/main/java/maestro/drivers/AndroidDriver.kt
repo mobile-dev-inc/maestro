@@ -27,6 +27,8 @@ import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
 import maestro.Maestro
+import maestro.MaestroException
+import maestro.MaestroException.UnableToTakeScreenshot
 import maestro.MaestroTimer
 import maestro.Point
 import maestro.TreeNode
@@ -226,6 +228,22 @@ class AndroidDriver(
 
     override fun hideKeyboard() {
         dadb.shell("input keyevent 66")
+    }
+
+    override fun takeScreenshot(outFile: File) {
+        val deviceScreenshotPath = "/sdcard/maestro-screenshot.png"
+
+        val adbShellResponse = dadb.shell("screencap -p $deviceScreenshotPath")
+        if (adbShellResponse.exitCode != 0) {
+            throw UnableToTakeScreenshot("Failed to take screenshot: ${adbShellResponse.errorOutput}")
+        }
+
+        if (outFile.parentFile.exists() || outFile.parentFile.mkdirs()) {
+            dadb.pull(outFile.absoluteFile, deviceScreenshotPath)
+            dadb.shell("rm $deviceScreenshotPath")
+        } else {
+            MaestroException.DestinationIsNotWritable("Failed to create directory for screenshot: ${outFile.parentFile}")
+        }
     }
 
     override fun inputText(text: String) {

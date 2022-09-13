@@ -288,6 +288,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.close()
     }
 
+    fun takeScreenshot(outFile: File) {
+        LOGGER.info("Taking screenshot: $outFile")
+
+        driver.takeScreenshot(outFile)
+    }
+
     companion object {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)

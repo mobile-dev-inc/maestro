@@ -61,4 +61,6 @@ interface Driver {
 
     fun hideKeyboard()
 
+    fun takeScreenshot(outFile: File)
+
 }

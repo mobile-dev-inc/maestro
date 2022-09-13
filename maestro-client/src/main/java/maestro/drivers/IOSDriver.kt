@@ -227,6 +227,10 @@ class IOSDriver(
         iosDevice.pressKey(40).expect {}
     }
 
+    override fun takeScreenshot(outFile: File) {
+        TODO("Yet to add iOS support for screenshot")
+    }
+
     override fun inputText(text: String) {
         iosDevice.input(text).expect {}
     }
