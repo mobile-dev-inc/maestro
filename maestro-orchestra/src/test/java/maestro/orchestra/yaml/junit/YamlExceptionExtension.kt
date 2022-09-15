@@ -5,7 +5,6 @@ import maestro.orchestra.yaml.YamlCommandReader
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
-import java.nio.file.Paths
 
 class YamlExceptionExtension : ParameterResolver {
 
@@ -23,11 +22,8 @@ class YamlExceptionExtension : ParameterResolver {
         val yamlFileAnnotation = parameterContext.findAnnotation(YamlFile::class.java)
             .orElseThrow { IllegalArgumentException("No @YamlFile annotation found") }
 
-        val resource = this::class.java.getResource("/YamlCommandReaderTest/${yamlFileAnnotation.name}")!!
-        val resourceFile = Paths.get(resource.toURI())
-
         return try {
-            YamlCommandReader.readCommands(resourceFile)
+            YamlCommandReader.readCommands(YamlResourceFile(yamlFileAnnotation.name).path)
         } catch (e: Throwable) {
             assertThat(e).isInstanceOf(parameterContext.parameter.type)
             return e

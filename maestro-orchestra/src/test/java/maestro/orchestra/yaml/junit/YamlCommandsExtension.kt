@@ -29,9 +29,7 @@ class YamlCommandsExtension : ParameterResolver {
         val yamlFileAnnotation = parameterContext.findAnnotation(YamlFile::class.java)
             .orElseThrow { IllegalArgumentException("No @YamlFile annotation found") }
 
-        val resource = this::class.java.getResource("/YamlCommandReaderTest/${yamlFileAnnotation.name}")!!
-        val resourceFile = Paths.get(resource.toURI())
-        return YamlCommandReader.readCommands(resourceFile)
+        return YamlCommandReader.readCommands(YamlResourceFile(yamlFileAnnotation.name).path)
             .map(MaestroCommand::command)
     }
 }
