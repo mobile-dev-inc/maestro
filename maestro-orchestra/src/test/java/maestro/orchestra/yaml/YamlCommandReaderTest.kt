@@ -5,20 +5,24 @@ import com.google.common.truth.Truth.assertWithMessage
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
-import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.ScrollCommand
+import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
+import maestro.orchestra.yaml.junit.YamlFile
+import maestro.orchestra.yaml.junit.YamlCommandsExtension
 import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.rules.TestName
 import java.nio.file.FileSystems
 import java.nio.file.Paths
 
 @Suppress("TestFunctionName")
+@ExtendWith(YamlCommandsExtension::class)
 internal class YamlCommandReaderTest {
 
     @JvmField
@@ -31,25 +35,33 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T002_launchApp() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app"
-        ),
-    )
+    fun launchApp(
+        @YamlFile("002_launchApp.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+                ApplyConfigurationCommand(MaestroConfig(
+                    appId = "com.example.app"
+                )),
+                LaunchAppCommand(
+                    appId = "com.example.app"
+                ),
+        )
+    }
 
     @Test
-    fun T003_launchApp_withClearState() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app",
-            clearState = true,
-        ),
-    )
+    fun launchApp_withClearState(
+        @YamlFile("003_launchApp_withClearState.yaml") commands: List<Command>
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
+                clearState = true,
+            ),
+        )
+    }
 
     @Test
     fun T004_config_empty() = expectException<SyntaxError> { e ->
@@ -67,40 +79,48 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T007_initFlow() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-            initFlow = MaestroInitFlow(
+    fun initFlow(
+        @YamlFile("007_initFlow.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
-                commands = commands(
-                    LaunchAppCommand(
-                        appId = "com.example.app",
-                        clearState = true,
-                    )
-                ),
-            )
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app",
-        ),
-    )
+                initFlow = MaestroInitFlow(
+                    appId = "com.example.app",
+                    commands = commands(
+                        LaunchAppCommand(
+                            appId = "com.example.app",
+                            clearState = true,
+                        )
+                    ),
+                )
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
+            ),
+        )
+    }
 
     @Test
-    fun T008_config_unknownKeys() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-            ext = mapOf(
-                "extra" to true,
-                "extraMap" to mapOf(
-                    "keyA" to "valueB"
-                ),
-                "extraArray" to listOf("itemA")
-            )
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app",
-        ),
-    )
+    fun config_unknownKeys(
+        @YamlFile("008_config_unknownKeys.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+                ext = mapOf(
+                    "extra" to true,
+                    "extraMap" to mapOf(
+                        "keyA" to "valueB"
+                    ),
+                    "extraArray" to listOf("itemA")
+                )
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
+            ),
+        )
+    }
 
     @Test
     fun T009_invalidCommand() = expectException<SyntaxError> { e ->
@@ -113,37 +133,45 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T011_initFlow_file() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-            initFlow = MaestroInitFlow(
+    fun initFlow_file(
+        @YamlFile("011_initFlow_file.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
-                commands = commands(
-                    ApplyConfigurationCommand(
-                        config = MaestroConfig(
+                initFlow = MaestroInitFlow(
+                    appId = "com.example.app",
+                    commands = commands(
+                        ApplyConfigurationCommand(
+                            config = MaestroConfig(
+                                appId = "com.example.app",
+                            )
+                        ),
+                        LaunchAppCommand(
                             appId = "com.example.app",
                         )
                     ),
-                    LaunchAppCommand(
-                        appId = "com.example.app",
-                    )
                 ),
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
             ),
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app",
-        ),
-    )
+        )
+    }
 
     @Test
-    fun T012_initFlow_emptyString() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app",
-        ),
-    )
+    fun initFlow_emptyString(
+        @YamlFile("012_initFlow_emptyString.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
+            ),
+        )
+    }
 
     @Test
     fun T013_initFlow_invalidFile() = expectException<InvalidInitFlowFile>()
@@ -162,41 +190,57 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T017_launchApp_otherPackage() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        LaunchAppCommand(
-            appId = "com.other.app"
-        ),
-    )
+    fun launchApp_otherPackage(
+        @YamlFile("017_launchApp_otherPackage.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            LaunchAppCommand(
+                appId = "com.other.app"
+            ),
+        )
+    }
 
     @Test
-    fun T018_backPress_string() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        BackPressCommand(),
-    )
+    fun backPress_string(
+        @YamlFile("018_backPress_string.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            BackPressCommand(),
+        )
+    }
 
     @Test
-    fun T019_scroll_string() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-        )),
-        ScrollCommand(),
-    )
+    fun scroll_string(
+        @YamlFile("019_scroll_string.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            ScrollCommand(),
+        )
+    }
 
     @Test
-    fun T020_config_name() = expectCommands(
-        ApplyConfigurationCommand(MaestroConfig(
-            appId = "com.example.app",
-            name = "Example Flow"
-        )),
-        LaunchAppCommand(
-            appId = "com.example.app"
-        ),
-    )
+    fun config_name(
+        @YamlFile("020_config_name.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+                name = "Example Flow"
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app"
+            ),
+        )
+    }
 
     // Misc. tests
 
@@ -234,6 +278,10 @@ internal class YamlCommandReaderTest {
         ))
     }
 
+    private fun commands(vararg commands: Command): List<MaestroCommand> {
+        return commands.map(::MaestroCommand).toList()
+    }
+
     private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
         try {
             parseCommands()
@@ -243,16 +291,6 @@ internal class YamlCommandReaderTest {
             assertThat(e).isInstanceOf(T::class.java)
             block(e as T)
         }
-    }
-
-    private fun expectCommands(vararg expectedCommands: Command) {
-        val actualCommands = parseCommands()
-        val expectedMaestroCommands = commands(*expectedCommands)
-        assertThat(actualCommands).isEqualTo(expectedMaestroCommands)
-    }
-
-    private fun commands(vararg commands: Command): List<MaestroCommand> {
-        return commands.map(::MaestroCommand).toList()
     }
 
     private fun parseCommands(): List<MaestroCommand> {
