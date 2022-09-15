@@ -1,7 +1,6 @@
 package maestro.orchestra.yaml
 
 import com.google.common.truth.Truth.assertThat
-import com.google.common.truth.Truth.assertWithMessage
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
@@ -12,23 +11,17 @@ import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
-import maestro.orchestra.yaml.junit.YamlFile
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
 import maestro.orchestra.yaml.junit.YamlExceptionExtension
-import org.junit.Rule
+import maestro.orchestra.yaml.junit.YamlFile
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.rules.TestName
 import java.nio.file.FileSystems
 import java.nio.file.Paths
 
-@Suppress("TestFunctionName")
+@Suppress("JUnitMalformedDeclaration")
 @ExtendWith(YamlCommandsExtension::class, YamlExceptionExtension::class)
 internal class YamlCommandReaderTest {
-
-    @JvmField
-    @Rule
-    val name: TestName = TestName()
 
     @Test
     fun empty(
@@ -303,25 +296,6 @@ internal class YamlCommandReaderTest {
         ))
     }
 
-    private fun commands(vararg commands: Command): List<MaestroCommand> {
-        return commands.map(::MaestroCommand).toList()
-    }
-
-    private inline fun <reified T : Throwable> expectException(block: (e: T) -> Unit = {}) {
-        try {
-            parseCommands()
-            assertWithMessage("Expected exception: ${T::class.java}").fail()
-        } catch (e: Throwable) {
-            if (e is AssertionError) throw e
-            assertThat(e).isInstanceOf(T::class.java)
-            block(e as T)
-        }
-    }
-
-    private fun parseCommands(): List<MaestroCommand> {
-        val resourceName = name.methodName.removePrefix("T") + ".yaml"
-        val resource = this::class.java.getResource("/YamlCommandReaderTest/$resourceName")!!
-        val resourceFile = Paths.get(resource.toURI())
-        return YamlCommandReader.readCommands(resourceFile)
-    }
+    private fun commands(vararg commands: Command): List<MaestroCommand> =
+        commands.map(::MaestroCommand).toList()
 }

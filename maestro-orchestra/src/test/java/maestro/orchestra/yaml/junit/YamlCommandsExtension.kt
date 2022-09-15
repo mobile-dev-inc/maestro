@@ -6,7 +6,6 @@ import maestro.orchestra.yaml.YamlCommandReader
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
-import java.nio.file.Paths
 
 class YamlCommandsExtension : ParameterResolver {
     private interface ListOfCommands : List<Command>
