@@ -14,6 +14,7 @@ import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.yaml.junit.YamlFile
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
+import maestro.orchestra.yaml.junit.YamlExceptionExtension
 import org.junit.Rule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -22,7 +23,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Paths
 
 @Suppress("TestFunctionName")
-@ExtendWith(YamlCommandsExtension::class)
+@ExtendWith(YamlCommandsExtension::class, YamlExceptionExtension::class)
 internal class YamlCommandReaderTest {
 
     @JvmField
@@ -30,7 +31,9 @@ internal class YamlCommandReaderTest {
     val name: TestName = TestName()
 
     @Test
-    fun T001_empty() = expectException<SyntaxError> { e ->
+    fun empty(
+        @YamlFile("001_empty.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
@@ -64,17 +67,23 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T004_config_empty() = expectException<SyntaxError> { e ->
+    fun config_empty(
+        @YamlFile("004_config_empty.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
     @Test
-    fun T005_config_noAppId() = expectException<SyntaxError> { e ->
+    fun config_noAppId(
+        @YamlFile("005_config_noAppId.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("appId due to missing (therefore NULL) value for creator parameter appId which is a non-nullable type")
     }
 
     @Test
-    fun T006_emptyCommands() = expectException<SyntaxError> { e ->
+    fun emptyCommands(
+        @YamlFile("006_emptyCommands.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
@@ -123,12 +132,16 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T009_invalidCommand() = expectException<SyntaxError> { e ->
+    fun invalidCommand(
+        @YamlFile("009_invalidCommand.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Unrecognized field \"invalid\"")
     }
 
     @Test
-    fun T010_invalidCommand_string() = expectException<SyntaxError> { e ->
+    fun invalidCommand_string(
+        @YamlFile("010_invalidCommand_string.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Invalid command: \"invalid\"")
     }
 
@@ -174,18 +187,30 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun T013_initFlow_invalidFile() = expectException<InvalidInitFlowFile>()
+    fun initFlow_invalidFile(
+        @YamlFile("013_initFlow_invalidFile.yaml") e: InvalidInitFlowFile,
+    ) {
+        /* check if parsing the file results in the exception parameter type */
+    }
 
     @Test
-    fun T014_initFlow_recursive() = expectException<InvalidInitFlowFile>()
+    fun initFlow_recursive(
+        @YamlFile("014_initFlow_recursive.yaml") e: InvalidInitFlowFile,
+    ) {
+        /* check if parsing the file results in the exception parameter type */
+    }
 
     @Test
-    fun T015_onlyCommands() = expectException<SyntaxError> { e ->
+    fun onlyCommands(
+        @YamlFile("015_onlyCommands.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("Flow files must contain a config section and a commands section")
     }
 
     @Test
-    fun T016_launchApp_emptyString() = expectException<SyntaxError> { e ->
+    fun launchApp_emptyString(
+        @YamlFile("016_launchApp_emptyString.yaml") e: SyntaxError,
+    ) {
         assertThat(e.message).contains("No mapping provided for YamlFluentCommand")
     }
 
