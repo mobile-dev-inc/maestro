@@ -1,4 +1,4 @@
 appId: com.example.app
 initFlow: invalidFile.yaml
 ---
-- launchApp
+- invalid
