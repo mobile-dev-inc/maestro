@@ -3,3 +3,4 @@ initFlow:
   - launchApp:
       clearState: true
 ---
+- launchApp

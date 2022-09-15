@@ -1,4 +1,4 @@
 appId: com.example.app
 initFlow: 014_initFlow_recursive.yaml
 ---
-- invalid
+- launchApp

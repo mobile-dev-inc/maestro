@@ -1,5 +1,7 @@
 appId: com.example.app
 extra: True
+extraMap:
+  keyA: valueB
 extraArray:
   - itemA
 ---

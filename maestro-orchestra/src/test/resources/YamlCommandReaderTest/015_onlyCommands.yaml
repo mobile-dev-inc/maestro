@@ -1,3 +1,4 @@
-appId: com.example
----
-- launchApp
+- config:
+    initFlow:
+      - launchApp: com.example
+- launchApp: com.example
