@@ -6,14 +6,22 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import maestro.cli.CliError
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okio.Buffer
+import okio.BufferedSink
+import okio.ForwardingSink
+import okio.buffer
+import okio.source
+import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
@@ -77,6 +85,7 @@ class ApiClient(
         repoName: String?,
         branch: String?,
         pullRequestId: String?,
+        progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = {_, _ -> },
     ): UploadResponse {
         if (!appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
         if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
@@ -90,7 +99,7 @@ class ApiClient(
 
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("app_binary", "app.zip", appFile.toFile().asRequestBody("application/zip".toMediaType()))
+            .addFormDataPart("app_binary", "app.zip", appFile.toFile().asRequestBody("application/zip".toMediaType()).observable(progressListener))
             .addFormDataPart("workspace", "workspace.zip", workspaceZip.toFile().asRequestBody("application/zip".toMediaType()))
             .addFormDataPart("request", JSON.writeValueAsString(requestPart))
             .build()
@@ -127,6 +136,31 @@ class ApiClient(
         if (!response.isSuccessful) return Err(response)
         val parsed = JSON.readValue(response.body?.bytes(), T::class.java)
         return Ok(parsed)
+    }
+
+    private fun RequestBody.observable(
+        progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit,
+    ) = object : RequestBody() {
+
+        override fun contentLength() = this@observable.contentLength()
+
+        override fun contentType() = this@observable.contentType()
+
+        override fun writeTo(sink: BufferedSink) {
+            val forwardingSink = object : ForwardingSink(sink) {
+
+                private var bytesWritten = 0L
+
+                override fun write(source: Buffer, byteCount: Long) {
+                    super.write(source, byteCount)
+                    bytesWritten += byteCount
+                    progressListener(contentLength(), bytesWritten)
+                }
+            }.buffer()
+            progressListener(contentLength(), 0)
+            this@observable.writeTo(forwardingSink)
+            forwardingSink.flush()
+        }
     }
 
     companion object {

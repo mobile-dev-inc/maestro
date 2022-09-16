@@ -82,6 +82,8 @@ class UploadCommand : Callable<Int> {
     private val cachedAuthTokenFile: Path = Paths.get(System.getProperty("user.home"), ".mobiledev", "authtoken")
 
     override fun call(): Int {
+        if (!flowFile.exists()) throw CliError("File does not exist: ${flowFile.absolutePath}")
+
         client = ApiClient(apiUrl)
 
         val authToken = apiKey ?: getCachedAuthToken() ?: triggerSignInFlow()
@@ -91,11 +93,43 @@ class UploadCommand : Callable<Int> {
         TemporaryDirectory.use { tmpDir ->
             val workspaceZip = tmpDir.resolve("workspace.zip")
             WorkspaceUtils.createWorkspaceZip(flowFile.toPath(), workspaceZip)
-            val (teamId, appId, uploadId) = client.upload(authToken, appFile.toPath(), workspaceZip, uploadName, repoOwner, repoName, branch, pullRequestId)
+            println()
+            val uploadProgress = UploadProgress(20)
+            val (teamId, appId, uploadId) = client.upload(
+                authToken,
+                appFile.toPath(),
+                workspaceZip,
+                uploadName,
+                repoOwner,
+                repoName,
+                branch,
+                pullRequestId
+            ) { totalBytes, bytesWritten ->
+                uploadProgress.set(totalBytes, bytesWritten)
+            }
+            println()
             message("✅ Upload successful! View the results of your upload below:")
             message("https://console.mobile.dev/uploads/$uploadId?teamId=$teamId&appId=$appId")
         }
         return 0
+    }
+
+    class UploadProgress(private val width: Int) {
+
+        private var progressWidth: Int? = null
+
+        fun set(totalBytes: Long, bytesWritten: Long) {
+            val progress = bytesWritten / totalBytes.toDouble()
+            val progressWidth = (progress * width).toInt()
+            if (progressWidth == this.progressWidth) return
+            this.progressWidth = progressWidth
+            val ansi = ansi()
+            ansi.cursorToColumn(0)
+            ansi.fgCyan()
+            repeat(progressWidth) { ansi.a("█")}
+            repeat(width - progressWidth) { ansi.a("░")}
+            print(ansi)
+        }
     }
 
     private fun getCachedAuthToken(): String? {
