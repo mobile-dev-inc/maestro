@@ -26,9 +26,7 @@ import maestro.cli.CliError
 import maestro.cli.api.ApiClient
 import maestro.cli.util.WorkspaceUtils
 import maestro.utils.TemporaryDirectory
-import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.Ansi.ansi
-import org.fusesource.jansi.AnsiConsole
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -170,10 +168,6 @@ class UploadCommand : Callable<Int> {
     }
 
     companion object {
-
-        init {
-            AnsiConsole.systemInstall()
-        }
 
         private fun message(message: String) {
             println(ansi().render("@|cyan \n$message |@"))

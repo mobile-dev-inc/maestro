@@ -23,6 +23,7 @@ import maestro.cli.command.PrintHierarchyCommand
 import maestro.cli.command.QueryCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
+import org.fusesource.jansi.AnsiConsole
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -51,6 +52,12 @@ class App {
 
     @Option(names = ["--port"])
     var port: Int? = null
+
+    companion object {
+        init {
+            AnsiConsole.systemInstall()
+        }
+    }
 }
 
 private fun printVersion() {
