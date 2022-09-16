@@ -158,12 +158,12 @@ class UploadCommand : Callable<Int> {
         message("No auth token found")
         val email = prompt("Sign In or Sign Up using your company email address:")
         var isLogin = true
-        val requestToken = client.magicLinkLogin(email).getOrElse { loginError ->
+        val requestToken = client.magicLinkLogin(email, AUTH_SUCCESS_REDIRECT_URL).getOrElse { loginError ->
             if (loginError.code == 403 && loginError.body?.string()?.contains("not an authorized email address") == true) {
                 isLogin = false
                 message("No existing team found for this email domain")
                 val team = prompt("Enter a team name to create your team:")
-                client.magicLinkSignUp(email, team).getOrElse { signUpError ->
+                client.magicLinkSignUp(email, team, AUTH_SUCCESS_REDIRECT_URL).getOrElse { signUpError ->
                     throw CliError(signUpError.body?.string() ?: signUpError.message)
                 }
             } else {
@@ -202,6 +202,8 @@ class UploadCommand : Callable<Int> {
     }
 
     companion object {
+
+        private const val AUTH_SUCCESS_REDIRECT_URL = "https://console.mobile.dev/auth/success"
 
         private fun message(message: String) {
             println(ansi().render("@|cyan \n$message |@"))

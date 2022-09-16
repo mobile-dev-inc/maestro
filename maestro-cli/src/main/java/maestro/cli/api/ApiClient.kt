@@ -37,18 +37,20 @@ class ApiClient(
         .protocols(listOf(Protocol.HTTP_1_1))
         .build()
 
-    fun magicLinkLogin(email: String): Result<String, Response> {
+    fun magicLinkLogin(email: String, redirectUrl: String): Result<String, Response> {
         return post<Map<String, Any>>("/magiclink/login", mapOf(
             "deviceId" to "",
             "email" to email,
+            "redirectUrl" to redirectUrl,
         )).map { it["requestToken"].toString() }
     }
 
-    fun magicLinkSignUp(email: String, teamName: String): Result<String, Response> {
+    fun magicLinkSignUp(email: String, teamName: String, redirectUrl: String): Result<String, Response> {
         return post("/magiclink/signup", mapOf(
             "deviceId" to "",
             "userEmail" to email,
             "teamName" to teamName,
+            "redirectUrl" to redirectUrl,
         ))
     }
 
