@@ -88,7 +88,7 @@ class UploadCommand : Callable<Int> {
 
         val authToken = apiKey ?: getCachedAuthToken() ?: triggerSignInFlow()
 
-        message("Uploading flow(s)...")
+        message("Uploading Flow(s)...")
 
         TemporaryDirectory.use { tmpDir ->
             val workspaceZip = tmpDir.resolve("workspace.zip")
