@@ -39,6 +39,7 @@ import java.nio.file.Files
 class Orchestra(
     private val maestro: Maestro,
     private val stateDir: File? = null,
+    private val screenshotsDir: File? = null,
     private val lookupTimeoutMs: Long = 15000L,
     private val optionalLookupTimeoutMs: Long = 3000L,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
@@ -137,7 +138,12 @@ class Orchestra(
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand) {
-        maestro.takeScreenshot(File(command.path + ".png"))
+        val pathStr = command.path + ".png"
+        val file = screenshotsDir
+            ?.let { File(it, pathStr) }
+            ?: File(pathStr)
+
+        maestro.takeScreenshot(file)
     }
 
     private fun eraseTextCommand(command: EraseTextCommand) {
