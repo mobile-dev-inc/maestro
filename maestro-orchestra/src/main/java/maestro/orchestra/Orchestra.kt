@@ -130,8 +130,13 @@ class Orchestra(
             is OpenLinkCommand -> openLinkCommand(command)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
+            is TakeScreenshotCommand -> takeScreenshotCommand(command)
             is ApplyConfigurationCommand, null -> { /* no-op */ }
         }
+    }
+
+    private fun takeScreenshotCommand(command: TakeScreenshotCommand) {
+        maestro.takeScreenshot(File(command.path))
     }
 
     private fun eraseTextCommand(command: EraseTextCommand) {

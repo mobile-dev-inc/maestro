@@ -29,6 +29,7 @@ import maestro.MaestroException
 import maestro.Point
 import maestro.TreeNode
 import maestro.utils.FileUtils
+import okio.Sink
 import java.io.File
 import java.nio.file.Files
 import kotlin.collections.set
@@ -225,6 +226,10 @@ class IOSDriver(
 
     override fun hideKeyboard() {
         iosDevice.pressKey(40).expect {}
+    }
+
+    override fun takeScreenshot(out: Sink) {
+        TODO("Yet to add iOS support for screenshot")
     }
 
     override fun inputText(text: String) {

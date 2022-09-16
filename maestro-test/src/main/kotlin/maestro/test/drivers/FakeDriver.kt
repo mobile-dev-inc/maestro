@@ -168,6 +168,12 @@ class FakeDriver : Driver {
         events += Event.HideKeyboard
     }
 
+    override fun takeScreenshot(outFile: File) {
+        ensureOpen()
+
+        events += Event.TakeScreenshot(outFile)
+    }
+
     override fun inputText(text: String) {
         ensureOpen()
 
@@ -280,6 +286,9 @@ class FakeDriver : Driver {
             val code: KeyCode,
         ) : Event()
 
+        data class TakeScreenshot(
+            val path: File,
+        ) : Event()
     }
 
     interface UserInteraction
