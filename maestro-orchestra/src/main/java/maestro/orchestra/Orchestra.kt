@@ -132,8 +132,23 @@ class Orchestra(
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
+            is ExtendedWaitUtilCommand -> extendedWaitUtilCommand(command)
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
+        }
+    }
+
+    private fun extendedWaitUtilCommand(command: ExtendedWaitUtilCommand) {
+        if (command.visible != null) {
+            findElement(
+                command.visible!!,
+                command.timeoutMs,
+            )
+        } else if (command.timeoutMs != null) {
+            MaestroTimer.sleep(
+                MaestroTimer.Reason.EXTENDED_WAIT_UNTIL_VISIBLE,
+                command.timeoutMs!!,
+            )
         }
     }
 

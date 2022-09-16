@@ -28,6 +28,7 @@ import maestro.orchestra.HideKeyboardCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
+import maestro.orchestra.ExtendedWaitUtilCommand
 import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
@@ -53,6 +54,7 @@ data class YamlFluentCommand(
     val pressKey: String? = null,
     val eraseText: YamlEraseText? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
+    val extendedWaitUntil: YamlExtendedWaitUntil? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -75,6 +77,10 @@ data class YamlFluentCommand(
                 else -> error("Unknown navigation target: $action")
             }
             takeScreenshot != null -> MaestroCommand(TakeScreenshotCommand(takeScreenshot.path))
+            extendedWaitUntil != null -> MaestroCommand(ExtendedWaitUtilCommand(
+                visible = extendedWaitUntil.visible?.let { toElementSelector(it) },
+                timeoutMs = extendedWaitUntil.timeout
+            ))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }

@@ -1117,6 +1117,51 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 042 - Extended waitUntil`() {
+        // Given
+        val commands = readCommands("042_extended_wait")
+
+        val driver = driver {
+            element {
+                text = "Item"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        fakeTimer.assertNoEvent(
+            MaestroTimer.Reason.EXTENDED_WAIT_UNTIL_VISIBLE
+        )
+    }
+
+    @Test
+    fun `Case 042 - Extended waitUntil - element not found`() {
+        // Given
+        val commands = readCommands("042_extended_wait")
+
+        val driver = driver {
+        }
+
+        // When
+        assertThrows<MaestroException.AssertionFailure> {
+            Maestro(driver).use {
+                orchestra(it).runFlow(commands)
+            }
+        }
+
+        // Then
+        fakeTimer.assertNoEvent(
+            MaestroTimer.Reason.EXTENDED_WAIT_UNTIL_VISIBLE
+        )
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {

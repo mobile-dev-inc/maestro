@@ -1,0 +1,6 @@
+appId: com.example.app
+---
+- extendedWaitUntil:
+    visible: Item
+    timeout: 1000
+

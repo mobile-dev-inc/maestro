@@ -135,7 +135,7 @@ data class TapOnElementCommand(
 
     override fun injectEnv(env: Map<String, String>): TapOnElementCommand {
         return copy(
-            selector = selector.injectSecrets(env),
+            selector = selector.injectEnv(env),
         )
     }
 }
@@ -176,8 +176,8 @@ data class AssertCommand(
 
     override fun injectEnv(env: Map<String, String>): AssertCommand {
         return copy(
-            visible = visible?.injectSecrets(env),
-            notVisible = notVisible?.injectSecrets(env),
+            visible = visible?.injectEnv(env),
+            notVisible = notVisible?.injectEnv(env),
         )
     }
 }
@@ -285,4 +285,29 @@ data class TakeScreenshotCommand(
             path = path.injectEnv(env),
         )
     }
+}
+
+data class ExtendedWaitUtilCommand(
+    val visible: ElementSelector? = null,
+    val timeoutMs: Long? = null,
+) : Command {
+
+    override fun description(): String {
+        return if (visible != null && timeoutMs != null) {
+            "Wait until ${visible?.description()} is visible (timeout: ${timeoutMs}ms)"
+        } else if (visible != null) {
+            "Wait until ${visible?.description()} is visible"
+        } else if (timeoutMs != null) {
+            "Wait for ${timeoutMs}ms"
+        } else {
+            "Wait for 0ms"
+        }
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            visible = visible?.injectEnv(env),
+        )
+    }
+
 }
