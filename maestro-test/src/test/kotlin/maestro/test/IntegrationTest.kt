@@ -1136,9 +1136,7 @@ class IntegrationTest {
 
         // Then
         // No test failure
-        fakeTimer.assertNoEvent(
-            MaestroTimer.Reason.EXTENDED_WAIT_UNTIL_VISIBLE
-        )
+        driver.assertNoInteraction()
     }
 
     @Test
@@ -1149,17 +1147,12 @@ class IntegrationTest {
         val driver = driver {
         }
 
-        // When
+        // When running flow - throw an exception
         assertThrows<MaestroException.AssertionFailure> {
             Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
-
-        // Then
-        fakeTimer.assertNoEvent(
-            MaestroTimer.Reason.EXTENDED_WAIT_UNTIL_VISIBLE
-        )
     }
 
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)

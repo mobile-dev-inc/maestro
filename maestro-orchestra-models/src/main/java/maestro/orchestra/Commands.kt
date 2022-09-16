@@ -160,15 +160,17 @@ data class TapOnPointCommand(
 data class AssertCommand(
     val visible: ElementSelector? = null,
     val notVisible: ElementSelector? = null,
+    val timeout: Long? = null,
 ) : Command {
 
     override fun description(): String {
+        val timeoutStr = timeout?.let { " within $timeout ms" } ?: ""
         if (visible != null) {
-            return "Assert visible ${visible.description()}"
+            return "Assert visible ${visible.description()}" + timeoutStr
         }
 
         if (notVisible != null) {
-            return "Assert not visible ${notVisible.description()}"
+            return "Assert not visible ${notVisible.description()}" + timeoutStr
         }
 
         return "No op"
@@ -285,29 +287,4 @@ data class TakeScreenshotCommand(
             path = path.injectEnv(env),
         )
     }
-}
-
-data class ExtendedWaitUtilCommand(
-    val visible: ElementSelector? = null,
-    val timeoutMs: Long? = null,
-) : Command {
-
-    override fun description(): String {
-        return if (visible != null && timeoutMs != null) {
-            "Wait until ${visible?.description()} is visible (timeout: ${timeoutMs}ms)"
-        } else if (visible != null) {
-            "Wait until ${visible?.description()} is visible"
-        } else if (timeoutMs != null) {
-            "Wait for ${timeoutMs}ms"
-        } else {
-            "Wait for 0ms"
-        }
-    }
-
-    override fun injectEnv(env: Map<String, String>): Command {
-        return copy(
-            visible = visible?.injectEnv(env),
-        )
-    }
-
 }

@@ -25,7 +25,6 @@ object MaestroTimer {
 
     enum class Reason {
         WAIT_UNTIL_VISIBLE,
-        EXTENDED_WAIT_UNTIL_VISIBLE,
         WAIT_TO_SETTLE,
         BUFFER,
     }

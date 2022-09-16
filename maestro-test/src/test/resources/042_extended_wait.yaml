@@ -3,4 +3,8 @@ appId: com.example.app
 - extendedWaitUntil:
     visible: Item
     timeout: 1000
-
+- extendedWaitUntil:
+    notVisible: Another item
+    timeout: 1000
+- extendedWaitUntil:
+    visible: Item
