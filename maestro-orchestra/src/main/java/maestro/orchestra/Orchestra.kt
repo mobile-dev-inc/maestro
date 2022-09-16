@@ -131,12 +131,13 @@ class Orchestra(
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
-            is ApplyConfigurationCommand, null -> { /* no-op */ }
+            is ApplyConfigurationCommand, null -> { /* no-op */
+            }
         }
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand) {
-        maestro.takeScreenshot(File(command.path))
+        maestro.takeScreenshot(File(command.path + ".png"))
     }
 
     private fun eraseTextCommand(command: EraseTextCommand) {

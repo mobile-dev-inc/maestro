@@ -19,6 +19,7 @@ import maestro.test.drivers.FakeDriver.Event
 import maestro.test.drivers.FakeLayoutElement
 import maestro.test.drivers.FakeLayoutElement.Bounds
 import maestro.test.drivers.FakeTimer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,6 +33,11 @@ class IntegrationTest {
     @BeforeEach
     fun setUp() {
         MaestroTimer.setTimerFunc(fakeTimer.timer())
+    }
+
+    @AfterEach
+    internal fun tearDown() {
+        File("screenshot.png").delete()
     }
 
     @Test
@@ -1106,7 +1112,7 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.TakeScreenshot(File("/User/adamtornhill/screenshot.png")),
+                Event.TakeScreenshot,
             )
         )
     }

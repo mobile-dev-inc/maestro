@@ -229,7 +229,7 @@ class IOSDriver(
     }
 
     override fun takeScreenshot(out: Sink) {
-        TODO("Yet to add iOS support for screenshot")
+        iosDevice.takeScreenshot(out).expect {}
     }
 
     override fun inputText(text: String) {

@@ -29,6 +29,7 @@ import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
 import okio.Sink
+import okio.buffer
 import okio.sink
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -293,11 +294,18 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun takeScreenshot(outFile: File) {
         LOGGER.info("Taking screenshot: $outFile")
 
-        if (outFile.parentFile.exists() || outFile.parentFile.mkdirs()) {
-            takeScreenshot(outFile.sink())
+        val absoluteOutFile = outFile.absoluteFile
+
+        if (absoluteOutFile.parentFile.exists() || absoluteOutFile.parentFile.mkdirs()) {
+            outFile
+                .sink()
+                .buffer()
+                .use {
+                    takeScreenshot(it)
+                }
         } else {
             throw MaestroException.DestinationIsNotWritable(
-                "Failed to create directory for screenshot: ${outFile.parentFile}"
+                "Failed to create directory for screenshot: ${absoluteOutFile.parentFile}"
             )
         }
     }
