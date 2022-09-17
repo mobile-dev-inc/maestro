@@ -1174,6 +1174,54 @@ class IntegrationTest {
         driver.assertHasEvent(Event.StopApp("another.app"))
     }
 
+    @Test
+    fun `Case 044 - Clear state`() {
+        // Given
+        val commands = readCommands("044_clear_state")
+
+        val driver = driver {
+        }
+
+        driver.addInstalledApp("com.example.app")
+        driver.addInstalledApp("another.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.ClearState("com.example.app"))
+        driver.assertHasEvent(Event.ClearState("another.app"))
+    }
+
+    @Test
+    fun `Case 045 - Clear keychain`() {
+        // Given
+        val commands = readCommands("045_clear_keychain")
+
+        val driver = driver {
+        }
+
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.ClearKeychain,
+                Event.ClearKeychain,
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {

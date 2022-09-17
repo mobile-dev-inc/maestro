@@ -24,6 +24,7 @@ import maestro.KeyCode
 import maestro.Point
 import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
+import maestro.orchestra.ClearKeychainCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
@@ -56,6 +57,7 @@ data class YamlFluentCommand(
     val takeScreenshot: YamlTakeScreenshot? = null,
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
     val stopApp: YamlStopApp? = null,
+    val clearState: YamlClearState? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -75,13 +77,21 @@ data class YamlFluentCommand(
                 "back" -> MaestroCommand(BackPressCommand())
                 "hide keyboard" -> MaestroCommand(HideKeyboardCommand())
                 "scroll" -> MaestroCommand(ScrollCommand())
+                "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
                 else -> error("Unknown navigation target: $action")
             }
             takeScreenshot != null -> MaestroCommand(TakeScreenshotCommand(takeScreenshot.path))
             extendedWaitUntil != null -> extendedWait(extendedWaitUntil)
-            stopApp != null -> MaestroCommand(StopAppCommand(
-                appId = stopApp.appId ?: appId,
-            ))
+            stopApp != null -> MaestroCommand(
+                StopAppCommand(
+                    appId = stopApp.appId ?: appId,
+                )
+            )
+            clearState != null -> MaestroCommand(
+                maestro.orchestra.ClearStateCommand(
+                    appId = clearState.appId ?: appId,
+                )
+            )
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -105,6 +115,7 @@ data class YamlFluentCommand(
             LaunchAppCommand(
                 appId = command.appId ?: appId,
                 clearState = command.clearState,
+                clearKeychain = command.clearKeychain,
             )
         )
     }
@@ -253,11 +264,23 @@ data class YamlFluentCommand(
         fun parse(stringCommand: String): YamlFluentCommand {
             return when (stringCommand) {
                 "launchApp" -> YamlFluentCommand(
-                    launchApp = YamlLaunchApp(appId = null, clearState = null)
+                    launchApp = YamlLaunchApp(
+                        appId = null,
+                        clearState = null,
+                        clearKeychain = null,
+                    )
                 )
 
                 "stopApp" -> YamlFluentCommand(
                     stopApp = YamlStopApp()
+                )
+
+                "clearState" -> YamlFluentCommand(
+                    clearState = YamlClearState()
+                )
+
+                "clearKeychain" -> YamlFluentCommand(
+                    action = "clearKeychain"
                 )
 
                 "eraseText" -> YamlFluentCommand(
