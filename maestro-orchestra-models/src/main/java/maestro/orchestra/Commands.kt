@@ -303,3 +303,18 @@ data class StopAppCommand(
         )
     }
 }
+
+data class ClearStateCommand(
+    val appId: String,
+) : Command {
+
+    override fun description(): String {
+        return "Clear state of $appId"
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            appId = appId.injectEnv(env),
+        )
+    }
+}

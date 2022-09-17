@@ -133,6 +133,7 @@ class Orchestra(
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
             is StopAppCommand -> maestro.stopApp(command.appId)
+            is ClearStateCommand -> maestro.clearAppState(command.appId)
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
         }
