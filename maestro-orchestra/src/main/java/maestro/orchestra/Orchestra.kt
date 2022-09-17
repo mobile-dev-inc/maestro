@@ -134,6 +134,7 @@ class Orchestra(
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
             is StopAppCommand -> maestro.stopApp(command.appId)
             is ClearStateCommand -> maestro.clearAppState(command.appId)
+            is ClearKeychainCommand -> maestro.clearKeychain()
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
         }
@@ -164,6 +165,9 @@ class Orchestra(
 
     private fun launchAppCommand(it: LaunchAppCommand) {
         try {
+            if (it.clearKeychain == true) {
+                maestro.clearKeychain()
+            }
             if (it.clearState == true) {
                 maestro.clearAppState(it.appId)
             }
