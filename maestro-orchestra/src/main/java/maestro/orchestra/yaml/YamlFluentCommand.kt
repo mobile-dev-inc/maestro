@@ -34,6 +34,7 @@ import maestro.orchestra.MaestroCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PressKeyCommand
 import maestro.orchestra.ScrollCommand
+import maestro.orchestra.StopAppCommand
 import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
 import maestro.orchestra.TapOnElementCommand
@@ -54,6 +55,7 @@ data class YamlFluentCommand(
     val eraseText: YamlEraseText? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
+    val stopApp: YamlStopApp? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -77,6 +79,9 @@ data class YamlFluentCommand(
             }
             takeScreenshot != null -> MaestroCommand(TakeScreenshotCommand(takeScreenshot.path))
             extendedWaitUntil != null -> extendedWait(extendedWaitUntil)
+            stopApp != null -> MaestroCommand(StopAppCommand(
+                appId = stopApp.appId ?: appId,
+            ))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -249,6 +254,10 @@ data class YamlFluentCommand(
             return when (stringCommand) {
                 "launchApp" -> YamlFluentCommand(
                     launchApp = YamlLaunchApp(appId = null, clearState = null)
+                )
+
+                "stopApp" -> YamlFluentCommand(
+                    stopApp = YamlStopApp()
                 )
 
                 "eraseText" -> YamlFluentCommand(

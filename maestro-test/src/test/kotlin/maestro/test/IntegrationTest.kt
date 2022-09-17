@@ -1155,6 +1155,25 @@ class IntegrationTest {
         }
     }
 
+    @Test
+    fun `Case 043 - Stop app`() {
+        // Given
+        val commands = readCommands("043_stop_app")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.StopApp("com.example.app"))
+        driver.assertHasEvent(Event.StopApp("another.app"))
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {

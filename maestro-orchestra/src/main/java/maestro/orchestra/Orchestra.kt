@@ -132,6 +132,7 @@ class Orchestra(
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
+            is StopAppCommand -> maestro.stopApp(command.appId)
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
         }

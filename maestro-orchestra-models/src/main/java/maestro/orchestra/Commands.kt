@@ -288,3 +288,18 @@ data class TakeScreenshotCommand(
         )
     }
 }
+
+data class StopAppCommand(
+    val appId: String,
+) : Command {
+
+    override fun description(): String {
+        return "Stop $appId"
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            appId = appId.injectEnv(env),
+        )
+    }
+}
