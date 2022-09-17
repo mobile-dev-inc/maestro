@@ -24,6 +24,7 @@ import maestro.KeyCode
 import maestro.Point
 import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
+import maestro.orchestra.ClearKeychainCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
@@ -76,6 +77,7 @@ data class YamlFluentCommand(
                 "back" -> MaestroCommand(BackPressCommand())
                 "hide keyboard" -> MaestroCommand(HideKeyboardCommand())
                 "scroll" -> MaestroCommand(ScrollCommand())
+                "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
                 else -> error("Unknown navigation target: $action")
             }
             takeScreenshot != null -> MaestroCommand(TakeScreenshotCommand(takeScreenshot.path))
@@ -113,6 +115,7 @@ data class YamlFluentCommand(
             LaunchAppCommand(
                 appId = command.appId ?: appId,
                 clearState = command.clearState,
+                clearKeychain = command.clearKeychain,
             )
         )
     }
@@ -261,7 +264,11 @@ data class YamlFluentCommand(
         fun parse(stringCommand: String): YamlFluentCommand {
             return when (stringCommand) {
                 "launchApp" -> YamlFluentCommand(
-                    launchApp = YamlLaunchApp(appId = null, clearState = null)
+                    launchApp = YamlLaunchApp(
+                        appId = null,
+                        clearState = null,
+                        clearKeychain = null,
+                    )
                 )
 
                 "stopApp" -> YamlFluentCommand(
@@ -270,6 +277,10 @@ data class YamlFluentCommand(
 
                 "clearState" -> YamlFluentCommand(
                     clearState = YamlClearState()
+                )
+
+                "clearKeychain" -> YamlFluentCommand(
+                    action = "clearKeychain"
                 )
 
                 "eraseText" -> YamlFluentCommand(
