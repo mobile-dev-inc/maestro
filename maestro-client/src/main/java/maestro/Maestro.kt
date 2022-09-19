@@ -197,7 +197,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                     screenshotAfterTap
                 ).compareImages().differencePercent
 
-                if (imageDiff > 0.005) {
+                if (imageDiff > SCREENSHOT_DIFF_THRESHOLD) {
                     LOGGER.info("Something have changed in the UI judging by screenshot (d=$imageDiff). Proceed.")
                     return
                 } else {
@@ -360,6 +360,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     companion object {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
+        private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
 
         fun ios(host: String, port: Int): Maestro {
             val channel = ManagedChannelBuilder.forAddress(host, port)
