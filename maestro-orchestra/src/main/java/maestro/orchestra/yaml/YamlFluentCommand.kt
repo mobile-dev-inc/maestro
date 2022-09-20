@@ -40,7 +40,11 @@ import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
 import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointCommand
+import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 data class YamlFluentCommand(
     val tapOn: YamlElementSelectorUnion? = null,
@@ -62,7 +66,7 @@ data class YamlFluentCommand(
 ) {
 
     @SuppressWarnings("ComplexMethod")
-    fun toCommands(appId: String): List<MaestroCommand> {
+    fun toCommands(flowPath: Path, appId: String): List<MaestroCommand> {
         return when {
             launchApp != null -> listOf(launchApp(launchApp, appId))
             tapOn != null -> listOf(tapCommand(tapOn))
@@ -99,8 +103,33 @@ data class YamlFluentCommand(
                     )
                 )
             )
+            runFlow != null -> runFlow(flowPath, runFlow)
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
+    }
+
+    private fun runFlow(flowPath: Path, command: YamlRunFlow): List<MaestroCommand> {
+        val runFlowPath = getRunFlowPath(flowPath, command.path)
+        return YamlCommandReader.readCommands(runFlowPath)
+    }
+
+    private fun getRunFlowPath(flowPath: Path, runFlowPath: String): Path {
+        val initFlowPath = flowPath.fileSystem.getPath(runFlowPath)
+        val resolvedInitFlowPath = if (initFlowPath.isAbsolute) {
+            initFlowPath
+        } else {
+            flowPath.resolveSibling(initFlowPath).toAbsolutePath()
+        }
+        if (resolvedInitFlowPath.equals(flowPath.toAbsolutePath())) {
+            throw InvalidInitFlowFile("initFlow file can't be the same as the Flow file: ${resolvedInitFlowPath.toUri()}", resolvedInitFlowPath)
+        }
+        if (!resolvedInitFlowPath.exists()) {
+            throw InvalidInitFlowFile("initFlow file does not exist: ${resolvedInitFlowPath.toUri()}", resolvedInitFlowPath)
+        }
+        if (resolvedInitFlowPath.isDirectory()) {
+            throw InvalidInitFlowFile("initFlow file can't be a directory: ${resolvedInitFlowPath.toUri()}", resolvedInitFlowPath)
+        }
+        return resolvedInitFlowPath
     }
 
     private fun extendedWait(command: YamlExtendedWaitUntil): MaestroCommand {
