@@ -33,11 +33,11 @@ data class YamlConfig(
         return MaestroCommand(ApplyConfigurationCommand(config))
     }
 
-    fun getInitFlowPath(flowPath: Path): Path? {
-        if (initFlow == null) return null
+    fun getWatchFiles(flowPath: Path): List<Path> {
+        if (initFlow == null) return emptyList()
         return when (initFlow) {
-            is StringInitFlow -> getInitFlowPath(flowPath, initFlow.path)
-            is YamlInitFlow -> null
+            is StringInitFlow -> listOf(getInitFlowPath(flowPath, initFlow.path))
+            else -> emptyList()
         }
     }
 

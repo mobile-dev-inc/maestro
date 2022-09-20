@@ -42,6 +42,7 @@ import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointCommand
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
+import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -106,6 +107,18 @@ data class YamlFluentCommand(
             runFlow != null -> runFlow(flowPath, runFlow)
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
+    }
+
+    fun getWatchFiles(flowPath: Path): List<Path> {
+        return when {
+            runFlow != null -> getRunFlowWatchFiles(flowPath, runFlow)
+            else -> return emptyList()
+        }
+    }
+
+    private fun getRunFlowWatchFiles(flowPath: Path, runFlow: YamlRunFlow): List<Path> {
+        val runFlowPath = getRunFlowPath(flowPath, runFlow.path)
+        return listOf(runFlowPath) + YamlCommandReader.getWatchFiles(runFlowPath)
     }
 
     private fun runFlow(flowPath: Path, command: YamlRunFlow): List<MaestroCommand> {
