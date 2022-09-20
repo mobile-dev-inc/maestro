@@ -46,7 +46,7 @@ data class YamlConfig(
 
         val initCommands = when (initFlow) {
             is StringInitFlow -> stringInitCommands(initFlow, flowPath)
-            is YamlInitFlow -> initFlow.commands.map { it.toCommand(appId) }
+            is YamlInitFlow -> initFlow.commands.flatMap { it.toCommands(appId) }
         }
 
         return MaestroInitFlow(

@@ -47,7 +47,7 @@ object YamlCommandReader {
     // If it exists, automatically resolves the initFlow file and inlines the commands into the config
     fun readCommands(flowPath: Path): List<MaestroCommand> = mapParsingErrors {
         val (config, commands) = readConfigAndCommands(flowPath)
-        val maestroCommands = commands.map { it.toCommand(config.appId) }
+        val maestroCommands = commands.flatMap { it.toCommands(config.appId) }
         listOfNotNull(config.toCommand(flowPath), *maestroCommands.toTypedArray())
     }
 

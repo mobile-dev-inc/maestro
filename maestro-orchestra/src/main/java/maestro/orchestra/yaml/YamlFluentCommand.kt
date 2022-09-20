@@ -62,35 +62,41 @@ data class YamlFluentCommand(
 ) {
 
     @SuppressWarnings("ComplexMethod")
-    fun toCommand(appId: String): MaestroCommand {
+    fun toCommands(appId: String): List<MaestroCommand> {
         return when {
-            launchApp != null -> launchApp(launchApp, appId)
-            tapOn != null -> tapCommand(tapOn)
-            longPressOn != null -> tapCommand(longPressOn, longPress = true)
-            assertVisible != null -> MaestroCommand(AssertCommand(visible = toElementSelector(assertVisible)))
-            assertNotVisible != null -> MaestroCommand(AssertCommand(notVisible = toElementSelector(assertNotVisible)))
-            inputText != null -> MaestroCommand(InputTextCommand(inputText))
-            swipe != null -> swipeCommand(swipe)
-            openLink != null -> MaestroCommand(OpenLinkCommand(openLink))
-            pressKey != null -> MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey")))
-            eraseText != null -> MaestroCommand(EraseTextCommand(charactersToErase = eraseText.charactersToErase))
-            action != null -> when (action) {
-                "back" -> MaestroCommand(BackPressCommand())
-                "hide keyboard" -> MaestroCommand(HideKeyboardCommand())
-                "scroll" -> MaestroCommand(ScrollCommand())
-                "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
-                else -> error("Unknown navigation target: $action")
-            }
-            takeScreenshot != null -> MaestroCommand(TakeScreenshotCommand(takeScreenshot.path))
-            extendedWaitUntil != null -> extendedWait(extendedWaitUntil)
-            stopApp != null -> MaestroCommand(
-                StopAppCommand(
-                    appId = stopApp.appId ?: appId,
+            launchApp != null -> listOf(launchApp(launchApp, appId))
+            tapOn != null -> listOf(tapCommand(tapOn))
+            longPressOn != null -> listOf(tapCommand(longPressOn, longPress = true))
+            assertVisible != null -> listOf(MaestroCommand(AssertCommand(visible = toElementSelector(assertVisible))))
+            assertNotVisible != null -> listOf(MaestroCommand(AssertCommand(notVisible = toElementSelector(assertNotVisible))))
+            inputText != null -> listOf(MaestroCommand(InputTextCommand(inputText)))
+            swipe != null -> listOf(swipeCommand(swipe))
+            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink)))
+            pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
+            eraseText != null -> listOf(MaestroCommand(EraseTextCommand(charactersToErase = eraseText.charactersToErase)))
+            action != null -> listOf(
+                when (action) {
+                    "back" -> MaestroCommand(BackPressCommand())
+                    "hide keyboard" -> MaestroCommand(HideKeyboardCommand())
+                    "scroll" -> MaestroCommand(ScrollCommand())
+                    "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
+                    else -> error("Unknown navigation target: $action")
+                }
+            )
+            takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(takeScreenshot.path)))
+            extendedWaitUntil != null -> listOf(extendedWait(extendedWaitUntil))
+            stopApp != null -> listOf(
+                MaestroCommand(
+                    StopAppCommand(
+                        appId = stopApp.appId ?: appId,
+                    )
                 )
             )
-            clearState != null -> MaestroCommand(
-                maestro.orchestra.ClearStateCommand(
-                    appId = clearState.appId ?: appId,
+            clearState != null -> listOf(
+                MaestroCommand(
+                    maestro.orchestra.ClearStateCommand(
+                        appId = clearState.appId ?: appId,
+                    )
                 )
             )
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
