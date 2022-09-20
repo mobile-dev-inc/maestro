@@ -58,6 +58,7 @@ data class YamlFluentCommand(
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
     val stopApp: YamlStopApp? = null,
     val clearState: YamlClearState? = null,
+    val runFlow: YamlRunFlow? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
