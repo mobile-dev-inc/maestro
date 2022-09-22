@@ -24,7 +24,7 @@ import idb.Idb.HIDEvent
 import idb.Idb.HIDEvent.HIDPress
 import idb.hIDEvent
 
-internal object TextInputUtil {
+object TextInputUtil {
 
     /*
      * Implementation is borrowed from Python idb client
