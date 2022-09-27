@@ -42,6 +42,7 @@ import okio.Sink
 import okio.buffer
 import okio.sink
 import okio.source
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.xml.sax.SAXException
@@ -90,10 +91,15 @@ class AndroidDriver(
 
     private fun allocateForwarder() {
         PORT_TO_FORWARDER[hostPort]?.close()
+        PORT_TO_ALLOCATION_POINT[hostPort]?.let {
+            LOGGER.warn("Port $hostPort was already allocated. Allocation point: $it")
+        }
+
         PORT_TO_FORWARDER[hostPort] = dadb.tcpForward(
             hostPort,
             7001
         )
+        PORT_TO_ALLOCATION_POINT[hostPort] = Exception().stackTraceToString()
     }
 
     private fun awaitLaunch() {
@@ -116,6 +122,7 @@ class AndroidDriver(
     override fun close() {
         PORT_TO_FORWARDER[hostPort]?.close()
         PORT_TO_FORWARDER.remove(hostPort)
+        PORT_TO_ALLOCATION_POINT.remove(hostPort)
         uninstallMaestroApks()
         instrumentationSession?.close()
         instrumentationSession = null
@@ -414,7 +421,10 @@ class AndroidDriver(
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 5000
 
+        private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
+
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()
+        private val PORT_TO_ALLOCATION_POINT = mutableMapOf<Int, String>()
 
     }
 }
