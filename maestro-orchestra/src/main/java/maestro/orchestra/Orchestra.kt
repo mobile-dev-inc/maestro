@@ -135,9 +135,14 @@ class Orchestra(
             is StopAppCommand -> maestro.stopApp(command.appId)
             is ClearStateCommand -> maestro.clearAppState(command.appId)
             is ClearKeychainCommand -> maestro.clearKeychain()
+            is RunFlowCommand -> runFlowCommand(command)
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
         }
+    }
+
+    private fun runFlowCommand(command: RunFlowCommand) {
+        executeCommands(command.commands)
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand) {

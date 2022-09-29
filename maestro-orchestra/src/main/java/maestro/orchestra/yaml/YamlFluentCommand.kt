@@ -34,6 +34,7 @@ import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PressKeyCommand
+import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.StopAppCommand
 import maestro.orchestra.SwipeCommand
@@ -42,7 +43,6 @@ import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointCommand
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -104,7 +104,13 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            runFlow != null -> runFlow(flowPath, runFlow)
+            runFlow != null -> listOf(
+                MaestroCommand(
+                    RunFlowCommand(
+                        commands = runFlow(flowPath, runFlow)
+                    )
+                )
+            )
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }

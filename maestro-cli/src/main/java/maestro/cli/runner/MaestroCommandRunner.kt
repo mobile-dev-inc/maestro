@@ -22,6 +22,7 @@ package maestro.cli.runner
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.CompositeCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
 import maestro.orchestra.OrchestraAppState
@@ -46,6 +47,7 @@ object MaestroCommandRunner {
                         // Don't render configuration commands
                         .filter { it.asCommand() !is ApplyConfigurationCommand }
                         .mapIndexed { _, command ->
+                            // TODO handle sub commands
                             CommandState(
                                 command = command,
                                 status = commandStatuses[command] ?: CommandStatus.PENDING
@@ -57,7 +59,16 @@ object MaestroCommandRunner {
                         .mapIndexed { _, command ->
                             CommandState(
                                 command = command,
-                                status = commandStatuses[command] ?: CommandStatus.PENDING
+                                status = commandStatuses[command] ?: CommandStatus.PENDING,
+                                subCommands = (command.asCommand() as? CompositeCommand)
+                                    ?.subCommands()
+                                    ?.map { subCommand ->
+                                        CommandState(
+                                            command = subCommand,
+                                            status = commandStatuses[subCommand] ?: CommandStatus.PENDING,  // TODO parent command might skip sub commands
+                                            // TODO make it recursive
+                                        )
+                                    }
                             )
                         },
                 )

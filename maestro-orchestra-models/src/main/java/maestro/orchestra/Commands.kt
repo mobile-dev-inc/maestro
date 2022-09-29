@@ -31,6 +31,12 @@ sealed interface Command {
 
 }
 
+sealed interface CompositeCommand : Command {
+
+    fun subCommands(): List<MaestroCommand>
+
+}
+
 data class SwipeCommand(
     val startPoint: Point,
     val endPoint: Point,
@@ -346,6 +352,26 @@ class ClearKeychainCommand : Command {
 
     override fun hashCode(): Int {
         return javaClass.hashCode()
+    }
+
+}
+
+data class RunFlowCommand(
+    val commands: List<MaestroCommand>,
+) : CompositeCommand {
+
+    override fun subCommands(): List<MaestroCommand> {
+        return commands
+    }
+
+    override fun description(): String {
+        return "Run"
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            commands = commands.map { it.injectEnv(env) },
+        )
     }
 
 }

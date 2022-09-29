@@ -67,16 +67,28 @@ class ResultView(
         }
     }
 
-    private fun Ansi.renderCommands(commands: List<CommandState>) {
+    private fun Ansi.renderCommands(
+        commands: List<CommandState>,
+        indent: Int = 0,
+    ) {
         val statusColumnWidth = 3
         commands.forEach {
             val statusSymbol = status(it.status)
             fgDefault()
             render(" ║    ")
+            repeat(indent) {
+                render("    ")
+            }
             render(statusSymbol)
             render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
             render(it.command.description())
-            render("\n")
+
+            it.subCommands?.let { subCommands ->
+                render("\n")
+                renderCommands(subCommands, indent + 1)
+            } ?: run {
+                render("\n")
+            }
         }
     }
 

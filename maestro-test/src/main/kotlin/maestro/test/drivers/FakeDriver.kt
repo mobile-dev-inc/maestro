@@ -27,11 +27,18 @@ import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Point
 import maestro.TreeNode
+import maestro.test.drivers.FakeLayoutElement.*
+import okio.Buffer
 import okio.Sink
 import okio.buffer
+import java.awt.Color
+import java.awt.FlowLayout
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import javax.swing.ImageIcon
+import javax.swing.JFrame
+import javax.swing.JLabel
 
 class FakeDriver : Driver {
 
@@ -338,4 +345,45 @@ class FakeDriver : Driver {
 
         private val MAPPER = jacksonObjectMapper()
     }
+}
+
+fun main() {
+    fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {
+        val driver = FakeDriver()
+        driver.setLayout(FakeLayoutElement().apply { builder() })
+        driver.open()
+        return driver
+    }
+
+    val driver = driver {
+        element {
+            bounds = Bounds(0, 100, 100, 200)
+            text = "Parent"
+
+            element {
+                bounds = Bounds(50, 150, 100, 200)
+                text = "Child"
+                color = Color.RED
+
+                onClick = {
+
+                }
+            }
+        }
+    }
+
+    val buffer = Buffer()
+    driver.takeScreenshot(buffer)
+
+    val image = ImageIO.read(buffer.inputStream())
+
+    val icon = ImageIcon(image)
+    val frame = JFrame()
+    frame.layout = FlowLayout()
+    frame.setSize(driver.deviceInfo().widthPixels, driver.deviceInfo().heightPixels)
+    val lbl = JLabel()
+    lbl.icon = icon
+    frame.add(lbl)
+    frame.isVisible = true
+    frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 }
