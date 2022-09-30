@@ -1384,15 +1384,16 @@ class IntegrationTest {
         val commands = readCommands("049_run_flow_conditionally")
 
         val driver = driver {
-            element {
-                text = "Text"
+            val indicator = element {
+                text = "Not Clicked"
+                bounds = Bounds(0, 100, 0, 200)
             }
 
             element {
-                text = "Button"
+                text = "button"
                 bounds = Bounds(0, 0, 100, 100)
                 onClick = {
-                    text = "Clicked"
+                    indicator.text = "Clicked"
                 }
             }
         }
