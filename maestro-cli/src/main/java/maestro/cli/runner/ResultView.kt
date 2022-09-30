@@ -83,15 +83,13 @@ class ResultView(
             render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
             render(it.command.description())
 
-            val expand = it.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED)
-
             if (it.status == CommandStatus.SKIPPED) {
                 render(" (skipped)")
             }
 
             render("\n")
 
-            if (expand) {
+            if (it.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED)) {
                 it.subCommands?.let { subCommands ->
                     renderCommands(subCommands, indent + 1)
                 }
