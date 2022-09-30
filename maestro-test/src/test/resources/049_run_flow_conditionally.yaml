@@ -1,0 +1,10 @@
+appId: com.other.app
+---
+- runFlow:
+    when:
+      visible: Text
+    file: 008_tap_on_element.yaml
+- runFlow:
+    when:
+      notVisible: Text
+    file: 008_tap_on_element.yaml

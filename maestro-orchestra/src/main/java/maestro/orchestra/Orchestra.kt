@@ -46,6 +46,7 @@ class Orchestra(
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit = { _, _, e -> throw e },
+    private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
 ) {
 
     /**
@@ -107,6 +108,9 @@ class Orchestra(
                 try {
                     executeCommand(command.asCommand())
                     onCommandComplete(index, command)
+                } catch (ignored: CommandSkipped) {
+                    // Swallow exception
+                    onCommandSkipped(index, command)
                 } catch (e: Throwable) {
                     onCommandFailed(index, command, e)
                     return false
@@ -142,7 +146,64 @@ class Orchestra(
     }
 
     private fun runFlowCommand(command: RunFlowCommand) {
-        executeCommands(command.commands)
+        if (evaluateCondition(command.condition)) {
+            runSubFlow(command.commands)
+        } else {
+            throw CommandSkipped
+        }
+    }
+
+    private fun evaluateCondition(condition: Condition?): Boolean {
+        if (condition == null) {
+            return true
+        }
+
+        condition.visible?.let {
+            try {
+                findElement(it, timeoutMs = optionalLookupTimeoutMs)
+            } catch (ignored: MaestroException.ElementNotFound) {
+                return false
+            }
+        }
+
+        condition.notVisible?.let {
+            val result = MaestroTimer.withTimeout(optionalLookupTimeoutMs) {
+                try {
+                    findElement(it, timeoutMs = 500L)
+
+                    // If we got to that point, the element is still visible.
+                    // Returning null to keep waiting.
+                    null
+                } catch (ignored: MaestroException.ElementNotFound) {
+                    // Element was not visible, as we expected
+                    true
+                }
+            }
+
+            // Element was actually visible
+            if (result != true) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun runSubFlow(commands: List<MaestroCommand>) {
+        commands
+            .forEachIndexed { index, command ->
+                onCommandStart(index, command)
+                try {
+                    executeCommand(command.asCommand())
+                    onCommandComplete(index, command)
+                } catch (ignored: CommandSkipped) {
+                    // Swallow exception
+                    onCommandSkipped(index, command)
+                } catch (e: Throwable) {
+                    onCommandFailed(index, command, e)
+                    throw e
+                }
+            }
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand) {
@@ -379,6 +440,8 @@ class Orchestra(
     private fun swipeCommand(command: SwipeCommand) {
         maestro.swipe(command.startPoint, command.endPoint)
     }
+
+    private object CommandSkipped : Exception()
 
     companion object {
 

@@ -83,11 +83,18 @@ class ResultView(
             render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
             render(it.command.description())
 
-            it.subCommands?.let { subCommands ->
-                render("\n")
-                renderCommands(subCommands, indent + 1)
-            } ?: run {
-                render("\n")
+            val expand = it.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED)
+
+            if (it.status == CommandStatus.SKIPPED) {
+                render(" (skipped)")
+            }
+
+            render("\n")
+
+            if (expand) {
+                it.subCommands?.let { subCommands ->
+                    renderCommands(subCommands, indent + 1)
+                }
             }
         }
     }
@@ -98,6 +105,7 @@ class ResultView(
             CommandStatus.FAILED -> "❌"
             CommandStatus.RUNNING -> "⏳"
             CommandStatus.PENDING -> "\uD83D\uDD32"
+            CommandStatus.SKIPPED -> "⚪️"
         }
     }
 

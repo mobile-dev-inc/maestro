@@ -358,6 +358,8 @@ class ClearKeychainCommand : Command {
 
 data class RunFlowCommand(
     val commands: List<MaestroCommand>,
+    val condition: Condition? = null,
+    val sourceDescription: String? = null,
 ) : CompositeCommand {
 
     override fun subCommands(): List<MaestroCommand> {
@@ -365,7 +367,17 @@ data class RunFlowCommand(
     }
 
     override fun description(): String {
-        return "Run"
+        val runDescription = if (sourceDescription != null) {
+            "Run $sourceDescription"
+        } else {
+            "Run flow"
+        }
+
+        return if (condition == null) {
+            runDescription
+        } else {
+            "$runDescription when ${condition.description()}"
+        }
     }
 
     override fun injectEnv(env: Map<String, String>): Command {

@@ -1378,6 +1378,35 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 049 - Run flow conditionally`() {
+        // Given
+        val commands = readCommands("049_run_flow_conditionally")
+
+        val driver = driver {
+            element {
+                text = "Text"
+            }
+
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    text = "Clicked"
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), 1)
+    }
+
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {

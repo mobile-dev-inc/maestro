@@ -40,37 +40,12 @@ object MaestroCommandRunner {
         val initFlow = YamlCommandReader.getConfig(commands)?.initFlow
 
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
+
         fun refreshUi() {
             view.setState(
                 ResultView.UiState.Running(
-                    initCommands = (initFlow?.commands ?: emptyList())
-                        // Don't render configuration commands
-                        .filter { it.asCommand() !is ApplyConfigurationCommand }
-                        .mapIndexed { _, command ->
-                            // TODO handle sub commands
-                            CommandState(
-                                command = command,
-                                status = commandStatuses[command] ?: CommandStatus.PENDING
-                            )
-                        },
-                    commands = commands
-                        // Don't render configuration commands
-                        .filter { it.asCommand() !is ApplyConfigurationCommand }
-                        .mapIndexed { _, command ->
-                            CommandState(
-                                command = command,
-                                status = commandStatuses[command] ?: CommandStatus.PENDING,
-                                subCommands = (command.asCommand() as? CompositeCommand)
-                                    ?.subCommands()
-                                    ?.map { subCommand ->
-                                        CommandState(
-                                            command = subCommand,
-                                            status = commandStatuses[subCommand] ?: CommandStatus.PENDING,  // TODO parent command might skip sub commands
-                                            // TODO make it recursive
-                                        )
-                                    }
-                            )
-                        },
+                    initCommands = toCommandStates(initFlow?.commands ?: emptyList(), commandStatuses),
+                    commands = toCommandStates(commands, commandStatuses)
                 )
             )
         }
@@ -95,6 +70,10 @@ object MaestroCommandRunner {
                 commandStatuses[command] = CommandStatus.FAILED
                 refreshUi()
             },
+            onCommandSkipped = { _, command ->
+                commandStatuses[command] = CommandStatus.SKIPPED
+                refreshUi()
+            },
         )
 
         val cachedState = if (cachedAppState == null) {
@@ -109,6 +88,24 @@ object MaestroCommandRunner {
         val flowSuccess = orchestra.runFlow(commands, cachedState)
 
         return Result(flowSuccess = flowSuccess, cachedAppState = cachedState)
+    }
+
+    private fun toCommandStates(
+        commands: List<MaestroCommand>,
+        commandStatuses: MutableMap<MaestroCommand, CommandStatus>,
+    ): List<CommandState> {
+        return commands
+            // Don't render configuration commands
+            .filter { it.asCommand() !is ApplyConfigurationCommand }
+            .mapIndexed { _, command ->
+                CommandState(
+                    command = command,
+                    status = commandStatuses[command] ?: CommandStatus.PENDING,
+                    subCommands = (command.asCommand() as? CompositeCommand)
+                        ?.subCommands()
+                        ?.let { toCommandStates(it, commandStatuses) }
+                )
+            }
     }
 
     data class Result(

@@ -25,6 +25,7 @@ import maestro.Point
 import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
+import maestro.orchestra.Condition
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
@@ -107,7 +108,9 @@ data class YamlFluentCommand(
             runFlow != null -> listOf(
                 MaestroCommand(
                     RunFlowCommand(
-                        commands = runFlow(flowPath, runFlow)
+                        commands = runFlow(flowPath, runFlow),
+                        condition = runFlow.`when`?.toCondition(),
+                        sourceDescription = runFlow.file,
                     )
                 )
             )
@@ -123,12 +126,12 @@ data class YamlFluentCommand(
     }
 
     private fun getRunFlowWatchFiles(flowPath: Path, runFlow: YamlRunFlow): List<Path> {
-        val runFlowPath = getRunFlowPath(flowPath, runFlow.path)
+        val runFlowPath = getRunFlowPath(flowPath, runFlow.file)
         return listOf(runFlowPath) + YamlCommandReader.getWatchFiles(runFlowPath)
     }
 
     private fun runFlow(flowPath: Path, command: YamlRunFlow): List<MaestroCommand> {
-        val runFlowPath = getRunFlowPath(flowPath, command.path)
+        val runFlowPath = getRunFlowPath(flowPath, command.file)
         return YamlCommandReader.readCommands(runFlowPath)
     }
 
@@ -308,6 +311,13 @@ data class YamlFluentCommand(
                 ?.map { ElementTrait.valueOf(it.replace('-', '_').uppercase()) },
             index = selector.index,
             optional = selector.optional ?: false,
+        )
+    }
+
+    private fun YamlCondition.toCondition(): Condition {
+        return Condition(
+            visible = visible?.let { toElementSelector(it) },
+            notVisible = notVisible?.let { toElementSelector(it) },
         )
     }
 
