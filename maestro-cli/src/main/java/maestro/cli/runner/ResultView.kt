@@ -89,7 +89,10 @@ class ResultView(
 
             render("\n")
 
-            if (it.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED)) {
+            val expand = it.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED) &&
+                (it.subCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+
+            if (expand) {
                 it.subCommands?.let { subCommands ->
                     renderCommands(subCommands, indent + 1)
                 }

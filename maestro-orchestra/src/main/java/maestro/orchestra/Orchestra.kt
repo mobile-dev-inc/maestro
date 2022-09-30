@@ -41,7 +41,7 @@ class Orchestra(
     private val stateDir: File? = null,
     private val screenshotsDir: File? = null,
     private val lookupTimeoutMs: Long = 15000L,
-    private val optionalLookupTimeoutMs: Long = 3000L,
+    private val optionalLookupTimeoutMs: Long = 5000L,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
