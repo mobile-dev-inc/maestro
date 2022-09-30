@@ -77,7 +77,7 @@ class ResultView(
             fgDefault()
             render(" ║    ")
             repeat(indent) {
-                render("    ")
+                render("  ")
             }
             render(statusSymbol)
             render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
