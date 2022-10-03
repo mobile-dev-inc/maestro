@@ -448,7 +448,7 @@ data class RepeatCommand(
                 "Repeat while ${condition.description()}"
             }
             timesInt > 1 -> "Repeat $timesInt times"
-            else -> "Repeat once"
+            else -> "Repeat indefinitely"
         }
     }
 

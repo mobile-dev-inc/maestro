@@ -153,11 +153,7 @@ class Orchestra(
     }
 
     private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand) {
-        val maxRuns = if (command.condition != null) {
-            command.times?.toIntOrNull() ?: Int.MAX_VALUE
-        } else {
-            command.times?.toIntOrNull() ?: 1
-        }
+        val maxRuns = command.times?.toIntOrNull() ?: Int.MAX_VALUE
 
         var counter = 0
         var metadata = CommandMetadata(
