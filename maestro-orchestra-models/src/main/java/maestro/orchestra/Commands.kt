@@ -429,6 +429,7 @@ data class SetLocationCommand(
 
 data class RepeatCommand(
     val times: String? = null,
+    val condition: Condition? = null,
     val commands: List<MaestroCommand>,
 ) : CompositeCommand {
 
@@ -439,10 +440,15 @@ data class RepeatCommand(
     override fun description(): String {
         val timesInt = times?.toIntOrNull() ?: 1
 
-        return if (timesInt > 1) {
-            "Repeat $timesInt times"
-        } else {
-            "Repeat once"
+        return when {
+            condition != null && timesInt > 1 -> {
+                "Repeat while ${condition.description()} (up to $timesInt times)"
+            }
+            condition != null -> {
+                "Repeat while ${condition.description()}"
+            }
+            timesInt > 1 -> "Repeat $timesInt times"
+            else -> "Repeat once"
         }
     }
 

@@ -149,11 +149,18 @@ class Orchestra(
     }
 
     private fun repeatCommand(command: RepeatCommand) {
-        val timesInt = command.times?.toIntOrNull() ?: 1
-
-        repeat(timesInt) {
-            runSubFlow(command.commands)
+        val maxRuns = if (command.condition != null) {
+            command.times?.toIntOrNull() ?: Int.MAX_VALUE
+        } else {
+            command.times?.toIntOrNull() ?: 1
         }
+
+        var counter = 0
+
+        do {
+            runSubFlow(command.commands)
+            counter++
+        } while ((command.condition?.let { evaluateCondition(it) } != false) && counter < maxRuns)
     }
 
     private fun runFlowCommand(command: RunFlowCommand) {
