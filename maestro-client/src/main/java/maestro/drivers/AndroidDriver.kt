@@ -291,7 +291,7 @@ class AndroidDriver(
     }
 
     override fun inputText(text: String) {
-        text.forEach {
+        text.chunked(3).forEach {
             dadb.shell("input text \"$it\"")
         }
     }
