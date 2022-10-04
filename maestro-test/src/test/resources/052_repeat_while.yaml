@@ -6,3 +6,9 @@ appId: com.other.app
     commands:
       - tapOn: Button
 - assertVisible: "3"
+- repeat:
+    while:
+      notVisible: "3"
+    commands:
+      - tapOn: Button
+- assertVisible: "3"

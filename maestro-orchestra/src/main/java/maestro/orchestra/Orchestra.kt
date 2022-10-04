@@ -47,6 +47,8 @@ class Orchestra(
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit = { _, _, e -> throw e },
     private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
+    private val onCommandReset: (MaestroCommand) -> Unit = {},
+    private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
 ) {
 
     /**
@@ -106,7 +108,7 @@ class Orchestra(
             .forEachIndexed { index, command ->
                 onCommandStart(index, command)
                 try {
-                    executeCommand(command.asCommand())
+                    executeCommand(command)
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
@@ -119,7 +121,9 @@ class Orchestra(
         return true
     }
 
-    private fun executeCommand(command: Command?) {
+    private fun executeCommand(maestroCommand: MaestroCommand) {
+        val command = maestroCommand.asCommand()
+
         return when (command) {
             is TapOnElementCommand -> {
                 tapOnElement(command, command.retryIfNoChange ?: true, command.waitUntilVisible ?: true)
@@ -142,13 +146,13 @@ class Orchestra(
             is ClearKeychainCommand -> maestro.clearKeychain()
             is RunFlowCommand -> runFlowCommand(command)
             is SetLocationCommand -> maestro.setLocation(command.latitude, command.longitude)
-            is RepeatCommand -> repeatCommand(command)
+            is RepeatCommand -> repeatCommand(command, maestroCommand)
             is ApplyConfigurationCommand, null -> { /* no-op */
             }
         }
     }
 
-    private fun repeatCommand(command: RepeatCommand) {
+    private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand) {
         val maxRuns = if (command.condition != null) {
             command.times?.toIntOrNull() ?: Int.MAX_VALUE
         } else {
@@ -156,11 +160,37 @@ class Orchestra(
         }
 
         var counter = 0
+        var metadata = CommandMetadata(
+            numberOfRuns = 0,
+        )
 
-        do {
+        while ((command.condition?.let { evaluateCondition(it) } != false) && counter < maxRuns) {
+            if (counter > 0) {
+                command.commands.forEach { resetCommand(it) }
+            }
+
             runSubFlow(command.commands)
             counter++
-        } while ((command.condition?.let { evaluateCondition(it) } != false) && counter < maxRuns)
+
+            metadata = metadata.copy(
+                numberOfRuns = counter,
+            )
+            onCommandMetadataUpdate(maestroCommand, metadata)
+        }
+
+        if (counter == 0) {
+            throw CommandSkipped
+        }
+    }
+
+    private fun resetCommand(command: MaestroCommand) {
+        onCommandReset(command)
+
+        (command.asCommand() as? CompositeCommand)?.let {
+            it.subCommands().forEach { command ->
+                resetCommand(command)
+            }
+        }
     }
 
     private fun runFlowCommand(command: RunFlowCommand) {
@@ -212,7 +242,7 @@ class Orchestra(
             .forEachIndexed { index, command ->
                 onCommandStart(index, command)
                 try {
-                    executeCommand(command.asCommand())
+                    executeCommand(command)
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
@@ -460,6 +490,10 @@ class Orchestra(
     }
 
     private object CommandSkipped : Exception()
+
+    data class CommandMetadata(
+        val numberOfRuns: Int? = null,
+    )
 
     companion object {
 
