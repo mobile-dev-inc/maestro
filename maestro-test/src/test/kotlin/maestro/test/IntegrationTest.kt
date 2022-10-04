@@ -1379,9 +1379,39 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 049 - Input text random`() {
+    fun `Case 049 - Run flow conditionally`() {
         // Given
-        val commands = readCommands("049_text_random")
+        val commands = readCommands("049_run_flow_conditionally")
+
+        val driver = driver {
+            val indicator = element {
+                text = "Not Clicked"
+                bounds = Bounds(0, 100, 0, 200)
+            }
+
+            element {
+                text = "button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    indicator.text = "Clicked"
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), 1)
+    }
+
+    @Test
+    fun `Case 050 - Paste from Clipboard`() {
+        // Given
+        val commands = readCommands("050_clipboard_paste")
 
         val driver = driver {
         }
@@ -1393,27 +1423,12 @@ class IntegrationTest {
 
         // Then
         // No test failure
-        driver.assertAllEvent(condition = {
-            ((it as? Event.InputText?)?.text?.length ?: -1) >= 5
-        })
-        driver.assertAnyEvent(condition = {
-            val number = try {
-                (it as? Event.InputText?)?.text?.toInt() ?: -1
-            } catch (e: NumberFormatException) {
-                -1
-            }
-            number in 10000..999999
-        })
-
-        driver.assertAnyEvent(condition = {
-            val text = (it as? Event.InputText?)?.text ?: ""
-            text.contains("@")
-        })
-
-        driver.assertAnyEvent(condition = {
-            val text = (it as? Event.InputText?)?.text ?: ""
-            text.contains(" ")
-        })
+        driver.assertEvents(
+            listOf(
+                Event.ClipboardPaste,
+                Event.ClipboardPaste,
+            )
+        )
     }
 
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)

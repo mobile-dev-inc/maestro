@@ -32,6 +32,12 @@ sealed interface Command {
 
 }
 
+sealed interface CompositeCommand : Command {
+
+    fun subCommands(): List<MaestroCommand>
+
+}
+
 data class SwipeCommand(
     val startPoint: Point,
     val endPoint: Point,
@@ -119,6 +125,31 @@ class HideKeyboardCommand : Command {
     }
 
     override fun injectEnv(env: Map<String, String>): HideKeyboardCommand {
+        return this
+    }
+}
+
+class ClipboardPasteCommand : Command {
+
+    override fun equals(other: Any?): Boolean {
+        if (this == other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    override fun toString(): String {
+        return "ClipboardPasteCommand()"
+    }
+
+    override fun description(): String {
+        return "Paste from Clipboard"
+    }
+
+    override fun injectEnv(env: Map<String, String>): ClipboardPasteCommand {
         return this
     }
 }
@@ -380,3 +411,34 @@ data class InputTextRandomCommand(
     }
 }
 
+data class RunFlowCommand(
+    val commands: List<MaestroCommand>,
+    val condition: Condition? = null,
+    val sourceDescription: String? = null,
+) : CompositeCommand {
+
+    override fun subCommands(): List<MaestroCommand> {
+        return commands
+    }
+
+    override fun description(): String {
+        val runDescription = if (sourceDescription != null) {
+            "Run $sourceDescription"
+        } else {
+            "Run flow"
+        }
+
+        return if (condition == null) {
+            runDescription
+        } else {
+            "$runDescription when ${condition.description()}"
+        }
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            commands = commands.map { it.injectEnv(env) },
+        )
+    }
+
+}

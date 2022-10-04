@@ -278,6 +278,10 @@ class AndroidDriver(
         dadb.shell("input keyevent 111")
     }
 
+    override fun clipboardPaste() {
+        dadb.shell("input keyevent 279")
+    }
+
     override fun takeScreenshot(out: Sink) {
         val deviceScreenshotPath = "/sdcard/maestro-screenshot.png"
 
@@ -291,7 +295,7 @@ class AndroidDriver(
     }
 
     override fun inputText(text: String) {
-        text.forEach {
+        text.chunked(3).forEach {
             dadb.shell("input text \"$it\"")
         }
     }
