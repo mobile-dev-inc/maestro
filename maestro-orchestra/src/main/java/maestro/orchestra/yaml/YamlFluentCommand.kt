@@ -25,17 +25,18 @@ import maestro.Point
 import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
+import maestro.orchestra.ClipboardPasteCommand
 import maestro.orchestra.Condition
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
 import maestro.orchestra.HideKeyboardCommand
-import maestro.orchestra.ClipboardPasteCommand
 import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PressKeyCommand
+import maestro.orchestra.RepeatCommand
 import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.SetLocationCommand
@@ -68,6 +69,7 @@ data class YamlFluentCommand(
     val clearState: YamlClearState? = null,
     val runFlow: YamlRunFlow? = null,
     val setLocation: YamlSetLocation? = null,
+    val repeat: YamlRepeatCommand? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -123,6 +125,15 @@ data class YamlFluentCommand(
                     SetLocationCommand(
                         latitude = setLocation.latitude,
                         longitude = setLocation.longitude,
+                    )
+                )
+            )
+            repeat != null -> listOf(
+                MaestroCommand(
+                    RepeatCommand(
+                        times = repeat.times,
+                        commands = repeat.commands
+                            .flatMap { it.toCommands(flowPath, appId) },
                     )
                 )
             )

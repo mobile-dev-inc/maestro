@@ -426,3 +426,31 @@ data class SetLocationCommand(
         return this
     }
 }
+
+data class RepeatCommand(
+    val times: String? = null,
+    val commands: List<MaestroCommand>,
+) : CompositeCommand {
+
+    override fun subCommands(): List<MaestroCommand> {
+        return commands
+    }
+
+    override fun description(): String {
+        val timesInt = times?.toIntOrNull() ?: 1
+
+        return if (timesInt > 1) {
+            "Repeat $timesInt times"
+        } else {
+            "Repeat once"
+        }
+    }
+
+    override fun injectEnv(env: Map<String, String>): Command {
+        return copy(
+            times = times?.injectEnv(env),
+            commands = commands.map { it.injectEnv(env) },
+        )
+    }
+
+}

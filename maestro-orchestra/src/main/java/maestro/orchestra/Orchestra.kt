@@ -141,8 +141,18 @@ class Orchestra(
             is ClearStateCommand -> maestro.clearAppState(command.appId)
             is ClearKeychainCommand -> maestro.clearKeychain()
             is RunFlowCommand -> runFlowCommand(command)
-            is ApplyConfigurationCommand, null -> { /* no-op */ }
             is SetLocationCommand -> maestro.setLocation(command.latitude, command.longitude)
+            is RepeatCommand -> repeatCommand(command)
+            is ApplyConfigurationCommand, null -> { /* no-op */
+            }
+        }
+    }
+
+    private fun repeatCommand(command: RepeatCommand) {
+        val timesInt = command.times?.toIntOrNull() ?: 1
+
+        repeat(timesInt) {
+            runSubFlow(command.commands)
         }
     }
 
