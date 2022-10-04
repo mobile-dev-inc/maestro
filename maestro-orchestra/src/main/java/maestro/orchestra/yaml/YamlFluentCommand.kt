@@ -30,6 +30,7 @@ import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
 import maestro.orchestra.HideKeyboardCommand
 import maestro.orchestra.InputTextCommand
+import maestro.orchestra.InputTextRandomCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.OpenLinkCommand
@@ -42,7 +43,6 @@ import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointCommand
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -54,6 +54,7 @@ data class YamlFluentCommand(
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val action: String? = null,
     val inputText: String? = null,
+    val inputTextRandom: YamlInputTextRandom? = null,
     val launchApp: YamlLaunchApp? = null,
     val swipe: YamlElementSelectorUnion? = null,
     val openLink: String? = null,
@@ -75,6 +76,7 @@ data class YamlFluentCommand(
             assertVisible != null -> listOf(MaestroCommand(AssertCommand(visible = toElementSelector(assertVisible))))
             assertNotVisible != null -> listOf(MaestroCommand(AssertCommand(notVisible = toElementSelector(assertNotVisible))))
             inputText != null -> listOf(MaestroCommand(InputTextCommand(inputText)))
+            inputTextRandom != null -> listOf(MaestroCommand(InputTextRandomCommand(inputType = inputTextRandom.inputType, length = inputTextRandom.length)))
             swipe != null -> listOf(swipeCommand(swipe))
             openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
@@ -334,6 +336,10 @@ data class YamlFluentCommand(
 
                 "eraseText" -> YamlFluentCommand(
                     eraseText = YamlEraseText(charactersToErase = 50)
+                )
+
+                "inputTextRandomCommand" -> YamlFluentCommand(
+                    inputTextRandom = YamlInputTextRandom(inputType = "text", length = 8),
                 )
 
                 "back" -> YamlFluentCommand(

@@ -33,6 +33,7 @@ data class MaestroCommand(
     val backPressCommand: BackPressCommand? = null,
     val assertCommand: AssertCommand? = null,
     val inputTextCommand: InputTextCommand? = null,
+    val inputTextRandomCommand: InputTextRandomCommand? = null,
     val launchAppCommand: LaunchAppCommand? = null,
     val applyConfigurationCommand: ApplyConfigurationCommand? = null,
     val openLinkCommand: OpenLinkCommand? = null,
@@ -53,6 +54,7 @@ data class MaestroCommand(
         backPressCommand = command as? BackPressCommand,
         assertCommand = command as? AssertCommand,
         inputTextCommand = command as? InputTextCommand,
+        inputTextRandomCommand = command as? InputTextRandomCommand,
         launchAppCommand = command as? LaunchAppCommand,
         applyConfigurationCommand = command as? ApplyConfigurationCommand,
         openLinkCommand = command as? OpenLinkCommand,
@@ -73,6 +75,7 @@ data class MaestroCommand(
         backPressCommand != null -> backPressCommand
         assertCommand != null -> assertCommand
         inputTextCommand != null -> inputTextCommand
+        inputTextRandomCommand != null -> inputTextRandomCommand
         launchAppCommand != null -> launchAppCommand
         applyConfigurationCommand != null -> applyConfigurationCommand
         openLinkCommand != null -> openLinkCommand
