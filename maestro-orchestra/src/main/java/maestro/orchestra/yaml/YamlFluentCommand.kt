@@ -132,7 +132,6 @@ data class YamlFluentCommand(
                 MaestroCommand(
                     RepeatCommand(
                         times = repeat.times,
-                        condition = repeat.`while`?.toCondition(),
                         commands = repeat.commands
                             .flatMap { it.toCommands(flowPath, appId) },
                     )

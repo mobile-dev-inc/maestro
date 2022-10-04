@@ -1496,46 +1496,6 @@ class IntegrationTest {
         )
     }
 
-    @Test
-    fun `Case 053 - Repeat while condition`() {
-        // Given
-        val commands = readCommands("053_repeat_while")
-
-        var counter = 0
-        val driver = driver {
-
-            val indicator = element {
-                text = counter.toString()
-                bounds = Bounds(0, 100, 100, 200)
-            }
-
-            element {
-                text = "Button"
-                bounds = Bounds(0, 0, 100, 100)
-                onClick = {
-                    counter++
-                    indicator.text = counter.toString()
-                }
-            }
-
-        }
-
-        // When
-        Maestro(driver).use {
-            orchestra(it).runFlow(commands)
-        }
-
-        // Then
-        // No test failure
-        driver.assertEvents(
-            listOf(
-                Event.Tap(Point(50, 50)),
-                Event.Tap(Point(50, 50)),
-                Event.Tap(Point(50, 50)),
-            )
-        )
-    }
-
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)
 
     private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {
