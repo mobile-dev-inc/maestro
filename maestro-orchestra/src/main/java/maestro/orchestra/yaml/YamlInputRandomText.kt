@@ -19,7 +19,14 @@
 
 package maestro.orchestra.yaml
 
-data class YamlInputTextRandom(
-    val inputType: String?,
+data class YamlInputRandomText(
     val length: Int?,
 )
+
+data class YamlInputRandomNumber(
+    val length: Int?,
+)
+
+class YamlInputRandomEmail
+
+class YamlInputRandomPersonName

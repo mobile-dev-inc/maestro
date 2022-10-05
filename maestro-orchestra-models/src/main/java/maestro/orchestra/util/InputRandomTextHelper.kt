@@ -1,6 +1,6 @@
 package maestro.orchestra.util
 
-object InputTextRandom {
+object InputRandomTextHelper {
     private const val CHARSET_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz0123456789"
     private const val CHARSET_NUMBER = "0123456789"
     private const val CHARSET_NUMBER_WITHOUT_ZERO = "123456789"
@@ -29,16 +29,28 @@ object InputTextRandom {
     )
     private val LIST_POPULAR_EMAIL_DOMAIN = arrayOf("gmail.com", "yahoo.com", "hotmail.com", "aol.com", "msn.com", "outlook.com")
 
+    /**
+     * Returns random person name format: FistName LastName
+     */
     fun randomPersonName() = String.format(
         "%s %s",
         LIST_POPULAR_FIST_NAME.random(), LIST_POPULAR_LAST_NAME.random()
     )
 
+    /**
+     * Returns random email address with format: fistName_lastName_randomTex@emailDomain
+     */
     fun randomEmail() = String.format(
-        "%s_%s@%s",
-        LIST_POPULAR_FIST_NAME.random().lowercase(), LIST_POPULAR_LAST_NAME.random().lowercase(), LIST_POPULAR_EMAIL_DOMAIN.random(),
-    )
+        "%s_%s_%s@%s",
+        LIST_POPULAR_FIST_NAME.random(),
+        LIST_POPULAR_LAST_NAME.random(),
+        getRandomText(length = 4),
+        LIST_POPULAR_EMAIL_DOMAIN.random(),
+    ).lowercase()
 
+    /**
+     * Returns random number with [length].
+     */
     fun getRandomNumber(length: Int): String {
         val randomNum = (1..length)
             .map { CHARSET_NUMBER.random() }
@@ -48,6 +60,9 @@ object InputTextRandom {
         } else randomNum
     }
 
+    /**
+     * Returns random text with [length].
+     */
     fun getRandomText(length: Int): String {
         return (1..length)
             .map { CHARSET_TEXT.random() }

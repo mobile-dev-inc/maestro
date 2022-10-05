@@ -396,10 +396,10 @@ internal class MaestroCommandSerializationTest {
     }
 
     @Test
-    fun `serialize InputTextRandomCommand`() {
+    fun `serialize InputRandomCommand with text`() {
         // given
         val command = MaestroCommand(
-            InputTextRandomCommand("number", 8)
+            InputRandomCommand(InputRandomType.TEXT, 2)
         )
 
         // when
@@ -410,8 +410,89 @@ internal class MaestroCommandSerializationTest {
         @Language("json")
         val expectedJson = """
             {
-              "inputTextRandomCommand" : {
-                "inputType" : "number",
+              "inputRandomTextCommand" : {
+                "inputType" : "TEXT",
+                "length" : 2
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+        assertThat(deserializedCommand)
+            .isEqualTo(command)
+    }
+
+    @Test
+    fun `serialize InputRandomCommand with number`() {
+        // given
+        val command = MaestroCommand(
+            InputRandomCommand(InputRandomType.NUMBER, 3)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputRandomTextCommand" : {
+                "inputType" : "NUMBER",
+                "length" : 3
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+        assertThat(deserializedCommand)
+            .isEqualTo(command)
+    }
+
+    @Test
+    fun `serialize InputRandomCommand with email`() {
+        // given
+        val command = MaestroCommand(
+            InputRandomCommand(InputRandomType.TEXT_EMAIL_ADDRESS)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputRandomTextCommand" : {
+                "inputType" : "TEXT_EMAIL_ADDRESS",
+                "length" : 8
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+        assertThat(deserializedCommand)
+            .isEqualTo(command)
+    }
+
+    @Test
+    fun `serialize InputRandomCommand with person name`() {
+        // given
+        val command = MaestroCommand(
+            InputRandomCommand(InputRandomType.TEXT_PERSON_NAME)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputRandomTextCommand" : {
+                "inputType" : "TEXT_PERSON_NAME",
                 "length" : 8
               }
             }

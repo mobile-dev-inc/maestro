@@ -22,7 +22,7 @@ package maestro.orchestra
 import maestro.KeyCode
 import maestro.Point
 import maestro.orchestra.util.Env.injectEnv
-import maestro.orchestra.util.InputTextRandom
+import maestro.orchestra.util.InputRandomTextHelper
 
 sealed interface Command {
 
@@ -382,8 +382,12 @@ class ClearKeychainCommand : Command {
 
 }
 
-data class InputTextRandomCommand(
-    val inputType: String? = "text",
+enum class InputRandomType {
+    NUMBER, TEXT, TEXT_EMAIL_ADDRESS, TEXT_PERSON_NAME,
+}
+
+data class InputRandomCommand(
+    val inputType: InputRandomType? = InputRandomType.TEXT,
     val length: Int? = 8,
 ) : Command {
 
@@ -391,12 +395,12 @@ data class InputTextRandomCommand(
         val lengthNonNull = length ?: 8
         val finalLength = if (lengthNonNull <= 0) 8 else lengthNonNull
 
-        return when (inputType?.trim() ?: "text") {
-            "number" -> InputTextRandom.getRandomNumber(finalLength)
-            "text" -> InputTextRandom.getRandomText(finalLength)
-            "textEmailAddress" -> InputTextRandom.randomEmail()
-            "textPersonName" -> InputTextRandom.randomPersonName()
-            else -> InputTextRandom.getRandomText(finalLength)
+        return when (inputType) {
+            InputRandomType.NUMBER -> InputRandomTextHelper.getRandomNumber(finalLength)
+            InputRandomType.TEXT -> InputRandomTextHelper.getRandomText(finalLength)
+            InputRandomType.TEXT_EMAIL_ADDRESS -> InputRandomTextHelper.randomEmail()
+            InputRandomType.TEXT_PERSON_NAME -> InputRandomTextHelper.randomPersonName()
+            else -> InputRandomTextHelper.getRandomText(finalLength)
         }
     }
 
@@ -404,10 +408,8 @@ data class InputTextRandomCommand(
         return "Input text random $inputType"
     }
 
-    override fun injectEnv(env: Map<String, String>): InputTextRandomCommand {
-        return copy(
-            inputType = inputType?.injectEnv(env),
-        )
+    override fun injectEnv(env: Map<String, String>): InputRandomCommand {
+        return this
     }
 }
 

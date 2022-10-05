@@ -1432,9 +1432,9 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 051 - Input text random`() {
+    fun `Case 052 - Input random`() {
         // Given
-        val commands = readCommands("051_text_random")
+        val commands = readCommands("052_text_random")
 
         val driver = driver {
         }
@@ -1455,7 +1455,7 @@ class IntegrationTest {
             } catch (e: NumberFormatException) {
                 -1
             }
-            number in 10000..999999
+            number in 10000..99999
         })
 
         driver.assertAnyEvent(condition = {
