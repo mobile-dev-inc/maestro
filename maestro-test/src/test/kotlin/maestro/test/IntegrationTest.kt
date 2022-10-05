@@ -1432,12 +1432,14 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 052 - Input random`() {
+    fun `Case 051 - Set location`() {
         // Given
-        val commands = readCommands("052_text_random")
+        val commands = readCommands("051_set_location")
 
         val driver = driver {
         }
+
+        driver.addInstalledApp("com.example.app")
 
         // When
         Maestro(driver).use {
@@ -1446,27 +1448,12 @@ class IntegrationTest {
 
         // Then
         // No test failure
-        driver.assertAllEvent(condition = {
-            ((it as? Event.InputText?)?.text?.length ?: -1) >= 5
-        })
-        driver.assertAnyEvent(condition = {
-            val number = try {
-                (it as? Event.InputText?)?.text?.toInt() ?: -1
-            } catch (e: NumberFormatException) {
-                -1
-            }
-            number in 10000..99999
-        })
-
-        driver.assertAnyEvent(condition = {
-            val text = (it as? Event.InputText?)?.text ?: ""
-            text.contains("@")
-        })
-
-        driver.assertAnyEvent(condition = {
-            val text = (it as? Event.InputText?)?.text ?: ""
-            text.contains(" ")
-        })
+        driver.assertEvents(
+            listOf(
+                Event.LaunchApp("com.example.app"),
+                Event.SetLocation(12.5266, 78.2150),
+            )
+        )
     }
 
     private fun orchestra(it: Maestro) = Orchestra(it, lookupTimeoutMs = 0L, optionalLookupTimeoutMs = 0L)

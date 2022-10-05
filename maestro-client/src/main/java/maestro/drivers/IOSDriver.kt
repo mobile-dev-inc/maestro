@@ -256,7 +256,7 @@ class IOSDriver(
     }
 
     override fun clipboardPaste() {
-        iosDevice.pressKey(40).expect {}
+        iosDevice.pressKey(125).expect {}
     }
 
     override fun takeScreenshot(out: Sink) {
@@ -269,5 +269,9 @@ class IOSDriver(
 
     override fun openLink(link: String) {
         iosDevice.openLink(link).expect {}
+    }
+
+    override fun setLocation(latitude: Double, longitude: Double) {
+        iosDevice.setLocation(latitude, longitude).expect {}
     }
 }

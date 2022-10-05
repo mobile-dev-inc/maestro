@@ -142,8 +142,8 @@ class Orchestra(
             is ClearStateCommand -> maestro.clearAppState(command.appId)
             is ClearKeychainCommand -> maestro.clearKeychain()
             is RunFlowCommand -> runFlowCommand(command)
-            is ApplyConfigurationCommand, null -> { /* no-op */
-            }
+            is ApplyConfigurationCommand, null -> { /* no-op */ }
+            is SetLocationCommand -> maestro.setLocation(command.latitude, command.longitude)
         }
     }
 
