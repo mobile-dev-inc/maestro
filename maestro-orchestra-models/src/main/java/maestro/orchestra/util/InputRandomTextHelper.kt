@@ -38,7 +38,7 @@ object InputRandomTextHelper {
     )
 
     /**
-     * Returns random email address with format: firstName_lastName_randomTex@emailDomain
+     * Returns random email address with format: firstName_lastName_randomText@emailDomain
      */
     fun randomEmail() = String.format(
         "%s_%s_%s@%s",
