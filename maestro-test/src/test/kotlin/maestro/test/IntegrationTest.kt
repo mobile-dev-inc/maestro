@@ -1457,9 +1457,47 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 052 - Repeat N times`() {
+    fun `Case 052 - Input random`() {
         // Given
-        val commands = readCommands("052_repeat_times")
+        val commands = readCommands("052_text_random")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertAllEvent(condition = {
+            ((it as? Event.InputText?)?.text?.length ?: -1) >= 5
+        })
+        driver.assertAnyEvent(condition = {
+            val number = try {
+                (it as? Event.InputText?)?.text?.toInt() ?: -1
+            } catch (e: NumberFormatException) {
+                -1
+            }
+            number in 10000..99999
+        })
+
+        driver.assertAnyEvent(condition = {
+            val text = (it as? Event.InputText?)?.text ?: ""
+            text.contains("@")
+        })
+
+        driver.assertAnyEvent(condition = {
+            val text = (it as? Event.InputText?)?.text ?: ""
+            text.contains(" ")
+        })
+    }
+
+    @Test
+    fun `Case 053 - Repeat N times`() {
+        // Given
+        val commands = readCommands("053_repeat_times")
 
         var counter = 0
         val driver = driver {
