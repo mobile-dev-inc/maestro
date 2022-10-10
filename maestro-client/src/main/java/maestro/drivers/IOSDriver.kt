@@ -181,15 +181,21 @@ class IOSDriver(
                 val attributes = mutableMapOf<String, String>()
 
                 (node.title
+                    ?: node.axUniqueId
                     ?: node.axLabel
                     ?: node.axValue
                     )?.let {
                         attributes["text"] = it
                     }
 
+                node.title?.let { attributes["title"] = it }
+
                 (node.axUniqueId)?.let {
                     attributes["resource-id"] = it
                 }
+
+                node.axLabel?.let { attributes["label"] = it }
+                node.axValue?.let { attributes["value"] = it }
 
                 node.frame?.let {
                     val left = it.x.toInt()
