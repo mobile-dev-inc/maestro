@@ -47,7 +47,7 @@ object FileDownloader {
                     destination.writeBytes(data)
                     emit(DownloadResult.Success)
                 } else {
-                    emit(DownloadResult.Error("File not downloaded"))
+                    emit(DownloadResult.Error("Network error. Response code: ${response.status}"))
                 }
             }
         }

@@ -21,7 +21,7 @@ class DownloadSamplesCommand : Callable<Int> {
         val folder = ensureSamplesFolder()
         val samplesFile = File("maestro-samples.zip")
 
-        runBlocking {
+        return runBlocking {
             try {
                 downloadSamplesZip(samplesFile)
 
@@ -29,12 +29,14 @@ class DownloadSamplesCommand : Callable<Int> {
                 archiver.extract(samplesFile, folder)
 
                 message("✅ Samples downloaded to $folder/")
+                return@runBlocking 0
+            } catch (e: Exception) {
+                err(e.message ?: "Error downloading samples: $e")
+                return@runBlocking 1
             } finally {
                 samplesFile.delete()
             }
         }
-
-        return 0
     }
 
     private suspend fun downloadSamplesZip(file: File) {
@@ -50,7 +52,7 @@ class DownloadSamplesCommand : Callable<Int> {
                         // Do nothing
                     }
                     is FileDownloader.DownloadResult.Error -> {
-                        println("Error: ${it.message}") // TODO handle errors
+                        throw it.cause ?: error(it.message)
                     }
                     is FileDownloader.DownloadResult.Progress -> {
                         progressView.set(it.progress)
@@ -89,13 +91,22 @@ class DownloadSamplesCommand : Callable<Int> {
 
     companion object {
 
-        private const val SAMPLES_URL = "https://github.com/mobile-dev-inc/maestro/releases/download/cli-1.9.0/maestro-1.9.0.zip"
+        private const val SAMPLES_URL = "https://storage.googleapis.com/mobile.dev/samples/samples.zip"
 
         private fun message(message: String) {
             println(
                 Ansi.ansi()
                     .render("\n")
                     .fgDefault()
+                    .render(message)
+            )
+        }
+
+        private fun err(message: String) {
+            println(
+                Ansi.ansi()
+                    .render("\n")
+                    .fgRed()
                     .render(message)
             )
         }
