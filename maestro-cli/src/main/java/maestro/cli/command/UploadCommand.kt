@@ -49,9 +49,6 @@ import kotlin.system.exitProcess
 )
 class UploadCommand : Callable<Int> {
 
-    @CommandLine.Parameters(description = ["The name of this upload"])
-    private lateinit var uploadName: String
-
     @CommandLine.Parameters(description = ["App binary to run your Flows against"])
     private lateinit var appFile: File
 
@@ -81,6 +78,9 @@ class UploadCommand : Callable<Int> {
 
     @Option(order = 7, names = ["-e", "--env"], description = ["Environment variables to inject into your Flows"])
     private var env: Map<String, String> = emptyMap()
+
+    @Option(order = 8, names = ["--name"], description = ["Name of the upload"])
+    private var uploadName: String? = null
 
     private lateinit var client: ApiClient
 
