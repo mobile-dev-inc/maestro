@@ -1617,6 +1617,24 @@ class IntegrationTest {
         driver.assertHasEvent(Event.Tap(Point(50, 150)))
     }
 
+    @Test
+    fun `Case 057 - Pass inner env variables to runFlow`() {
+        // Given
+        val commands = readCommands("057_runFlow_env")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.InputText("Inner Parameter"))
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,
