@@ -1578,16 +1578,7 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(
-                maestro = it,
-                onCommandFailed = { _, command, _ ->
-                    if (command.tapOnElement?.selector?.textRegex == "Non existent text") {
-                        Orchestra.ErrorResolution.CONTINUE
-                    } else {
-                        Orchestra.ErrorResolution.FAIL
-                    }
-                }
-            ).runFlow(commands)
+            orchestra(it).runFlow(commands)
         }
 
         // Then
@@ -1609,7 +1600,16 @@ class IntegrationTest {
 
         // When
         Maestro(driver).use {
-            orchestra(it).runFlow(commands)
+            orchestra(
+                maestro = it,
+                onCommandFailed = { _, command, _ ->
+                    if (command.tapOnElement?.selector?.textRegex == "Non existent text") {
+                        Orchestra.ErrorResolution.CONTINUE
+                    } else {
+                        Orchestra.ErrorResolution.FAIL
+                    }
+                },
+            ).runFlow(commands)
         }
 
         // Then
