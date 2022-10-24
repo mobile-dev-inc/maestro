@@ -51,7 +51,7 @@ class QueryCommand : Runnable {
 
     override fun run() {
 
-        MaestroFactory.createMaestro(parent?.host, parent?.port).use { maestro ->
+        MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId).use { maestro ->
             val filters = mutableListOf<ElementFilter>()
 
             text?.let {

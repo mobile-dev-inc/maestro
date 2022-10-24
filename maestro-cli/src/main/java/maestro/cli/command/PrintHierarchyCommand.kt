@@ -34,7 +34,7 @@ class PrintHierarchyCommand : Runnable {
     private val parent: App? = null
 
     override fun run() {
-        MaestroFactory.createMaestro(parent?.host, parent?.port).use {
+        MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId).use {
             val hierarchy = jacksonObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writerWithDefaultPrettyPrinter()

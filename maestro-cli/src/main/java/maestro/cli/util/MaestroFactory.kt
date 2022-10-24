@@ -29,7 +29,7 @@ object MaestroFactory {
     private const val defaultHost = "localhost"
     private const val idbPort = 10882
 
-    fun createMaestro(host: String?, port: Int?): Maestro {
+    fun createMaestro(host: String?, port: Int?, deviceId: String?): Maestro {
         if (host == null) {
             val device = PickDeviceInteractor.pickDevice()
 

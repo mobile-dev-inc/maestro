@@ -1,8 +1,16 @@
 package maestro.cli.device
 
+import maestro.cli.CliError
+
 object PickDeviceInteractor {
 
-    fun pickDevice(): Device {
+    fun pickDevice(deviceId: String? = null): Device {
+        if (deviceId != null) {
+            return DeviceService.listConnectedDevices()
+                .find { it.id == deviceId }
+                ?: throw CliError("Device with id $deviceId is not connected")
+        }
+
         return pickDeviceInternal()
             .let { pickedDevice ->
                 var result = pickedDevice

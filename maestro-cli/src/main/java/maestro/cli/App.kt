@@ -59,6 +59,9 @@ class App {
     @Option(names = ["--port"])
     var port: Int? = null
 
+    @Option(names = ["--device", "--udid"])
+    var deviceId: String? = null
+
     companion object {
         init {
             AnsiConsole.systemInstall()
