@@ -20,6 +20,7 @@
 package maestro.cli.command
 
 import maestro.cli.App
+import maestro.cli.CliError
 import maestro.cli.runner.TestRunner
 import maestro.cli.util.MaestroFactory
 import picocli.CommandLine
@@ -55,7 +56,11 @@ class TestCommand : Callable<Int> {
             )
         }
 
-        val maestro = MaestroFactory.createMaestro(parent?.platform, parent?.host, parent?.port)
+        if (parent?.platform != null) {
+            throw CliError("--platform option was deprecated. You can remove it to run your test.")
+        }
+
+        val maestro = MaestroFactory.createMaestro(parent?.host, parent?.port)
 
         if (!continuous) return TestRunner.runSingle(maestro, flowFile, env)
 

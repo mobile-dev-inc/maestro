@@ -19,27 +19,43 @@
 
 package maestro.cli.util
 
-import maestro.Maestro
-import maestro.utils.SocketUtils.isPortOpen
 import dadb.Dadb
-import dadb.adbserver.AdbServerDadb
+import dadb.adbserver.AdbServer
+import maestro.Maestro
+import maestro.cli.device.Device
+import maestro.cli.device.PickDeviceInteractor
 
 object MaestroFactory {
     private const val defaultHost = "localhost"
     private const val idbPort = 10882
 
-    fun createMaestro(platform: String?, host: String?, port: Int?): Maestro {
+    fun createMaestro(host: String?, port: Int?): Maestro {
+        if (host == null) {
+            val device = PickDeviceInteractor.pickDevice()
 
-        return when (platform) {
-            null -> { autoDetectPlatform(host, port) }
-            "android" -> {
-                createAndroid(host, port)
+            return when (device.platform) {
+                Device.Platform.ANDROID -> {
+                    Maestro.android(
+                        Dadb
+                            .list()
+                            .find { it.toString() == device.id }
+                            ?: Dadb.discover()
+                            ?: error("Unable to find device with id ${device.id}")
+                    )
+                }
+                Device.Platform.IOS -> {
+                    Maestro.ios(defaultHost, idbPort)
+                }
             }
-            "ios" -> {
+        }
+
+        return try {
+            createAndroid(host, port)
+        } catch (_: Exception) {
+            try {
                 createIos(host, port)
-            }
-            else -> {
-                throw IllegalStateException("Unknown platform: $platform")
+            } catch (_: Exception) {
+                error("No devices found.")
             }
         }
     }
@@ -50,7 +66,7 @@ object MaestroFactory {
         } else {
             Dadb.discover(host ?: defaultHost)
                 ?: createAdbServerDadb()
-                ?: throw IllegalStateException("No android devices found.")
+                ?: error("No android devices found.")
         }
 
         return Maestro.android(dadb)
@@ -58,8 +74,8 @@ object MaestroFactory {
 
     private fun createAdbServerDadb(): Dadb? {
         return try {
-            AdbServerDadb.create()
-        } catch (e: Exception) {
+            AdbServer.createDadb()
+        } catch (ignored: Exception) {
             null
         }
     }
@@ -68,15 +84,4 @@ object MaestroFactory {
         return Maestro.ios(host ?: defaultHost, port ?: idbPort)
     }
 
-    private fun autoDetectPlatform(host: String?, port: Int?): Maestro {
-        return try {
-            createAndroid(host, port)
-        } catch (_: Exception) {
-            try {
-                createIos(host, port)
-            } catch (_: Exception) {
-                throw IllegalStateException("No devices found. Select a platform by passing --platform <android|ios> for more details")
-            }
-        }
-    }
 }
