@@ -129,7 +129,11 @@ object DeviceService {
     }
 
     private fun listIOSDevices(): List<Device> {
-        val simctlList = Simctl.list()
+        val simctlList = try {
+            Simctl.list()
+        } catch (ignored: Exception) {
+            return emptyList()
+        }
 
         val runtimes = simctlList
             .runtimes
