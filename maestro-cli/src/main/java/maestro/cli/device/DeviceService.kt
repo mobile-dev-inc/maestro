@@ -35,7 +35,12 @@ object DeviceService {
 
                 ProcessBuilder(
                     emulatorBinary.absolutePath,
-                    "@${device.modelId}",
+                    "-avd",
+                    device.modelId,
+                    "-netdelay",
+                    "none",
+                    "-netspeed",
+                    "full"
                 ).start()
 
                 val dadb = MaestroTimer.withTimeout(30000) {
