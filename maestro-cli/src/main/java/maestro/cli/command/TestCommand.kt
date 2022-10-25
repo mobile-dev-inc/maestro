@@ -60,10 +60,10 @@ class TestCommand : Callable<Int> {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
 
-        val maestro = MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId)
+        val (maestro, device) = MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId)
 
-        if (!continuous) return TestRunner.runSingle(maestro, flowFile, env)
+        if (!continuous) return TestRunner.runSingle(maestro, device, flowFile, env)
 
-        TestRunner.runContinuous(maestro, flowFile, env)
+        TestRunner.runContinuous(maestro, device, flowFile, env)
     }
 }

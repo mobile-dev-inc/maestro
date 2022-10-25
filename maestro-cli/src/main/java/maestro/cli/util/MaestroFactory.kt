@@ -24,40 +24,47 @@ import dadb.adbserver.AdbServer
 import maestro.Maestro
 import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
+import maestro.cli.device.Platform
 
 object MaestroFactory {
     private const val defaultHost = "localhost"
     private const val idbPort = 10882
 
-    fun createMaestro(host: String?, port: Int?, deviceId: String?): Maestro {
+    fun createMaestro(host: String?, port: Int?, deviceId: String?): MaestroResult {
         if (host == null) {
-            val device = PickDeviceInteractor.pickDevice()
+            val device = PickDeviceInteractor.pickDevice(deviceId)
 
-            return when (device.platform) {
-                Device.Platform.ANDROID -> {
-                    Maestro.android(
-                        Dadb
-                            .list()
-                            .find { it.toString() == device.id }
-                            ?: Dadb.discover()
-                            ?: error("Unable to find device with id ${device.id}")
-                    )
-                }
-                Device.Platform.IOS -> {
-                    Maestro.ios(defaultHost, idbPort)
-                }
-            }
+            return MaestroResult(
+                maestro = when (device.platform) {
+                    Platform.ANDROID -> {
+                        Maestro.android(
+                            Dadb
+                                .list()
+                                .find { it.toString() == device.instanceId }
+                                ?: Dadb.discover()
+                                ?: error("Unable to find device with id ${device.instanceId}")
+                        )
+                    }
+                    Platform.IOS -> {
+                        Maestro.ios(defaultHost, idbPort)
+                    }
+                },
+                device = device,
+            )
         }
 
-        return try {
-            createAndroid(host, port)
-        } catch (_: Exception) {
-            try {
-                createIos(host, port)
+        return MaestroResult(
+            maestro = try {
+                createAndroid(host, port)
             } catch (_: Exception) {
-                error("No devices found.")
-            }
-        }
+                try {
+                    createIos(host, port)
+                } catch (_: Exception) {
+                    error("No devices found.")
+                }
+            },
+            device = null
+        )
     }
 
     private fun createAndroid(host: String?, port: Int?): Maestro {
@@ -83,5 +90,10 @@ object MaestroFactory {
     private fun createIos(host: String?, port: Int?): Maestro {
         return Maestro.ios(host ?: defaultHost, port ?: idbPort)
     }
+
+    data class MaestroResult(
+        val maestro: Maestro,
+        val device: Device?
+    )
 
 }

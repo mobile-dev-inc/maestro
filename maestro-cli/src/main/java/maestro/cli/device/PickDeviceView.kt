@@ -1,5 +1,7 @@
 package maestro.cli.device
 
+import org.fusesource.jansi.Ansi.ansi
+
 object PickDeviceView {
 
     fun showRunOnDevice(device: Device) {
@@ -27,6 +29,7 @@ object PickDeviceView {
     }
 
     private fun <T> pickIndex(data: List<T>): T {
+        println()
         while (!Thread.interrupted()) {
             val index = readLine()?.toIntOrNull() ?: 0
 
@@ -52,7 +55,14 @@ object PickDeviceView {
             println(platform.description)
             println()
             devices.forEach { device ->
-                println("    [${++index}] ${device.description}")
+                println(
+                    ansi()
+                        .render("[")
+                        .fgCyan()
+                        .render("${++index}")
+                        .fgDefault()
+                        .render("] ${device.description}")
+                )
             }
             println()
         }

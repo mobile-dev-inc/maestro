@@ -4,19 +4,23 @@ import maestro.cli.CliError
 
 object PickDeviceInteractor {
 
-    fun pickDevice(deviceId: String? = null): Device {
+    fun pickDevice(deviceId: String? = null): Device.Connected {
         if (deviceId != null) {
             return DeviceService.listConnectedDevices()
-                .find { it.id == deviceId }
+                .find { it.instanceId == deviceId }
                 ?: throw CliError("Device with id $deviceId is not connected")
         }
 
         return pickDeviceInternal()
             .let { pickedDevice ->
-                var result = pickedDevice
+                var result: Device = pickedDevice
 
-                if (!result.connected) {
-                    result = DeviceService.startDevice(pickedDevice)
+                if (result is Device.AvailableForLaunch) {
+                    result = DeviceService.startDevice(result)
+                }
+
+                if (result !is Device.Connected) {
+                    error("Device $result is not connected")
                 }
 
                 DeviceService.prepareDevice(result)
@@ -44,7 +48,11 @@ object PickDeviceInteractor {
     }
 
     private fun startDevice(): Device {
-        val availableDevices = DeviceService.listAvailableDevices()
+        val availableDevices = DeviceService.listAvailableForLaunchDevices()
+
+        if (availableDevices.isEmpty()) {
+            throw CliError("No devices available. To proceed, either install Android SDK or Xcode.")
+        }
 
         return PickDeviceView.pickDeviceToStart(availableDevices)
     }

@@ -1,6 +1,6 @@
 package maestro.cli.device
 
-import com.github.michaelbull.result.expect
+import com.github.michaelbull.result.get
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
@@ -12,20 +12,30 @@ import java.io.File
 
 object DeviceService {
 
-    fun startDevice(device: Device): Device {
+    fun startDevice(device: Device.AvailableForLaunch): Device.Connected {
         when (device.platform) {
-            Device.Platform.IOS -> {
-                Simctl.launchSimulator(device.id)
-                Simctl.awaitLaunch(device.id)
-                return device
+            Platform.IOS -> {
+                Simctl.launchSimulator(device.modelId)
+                Simctl.awaitLaunch(device.modelId)
+                return Device.Connected(
+                    instanceId = device.modelId,
+                    description = device.description,
+                    platform = device.platform,
+                )
             }
-            Device.Platform.ANDROID -> {
+            Platform.ANDROID -> {
                 val androidHome = EnvUtils.androidHome()
-                    ?: throw CliError("ANDROID_HOME environment variable is not set. Unable to find 'ANDROID_HOME/tools/emulator' executable.")
+                    ?: throw CliError("ANDROID_HOME environment variable is not set")
+
+                val emulatorBinary = File(androidHome, "emulator/emulator")
+                    .takeIf { it.exists() }
+                    ?: File(androidHome, "tools/emulator")
+                        .takeIf { it.exists() }
+                    ?: throw CliError("Could not find emulator binary")
 
                 ProcessBuilder(
-                    File(androidHome, "tools/emulator").absolutePath,
-                    "@${device.id}",
+                    emulatorBinary.absolutePath,
+                    "@${device.modelId}",
                 ).start()
 
                 val dadb = MaestroTimer.withTimeout(30000) {
@@ -35,22 +45,26 @@ object DeviceService {
                         Thread.sleep(100)
                         null
                     }
-                } ?: throw CliError("Unable to start device: ${device.id}")
+                } ?: throw CliError("Unable to start device: ${device.modelId}")
 
-                return device.copy(id = dadb.toString())
+                return Device.Connected(
+                    instanceId = dadb.toString(),
+                    description = device.description,
+                    platform = device.platform,
+                )
             }
         }
     }
 
-    fun prepareDevice(device: Device) {
-        if (device.platform == Device.Platform.IOS) {
+    fun prepareDevice(device: Device.Connected) {
+        if (device.platform == Platform.IOS) {
             killIdbCompanion()
             startIdbCompanion(device)
         }
     }
 
-    private fun startIdbCompanion(device: Device) {
-        ProcessBuilder("idb_companion", "--udid", device.id)
+    private fun startIdbCompanion(device: Device.Connected) {
+        ProcessBuilder("idb_companion", "--udid", device.instanceId)
             .redirectError(ProcessBuilder.Redirect.DISCARD)
             .redirectOutput(ProcessBuilder.Redirect.DISCARD)
             .start()
@@ -64,7 +78,11 @@ object DeviceService {
             // Try to connect to the device repeatedly
             MaestroTimer.withTimeout(10000) {
                 try {
-                    iosDevice.deviceInfo().expect {}
+                    // The idea is that view hierarchy is empty while device is still booting
+                    iosDevice
+                        .contentDescriptor()
+                        .get()
+                        ?.takeIf { nodes -> nodes.any { it.frame?.width != 0F } }
                 } catch (ignored: Exception) {
                     // Ignore
                     null
@@ -82,23 +100,27 @@ object DeviceService {
             .waitFor()
     }
 
-    fun listConnectedDevices(): List<Device> {
-        return listAvailableDevices()
-            .filter { it.connected }
+    fun listConnectedDevices(): List<Device.Connected> {
+        return listDevices()
+            .filterIsInstance(Device.Connected::class.java)
     }
 
-    fun listAvailableDevices(): List<Device> {
+    fun listAvailableForLaunchDevices(): List<Device.AvailableForLaunch> {
+        return listDevices()
+            .filterIsInstance(Device.AvailableForLaunch::class.java)
+    }
+
+    private fun listDevices(): List<Device> {
         return listAndroidDevices() + listIOSDevices()
     }
 
     private fun listAndroidDevices(): List<Device> {
-        val connectedDevices = Dadb.list()
+        val connected = Dadb.list()
             .map {
-                Device(
-                    id = it.toString(),
+                Device.Connected(
+                    instanceId = it.toString(),
                     description = it.toString(),
-                    platform = Device.Platform.ANDROID,
-                    connected = true
+                    platform = Platform.ANDROID,
                 )
             }
 
@@ -112,11 +134,10 @@ object DeviceService {
                 .useLines { lines ->
                     lines
                         .map {
-                            Device(
-                                id = it,
+                            Device.AvailableForLaunch(
+                                modelId = it,
                                 description = it,
-                                platform = Device.Platform.ANDROID,
-                                connected = false
+                                platform = Platform.ANDROID,
                             )
                         }
                         .toList()
@@ -125,7 +146,7 @@ object DeviceService {
             emptyList()
         }
 
-        return connectedDevices + avds
+        return connected + avds
     }
 
     private fun listIOSDevices(): List<Device> {
@@ -151,12 +172,21 @@ object DeviceService {
                             }
                     }
                     .map { device ->
-                        Device(
-                            id = device.udid,
-                            description = "${device.name} - ${runtime.name} - ${device.udid}",
-                            platform = Device.Platform.IOS,
-                            connected = device.state == "Booted"
-                        )
+                        val description = "${device.name} - ${runtime.name} - ${device.udid}"
+
+                        if (device.state == "Booted") {
+                            Device.Connected(
+                                instanceId = device.udid,
+                                description = description,
+                                platform = Platform.IOS,
+                            )
+                        } else {
+                            Device.AvailableForLaunch(
+                                modelId = device.udid,
+                                description = description,
+                                platform = Platform.IOS,
+                            )
+                        }
                     }
             }
     }

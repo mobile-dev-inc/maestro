@@ -1,15 +1,20 @@
 package maestro.cli.device
 
-data class Device(
-    val id: String,
-    val description: String,
-    val platform: Platform,
-    val connected: Boolean,
+sealed class Device(
+    open val description: String,
+    open val platform: Platform,
 ) {
 
-    enum class Platform(val description: String) {
-        ANDROID("Android"),
-        IOS("iOS"),
-    }
+    data class Connected(
+        val instanceId: String,
+        override val description: String,
+        override val platform: Platform,
+    ) : Device(description, platform)
+
+    data class AvailableForLaunch(
+        val modelId: String,
+        override val description: String,
+        override val platform: Platform,
+    ) : Device(description, platform)
 
 }
