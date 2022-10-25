@@ -12,8 +12,7 @@ object PickDeviceView {
         printIndexedDevices(devices)
 
         println("No running devices detected. Choose a device to boot and run on.")
-        println()
-        println("Enter a number from the list above:")
+        printEnterNumberPrompt()
 
         return pickIndex(devices)
     }
@@ -22,8 +21,7 @@ object PickDeviceView {
         printIndexedDevices(devices)
 
         println("Multiple running devices detected. Choose a device to run on.")
-        println()
-        println("Enter a number from the list above:")
+        printEnterNumberPrompt()
 
         return pickIndex(devices)
     }
@@ -34,7 +32,7 @@ object PickDeviceView {
             val index = readLine()?.toIntOrNull() ?: 0
 
             if (index < 1 || index > data.size) {
-                println("Invalid index")
+                printEnterNumberPrompt()
                 continue
             }
 
@@ -42,6 +40,11 @@ object PickDeviceView {
         }
 
         error("Interrupted")
+    }
+
+    private fun printEnterNumberPrompt() {
+        println()
+        println("Enter a number from the list above:")
     }
 
     private fun printIndexedDevices(devices: List<Device>) {
