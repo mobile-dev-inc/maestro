@@ -157,7 +157,3 @@ class ResultView(
 
     }
 }
-
-fun main() {
-
-}
