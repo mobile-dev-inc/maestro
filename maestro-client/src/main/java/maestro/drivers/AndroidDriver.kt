@@ -159,12 +159,12 @@ class AndroidDriver(
                 }
                 shell("am start-activity -n $appId/${activity.name}")
             } else {
-                shell("monkey --pct-syskeys 0 -p $appId 1")
+                shell("monkey --pct-syskeys 0 -p $appId -c android.intent.category.LAUNCHER 1")
             }
         } catch (ioException: IOException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
+            shell("monkey --pct-syskeys 0 -p $appId -c android.intent.category.LAUNCHER 1")
         } catch (saxException: SAXException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
+            shell("monkey --pct-syskeys 0 -p $appId -c android.intent.category.LAUNCHER 1")
         }
     }
 
