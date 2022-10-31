@@ -15,7 +15,6 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import okhttp3.internal.immutableListOf
 import okio.Buffer
 import okio.BufferedSink
 import okio.ForwardingSink
@@ -35,7 +34,7 @@ class ApiClient(
         .protocols(listOf(Protocol.HTTP_1_1))
         .build()
 
-    private val knownCIEnvVars = listOf("CI", "JENKINS_HOME")
+    private val knownCIEnvVars = listOf("CI", "JENKINS_HOME", "BITRISE_IO")
 
     fun magicLinkLogin(email: String, redirectUrl: String): Result<String, Response> {
         return post<Map<String, Any>>(
@@ -92,9 +91,9 @@ class ApiClient(
     private fun getAgent(): String {
         for (ciVar in knownCIEnvVars) {
             try {
-                val value = System.getenv(ciVar)
-                if (value.isNotEmpty()) return "ci"
-            } catch (e: Exception) { }
+                val value = System.getenv(ciVar).lowercase()
+                if (value.isNotEmpty() && value != "0" && value != "false") return "ci"
+            } catch (e: Exception) {}
         }
 
         return "cli"
