@@ -90,9 +90,9 @@ object DeviceService {
                 try {
                     // The idea is that view hierarchy is empty while device is still booting
                     iosDevice
-                        .contentDescriptor()
+                        .deviceInfo()
                         .get()
-                        ?.takeIf { nodes -> nodes.any { it.frame?.width != 0F } }
+                        ?.takeIf { it.widthPixels > 0 }
                 } catch (ignored: Exception) {
                     // Ignore
                     null
