@@ -27,6 +27,10 @@ protobuf {
     }
 }
 
+compileKotlin {
+    dependsOn generateProto
+}
+
 sourceSets {
     main {
         java {
