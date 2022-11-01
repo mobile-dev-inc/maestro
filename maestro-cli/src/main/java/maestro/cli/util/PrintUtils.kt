@@ -23,7 +23,7 @@ object PrintUtils {
         println(
             Ansi.ansi()
                 .render("\n")
-                .fgGreen()
+                .fgBrightGreen()
                 .bold(apply = bold)
                 .render(message)
                 .boldOff()

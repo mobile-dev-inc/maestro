@@ -76,7 +76,7 @@ object UploadStatusView {
 
         print(
             Ansi.ansi()
-                .fg(color)
+                .fgBright(color)
                 .render("[$title]")
                 .fgDefault()
         )
@@ -92,16 +92,16 @@ object UploadStatusView {
 fun main() {
     val status = UploadStatus(
         uploadId = UUID.randomUUID(),
-        status = UploadStatus.Status.CANCELED,
+        status = UploadStatus.Status.SUCCESS,
         completed = true,
         flows = listOf(
             UploadStatus.FlowResult(
                 name = "A",
-                status = UploadStatus.Status.CANCELED,
+                status = UploadStatus.Status.SUCCESS,
             ),
             UploadStatus.FlowResult(
                 name = "B",
-                status = UploadStatus.Status.CANCELED,
+                status = UploadStatus.Status.ERROR,
             ),
             UploadStatus.FlowResult(
                 name = "C",
