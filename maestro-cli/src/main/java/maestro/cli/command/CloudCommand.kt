@@ -68,7 +68,7 @@ class CloudCommand : Callable<Int> {
     private var async: Boolean = false
 
     override fun call(): Int {
-        CloudInteractor(
+        return CloudInteractor(
             client = ApiClient(apiUrl),
         ).upload(
             async = async,
@@ -83,7 +83,6 @@ class CloudCommand : Callable<Int> {
             pullRequestId = pullRequestId,
             apiKey = apiKey,
         )
-        return 0
     }
 
 }

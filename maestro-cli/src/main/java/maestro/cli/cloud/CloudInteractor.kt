@@ -37,7 +37,7 @@ class CloudInteractor(
         branch: String? = null,
         pullRequestId: String? = null,
         env: Map<String, String> = emptyMap(),
-    ) {
+    ): Int {
         if (!flowFile.exists()) throw CliError("File does not exist: ${flowFile.absolutePath}")
         if (mapping?.exists() == false) throw CliError("File does not exist: ${mapping.absolutePath}")
 
@@ -84,11 +84,13 @@ class CloudInteractor(
             if (async) {
                 PrintUtils.message("✅ Upload successful! View the results of your upload below:")
                 PrintUtils.message(uploadUrl(uploadId, teamId, appId))
+
+                return 0
             } else {
                 PrintUtils.message("Waiting for analyses to complete...")
                 println()
 
-                waitForCompletion(
+                return waitForCompletion(
                     authToken = authToken,
                     uploadId = uploadId,
                     teamId = teamId,

@@ -73,7 +73,7 @@ class UploadCommand : Callable<Int> {
                 .fgDefault()
         )
 
-        CloudInteractor(
+        return CloudInteractor(
             client = ApiClient(apiUrl),
         ).upload(
             async = true,
@@ -88,7 +88,6 @@ class UploadCommand : Callable<Int> {
             pullRequestId = pullRequestId,
             apiKey = apiKey,
         )
-        return 0
     }
 
 }

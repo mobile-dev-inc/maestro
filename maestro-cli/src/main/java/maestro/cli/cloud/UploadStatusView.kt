@@ -98,7 +98,7 @@ object UploadStatusView {
 fun main() {
     val status = UploadStatus(
         uploadId = UUID.randomUUID(),
-        status = UploadStatus.Status.SUCCESS,
+        status = UploadStatus.Status.CANCELED,
         completed = true,
         flows = listOf(
             UploadStatus.FlowResult(
@@ -107,7 +107,7 @@ fun main() {
             ),
             UploadStatus.FlowResult(
                 name = "B",
-                status = UploadStatus.Status.ERROR,
+                status = UploadStatus.Status.SUCCESS,
             ),
             UploadStatus.FlowResult(
                 name = "C",
