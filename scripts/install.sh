@@ -2,7 +2,7 @@
 # Inspired by Sdkman setup script
 
 which_maestro=$(which maestro)
-if [[ "$which_maestro" == "/usr/local"* || $which_maestro == "/opt/homebrew"* ]]; then
+if [[ "$which_maestro" == "/usr/local"* || $which_maestro == "/opt/homebrew"* || $which_maestro == "/home/linuxbrew"* ]]; then
   echo "Your maestro installation is already managed by a homebrew"
   echo ""
   echo "Update to the latest version with:"
