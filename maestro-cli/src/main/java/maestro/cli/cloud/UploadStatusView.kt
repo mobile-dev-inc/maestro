@@ -32,7 +32,10 @@ object UploadStatusView {
             val failedFlows = upload.flows
                 .filter { it.status == UploadStatus.Status.ERROR }
 
-            PrintUtils.err("${failedFlows.size}/${upload.flows.size} ${flowWord(failedFlows.size)} Failed")
+            PrintUtils.err(
+                "${failedFlows.size}/${upload.flows.size} ${flowWord(failedFlows.size)} Failed",
+                bold = true,
+            )
         } else {
             val passedFlows = upload.flows
                 .filter { it.status == UploadStatus.Status.SUCCESS || it.status == UploadStatus.Status.WARNING }
@@ -41,7 +44,10 @@ object UploadStatusView {
                 .filter { it.status == UploadStatus.Status.CANCELED }
 
             if (passedFlows.isNotEmpty()) {
-                PrintUtils.success("${passedFlows.size}/${upload.flows.size} ${flowWord(passedFlows.size)} Passed")
+                PrintUtils.success(
+                    "${passedFlows.size}/${upload.flows.size} ${flowWord(passedFlows.size)} Passed",
+                    bold = true,
+                )
 
                 if (canceledFlows.isNotEmpty()) {
                     println("(${canceledFlows.size} ${flowWord(canceledFlows.size)} Canceled)")
