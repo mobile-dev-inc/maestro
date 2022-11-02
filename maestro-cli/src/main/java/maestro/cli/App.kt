@@ -19,6 +19,7 @@
 
 package maestro.cli
 
+import maestro.cli.command.CloudCommand
 import maestro.cli.command.DownloadSamplesCommand
 import maestro.cli.command.LoginCommand
 import maestro.cli.command.LogoutCommand
@@ -37,6 +38,7 @@ import kotlin.system.exitProcess
     name = "maestro",
     subcommands = [
         TestCommand::class,
+        CloudCommand::class,
         UploadCommand::class,
         PrintHierarchyCommand::class,
         QueryCommand::class,

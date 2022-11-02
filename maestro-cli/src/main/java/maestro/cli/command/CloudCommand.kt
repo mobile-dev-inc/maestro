@@ -21,16 +21,15 @@ package maestro.cli.command
 
 import maestro.cli.api.ApiClient
 import maestro.cli.cloud.CloudInteractor
-import org.fusesource.jansi.Ansi.ansi
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
 import java.util.concurrent.Callable
 
 @CommandLine.Command(
-    name = "upload",
+    name = "cloud",
 )
-class UploadCommand : Callable<Int> {
+class CloudCommand : Callable<Int> {
 
     @CommandLine.Parameters(description = ["App binary to run your Flows against"])
     private lateinit var appFile: File
@@ -65,18 +64,14 @@ class UploadCommand : Callable<Int> {
     @Option(order = 8, names = ["--name"], description = ["Name of the upload"])
     private var uploadName: String? = null
 
-    override fun call(): Int {
-        println(
-            ansi()
-                .fgRed()
-                .render("'maestro upload' command is deprecated and is going to be removed in one of the future releases. Use 'maestro cloud --async' instead.")
-                .fgDefault()
-        )
+    @Option(order = 9, names = ["--async"], description = ["Run the upload asynchronously"])
+    private var async: Boolean = false
 
+    override fun call(): Int {
         CloudInteractor(
             client = ApiClient(apiUrl),
         ).upload(
-            async = true,
+            async = async,
             flowFile = flowFile,
             appFile = appFile,
             mapping = mapping,
