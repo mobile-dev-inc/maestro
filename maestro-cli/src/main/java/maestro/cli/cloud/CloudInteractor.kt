@@ -87,6 +87,7 @@ class CloudInteractor(
 
                 return 0
             } else {
+                PrintUtils.message("Visit the web console for more details about the upload: ${uploadUrl(uploadId, teamId, appId)}")
                 PrintUtils.message("Waiting for analyses to complete...")
                 println()
 

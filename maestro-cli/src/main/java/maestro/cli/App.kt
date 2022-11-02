@@ -52,16 +52,16 @@ class App {
     @Option(names = ["-v", "--version"], versionHelp = true)
     var requestedVersion: Boolean? = false
 
-    @Option(names = ["-p", "--platform"])
+    @Option(names = ["-p", "--platform"], hidden = true)
     var platform: String? = null
 
-    @Option(names = ["--host"])
+    @Option(names = ["--host"], hidden = true)
     var host: String? = null
 
-    @Option(names = ["--port"])
+    @Option(names = ["--port"], hidden = true)
     var port: Int? = null
 
-    @Option(names = ["--device", "--udid"])
+    @Option(names = ["--device", "--udid"], description = ["(Optional) Select a device to run on explicitly"])
     var deviceId: String? = null
 
     companion object {
@@ -82,6 +82,7 @@ private fun printVersion() {
 @Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     val commandLine = CommandLine(App())
+        .setUsageHelpWidth(160)
         .setExecutionExceptionHandler { ex, cmd, parseResult ->
             val message = if (ex is CliError) {
                 ex.message
