@@ -23,6 +23,20 @@ object MaestroTimer {
         return null
     }
 
+    fun <T> retryWhileThrowing(timeoutMs: Long, block: () -> T): T {
+        val endTime = System.currentTimeMillis() + timeoutMs
+        var lastException: Exception
+        do {
+            try {
+                return block()
+            } catch (e: Exception) {
+                lastException = e
+            }
+        } while (System.currentTimeMillis() < endTime)
+
+        throw lastException
+    }
+
     enum class Reason {
         WAIT_UNTIL_VISIBLE,
         WAIT_TO_SETTLE,
