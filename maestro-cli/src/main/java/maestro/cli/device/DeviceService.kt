@@ -1,7 +1,6 @@
 package maestro.cli.device
 
 import com.github.michaelbull.result.get
-import com.github.michaelbull.result.runCatching
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
