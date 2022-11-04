@@ -21,6 +21,7 @@ package maestro.orchestra
 
 import maestro.KeyCode
 import maestro.Point
+import maestro.SwipeDirection
 import maestro.orchestra.util.Env.injectEnv
 import maestro.orchestra.util.InputRandomTextHelper
 
@@ -39,12 +40,21 @@ sealed interface CompositeCommand : Command {
 }
 
 data class SwipeCommand(
-    val startPoint: Point,
-    val endPoint: Point,
+    val direction: SwipeDirection? = null,
+    val startPoint: Point? = null,
+    val endPoint: Point? = null,
 ) : Command {
 
     override fun description(): String {
-        return "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y})"
+        return when {
+            direction != null -> {
+                "Swiping in $direction direction"
+            }
+            startPoint != null && endPoint != null -> {
+                "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y})"
+            }
+            else -> "Invalid input to swipe command"
+        }
     }
 
     override fun injectEnv(env: Map<String, String>): SwipeCommand {

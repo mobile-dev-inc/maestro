@@ -56,6 +56,8 @@ interface Driver {
 
     fun swipe(start: Point, end: Point)
 
+    fun swipe(swipeDirection: SwipeDirection)
+
     fun backPress()
 
     fun inputText(text: String)

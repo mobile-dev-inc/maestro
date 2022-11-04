@@ -28,6 +28,7 @@ import maestro.Driver
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Point
+import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.utils.FileUtils
 import okio.Sink
@@ -248,6 +249,10 @@ class IOSDriver(
             xEnd = end.x,
             yEnd = end.y
         ).expect {}
+    }
+
+    override fun swipe(swipeDirection: SwipeDirection) {
+        TODO("Not yet implemented")
     }
 
     override fun backPress() {}

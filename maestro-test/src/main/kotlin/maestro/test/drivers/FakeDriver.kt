@@ -26,6 +26,7 @@ import maestro.Driver
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Point
+import maestro.SwipeDirection
 import maestro.TreeNode
 import okio.Sink
 import okio.buffer
@@ -166,6 +167,12 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events += Event.Swipe(start, end)
+    }
+
+    override fun swipe(swipeDirection: SwipeDirection) {
+        ensureOpen()
+
+        events += Event.SwipeWithDirection(swipeDirection)
     }
 
     override fun backPress() {
@@ -311,6 +318,8 @@ class FakeDriver : Driver {
             val start: Point,
             val End: Point
         ) : Event(), UserInteraction
+
+        data class SwipeWithDirection(val swipeDirection: SwipeDirection): Event(), UserInteraction
 
         data class LaunchApp(
             val appId: String
