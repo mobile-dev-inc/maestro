@@ -89,33 +89,31 @@ object DeviceService {
             .usePlaintext()
             .build()
 
-        val iosDevice = IdbIOSDevice(channel)
-        iosDevice.use {
-            runCatching {
-                MaestroTimer.retryWhileThrowing(timeoutMs = 2000) {
-                    Socket(idbHost, idbPort).use { }
-                }
-            }.get() ?: error("idb_companion did not start in time")
+        IdbIOSDevice(channel).use { iosDevice ->
+            MaestroTimer.retryUntilTrue(timeoutMs = 2000) {
+                Socket(idbHost, idbPort).use { true }
+            } || error("idb_companion did not start in time")
 
             // The first time a simulator boots up, it can
             // take 10's of seconds to complete.
-            runCatching {
-                MaestroTimer.retryWhileThrowing(timeoutMs = 60000) {
-                    ProcessBuilder("xcrun", "simctl", "bootstatus", device.instanceId)
-                        .start()
-                        .waitFor(1000, TimeUnit.MILLISECONDS)
-                }
-            }.get() ?: error("Simulator failed to boot")
+
+            MaestroTimer.retryUntilTrue(timeoutMs = 60000) {
+                val process = ProcessBuilder("xcrun", "simctl", "bootstatus", device.instanceId)
+                    .start()
+                process
+                    .waitFor(1000, TimeUnit.MILLISECONDS)
+                process.exitValue() == 0
+            } || error("Simulator failed to boot")
 
             // Test if idb can get accessibility info elements with non-zero frame with
-            runCatching {
-                MaestroTimer.retryWhileThrowing(timeoutMs = 2000) {
-                    it
-                        .contentDescriptor()
-                        .get()
-                        ?.takeIf { nodes -> nodes.any { it.frame?.width != 0F } }
-                }
-            }.get() ?: error("idb_companion is not able to fetch accessibility info")
+            MaestroTimer.retryUntilTrue(timeoutMs = 20000) {
+                iosDevice
+                    .contentDescriptor()
+                    .get()
+                    ?.takeIf { nodes -> nodes.any { it.frame?.width != 0F } } != null
+            } || error("idb_companion is not able to fetch accessibility info")
+
+            Unit // Ignore result when completed
         }
     }
 

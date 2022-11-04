@@ -23,18 +23,19 @@ object MaestroTimer {
         return null
     }
 
-    fun <T> retryWhileThrowing(timeoutMs: Long, block: () -> T): T {
+    fun retryUntilTrue(timeoutMs: Long, block: () -> Boolean): Boolean {
         val endTime = System.currentTimeMillis() + timeoutMs
-        var lastException: Exception
         do {
             try {
-                return block()
-            } catch (e: Exception) {
-                lastException = e
+                if (block()) {
+                    return true
+                }
+            } catch (ignored: Exception) {
+                // Try again
             }
         } while (System.currentTimeMillis() < endTime)
 
-        throw lastException
+        return false
     }
 
     enum class Reason {
