@@ -96,7 +96,6 @@ object DeviceService {
 
             // The first time a simulator boots up, it can
             // take 10's of seconds to complete.
-
             MaestroTimer.retryUntilTrue(timeoutMs = 60000) {
                 val process = ProcessBuilder("xcrun", "simctl", "bootstatus", device.instanceId)
                     .start()
@@ -107,10 +106,11 @@ object DeviceService {
 
             // Test if idb can get accessibility info elements with non-zero frame with
             MaestroTimer.retryUntilTrue(timeoutMs = 20000) {
-                iosDevice
+                val nodes = iosDevice
                     .contentDescriptor()
                     .get()
-                    ?.takeIf { nodes -> nodes.any { it.frame?.width != 0F } } != null
+
+                nodes?.any { it.frame?.width != 0F } == true
             } || error("idb_companion is not able to fetch accessibility info")
 
             Unit // Ignore result when completed
