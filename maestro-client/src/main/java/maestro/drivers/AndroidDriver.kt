@@ -275,7 +275,33 @@ class AndroidDriver(
     }
 
     override fun swipe(swipeDirection: SwipeDirection) {
-        TODO("Not yet implemented")
+        val deviceInfo = deviceInfo()
+        when (swipeDirection) {
+            SwipeDirection.UP -> {
+                val startX = deviceInfo.widthPixels / 2
+                val startY = deviceInfo.heightPixels
+                val endY = deviceInfo.heightPixels / 2
+                dadb.shell("input swipe $startX $startY $startX $endY 2000")
+            }
+            SwipeDirection.DOWN -> {
+                val startX = deviceInfo.widthPixels / 2
+                val startY = 0
+                val endY = deviceInfo.heightPixels / 2
+                dadb.shell("input swipe $startX $startY $startX $endY 2000")
+            }
+            SwipeDirection.RIGHT -> {
+                val startX = deviceInfo.widthPixels / 2
+                val startY = deviceInfo.heightPixels / 2
+                val endX = deviceInfo.widthPixels
+                dadb.shell("input swipe $startX $startY $endX $startY 2000")
+            }
+            SwipeDirection.LEFT -> {
+                val startX = deviceInfo.widthPixels / 2
+                val startY = deviceInfo.heightPixels / 2
+                val endX = 0
+                dadb.shell("input swipe $startX $startY $endX $startY 2000")
+            }
+        }
     }
 
     override fun backPress() {
