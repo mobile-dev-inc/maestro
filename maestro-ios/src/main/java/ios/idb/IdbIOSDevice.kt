@@ -190,11 +190,13 @@ class IdbIOSDevice(
                 this.start = point {
                     this.x = xStart.toDouble()
                     this.y = yStart.toDouble()
-                }
+                }.toBuilder().build()
                 this.end = point {
                     this.x = xEnd.toDouble()
                     this.y = yEnd.toDouble()
                 }
+                this.duration = DEFAULT_SWIPE_DURATION_SECONDS
+                this.delta = DEFAULT_SWIPE_DELTA
             }
 
             stream.onNext(
@@ -423,5 +425,7 @@ class IdbIOSDevice(
         // 4Mb, the default max read for gRPC
         private const val CHUNK_SIZE = 1024 * 1024 * 3
         private val GSON = Gson()
+        private const val DEFAULT_SWIPE_DURATION_SECONDS = 1.0
+        private const val DEFAULT_SWIPE_DELTA = 100.0
     }
 }

@@ -252,7 +252,43 @@ class IOSDriver(
     }
 
     override fun swipe(swipeDirection: SwipeDirection) {
-        TODO("Not yet implemented")
+        val width = widthPixels ?: throw IllegalStateException("Device width not available")
+        val height = heightPixels ?: throw IllegalStateException("Device height not available")
+
+        when(swipeDirection) {
+            SwipeDirection.UP -> {
+                iosDevice.scroll(
+                    xStart = width / 4,
+                    yStart = height,
+                    xEnd = width / 4 ,
+                    yEnd = height / 4
+                ).expect {}
+            }
+            SwipeDirection.DOWN -> {
+                iosDevice.scroll(
+                    xStart = width / 4,
+                    yStart = 0,
+                    xEnd = width,
+                    yEnd = height / 4
+                ).expect {}
+            }
+            SwipeDirection.RIGHT -> {
+                iosDevice.scroll(
+                    xStart =  0,
+                    yStart = height / 4,
+                    xEnd =  width / 4 ,
+                    yEnd = height / 4
+                ).expect {}
+            }
+            SwipeDirection.LEFT -> {
+                iosDevice.scroll(
+                    xStart = width / 4 ,
+                    yStart = height / 4,
+                    xEnd =  0,
+                    yEnd = height / 4
+                ).expect {}
+            }
+        }
     }
 
     override fun backPress() {}
