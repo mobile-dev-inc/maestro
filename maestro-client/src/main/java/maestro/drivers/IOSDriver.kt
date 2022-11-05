@@ -215,7 +215,7 @@ class IOSDriver(
 
         iosDevice.scroll(
             xStart = screenWidth / 2,
-            yStart = screenHeight / 4,
+            yStart = screenHeight / 2,
             xEnd = screenWidth / 2,
             yEnd = 0
         ).expect {}
