@@ -215,11 +215,12 @@ class IOSDriver(
         val screenHeight = heightPixels ?: throw IllegalStateException("Screen height not available")
 
         iosDevice.scroll(
-            xStart = screenWidth / 2,
-            yStart = screenHeight / 2,
-            xEnd = screenWidth / 2,
+            xStart = screenWidth / 4,
+            yStart = screenHeight / 4,
+            xEnd = screenWidth / 4,
             yEnd = 0,
-            durationMs = IdbIOSDevice.DEFAULT_SWIPE_DURATION_MILLIS
+            durationMs = IdbIOSDevice.DEFAULT_SWIPE_DURATION_MILLIS,
+            scrollType = IdbIOSDevice.ScrollType.SCROLL
         ).expect {}
     }
 
@@ -250,7 +251,8 @@ class IOSDriver(
             yStart = start.y,
             xEnd = end.x,
             yEnd = end.y,
-            durationMs = durationMs
+            durationMs = durationMs,
+            scrollType = IdbIOSDevice.ScrollType.SWIPE
         ).expect {}
     }
 
@@ -265,7 +267,8 @@ class IOSDriver(
                     yStart = height,
                     xEnd = width / 4 ,
                     yEnd = height / 4,
-                    durationMs = durationMs
+                    durationMs = durationMs,
+                    IdbIOSDevice.ScrollType.SWIPE
                 ).expect {}
             }
             SwipeDirection.DOWN -> {
@@ -274,7 +277,8 @@ class IOSDriver(
                     yStart = 0,
                     xEnd = width,
                     yEnd = height / 4,
-                    durationMs = durationMs
+                    durationMs = durationMs,
+                    IdbIOSDevice.ScrollType.SWIPE
                 ).expect {}
             }
             SwipeDirection.RIGHT -> {
@@ -283,7 +287,8 @@ class IOSDriver(
                     yStart = height / 4,
                     xEnd =  width / 4 ,
                     yEnd = height / 4,
-                    durationMs = durationMs
+                    durationMs = durationMs,
+                    IdbIOSDevice.ScrollType.SWIPE
                 ).expect {}
             }
             SwipeDirection.LEFT -> {
@@ -292,7 +297,8 @@ class IOSDriver(
                     yStart = height / 4,
                     xEnd =  0,
                     yEnd = height / 4,
-                    durationMs = durationMs
+                    durationMs = durationMs,
+                    IdbIOSDevice.ScrollType.SWIPE
                 ).expect {}
             }
         }

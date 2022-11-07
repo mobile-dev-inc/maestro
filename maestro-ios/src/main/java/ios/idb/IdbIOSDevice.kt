@@ -20,6 +20,8 @@
 package ios.idb
 
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.runCatching
 import com.google.gson.Gson
 import com.google.protobuf.ByteString
@@ -181,11 +183,13 @@ class IdbIOSDevice(
         }
     }
 
-    override fun scroll(xStart: Int, yStart: Int, xEnd: Int, yEnd: Int, durationMs: Long): Result<Unit, Throwable> {
+    override fun scroll(xStart: Int, yStart: Int, xEnd: Int, yEnd: Int, durationMs: Long, scrollType: ScrollType): Result<Unit, Throwable> {
+        val deviceInfo = deviceInfo().getOrThrow { throw IllegalStateException("Device info not available") }
         return runCatching {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
 
+            val durationS = (durationMs.toDouble() / 1000)
             val swipeAction = HIDEventKt.hIDSwipe {
                 this.start = point {
                     this.x = xStart.toDouble()
@@ -195,8 +199,8 @@ class IdbIOSDevice(
                     this.x = xEnd.toDouble()
                     this.y = yEnd.toDouble()
                 }
-                this.duration = (durationMs / 1000).toDouble()
-                this.delta = DEFAULT_SWIPE_DELTA
+                this.duration = if (durationS >= 1.0) DEFAULT_SWIPE_DURATION_MILLIS.toDouble() / 1000 else durationS
+                this.delta = if (scrollType == ScrollType.SWIPE) SCROLL_FACTOR * deviceInfo.widthPixels else SCROLL_FACTOR * deviceInfo.heightPixels
             }
 
             stream.onNext(
@@ -425,7 +429,12 @@ class IdbIOSDevice(
         // 4Mb, the default max read for gRPC
         private const val CHUNK_SIZE = 1024 * 1024 * 3
         private val GSON = Gson()
-        const val DEFAULT_SWIPE_DURATION_MILLIS = 2000L
-        private const val DEFAULT_SWIPE_DELTA = 100.0
+        private const val SCROLL_FACTOR = 0.07
+        const val DEFAULT_SWIPE_DURATION_MILLIS = 1000L
+    }
+
+    enum class ScrollType {
+        SCROLL,
+        SWIPE
     }
 }
