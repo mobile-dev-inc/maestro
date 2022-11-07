@@ -480,7 +480,7 @@ class IntegrationTest {
 
         // Then
         // No test failure
-        driver.assertHasEvent(Event.Swipe(start = Point(100, 500), End = Point(100, 200)))
+        driver.assertHasEvent(Event.Swipe(start = Point(100, 500), End = Point(100, 200), durationMs = 3000))
     }
 
     @Test
@@ -1683,7 +1683,7 @@ class IntegrationTest {
         }
 
         // then
-        driver.assertHasEvent(Event.SwipeWithDirection(SwipeDirection.RIGHT))
+        driver.assertHasEvent(Event.SwipeWithDirection(SwipeDirection.RIGHT, 2000))
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(

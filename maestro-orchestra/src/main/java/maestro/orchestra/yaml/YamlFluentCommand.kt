@@ -279,9 +279,7 @@ data class YamlFluentCommand(
 
     private fun swipeCommand(swipe: YamlSwipe): MaestroCommand {
         when {
-            swipe.direction != null -> {
-                return MaestroCommand(SwipeCommand(direction = swipe.direction))
-            }
+            swipe.direction != null -> return MaestroCommand(SwipeCommand(direction = swipe.direction, duration = swipe.duration))
             swipe.start != null && swipe.end != null -> {
                 val start = swipe.start
                 val end = swipe.end
@@ -300,7 +298,7 @@ data class YamlFluentCommand(
                     }
                 endPoint = Point(endPoints[0], endPoints[1])
 
-                return MaestroCommand(SwipeCommand(startPoint = startPoint, endPoint = endPoint))
+                return MaestroCommand(SwipeCommand(startPoint = startPoint, endPoint = endPoint, duration = swipe.duration))
             }
             else -> {
                 throw IllegalStateException(

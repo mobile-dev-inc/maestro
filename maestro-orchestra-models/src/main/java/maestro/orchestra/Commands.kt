@@ -43,15 +43,16 @@ data class SwipeCommand(
     val direction: SwipeDirection? = null,
     val startPoint: Point? = null,
     val endPoint: Point? = null,
+    val duration: Long = DEFAULT_DURATION_IN_MILLIS
 ) : Command {
 
     override fun description(): String {
         return when {
             direction != null -> {
-                "Swiping in $direction direction"
+                "Swiping in $direction direction in $duration ms"
             }
             startPoint != null && endPoint != null -> {
-                "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y})"
+                "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y}) in $duration ms"
             }
             else -> "Invalid input to swipe command"
         }
@@ -61,6 +62,9 @@ data class SwipeCommand(
         return this
     }
 
+    companion object {
+        const val DEFAULT_DURATION_IN_MILLIS = 2000L
+    }
 }
 
 class ScrollCommand : Command {

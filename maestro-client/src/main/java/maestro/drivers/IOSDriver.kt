@@ -23,6 +23,7 @@ import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.getOrThrow
 import ios.IOSDevice
+import ios.idb.IdbIOSDevice
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -217,7 +218,8 @@ class IOSDriver(
             xStart = screenWidth / 2,
             yStart = screenHeight / 2,
             xEnd = screenWidth / 2,
-            yEnd = 0
+            yEnd = 0,
+            durationMs = IdbIOSDevice.DEFAULT_SWIPE_DURATION_MILLIS
         ).expect {}
     }
 
@@ -240,18 +242,19 @@ class IOSDriver(
         }
     }
 
-    override fun swipe(start: Point, end: Point) {
+    override fun swipe(start: Point, end: Point, durationMs: Long) {
         validate(start, end)
 
         iosDevice.scroll(
             xStart = start.x,
             yStart = start.y,
             xEnd = end.x,
-            yEnd = end.y
+            yEnd = end.y,
+            durationMs = durationMs
         ).expect {}
     }
 
-    override fun swipe(swipeDirection: SwipeDirection) {
+    override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
         val width = widthPixels ?: throw IllegalStateException("Device width not available")
         val height = heightPixels ?: throw IllegalStateException("Device height not available")
 
@@ -261,7 +264,8 @@ class IOSDriver(
                     xStart = width / 4,
                     yStart = height,
                     xEnd = width / 4 ,
-                    yEnd = height / 4
+                    yEnd = height / 4,
+                    durationMs = durationMs
                 ).expect {}
             }
             SwipeDirection.DOWN -> {
@@ -269,7 +273,8 @@ class IOSDriver(
                     xStart = width / 4,
                     yStart = 0,
                     xEnd = width,
-                    yEnd = height / 4
+                    yEnd = height / 4,
+                    durationMs = durationMs
                 ).expect {}
             }
             SwipeDirection.RIGHT -> {
@@ -277,7 +282,8 @@ class IOSDriver(
                     xStart =  0,
                     yStart = height / 4,
                     xEnd =  width / 4 ,
-                    yEnd = height / 4
+                    yEnd = height / 4,
+                    durationMs = durationMs
                 ).expect {}
             }
             SwipeDirection.LEFT -> {
@@ -285,7 +291,8 @@ class IOSDriver(
                     xStart = width / 4 ,
                     yStart = height / 4,
                     xEnd =  0,
-                    yEnd = height / 4
+                    yEnd = height / 4,
+                    durationMs = durationMs
                 ).expect {}
             }
         }

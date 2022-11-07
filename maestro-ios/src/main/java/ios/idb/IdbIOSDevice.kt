@@ -181,7 +181,7 @@ class IdbIOSDevice(
         }
     }
 
-    override fun scroll(xStart: Int, yStart: Int, xEnd: Int, yEnd: Int): Result<Unit, Throwable> {
+    override fun scroll(xStart: Int, yStart: Int, xEnd: Int, yEnd: Int, durationMs: Long): Result<Unit, Throwable> {
         return runCatching {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
@@ -195,7 +195,7 @@ class IdbIOSDevice(
                     this.x = xEnd.toDouble()
                     this.y = yEnd.toDouble()
                 }
-                this.duration = DEFAULT_SWIPE_DURATION_SECONDS
+                this.duration = (durationMs / 1000).toDouble()
                 this.delta = DEFAULT_SWIPE_DELTA
             }
 
@@ -425,7 +425,7 @@ class IdbIOSDevice(
         // 4Mb, the default max read for gRPC
         private const val CHUNK_SIZE = 1024 * 1024 * 3
         private val GSON = Gson()
-        private const val DEFAULT_SWIPE_DURATION_SECONDS = 1.0
+        const val DEFAULT_SWIPE_DURATION_MILLIS = 2000L
         private const val DEFAULT_SWIPE_DELTA = 100.0
     }
 }
