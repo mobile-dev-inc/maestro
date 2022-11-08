@@ -2,4 +2,4 @@ appId: com.example.app
 ---
 - swipe:
     direction: RIGHT
-    duration: 2000
+    duration: 500

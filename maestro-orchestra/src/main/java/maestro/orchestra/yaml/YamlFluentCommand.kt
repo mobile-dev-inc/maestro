@@ -278,9 +278,9 @@ data class YamlFluentCommand(
     }
 
     private fun swipeCommand(swipe: YamlSwipe): MaestroCommand {
-        when {
-            swipe.direction != null -> return MaestroCommand(SwipeCommand(direction = swipe.direction, duration = swipe.duration))
-            swipe.start != null && swipe.end != null -> {
+        when (swipe) {
+            is YamlSwipeDirection -> return MaestroCommand(SwipeCommand(direction = swipe.direction, duration = swipe.duration))
+            is YamlCoordinateSwipe -> {
                 val start = swipe.start
                 val end = swipe.end
                 val startPoint: Point?

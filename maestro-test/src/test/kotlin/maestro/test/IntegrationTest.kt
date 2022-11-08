@@ -1683,7 +1683,7 @@ class IntegrationTest {
         }
 
         // then
-        driver.assertHasEvent(Event.SwipeWithDirection(SwipeDirection.RIGHT, 2000))
+        driver.assertHasEvent(Event.SwipeWithDirection(SwipeDirection.RIGHT, 500))
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(
