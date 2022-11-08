@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import maestro.SwipeDirection
+import java.lang.IllegalArgumentException
 
 @JsonDeserialize(using = YamlSwipeDeserializer::class)
 interface YamlSwipe {
@@ -23,30 +24,49 @@ class YamlSwipeDeserializer: JsonDeserializer<YamlSwipe>() {
     override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): YamlSwipe {
         val mapper = parser.codec as ObjectMapper
         val root: TreeNode = mapper.readTree(parser)
-        val isDirectionalSwipe = root.fieldNames().asSequence().toList() == listOf("direction", "duration") || root.fieldNames().asSequence().toList() == listOf("direction")
-        val isCoordinateSwipe = root.fieldNames().asSequence().toList() == listOf("start", "end", "duration") || root.fieldNames().asSequence().toList() == listOf("start", "end")
+        val input = root.fieldNames().asSequence().toList()
+        val duration = getDuration(root)
+        val isDirectionalSwipe = input == listOf("direction", "duration") || input == listOf("direction")
+        val isCoordinateSwipe = input == listOf("start", "end", "duration") || input == listOf("start", "end")
         return when {
             isDirectionalSwipe ->  {
-                val duration = getDuration(root)
-                val direction = SwipeDirection.valueOf(root.get("direction").toString().replace("\"", ""))
-                YamlSwipeDirection(direction, duration)
+                val direction = root.get("direction").toString().replace("\"", "")
+                val swipeDirection = runCatching { SwipeDirection.valueOf(direction) }.onFailure {
+                    if (it is IllegalArgumentException) {
+                        throw IllegalArgumentException("You provided an incorrect value for \"direction\": $direction, expected directions: \"RIGHT\", \"LEFT\", \"UP\", or \"DOWN\".")
+                    }
+                }.getOrThrow()
+
+                YamlSwipeDirection(swipeDirection, duration)
             }
             isCoordinateSwipe -> {
                 YamlCoordinateSwipe(
                     root.path("start").toString().replace("\"", ""),
                     root.path("end").toString().replace("\"", ""),
-                    getDuration(root)
+                    duration
                 )
             }
-            else -> throw IllegalStateException(
-                "Provide swipe direction UP, DOWN, RIGHT OR LEFT or by giving explicit " +
-                    "start and end coordinates."
-            )
+            input == listOf("start", "duration") || input == listOf("start") -> {
+                throw IllegalArgumentException("You only provided a start coordinate for the swipe command. " +
+                    "Please specify an end coordinate as well.")
+            }
+            input == listOf("end", "duration") || input == listOf("end") -> {
+                throw IllegalArgumentException("You only provided an end coordinate for the swipe command. " +
+                    "Please specify a start coordinate as well.")
+            }
+            else -> {
+                throw IllegalArgumentException(
+                    "Swipe command takes either: \n" +
+                        "\t1. direction: Direction based swipe with: \"RIGHT\", \"LEFT\", \"UP\", or \"DOWN\" or \n" +
+                        "\t2. start and end: Coordinates based swipe with: \"start\" and \"end\" coordinates \n" +
+                        "It seems you provided invalid input with: $input"
+                )
+            }
         }
      }
 
     private fun getDuration(root: TreeNode): Long {
-        return if (root.path("duration").toString().isEmpty()) {
+        return if (root.path("duration").isMissingNode) {
             DEFAULT_DURATION_IN_MILLIS
         } else {
             root.path("duration").toString().replace("\"", "").toLong()
