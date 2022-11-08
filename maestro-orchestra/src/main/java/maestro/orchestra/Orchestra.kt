@@ -286,7 +286,7 @@ class Orchestra(
     private fun launchAppCommand(it: LaunchAppCommand) {
         // stop app before launching it, so clear operations have an effect
         maestro.stopApp(it.appId)
-        MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000)
+        MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 3000)
 
         try {
             if (it.clearKeychain == true) {
