@@ -35,6 +35,7 @@ import maestro.orchestra.filter.TraitFilters
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
 import java.nio.file.Files
+import java.time.LocalDateTime
 
 class Orchestra(
     private val maestro: Maestro,
@@ -283,6 +284,10 @@ class Orchestra(
     }
 
     private fun launchAppCommand(it: LaunchAppCommand) {
+        // stop app before launching it, so clear operations have an effect
+        maestro.stopApp(it.appId)
+        MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000)
+
         try {
             if (it.clearKeychain == true) {
                 maestro.clearKeychain()
