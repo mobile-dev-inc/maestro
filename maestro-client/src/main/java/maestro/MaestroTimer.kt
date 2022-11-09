@@ -23,13 +23,10 @@ object MaestroTimer {
         return null
     }
 
-    fun retryUntilTrue(timeoutMs: Long, delayMs: Long? = null, block: () -> Boolean): Boolean {
+    fun retryUntilTrue(timeoutMs: Long, block: () -> Boolean): Boolean {
         val endTime = System.currentTimeMillis() + timeoutMs
         do {
             try {
-                delayMs?.let {
-                    sleep(Reason.BUFFER, delayMs)
-                }
                 if (block()) {
                     return true
                 }
