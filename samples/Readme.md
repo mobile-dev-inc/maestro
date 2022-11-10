@@ -15,3 +15,4 @@ Although the samples are checked in, updating them requires a few manual steps:
 * Open https://console.cloud.google.com/storage/browser/mobile.dev/samples
 * Upload samples.zip
 * Adjust the permissions of samples.zip to "Public to Internet"
+* Run `maestro download-samples` and verify that the change was successful
