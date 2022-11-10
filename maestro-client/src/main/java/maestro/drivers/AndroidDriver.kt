@@ -155,10 +155,10 @@ class AndroidDriver(
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
             val manifest = apkFile.asManifest()
             val launcherActivity = manifest.resolveLauncherActivity(appId)
-            runCatching { shell("am start-activity -n $appId/${launcherActivity}") }
-                .onFailure {
-                    shell("monkey --pct-syskeys 0 -p $appId 1")
-                }
+            runCatching {
+                val shellResponse = dadb.shell("am start-activity -n $appId/${launcherActivity}")
+                if (shellResponse.errorOutput.isNotEmpty()) shell("monkey --pct-syskeys 0 -p $appId 1")
+            }.onFailure { shell("monkey --pct-syskeys 0 -p $appId 1") }
         } catch (ioException: IOException) {
             shell("monkey --pct-syskeys 0 -p $appId 1")
         } catch (saxException: SAXException) {
