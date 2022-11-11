@@ -1,11 +1,12 @@
 # Changelog
+* Fix not able to input underscore with inputText command on iOS
 
 ## 1.13.2 - 2022-11-10
 * Fix: Fallback properly on monkey when start-activity command fails, when launching app.
 
 ## 1.13.1 - 2022-11-09
 * Fix: Fix maestro hanging with message "Waiting for idb service to start.."
-* Fix: Fix clearState operation not working on iOS 
+* Fix: Fix clearState operation not working on iOS
 
 ## 1.13.0 - 2022-11-08
 
@@ -91,7 +92,7 @@
 * Tweak: support of Tab Bar on iOS
 * Tweak: added `--mapping` option to `upload` CLI command
 * Fix: open the main launcher screen on Android instead of Leak Canary
-* Fix: input character-by-character on Android to counter adb issue where not the whole text gets transferred to the device 
+* Fix: input character-by-character on Android to counter adb issue where not the whole text gets transferred to the device
 
 ## 1.7.2 - 2022-09-20
 
@@ -125,7 +126,7 @@
 * Fix: Android WebView contents were sometimes not reported as part of the view hierarchy
 * Fix: iOS inputText race condition
 * Fix: populate iOS accessibility value
-* Refactoring: simplified `MaestroCommand` serialization 
+* Refactoring: simplified `MaestroCommand` serialization
 
 ## 1.5.0 - 2022-09-08
 

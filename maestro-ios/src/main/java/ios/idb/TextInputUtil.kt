@@ -206,5 +206,6 @@ internal object TextInputUtil {
         '>' to keyPressShiftedToEvents(55),
         '?' to keyPressShiftedToEvents(56),
         '~' to keyPressShiftedToEvents(53),
+        '_' to keyPressShiftedToEvents(95),
     )
 }
