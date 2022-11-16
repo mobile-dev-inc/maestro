@@ -80,7 +80,25 @@ tasks.register("copyMaestroAndroid", Copy) {
     }
 }
 
+tasks.register("copyMaestroServer", Copy) {
+    def maestroServerApkPath = "outputs/apk/androidTest/debug/maestro-android-debug-androidTest.apk"
+    def maestroServerApkDest = "../../maestro-client/src/main/resources"
+    def maestroServerApkDestPath = "../../maestro-client/src/main/resources/maestro-android-debug-androidTest.apk"
+
+    from layout.buildDirectory.dir(maestroServerApkPath)
+    into layout.buildDirectory.file(maestroServerApkDest)
+
+    it.doLast {
+        if (!layout.buildDirectory.file(maestroServerApkDestPath).get().asFile.exists())
+            throw new GradleException("Error: Input source for copyMaestroServer doesn't exist")
+
+        new File("./maestro-client/src/main/resources/maestro-android-debug-androidTest.apk")
+            .renameTo(new File("./maestro-client/src/main/resources/maestro-server.apk"))
+    }
+}
+
 tasks.named("assemble") { finalizedBy("copyMaestroAndroid") }
+tasks.named("assembleAndroidTest") { finalizedBy("copyMaestroServer") }
 
 sourceSets {
     generated {
