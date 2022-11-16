@@ -63,6 +63,25 @@ android {
     }
 }
 
+tasks.register("copyMaestroAndroid", Copy) {
+    def maestroAndroidApkPath = "outputs/apk/debug/maestro-android-debug.apk"
+    def maestroAndroidApkDest = "../../maestro-client/src/main/resources"
+    def maestroAndroidApkDestPath = "../../maestro-client/src/main/resources/maestro-android-debug.apk"
+
+    from layout.buildDirectory.dir(maestroAndroidApkPath)
+    into layout.buildDirectory.file(maestroAndroidApkDest)
+
+    it.doLast {
+        if (!layout.buildDirectory.file(maestroAndroidApkDestPath).get().asFile.exists())
+            throw new GradleException("Error: Input source for copyMaestroAndroid doesn't exist")
+
+        new File("./maestro-client/src/main/resources/maestro-android-debug.apk")
+            .renameTo(new File("./maestro-client/src/main/resources/maestro-app.apk"))
+    }
+}
+
+tasks.named("assemble") { finalizedBy("copyMaestroAndroid") }
+
 sourceSets {
     generated {
         java {
