@@ -6,7 +6,12 @@ import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Properties
+import java.util.logging.FileHandler
+import java.util.logging.LogRecord
+import java.util.logging.Logger
+import java.util.logging.SimpleFormatter
 
 object DebugLogStore {
 
@@ -16,8 +21,10 @@ object DebugLogStore {
     private const val KEEP_LOG_COUNT = 5
 
     private val logDirectory: File
-
+    private val maestroLogFile: File
     init {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1\$tF %1\$tT] [%4$-7s] %5\$s %n")
+
         val dateFormatter = DateTimeFormatter.ofPattern(LOG_DIR_DATE_FORMAT)
         val date = dateFormatter.format(LocalDateTime.now())
         val baseDir = File(AppDirsFactory.getInstance().getUserLogDir(APP_NAME, null, APP_AUTHOR))
@@ -26,7 +33,31 @@ object DebugLogStore {
         removeOldLogs(baseDir)
         println("Debug logs are stored in $logDirectory")
 
+        maestroLogFile = logFile("maestro")
         logSystemInfo()
+    }
+
+    fun loggerFor(clazz: Class<*>): Logger {
+        val logger = Logger.getLogger(clazz.name)
+
+        val fileHandler = FileHandler(maestroLogFile.absolutePath)
+        fileHandler.formatter = object : SimpleFormatter() {
+            private val format = "[%1\$tF %1\$tT] [%2$-7s] %3\$s %n"
+
+            @Suppress("DefaultLocale")
+            @Synchronized
+            override fun format(lr: LogRecord): String {
+                return java.lang.String.format(
+                    format,
+                    Date(lr.millis),
+                    lr.level.localizedName,
+                    lr.message
+                )
+            }
+        }
+
+        logger.addHandler(fileHandler)
+        return logger
     }
 
     fun logOutputOf(processBuilder: ProcessBuilder) {

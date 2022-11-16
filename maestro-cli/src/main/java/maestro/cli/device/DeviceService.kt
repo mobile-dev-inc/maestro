@@ -13,6 +13,7 @@ import maestro.cli.util.EnvUtils
 import java.io.File
 import java.net.Socket
 import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 import kotlin.concurrent.thread
 
 object DeviceService {
@@ -22,6 +23,8 @@ object DeviceService {
                 .startsWith("Windows")
         ) "NUL" else "/dev/null"
     )
+
+    private val logger = DebugLogStore.loggerFor(DeviceService::class.java)
 
     fun startDevice(device: Device.AvailableForLaunch): Device.Connected {
         when (device.platform) {
@@ -79,6 +82,8 @@ object DeviceService {
     }
 
     private fun startIdbCompanion(device: Device.Connected) {
+        logger.info("startIDBCompanion on $device")
+
         val idbHost = "localhost"
         val idbPort = 10882
 
