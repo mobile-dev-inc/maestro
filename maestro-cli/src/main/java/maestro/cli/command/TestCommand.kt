@@ -24,6 +24,8 @@ import maestro.cli.CliError
 import maestro.cli.runner.TestRunner
 import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.util.MaestroFactory
+import okio.buffer
+import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -45,6 +47,9 @@ class TestCommand : Callable<Int> {
 
     @Option(names = ["-e", "--env"])
     private var env: Map<String, String> = emptyMap()
+
+    @Option(names = ["--report"])
+    private var report: File? = null
 
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
@@ -71,11 +76,10 @@ class TestCommand : Callable<Int> {
                 )
             }
 
-            val suiteResult = TestSuiteInteractor.runTestSuite(
-                maestro,
-                device,
-                flowFile,
-                env
+            val suiteResult = TestSuiteInteractor(maestro, device).runTestSuite(
+                input = flowFile,
+                env = env,
+                reportOut = report?.sink()?.buffer()
             )
 
             if (suiteResult.passed) {
