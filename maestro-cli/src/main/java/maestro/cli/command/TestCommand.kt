@@ -21,6 +21,8 @@ package maestro.cli.command
 
 import maestro.cli.App
 import maestro.cli.CliError
+import maestro.cli.report.ReportFormat
+import maestro.cli.report.ReporterFactory
 import maestro.cli.runner.TestRunner
 import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.util.MaestroFactory
@@ -48,8 +50,11 @@ class TestCommand : Callable<Int> {
     @Option(names = ["-e", "--env"])
     private var env: Map<String, String> = emptyMap()
 
-    @Option(names = ["--report"])
-    private var report: File? = null
+    @Option(names = ["--format"])
+    private var format: ReportFormat = ReportFormat.NOOP
+
+    @Option(names = ["--output"])
+    private var output: File? = null
 
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
@@ -76,10 +81,19 @@ class TestCommand : Callable<Int> {
                 )
             }
 
-            val suiteResult = TestSuiteInteractor(maestro, device).runTestSuite(
+            val suiteResult = TestSuiteInteractor(
+                maestro = maestro,
+                device = device,
+                reporter = ReporterFactory.buildReporter(format)
+            ).runTestSuite(
                 input = flowFile,
                 env = env,
-                reportOut = report?.sink()?.buffer()
+                reportOut = format.fileExtension
+                    ?.let { extension ->
+                        (output ?: File("report$extension"))
+                            .sink()
+                            .buffer()
+                    }
             )
 
             if (suiteResult.passed) {

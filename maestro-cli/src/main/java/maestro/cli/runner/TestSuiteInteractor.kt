@@ -4,7 +4,6 @@ import maestro.Maestro
 import maestro.cli.device.Device
 import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
-import maestro.cli.report.JUnitTestSuiteReporter
 import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
@@ -18,7 +17,7 @@ import java.io.File
 class TestSuiteInteractor(
     private val maestro: Maestro,
     private val device: Device? = null,
-    private val reporter: TestSuiteReporter = JUnitTestSuiteReporter.xml(),
+    private val reporter: TestSuiteReporter,
 ) {
 
     fun runTestSuite(

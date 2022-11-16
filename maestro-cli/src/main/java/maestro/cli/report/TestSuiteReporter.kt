@@ -10,4 +10,12 @@ interface TestSuiteReporter {
         out: Sink,
     )
 
+    companion object {
+        val NOOP: TestSuiteReporter = object : TestSuiteReporter {
+            override fun report(summary: TestExecutionSummary, out: Sink) {
+                // no-op
+            }
+        }
+    }
+
 }
