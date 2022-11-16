@@ -6,6 +6,7 @@ import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
 import maestro.MaestroTimer
 import maestro.cli.CliError
+import maestro.cli.debuglog.DebugLogStore
 import maestro.cli.device.ios.Simctl
 import maestro.cli.device.ios.SimctlList
 import maestro.cli.util.EnvUtils
@@ -89,10 +90,9 @@ object DeviceService {
             error("idb_companion is already running. Stop idb_companion and run maestro again")
         }
 
-        val idbProcess = ProcessBuilder("idb_companion", "--udid", device.instanceId)
-            .redirectError(ProcessBuilder.Redirect.to(NULL_FILE))
-            .redirectOutput(ProcessBuilder.Redirect.to(NULL_FILE))
-            .start()
+        val idbProcessBuilder = ProcessBuilder("idb_companion", "--udid", device.instanceId)
+        DebugLogStore.logOutputOf(idbProcessBuilder)
+        val idbProcess = idbProcessBuilder.start()
 
         Runtime.getRuntime().addShutdownHook(thread(start = false) {
             idbProcess.destroy()
