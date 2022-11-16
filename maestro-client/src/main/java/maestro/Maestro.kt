@@ -134,7 +134,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun tap(
         element: UiElement,
         retryIfNoChange: Boolean = true,
-        waitUntilVisible: Boolean = false,
+        waitUntilVisible: Boolean = true,
         longPress: Boolean = false,
     ) {
         LOGGER.info("Tapping on element: $element")

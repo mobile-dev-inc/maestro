@@ -139,7 +139,7 @@ class Orchestra(
                 tapOnElement(
                     command,
                     command.retryIfNoChange ?: true,
-                    command.waitUntilVisible ?: false
+                    command.waitUntilVisible ?: true
                 )
             }
             is TapOnPointCommand -> tapOnPoint(command, command.retryIfNoChange ?: true)
