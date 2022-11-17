@@ -41,8 +41,6 @@ import javax.imageio.ImageIO
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Maestro(private val driver: Driver) : AutoCloseable {
 
-    private var copiedText: String? = null
-
     fun deviceName(): String {
         return driver.name()
     }

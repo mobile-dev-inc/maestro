@@ -66,8 +66,6 @@ class AndroidDriver(
 
     private var instrumentationSession: AdbShellStream? = null
 
-    private var copiedText: String? = null
-
     override fun name(): String {
         return "Android Device ($dadb)"
     }
