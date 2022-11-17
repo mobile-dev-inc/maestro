@@ -146,7 +146,7 @@ class Orchestra(
             is BackPressCommand -> backPressCommand()
             is HideKeyboardCommand -> hideKeyboardCommand()
             is ScrollCommand -> scrollVerticalCommand()
-            is CopyTextCommand -> copyTextFromElement(command)
+            is CopyTextCommand -> copyTextCommand(command)
             is PasteTextCommand -> maestro.pasteText()
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
@@ -599,19 +599,17 @@ class Orchestra(
         return true
     }
 
-
     private fun adjustedToLatestInteraction(timeMs: Long) = max(
         0,
         timeMs - (System.currentTimeMillis() - timeMsOfLastInteraction)
     )
 
-    private fun copyTextFromElement(command: CopyTextCommand): Boolean {
+    private fun copyTextCommand(command: CopyTextCommand): Boolean {
         val element = findElement(command.selector)
-        maestro.copyTextFromElement(element)
+        maestro.copyText(element)
 
         return true
     }
-
 
     private object CommandSkipped : Exception()
 

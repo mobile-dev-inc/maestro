@@ -43,6 +43,8 @@ class FakeDriver : Driver {
     private var pushedState: String? = null
     private val events = mutableListOf<Event>()
 
+    private var copiedText: String? = null
+
     private var currentText: String = ""
 
     override fun name(): String {
@@ -216,6 +218,27 @@ class FakeDriver : Driver {
         events += Event.SetLocation(latitude, longitude)
     }
 
+    override fun copyText(text: String) {
+        ensureOpen()
+
+        copiedText = text
+
+        events += Event.CopyText
+    }
+
+    override fun pasteText() {
+        ensureOpen()
+
+        currentText += copiedText
+
+        events += Event.PasteText
+    }
+
+    override fun copiedText(): String? {
+        ensureOpen()
+        return copiedText
+    }
+
     override fun inputText(text: String) {
         ensureOpen()
 
@@ -352,6 +375,9 @@ class FakeDriver : Driver {
             val latitude: Double,
             val longitude: Double,
         ) : Event()
+
+        object CopyText : Event()
+        object PasteText : Event()
     }
 
     interface UserInteraction

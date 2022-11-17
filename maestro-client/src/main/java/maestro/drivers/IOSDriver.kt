@@ -41,6 +41,8 @@ class IOSDriver(
     private val iosDevice: IOSDevice,
 ) : Driver {
 
+    private var copiedText: String? = null
+
     private var widthPixels: Int? = null
     private var heightPixels: Int? = null
 
@@ -323,5 +325,17 @@ class IOSDriver(
 
     override fun setLocation(latitude: Double, longitude: Double) {
         iosDevice.setLocation(latitude, longitude).expect {}
+    }
+
+    override fun copyText(text: String) {
+        copiedText = text
+    }
+
+    override fun pasteText() {
+        copiedText?.let { inputText(it) }
+    }
+
+    override fun copiedText(): String? {
+        return copiedText
     }
 }

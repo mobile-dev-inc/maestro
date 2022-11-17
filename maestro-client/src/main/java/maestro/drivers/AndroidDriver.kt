@@ -66,6 +66,8 @@ class AndroidDriver(
 
     private var instrumentationSession: AdbShellStream? = null
 
+    private var copiedText: String? = null
+
     override fun name(): String {
         return "Android Device ($dadb)"
     }
@@ -315,6 +317,18 @@ class AndroidDriver(
 
     override fun setLocation(latitude: Double, longitude: Double) {
         TODO("Not yet implemented")
+    }
+
+    override fun copyText(text: String) {
+        copiedText = text
+    }
+
+    override fun pasteText() {
+        copiedText?.let { inputText(it) }
+    }
+
+    override fun copiedText(): String? {
+        return copiedText
     }
 
     private fun mapHierarchy(node: Node): TreeNode {
