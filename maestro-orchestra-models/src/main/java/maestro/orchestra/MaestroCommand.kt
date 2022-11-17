@@ -47,7 +47,7 @@ data class MaestroCommand(
     val runFlowCommand: RunFlowCommand? = null,
     val setLocationCommand: SetLocationCommand? = null,
     val repeatCommand: RepeatCommand? = null,
-    val copyTextCommand: CopyTextCommand? = null,
+    val copyTextCommand: CopyTextFromCommand? = null,
     val pasteTextCommand: PasteTextCommand? = null
 ) {
 
@@ -73,7 +73,7 @@ data class MaestroCommand(
         runFlowCommand = command as? RunFlowCommand,
         setLocationCommand = command as? SetLocationCommand,
         repeatCommand = command as? RepeatCommand,
-        copyTextCommand = command as? CopyTextCommand,
+        copyTextCommand = command as? CopyTextFromCommand,
         pasteTextCommand = command as? PasteTextCommand
     )
 

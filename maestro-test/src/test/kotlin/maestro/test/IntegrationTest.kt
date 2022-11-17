@@ -1735,7 +1735,7 @@ class IntegrationTest {
         // Then
         // No test failure
         driver.assertCurrentTextInput(myCopiedText)
-        driver.assertHasEvent(Event.CopyText)
+        driver.assertHasEvent(Event.CopyTextFrom)
         driver.assertHasEvent(Event.PasteText)
     }
 

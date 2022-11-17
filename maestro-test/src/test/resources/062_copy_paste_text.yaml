@@ -1,5 +1,5 @@
 appId: com.example.app
 ---
-- copyText:
+- copyTextFrom:
     id: "myId"
 - pasteText

@@ -223,7 +223,7 @@ class FakeDriver : Driver {
 
         copiedText = text
 
-        events += Event.CopyText
+        events += Event.CopyTextFrom
     }
 
     override fun pasteText() {
@@ -376,7 +376,7 @@ class FakeDriver : Driver {
             val longitude: Double,
         ) : Event()
 
-        object CopyText : Event()
+        object CopyTextFrom : Event()
         object PasteText : Event()
     }
 

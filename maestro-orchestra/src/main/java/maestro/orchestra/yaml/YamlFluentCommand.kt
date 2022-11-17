@@ -26,7 +26,7 @@ import maestro.orchestra.AssertCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
 import maestro.orchestra.Condition
-import maestro.orchestra.CopyTextCommand
+import maestro.orchestra.CopyTextFromCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.ElementTrait
 import maestro.orchestra.EraseTextCommand
@@ -77,7 +77,7 @@ data class YamlFluentCommand(
     val runFlow: YamlRunFlow? = null,
     val setLocation: YamlSetLocation? = null,
     val repeat: YamlRepeatCommand? = null,
-    val copyText: YamlElementSelectorUnion? = null
+    val copyTextFrom: YamlElementSelectorUnion? = null
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -149,7 +149,7 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            copyText != null -> listOf(copyTextCommand(copyText))
+            copyTextFrom != null -> listOf(copyTextFromCommand(copyTextFrom))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -324,10 +324,10 @@ data class YamlFluentCommand(
         )
     }
 
-    private fun copyTextCommand(
+    private fun copyTextFromCommand(
         copyText: YamlElementSelectorUnion
     ): MaestroCommand {
-        return MaestroCommand(CopyTextCommand(
+        return MaestroCommand(CopyTextFromCommand(
             selector = toElementSelector(copyText)
         ))
     }
