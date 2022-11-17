@@ -144,7 +144,7 @@ class HideKeyboardCommand : Command {
 }
 
 
-class CopyTextFromCommand(
+data class CopyTextFromCommand(
     val selector: ElementSelector,
 ) : Command {
 
@@ -153,7 +153,9 @@ class CopyTextFromCommand(
     }
 
     override fun injectEnv(env: Map<String, String>): CopyTextFromCommand {
-        return this
+        return copy(
+            selector = selector.injectEnv(env)
+        )
     }
 }
 
