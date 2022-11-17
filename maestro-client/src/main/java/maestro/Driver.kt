@@ -69,10 +69,4 @@ interface Driver {
     fun takeScreenshot(out: Sink)
 
     fun setLocation(latitude: Double, longitude: Double)
-
-    fun copyText(text: String)
-
-    fun pasteText()
-
-    fun copiedText(): String?
 }

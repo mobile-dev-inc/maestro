@@ -1731,12 +1731,9 @@ class IntegrationTest {
             orchestra(it).runFlow(commands)
         }
 
-
         // Then
         // No test failure
         driver.assertCurrentTextInput(myCopiedText)
-        driver.assertHasEvent(Event.CopyTextFrom)
-        driver.assertHasEvent(Event.PasteText)
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(

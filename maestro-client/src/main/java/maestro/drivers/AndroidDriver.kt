@@ -319,18 +319,6 @@ class AndroidDriver(
         TODO("Not yet implemented")
     }
 
-    override fun copyText(text: String) {
-        copiedText = text
-    }
-
-    override fun pasteText() {
-        copiedText?.let { inputText(it) }
-    }
-
-    override fun copiedText(): String? {
-        return copiedText
-    }
-
     private fun mapHierarchy(node: Node): TreeNode {
         val attributes = if (node is Element) {
             val attributesBuilder = mutableMapOf<String, String>()

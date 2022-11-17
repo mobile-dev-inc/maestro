@@ -218,27 +218,6 @@ class FakeDriver : Driver {
         events += Event.SetLocation(latitude, longitude)
     }
 
-    override fun copyText(text: String) {
-        ensureOpen()
-
-        copiedText = text
-
-        events += Event.CopyTextFrom
-    }
-
-    override fun pasteText() {
-        ensureOpen()
-
-        currentText += copiedText
-
-        events += Event.PasteText
-    }
-
-    override fun copiedText(): String? {
-        ensureOpen()
-        return copiedText
-    }
-
     override fun inputText(text: String) {
         ensureOpen()
 
@@ -376,8 +355,6 @@ class FakeDriver : Driver {
             val longitude: Double,
         ) : Event()
 
-        object CopyTextFrom : Event()
-        object PasteText : Event()
     }
 
     interface UserInteraction
