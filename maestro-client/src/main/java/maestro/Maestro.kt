@@ -105,7 +105,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.hideKeyboard()
         waitForAppToSettle()
     }
-
+    
     fun swipe(swipeDirection: SwipeDirection? = null, start: Point? = null, end: Point? = null, duration: Long) {
         when {
             swipeDirection != null -> driver.swipe(swipeDirection, duration)
