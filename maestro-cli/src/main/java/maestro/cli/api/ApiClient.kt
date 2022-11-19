@@ -137,7 +137,8 @@ class ApiClient(
         frames: List<ResultView.Frame>,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): String {
-        val baseUrl = "https://maestro-record.ngrok.io"
+        val baseUrl = "http://localhost:3333"
+//        val baseUrl = "https://maestro-record.ngrok.io"
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("screenRecording", screenRecording.name, screenRecording.asRequestBody("application/mp4".toMediaType()).observable(progressListener))
