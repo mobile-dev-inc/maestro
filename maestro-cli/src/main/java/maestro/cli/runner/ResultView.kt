@@ -26,6 +26,10 @@ class ResultView(
     private val prompt: String? = null
 ) {
 
+    private val startTimestamp = System.currentTimeMillis()
+
+    private val frames = mutableListOf<Frame>()
+
     private var previousFrame: String? = null
 
     init {
@@ -37,6 +41,10 @@ class ResultView(
             is UiState.Running -> renderRunningState(state)
             is UiState.Error -> renderErrorState(state)
         }
+    }
+
+    fun getFrames(): List<Frame> {
+        return frames.toList()
     }
 
     private fun renderErrorState(state: UiState.Error) = renderFrame {
@@ -149,6 +157,7 @@ class ResultView(
             }
         }
         print(frame)
+        frames.add(Frame(System.currentTimeMillis() - startTimestamp, frame))
         previousFrame = frame
     }
 
@@ -163,4 +172,6 @@ class ResultView(
         ) : UiState()
 
     }
+
+    data class Frame(val timestampMs: Long, val content: String)
 }
