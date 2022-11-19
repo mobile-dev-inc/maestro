@@ -21,13 +21,11 @@ package maestro.cli.command
 
 import maestro.cli.App
 import maestro.cli.CliError
+import maestro.cli.api.ApiClient
 import maestro.cli.report.ReportFormat
-import maestro.cli.report.ReporterFactory
+import maestro.cli.runner.ResultView
 import maestro.cli.runner.TestRunner
-import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.util.MaestroFactory
-import okio.buffer
-import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -70,13 +68,20 @@ class RecordCommand : Callable<Int> {
 
         val (maestro, device) = MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId)
 
-        return if (flowFile.isDirectory) {
+        if (flowFile.isDirectory) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
                 "Only single Flows are supported by \"maestro record\". $flowFile is a directory.",
             )
-        } else {
-            TestRunner.runSingle(maestro, device, flowFile, env)
         }
+
+        val resultView = ResultView()
+        val exitCode = TestRunner.runSingle(maestro, device, flowFile, env, resultView)
+        val frames = resultView.getFrames()
+
+        val videoUrl = ApiClient("").render(File("/Users/leland/test.mp4"), frames)
+        println(videoUrl)
+
+        return exitCode
     }
 }
