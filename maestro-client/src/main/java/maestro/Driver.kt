@@ -68,6 +68,12 @@ interface Driver {
 
     fun takeScreenshot(out: Sink)
 
+    fun startScreenRecording(out: Sink): ScreenRecording = object : ScreenRecording {
+        override fun close() {
+            TODO()
+        }
+    }
+
     fun setLocation(latitude: Double, longitude: Double)
 
     fun eraseText(charactersToErase: Int)

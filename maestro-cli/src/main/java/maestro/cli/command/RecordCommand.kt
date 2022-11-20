@@ -26,6 +26,7 @@ import maestro.cli.report.ReportFormat
 import maestro.cli.runner.ResultView
 import maestro.cli.runner.TestRunner
 import maestro.cli.util.MaestroFactory
+import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -76,10 +77,18 @@ class RecordCommand : Callable<Int> {
         }
 
         val resultView = ResultView()
-        val exitCode = TestRunner.runSingle(maestro, device, flowFile, env, resultView)
+        val screenRecording = kotlin.io.path.createTempFile(suffix = ".mp4").toFile()
+        val exitCode = screenRecording.sink().use { out ->
+            maestro.startScreenRecording(out).use {
+                val exitCode = TestRunner.runSingle(maestro, device, flowFile, env, resultView)
+                Thread.sleep(3000)
+                exitCode
+            }
+        }
+        println(screenRecording)
         val frames = resultView.getFrames()
+        val videoUrl = ApiClient("").render(screenRecording, frames)
 
-        val videoUrl = ApiClient("").render(File("/Users/leland/test.mp4"), frames)
         println(videoUrl)
 
         return exitCode
