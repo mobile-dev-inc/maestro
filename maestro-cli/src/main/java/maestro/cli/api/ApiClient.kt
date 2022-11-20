@@ -142,7 +142,7 @@ class ApiClient(
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("screenRecording", screenRecording.name, screenRecording.asRequestBody("application/mp4".toMediaType()).observable(progressListener))
-            .addFormDataPart("request", JSON.writeValueAsString(frames))
+            .addFormDataPart("frames", JSON.writeValueAsString(frames))
             .build()
         val request = Request.Builder()
             .url("$baseUrl/render")
