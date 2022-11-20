@@ -179,5 +179,5 @@ class ResultView(
         return Frame(System.currentTimeMillis() - startTimestamp, content)
     }
 
-    data class Frame(val timestampMs: Long, val content: String)
+    data class Frame(val timestamp: Long, val content: String)
 }
