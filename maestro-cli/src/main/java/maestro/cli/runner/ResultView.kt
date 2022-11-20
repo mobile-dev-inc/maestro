@@ -19,6 +19,7 @@
 
 package maestro.cli.runner
 
+import io.ktor.util.encodeBase64
 import maestro.cli.device.Device
 import org.fusesource.jansi.Ansi
 
@@ -157,7 +158,7 @@ class ResultView(
             }
         }
         print(frame)
-        frames.add(Frame(System.currentTimeMillis() - startTimestamp, frame))
+        frames.add(createFrame(frame))
         previousFrame = frame
     }
 
@@ -171,6 +172,11 @@ class ResultView(
             val commands: List<CommandState>,
         ) : UiState()
 
+    }
+
+    private fun createFrame(frame: String): Frame {
+        val content = frame.encodeBase64()
+        return Frame(System.currentTimeMillis() - startTimestamp, content)
     }
 
     data class Frame(val timestampMs: Long, val content: String)
