@@ -85,7 +85,6 @@ class RecordCommand : Callable<Int> {
                 exitCode
             }
         }
-        println(screenRecording)
         val frames = resultView.getFrames()
         val videoUrl = ApiClient("").render(screenRecording, frames)
 
