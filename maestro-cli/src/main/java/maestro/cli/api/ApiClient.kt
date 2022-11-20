@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
+import io.ktor.util.encodeBase64
 import maestro.cli.CliError
 import maestro.cli.util.PrintUtils
 import maestro.cli.runner.ResultView
@@ -142,7 +143,7 @@ class ApiClient(
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("screenRecording", screenRecording.name, screenRecording.asRequestBody("application/mp4".toMediaType()).observable(progressListener))
-            .addFormDataPart("frames", JSON.writeValueAsString(frames))
+            .addFormDataPart("frames", JSON.writeValueAsBytes(frames).encodeBase64())
             .build()
         val request = Request.Builder()
             .url("$baseUrl/render")
