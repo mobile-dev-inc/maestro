@@ -54,18 +54,23 @@ class JsEngine {
     fun evaluateScript(
         script: String,
         env: Map<String, String> = emptyMap(),
-        sourceName: String = "inline-script"
+        sourceName: String = "inline-script",
+        runInSubSope: Boolean = false
     ): String {
-        // We create a new scope for each evaluation to prevent local variables
-        // from clashing with each other across mutliple scripts.
-        // Only 'output' and 'ext' are shared across scopes.
-        val subScope = JsScope()
-        subScope.parentScope = currentScope
+        val scope = if (runInSubSope) {
+            // We create a new scope for each evaluation to prevent local variables
+            // from clashing with each other across mutliple scripts.
+            // Only 'output' and 'ext' are shared across scopes.
+            JsScope()
+                .apply { parentScope = currentScope }
+        } else {
+            currentScope
+        }
 
         if (env.isNotEmpty()) {
             env.forEach { (key, value) ->
                 context.evaluateString(
-                    subScope,
+                    scope,
                     "var $key = '${Jsoup.clean(value, Safelist.none())}'",
                     sourceName,
                     1,
@@ -75,7 +80,7 @@ class JsEngine {
         }
 
         return context.evaluateString(
-            subScope,
+            scope,
             script,
             sourceName,
             1,

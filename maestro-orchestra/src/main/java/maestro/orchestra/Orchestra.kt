@@ -198,6 +198,7 @@ class Orchestra(
             script = command.script,
             env = command.env,
             sourceName = command.sourceDescription,
+            runInSubSope = true,
         )
 
         // We do not actually know if there were any mutations, but we assume there were
