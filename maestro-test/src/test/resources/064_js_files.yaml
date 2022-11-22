@@ -1,0 +1,11 @@
+appId: com.example.app
+---
+- runScript: 064_script.js
+- runFlow: 064_subflow.yaml
+- inputText: ${output.result}
+- inputText: ${ext.globalVariable}
+- runScript:
+    file: 064_script_with_args.js
+    env:
+      parameter: Input Parameter
+- inputText: ${output.resultWithParameters}

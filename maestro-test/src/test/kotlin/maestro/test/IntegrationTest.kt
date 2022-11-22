@@ -1751,6 +1751,28 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 064 - Javascript files`() {
+        // given
+        val commands = readCommands("064_js_files")
+        val driver = driver { }
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.InputText("Alt"),
+                Event.InputText("Main"),
+                Event.InputText("Global Variable"),
+                Event.InputText("Hello, Input Parameter!"),
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,
