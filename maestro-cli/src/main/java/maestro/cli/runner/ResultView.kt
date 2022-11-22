@@ -87,7 +87,12 @@ class ResultView(
                 }
                 render(statusSymbol)
                 render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
-                render(it.command.description())
+                render(
+                    it.command.description()
+                        .replace("(?<!\\\\)\\\$\\{.*}".toRegex()) { match ->
+                            "@|cyan ${match.value} |@"
+                        }
+                )
 
                 if (it.status == CommandStatus.SKIPPED) {
                     render(" (skipped)")
