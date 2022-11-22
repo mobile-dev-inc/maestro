@@ -3,6 +3,7 @@ package maestro.js
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.mozilla.javascript.Context
+import org.mozilla.javascript.ScriptableObject
 
 class JsEngine {
 
@@ -13,6 +14,15 @@ class JsEngine {
         context = Context.enter()
         currentScope = JsScope()
         context.initSafeStandardObjects(currentScope)
+
+        val jsHttp = JsHttp()
+        jsHttp.defineFunctionProperties(
+            arrayOf("request", "get", "post", "put", "delete"),
+            JsHttp::class.java,
+            ScriptableObject.DONTENUM
+        )
+        context.initSafeStandardObjects(jsHttp)
+        currentScope.put("http", currentScope, jsHttp)
 
         context.evaluateString(
             currentScope,
