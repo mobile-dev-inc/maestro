@@ -123,7 +123,7 @@ class BackPressCommand : Command {
 class HideKeyboardCommand : Command {
 
     override fun equals(other: Any?): Boolean {
-        if (this == other) return true
+        if (this === other) return true
         if (javaClass != other?.javaClass) return false
         return true
     }
