@@ -1765,9 +1765,11 @@ class IntegrationTest {
         // then
         driver.assertEvents(
             listOf(
-                Event.InputText("Alt"),
                 Event.InputText("Main"),
-                Event.InputText("Global Variable"),
+                Event.InputText("Sub"),
+                Event.InputText("Sub"),
+                Event.InputText("Main"),
+                Event.InputText("Sub"),
                 Event.InputText("Hello, Input Parameter!"),
             )
         )

@@ -21,30 +21,23 @@ class JsEngine {
                     return JSON.parse(text)
                 }
                 
-                var ext = {}
-                var output = {}
+                const output = {}
             """.trimIndent(),
             "maestro-runtime",
             1,
             null
         )
+        currentScope.sealObject()
+
+        // We are entering a sub-scope so that no more declarations can be made
+        // on the root scope that is now sealed.
+        enterScope()
     }
 
     fun enterScope() {
         val subScope = JsScope()
         subScope.parentScope = currentScope
         currentScope = subScope
-
-        // Each subscope keeps its own version of output to not override the one from its parent
-        context.evaluateString(
-            currentScope,
-            """
-                var output = {}
-            """.trimIndent(),
-            "inline-script",
-            1,
-            null
-        ).toString()
     }
 
     fun leaveScope() {
@@ -59,8 +52,8 @@ class JsEngine {
     ): String {
         val scope = if (runInSubSope) {
             // We create a new scope for each evaluation to prevent local variables
-            // from clashing with each other across mutliple scripts.
-            // Only 'output' and 'ext' are shared across scopes.
+            // from clashing with each other across multiple scripts.
+            // Only 'output' is shared across scopes.
             JsScope()
                 .apply { parentScope = currentScope }
         } else {

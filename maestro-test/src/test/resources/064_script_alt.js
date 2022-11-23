@@ -1,2 +1,4 @@
-output.result = 'Alt'
-ext.globalVariable = 'Global Variable'
+output.sharedResult = 'Sub'
+output.subFlow = {
+  result: 'Sub'
+}
