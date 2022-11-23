@@ -50,6 +50,7 @@ import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
 import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointCommand
+import maestro.orchestra.WaitForAnimationToEndCommand
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.util.Env.withEnv
@@ -135,6 +136,7 @@ data class YamlFluentCommand(
                     "scroll" -> MaestroCommand(ScrollCommand())
                     "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
                     "pasteText" -> MaestroCommand(PasteTextCommand())
+                    "waitForAnimationToEnd" -> MaestroCommand(WaitForAnimationToEndCommand())
                     else -> error("Unknown navigation target: $action")
                 }
             )
@@ -454,6 +456,10 @@ data class YamlFluentCommand(
 
                 "scroll" -> YamlFluentCommand(
                     action = "scroll"
+                )
+
+                "waitForAnimationToEnd" -> YamlFluentCommand(
+                    action = "waitForAnimationToEnd"
                 )
 
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
