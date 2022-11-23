@@ -185,7 +185,7 @@ class Orchestra(
             is DefineVariablesCommand -> defineVariablesCommand(command)
             is RunScriptCommand -> runScriptCommand(command)
             is ApplyConfigurationCommand -> false
-            is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
+            is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand()
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -217,8 +217,9 @@ class Orchestra(
         return true
     }
 
-    private fun waitForAnimationToEndCommand(command: WaitForAnimationToEndCommand): Boolean {
-        // TODO: implement me
+    private fun waitForAnimationToEndCommand(): Boolean {
+        maestro.waitForAnimationToEnd()
+
         return true
     }
 

@@ -36,6 +36,9 @@ import okio.sink
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -384,11 +387,36 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         driver.eraseText(charactersToErase)
     }
+    
+    fun waitForAnimationToEnd() {
+        LOGGER.info("Waiting for animation to end")
+
+        MaestroTimer.retryUntilTrue(ANIMATION_TIMEOUT_MS) {
+            val startScreenshot: BufferedImage? = tryTakingScreenshot()
+            val endScreenshot: BufferedImage? = tryTakingScreenshot()
+
+            if (startScreenshot != null &&
+                endScreenshot != null &&
+                startScreenshot.width == endScreenshot.width &&
+                startScreenshot.height == endScreenshot.height
+            ) {
+                val imageDiff = ImageComparison(
+                    startScreenshot,
+                    endScreenshot
+                ).compareImages().differencePercent
+
+                return@retryUntilTrue imageDiff <= SCREENSHOT_DIFF_THRESHOLD
+            }
+
+            return@retryUntilTrue false
+        } || throw MaestroException.AnimationDidTimeout("Animation did timeout, took longer than $ANIMATION_TIMEOUT_MS ms")
+    }
 
     companion object {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
+        private const val ANIMATION_TIMEOUT_MS: Long = 5000
 
         fun ios(host: String, port: Int): Maestro {
             val channel = ManagedChannelBuilder.forAddress(host, port)
