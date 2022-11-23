@@ -1,20 +1,14 @@
 package maestro.js
 
 import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
-import java.util.concurrent.TimeUnit
 
 class JsHttp(
-    private val httpClient: OkHttpClient = OkHttpClient.Builder()
-        .readTimeout(5, TimeUnit.MINUTES)
-        .writeTimeout(5, TimeUnit.MINUTES)
-        .protocols(listOf(Protocol.HTTP_1_1))
-        .build()
+    private val httpClient: OkHttpClient
 ) : ScriptableObject() {
 
     fun get(
