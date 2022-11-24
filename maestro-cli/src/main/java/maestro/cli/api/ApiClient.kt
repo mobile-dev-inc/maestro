@@ -6,6 +6,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import maestro.cli.CliError
+import maestro.cli.util.PrintUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -141,9 +142,9 @@ class ApiClient(
         pullRequestId: String?,
         env: Map<String, String>? = null,
         androidApiLevel: Int?,
-        progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
         maxRetryCount: Int = 3,
-        completedRetries: Int = 0
+        completedRetries: Int = 0,
+        progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): UploadResponse {
         if (!appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
         if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
@@ -183,7 +184,9 @@ class ApiClient(
         response.use {
             if (!response.isSuccessful) {
                 if (response.code >= 500 && completedRetries < maxRetryCount) {
+                    PrintUtils.message("Request failed, retrying...")
                     Thread.sleep(BASE_RETRY_DELAY_MS + (2000 * completedRetries))
+                    
                     return upload(
                         authToken,
                         appFile,
@@ -196,9 +199,9 @@ class ApiClient(
                         pullRequestId,
                         env,
                         androidApiLevel,
-                        progressListener,
                         maxRetryCount,
-                        completedRetries + 1
+                        completedRetries + 1,
+                        progressListener,
                     )
                 } else {
                     throw CliError("Upload request failed (${response.code}): ${response.body?.string()}")
