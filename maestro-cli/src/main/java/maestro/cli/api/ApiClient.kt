@@ -37,6 +37,7 @@ class ApiClient(
         .build()
 
     private val knownCIEnvVars = listOf("CI", "JENKINS_HOME", "BITRISE_IO")
+    private val BASE_RETRY_DELAY_MS = 3000L
 
     fun magicLinkLogin(email: String, redirectUrl: String): Result<String, Response> {
         return post<Map<String, Any>>(
@@ -141,6 +142,8 @@ class ApiClient(
         env: Map<String, String>? = null,
         androidApiLevel: Int?,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
+        maxRetryCount: Int = 3,
+        completedRetries: Int = 0
     ): UploadResponse {
         if (!appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
         if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
@@ -179,7 +182,27 @@ class ApiClient(
 
         response.use {
             if (!response.isSuccessful) {
-                throw CliError("Upload request failed (${response.code}): ${response.body?.string()}")
+                if (response.code >= 500 && completedRetries < maxRetryCount) {
+                    Thread.sleep(BASE_RETRY_DELAY_MS + (2000 * completedRetries))
+                    return upload(
+                        authToken,
+                        appFile,
+                        workspaceZip,
+                        uploadName,
+                        mappingFile,
+                        repoOwner,
+                        repoName,
+                        branch,
+                        pullRequestId,
+                        env,
+                        androidApiLevel,
+                        progressListener,
+                        maxRetryCount,
+                        completedRetries + 1
+                    )
+                } else {
+                    throw CliError("Upload request failed (${response.code}): ${response.body?.string()}")
+                }
             }
 
             val responseBody = JSON.readValue(response.body?.bytes(), Map::class.java)
