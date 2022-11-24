@@ -6,7 +6,6 @@ import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ScriptableObject
-import org.mozilla.javascript.Undefined
 import java.util.concurrent.TimeUnit
 
 class JsEngine(
@@ -99,37 +98,6 @@ class JsEngine(
             1,
             null
         )
-    }
-
-    companion object {
-
-        fun toBoolean(value: Any?): Boolean {
-            if (value == null) {
-                return false
-            }
-
-            if (Undefined.isUndefined(value)) {
-                return false
-            }
-
-            return when (value) {
-                is Boolean -> value
-                is String -> {
-                    if (value.isBlank()) {
-                        false
-                    } else {
-                        try {
-                            value.toBooleanStrict()
-                        } catch (ignored: IllegalArgumentException) {
-                            true
-                        }
-                    }
-                }
-                is Number -> value.toInt() != 0
-                else -> true
-            }
-        }
-
     }
 
 }

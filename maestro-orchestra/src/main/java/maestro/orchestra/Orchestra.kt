@@ -338,15 +338,26 @@ class Orchestra(
             }
         }
 
-        condition.scriptCondition?.let { script ->
-            println("Evaluating $script")
-            val result = jsEngine.evaluateScript(
-                script = script,
-                runInSubSope = true,
-            )
+        condition.scriptCondition?.let { value ->
+            // Note that script should have been already evaluated by this point
 
-            println("$script: $result")
-            if (!JsEngine.toBoolean(result)) {
+            if (value.isBlank()) {
+                return false
+            }
+
+            if (value.equals("false", ignoreCase = true)) {
+                return false
+            }
+
+            if (value == "undefined") {
+                return false
+            }
+
+            if (value == "null") {
+                return false
+            }
+
+            if (value.toDoubleOrNull() == 0.0) {
                 return false
             }
         }
