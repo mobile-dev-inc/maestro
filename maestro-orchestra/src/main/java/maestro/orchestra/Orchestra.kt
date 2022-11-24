@@ -338,6 +338,19 @@ class Orchestra(
             }
         }
 
+        condition.scriptCondition?.let { script ->
+            println("Evaluating $script")
+            val result = jsEngine.evaluateScript(
+                script = script,
+                runInSubSope = true,
+            )
+
+            println("$script: $result")
+            if (!JsEngine.toBoolean(result)) {
+                return false
+            }
+        }
+
         return true
     }
 
