@@ -22,11 +22,12 @@ package maestro.cli.command
 import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.api.ApiClient
-import maestro.cli.report.ReportFormat
 import maestro.cli.runner.ResultView
 import maestro.cli.runner.TestRunner
 import maestro.cli.util.MaestroFactory
+import maestro.cli.view.ProgressBar
 import okio.sink
+import org.fusesource.jansi.Ansi
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -45,12 +46,6 @@ class RecordCommand : Callable<Int> {
 
     @Option(names = ["-e", "--env"])
     private var env: Map<String, String> = emptyMap()
-
-    @Option(names = ["--format"])
-    private var format: ReportFormat = ReportFormat.NOOP
-
-    @Option(names = ["--output"])
-    private var output: File? = null
 
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
@@ -80,16 +75,85 @@ class RecordCommand : Callable<Int> {
         val screenRecording = kotlin.io.path.createTempFile(suffix = ".mp4").toFile()
         val exitCode = screenRecording.sink().use { out ->
             maestro.startScreenRecording(out).use {
-                val exitCode = TestRunner.runSingle(maestro, device, flowFile, env, resultView)
-                Thread.sleep(3000)
-                exitCode
+                TestRunner.runSingle(maestro, device, flowFile, env, resultView)
             }
         }
-        val frames = resultView.getFrames()
-        val videoUrl = ApiClient("").render(screenRecording, frames)
 
-        println(videoUrl)
+        System.err.println()
+        System.err.println("@|bold Rendering your video. This usually takes a couple minutes...|@".render())
+        System.err.println()
+
+        val frames = resultView.getFrames()
+        val client = ApiClient("")
+
+        val uploadProgress = ProgressBar(50)
+        System.err.println("Uploading...")
+        val id = client.render(screenRecording, frames) { totalBytes, bytesWritten ->
+            uploadProgress.set(bytesWritten.toFloat() / totalBytes)
+        }
+        System.err.println()
+
+        var renderProgress: ProgressBar? = null
+        var status: String? = null
+        var positionInQueue: Int? = null
+        while (true) {
+            val state = client.getRenderState(id)
+
+            // If new position or status, print header
+            if (state.status != status || state.positionInQueue != positionInQueue) {
+                status = state.status
+                positionInQueue = state.positionInQueue
+
+                if (renderProgress != null) {
+                    renderProgress.set(1f)
+                    System.err.println()
+                }
+
+                System.err.println()
+
+                System.err.println("Status : ${styledStatus(state.status)}")
+                if (state.positionInQueue != null) {
+                    System.err.println("Position In Queue : ${state.positionInQueue}")
+                }
+            }
+
+            // Add ticks to progress bar
+            if (state.currentTaskProgress != null) {
+                if (renderProgress == null) renderProgress = ProgressBar(50)
+                renderProgress.set(state.currentTaskProgress)
+            }
+
+            // Print download url or error and return
+            if (state.downloadUrl != null || state.error != null) {
+                System.err.println()
+                if (state.downloadUrl != null) {
+                    System.err.println("@|bold Signed Download URL:|@".render())
+                    print("@|cyan,bold ${state.downloadUrl}|@".render())
+                } else {
+                    System.err.println("@|bold Render encountered during rendering:|@".render())
+                    System.err.print(state.error)
+                }
+                System.err.println()
+                break
+            }
+
+            Thread.sleep(2000)
+        }
 
         return exitCode
+    }
+
+    private fun styledStatus(status: String): String {
+        val style = when (status) {
+            "PENDING" -> "yellow,bold"
+            "RENDERING" -> "blue,bold"
+            "SUCCESS" -> "green,bold"
+            else -> "bold"
+        }
+        return "@|$style $status|@".render()
+    }
+
+    private fun String.render(): String {
+        return Ansi.ansi().render(this).toString()
     }
 }

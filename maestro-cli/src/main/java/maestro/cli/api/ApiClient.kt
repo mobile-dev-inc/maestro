@@ -5,7 +5,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
-import io.ktor.util.encodeBase64
 import maestro.cli.CliError
 import maestro.cli.util.PrintUtils
 import maestro.cli.runner.ResultView
@@ -151,11 +150,28 @@ class ApiClient(
             .build()
         val response = client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                throw CliError("Upload request failed (${response.code}): ${response.body?.string()}")
+                throw CliError("Render request failed (${response.code}): ${response.body?.string()}")
             }
             JSON.readValue(response.body?.bytes(), RenderResponse::class.java)
         }
-        return "$baseUrl${response.url}"
+        return response.id
+    }
+
+    fun getRenderState(id: String): RenderState {
+//        val baseUrl = "http://localhost:3333"
+        val baseUrl = "https://maestro-record.ngrok.io"
+        val request = Request.Builder()
+            .url("$baseUrl/render/$id")
+            .get()
+            .build()
+        val response = client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw CliError("Get render state request failed (${response.code}): ${response.body?.string()}")
+            }
+            JSON.readValue(response.body?.bytes(), RenderState::class.java)
+        }
+        val downloadUrl = if (response.downloadUrl == null) null else "$baseUrl${response.downloadUrl}"
+        return response.copy(downloadUrl = downloadUrl)
     }
 
     fun upload(
@@ -325,5 +341,13 @@ data class UploadStatus(
 }
 
 data class RenderResponse(
-    val url: String
+    val id: String,
+)
+
+data class RenderState(
+    val status: String,
+    val positionInQueue: Int?,
+    val currentTaskProgress: Float?,
+    val error: String?,
+    val downloadUrl: String?,
 )
