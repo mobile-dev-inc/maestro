@@ -137,7 +137,6 @@ class ApiClient(
         frames: List<ResultView.Frame>,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): String {
-//        val baseUrl = "http://localhost:3333"
         val baseUrl = "https://maestro-record.ngrok.io"
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -158,7 +157,6 @@ class ApiClient(
     }
 
     fun getRenderState(id: String): RenderState {
-//        val baseUrl = "http://localhost:3333"
         val baseUrl = "https://maestro-record.ngrok.io"
         val request = Request.Builder()
             .url("$baseUrl/render/$id")
