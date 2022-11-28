@@ -410,7 +410,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             }
 
             return@retryUntilTrue false
-        } || throw MaestroException.AnimationDidTimeout("Animation did timeout, took longer than $ANIMATION_TIMEOUT_MS ms")
+        }
     }
 
     companion object {
