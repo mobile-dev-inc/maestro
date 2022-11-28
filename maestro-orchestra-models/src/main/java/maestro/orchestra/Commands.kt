@@ -354,12 +354,16 @@ data class PressKeyCommand(
 
 }
 
-data class EraseTextCommand(
-    val charactersToErase: Int,
+data class EraseTextCommand (
+    val charactersToErase: Int?,
 ) : Command {
 
     override fun description(): String {
-        return "Erase $charactersToErase characters"
+        return if (charactersToErase != null) {
+            "Erase $charactersToErase characters"
+        } else {
+            "Erase 50 characters by default"
+        }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): EraseTextCommand {

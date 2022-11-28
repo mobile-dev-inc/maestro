@@ -318,6 +318,10 @@ class AndroidDriver(
         TODO("Not yet implemented")
     }
 
+    override fun eraseAllText(charactersToErase: Int) {
+        TODO()
+    }
+
     private fun mapHierarchy(node: Node): TreeNode {
         val attributes = if (node is Element) {
             val attributesBuilder = mutableMapOf<String, String>()

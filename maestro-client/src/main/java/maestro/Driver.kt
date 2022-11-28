@@ -69,4 +69,6 @@ interface Driver {
     fun takeScreenshot(out: Sink)
 
     fun setLocation(latitude: Double, longitude: Double)
+
+    fun eraseAllText(charactersToErase: Int)
 }

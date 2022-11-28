@@ -218,6 +218,13 @@ class FakeDriver : Driver {
         events += Event.SetLocation(latitude, longitude)
     }
 
+    override fun eraseAllText(charactersToErase: Int) {
+        ensureOpen()
+
+        currentText = ""
+        events += Event.EraseAllText
+    }
+
     override fun inputText(text: String) {
         ensureOpen()
 
@@ -355,6 +362,7 @@ class FakeDriver : Driver {
             val longitude: Double,
         ) : Event()
 
+        object EraseAllText: Event()
     }
 
     interface UserInteraction

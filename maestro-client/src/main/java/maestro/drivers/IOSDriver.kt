@@ -324,4 +324,8 @@ class IOSDriver(
     override fun setLocation(latitude: Double, longitude: Double) {
         iosDevice.setLocation(latitude, longitude).expect {}
     }
+
+    override fun eraseAllText(charactersToErase: Int) {
+        TODO()
+    }
 }
