@@ -388,10 +388,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.eraseText(charactersToErase)
     }
     
-    fun waitForAnimationToEnd() {
-        LOGGER.info("Waiting for animation to end")
+    fun waitForAnimationToEnd(timeout: Long?) {
+        val timeout = timeout ?: ANIMATION_TIMEOUT_MS
+        LOGGER.info("Waiting for animation to end with timeout $timeout")
 
-        MaestroTimer.retryUntilTrue(ANIMATION_TIMEOUT_MS) {
+        MaestroTimer.retryUntilTrue(timeout) {
             val startScreenshot: BufferedImage? = tryTakingScreenshot()
             val endScreenshot: BufferedImage? = tryTakingScreenshot()
 
@@ -416,7 +417,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
-        private const val ANIMATION_TIMEOUT_MS: Long = 5000
+        private const val ANIMATION_TIMEOUT_MS: Long = 15000
 
         fun ios(host: String, port: Int): Maestro {
             val channel = ManagedChannelBuilder.forAddress(host, port)
