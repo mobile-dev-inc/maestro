@@ -27,6 +27,7 @@ import maestro.cli.runner.TestRunner
 import maestro.cli.util.MaestroFactory
 import maestro.cli.view.ProgressBar
 import okio.sink
+import okio.source
 import org.fusesource.jansi.Ansi
 import picocli.CommandLine
 import picocli.CommandLine.Option
