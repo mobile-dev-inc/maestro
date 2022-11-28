@@ -35,6 +35,7 @@ import maestro.utils.FileUtils
 import okio.Sink
 import java.io.File
 import java.nio.file.Files
+import java.security.Key
 import kotlin.collections.set
 
 class IOSDriver(
@@ -326,6 +327,8 @@ class IOSDriver(
     }
 
     override fun eraseAllText(charactersToErase: Int) {
-        TODO()
+        repeat(charactersToErase) {
+            pressKey(KeyCode.BACKSPACE)
+        }
     }
 }
