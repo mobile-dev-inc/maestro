@@ -470,9 +470,18 @@ class IdbIOSDevice(
             request.onNext(recordRequest {
                 start = Idb.RecordRequest.Start.newBuilder().build()
             })
+
+            val startTimestamp = System.currentTimeMillis()
             object : IOSScreenRecording {
 
                 override fun close() {
+                    // Ensure minimum screen recording duration of 3 seconds.
+                    // This addresses an edge case where iOS launch command completes too quickly.
+                    val durationPadding = 3000 - (System.currentTimeMillis() - startTimestamp)
+                    if (durationPadding > 0) {
+                        Thread.sleep(durationPadding)
+                    }
+
                     request.onNext(recordRequest {
                         stop = Idb.RecordRequest.Stop.newBuilder().build()
                     })
