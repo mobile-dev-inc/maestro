@@ -128,12 +128,15 @@ class RecordCommand : Callable<Int> {
                 System.err.println()
                 if (state.downloadUrl != null) {
                     System.err.println("@|bold Signed Download URL:|@".render())
+                    System.err.println()
                     print("@|cyan,bold ${state.downloadUrl}|@".render())
+                    System.err.println()
+                    System.err.println()
+                    System.err.println("Open the link above to download your video. If you're sharing on Twitter be sure to tag us @|bold @mobile__dev|@!".render())
                 } else {
                     System.err.println("@|bold Render encountered during rendering:|@".render())
-                    System.err.print(state.error)
+                    System.err.println(state.error)
                 }
-                System.err.println()
                 break
             }
 
