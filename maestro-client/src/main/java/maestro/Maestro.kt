@@ -382,7 +382,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun eraseText(charactersToErase: Int) {
         LOGGER.info("Erasing $charactersToErase characters")
 
-        driver.eraseAllText(charactersToErase)
+        driver.eraseText(charactersToErase)
     }
 
     companion object {

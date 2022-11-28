@@ -70,5 +70,5 @@ interface Driver {
 
     fun setLocation(latitude: Double, longitude: Double)
 
-    fun eraseAllText(charactersToErase: Int)
+    fun eraseText(charactersToErase: Int)
 }

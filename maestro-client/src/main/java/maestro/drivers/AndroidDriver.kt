@@ -319,7 +319,7 @@ class AndroidDriver(
         TODO("Not yet implemented")
     }
 
-    override fun eraseAllText(charactersToErase: Int) {
+    override fun eraseText(charactersToErase: Int) {
         blockingStub.eraseAllText(
             eraseAllTextRequest {
                 this.charactersToErase = charactersToErase

@@ -326,7 +326,7 @@ class IOSDriver(
         iosDevice.setLocation(latitude, longitude).expect {}
     }
 
-    override fun eraseAllText(charactersToErase: Int) {
+    override fun eraseText(charactersToErase: Int) {
         repeat(charactersToErase) {
             pressKey(KeyCode.BACKSPACE)
         }

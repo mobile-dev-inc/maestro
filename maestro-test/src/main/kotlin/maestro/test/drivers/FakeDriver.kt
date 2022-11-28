@@ -218,10 +218,14 @@ class FakeDriver : Driver {
         events += Event.SetLocation(latitude, longitude)
     }
 
-    override fun eraseAllText(charactersToErase: Int) {
+    override fun eraseText(charactersToErase: Int) {
         ensureOpen()
 
-        currentText = ""
+        currentText = if (charactersToErase == MAX_ERASE_CHARACTERS) {
+            ""
+        } else {
+            currentText.dropLast(charactersToErase)
+        }
         events += Event.EraseAllText
     }
 
@@ -376,5 +380,6 @@ class FakeDriver : Driver {
     companion object {
 
         private val MAPPER = jacksonObjectMapper()
+        private const val MAX_ERASE_CHARACTERS = 50
     }
 }

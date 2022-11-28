@@ -362,7 +362,7 @@ data class EraseTextCommand (
         return if (charactersToErase != null) {
             "Erase $charactersToErase characters"
         } else {
-            "Erase 50 characters by default"
+            "Erase text"
         }
     }
 
