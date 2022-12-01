@@ -174,8 +174,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         longPress: Boolean = false,
     ) {
         val deviceInfo = deviceInfo()
-        val x = deviceInfo.widthPixels * percentX
-        val y = deviceInfo.heightPixels * percentY
+        val x = deviceInfo.widthPixels * percentX / 100
+        val y = deviceInfo.heightPixels * percentY / 100
         tap(
             x = x,
             y = y,

@@ -214,7 +214,7 @@ data class TapOnPercentCommand(
     val longPress: Boolean? = null,
 ) : Command {
     override fun description(): String {
-        return "Top on percent ($percentX%, $percentY%)"
+        return "Tap on percent ($percentX%, $percentY%)"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command = this
