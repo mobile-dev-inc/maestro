@@ -1,12 +1,16 @@
 package maestro.networkproxy
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.requestMatching
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.RequestListener
+import com.github.tomakehurst.wiremock.matching.MatchResult
 import com.github.tomakehurst.wiremock.matching.MatchResult.exactMatch
 import com.github.tomakehurst.wiremock.matching.MatchResult.noMatch
+import maestro.networkproxy.NetworkProxyUtils.toMap
 import maestro.networkproxy.yaml.YamlMappingRule
 import maestro.networkproxy.yaml.YamlMappingRuleParser
 import java.io.File
@@ -55,59 +59,78 @@ class NetworkProxy(
         rules.forEach { rule ->
             server?.stubFor(
                 requestMatching { request ->
-                    // TODO handle headers
-                    // TODO handle query params
-                    val pathMatches = rule.path.toRegex().matches(request.absoluteUrl)
-                        || rule.path == request.absoluteUrl
-
-                    if (pathMatches && request.method.value() == rule.method.uppercase()) {
-                        if (ruleListener != null) {
-                            ruleListener?.invoke(
-                                MatchResult(
-                                    url = request.absoluteUrl,
-                                    rule = rule,
-                                    result = MatchResult.MatchType.EXACT_MATCH
-                                )
-                            )
-                        }
-
-                        exactMatch()
-                    } else {
-                        noMatch()
-                    }
+                    tryToMatch(rule, request)
                 }.willReturn(
-                    aResponse().apply {
-                        withStatus(rule.response.status)
-                        rule.response.headers.forEach { (key, value) ->
-                            val values = value
-                                .split(",")
-                                .map { it.trim() }
-                                .toTypedArray()
-
-                            withHeader(key, *values)
-                        }
-
-                        if (rule.response.body != null && rule.response.bodyFile != null) {
-                            error("Cannot specify both body and bodyFile")
-                        }
-
-                        rule.response.body?.let {
-                            withBody(it)
-                        }
-                        rule.response.bodyFile?.let {
-                            val ruleDirectory = rule.ruleFilePath
-                                ?.let { ruleFilePath ->
-                                    File(ruleFilePath).parentFile.absolutePath
-                                }
-                                ?: "."
-
-                            val bodyFile = File(ruleDirectory, it)
-
-                            withBody(bodyFile.readText())
-                        }
-                    }
+                    aResponse().buildResponse(rule)
                 )
             )
+        }
+    }
+
+    private fun ResponseDefinitionBuilder.buildResponse(rule: YamlMappingRule): ResponseDefinitionBuilder {
+        withStatus(rule.response.status)
+        rule.response.headers.forEach { (key, value) ->
+            val values = value
+                .split(",")
+                .map { it.trim() }
+                .toTypedArray()
+
+            withHeader(key, *values)
+        }
+
+        if (rule.response.body != null && rule.response.bodyFile != null) {
+            error("Cannot specify both body and bodyFile")
+        }
+
+        rule.response.body?.let {
+            withBody(it)
+        }
+        rule.response.bodyFile?.let {
+            val ruleDirectory = rule.ruleFilePath
+                ?.let { ruleFilePath ->
+                    File(ruleFilePath).parentFile.absolutePath
+                }
+                ?: "."
+
+            val bodyFile = File(ruleDirectory, it)
+
+            withBody(bodyFile.readText())
+        }
+
+        return this
+    }
+
+    private fun tryToMatch(
+        rule: YamlMappingRule,
+        request: Request
+    ): com.github.tomakehurst.wiremock.matching.MatchResult? {
+        val pathMatches = rule.path.toRegex().matches(request.absoluteUrl)
+            || rule.path == request.absoluteUrl
+
+        if (pathMatches && request.method.value() == rule.method.uppercase()) {
+            val headersMatch = request.headers.toMap()
+                .all { (key, value) ->
+                    val ruleKey = rule.headers?.get(key)
+                    ruleKey == value || ruleKey == null
+                }
+
+            if (!headersMatch) {
+                return noMatch()
+            }
+
+            if (ruleListener != null) {
+                ruleListener?.invoke(
+                    MatchResult(
+                        url = request.absoluteUrl,
+                        rule = rule,
+                        result = MatchResult.MatchType.EXACT_MATCH
+                    )
+                )
+            }
+
+            return exactMatch()
+        } else {
+            return noMatch()
         }
     }
 

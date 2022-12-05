@@ -1,17 +1,22 @@
 package maestro.cli.command.network
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.tomakehurst.wiremock.http.Request
+import com.github.tomakehurst.wiremock.http.RequestMethod
+import com.github.tomakehurst.wiremock.http.Response
 import maestro.cli.util.MaestroFactory
 import maestro.cli.util.PrintUtils
 import maestro.networkproxy.NetworkProxy
+import maestro.networkproxy.NetworkProxyUtils.decodedBodyString
+import maestro.networkproxy.NetworkProxyUtils.isJsonContent
+import maestro.networkproxy.NetworkProxyUtils.toMap
 import maestro.networkproxy.yaml.YamlMappingRule
 import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.networkproxy.yaml.YamlResponse
-import okio.buffer
-import okio.gzip
-import okio.source
+import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.Ansi.ansi
 import picocli.CommandLine
 import picocli.CommandLine.Command
+import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import java.io.File
 import java.net.URL
@@ -29,7 +34,10 @@ class RecordNetworkCommand : Callable<Int> {
     @Parameters
     lateinit var output: File
 
-    private val jsonMapper = jacksonObjectMapper()
+    @Option(
+        names = ["--recordHeaders"]
+    )
+    var recordHeaders: Boolean = false
 
     override fun call(): Int {
         val proxy = NetworkProxy(port = 8080)
@@ -39,93 +47,7 @@ class RecordNetworkCommand : Callable<Int> {
                 return@setListener
             }
 
-            val url = URL(request.absoluteUrl)
-
-            val outputDirectory = File(
-                output,
-                "${url.authority}/${url.path}"
-            )
-            outputDirectory.mkdirs()
-
-            val outputFile = File(outputDirectory, "${request.method.value()}.yaml")
-
-            // TODO reuse
-            val isJsonContent = response.headers.getHeader("Content-Type")
-                .takeIf { it.isPresent }
-                ?.values()
-                ?.any { it.contains("application/json") } ?: false
-
-            val bodyFile = File(
-                outputDirectory, generateBodyFileName(
-                    directory = outputDirectory,
-                    method = request.method.value(),
-                    isJson = isJsonContent,
-                )
-            )
-
-            // TODO reuse logic
-            val bodyStr = if (response.headers.getHeader("Content-Encoding").containsValue("gzip")) {
-                response.bodyStream.source().gzip().buffer().readUtf8()
-            } else {
-                response.bodyAsString
-            }
-
-            val bodyFormatted = if (isJsonContent) {
-                // TODO reuse
-                try {
-                    val jsonObj = jsonMapper.readValue(bodyStr, Any::class.java)
-                    jsonMapper
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(jsonObj)
-                } catch (e: Exception) {
-                    // Ignore invalid JSON
-                    bodyStr
-                }
-            } else {
-                bodyStr
-            }
-
-            bodyFile.writeText(bodyFormatted)
-
-            val mappingRule = YamlMappingRule(
-                path = request.absoluteUrl,
-                method = request.method.value(),
-                headers = request.headers
-                    .all()
-                    .associateBy(
-                        keySelector = { it.key() },
-                        valueTransform = { it.values().joinToString(",") }
-                    ),
-                response = YamlResponse(
-                    status = response.status,
-                    headers = response.headers  // TODO reuse logic
-                        .all()
-                        .associateBy(
-                            keySelector = { it.key() },
-                            valueTransform = { it.values().joinToString(",") }
-                        )
-                        .filter {
-                            it.key.lowercase() !in setOf(
-                                "date", // TODO extract some of those from request as well
-                                "last-modified",   // TODO extract some of those from request as well
-                                "content-encoding",
-                                "content-length",
-                            )
-                        },
-                    bodyFile = bodyFile.name,
-                )
-            )
-
-            val existingRules = if (outputFile.exists()) {
-                YamlMappingRuleParser.readRules(outputFile.toPath())
-            } else {
-                emptyList()
-            }
-
-            YamlMappingRuleParser.saveRules(
-                (existingRules + mappingRule).distinct(),
-                outputFile.toPath()
-            )
+            handleRequest(request, response)
         }
 
         val (maestro, _) = MaestroFactory.createMaestro(parent.app.host, parent.app.port, parent.app.deviceId)
@@ -147,6 +69,76 @@ class RecordNetworkCommand : Callable<Int> {
         return 0
     }
 
+    private fun handleRequest(request: Request, response: Response) {
+        val url = URL(request.absoluteUrl)
+
+        val outputDirectory = File(
+            output,
+            "${url.authority}/${url.path}"
+        )
+        outputDirectory.mkdirs()
+
+        val outputFile = File(outputDirectory, "${request.method.value()}.yaml")
+
+        val isJsonContent = response.isJsonContent()
+
+        val bodyFile = File(
+            outputDirectory, generateBodyFileName(
+                directory = outputDirectory,
+                method = request.method.value(),
+                isJson = isJsonContent,
+            )
+        )
+
+        printRequest(request, response, url)
+
+        bodyFile.writeText(
+            response.decodedBodyString()
+        )
+
+        val mappingRule = YamlMappingRule(
+            path = request.absoluteUrl,
+            method = request.method.value(),
+            headers = if (recordHeaders) {
+                request.headers.toMap()
+                    .filter {
+                        it.key.lowercase() !in EXCLUDED_HEADERS
+                    }
+            } else null,
+            response = YamlResponse(
+                status = response.status,
+                headers = response.headers.toMap()
+                    .filter {
+                        it.key.lowercase() !in EXCLUDED_RESPONSE_HEADERS
+                    },
+                bodyFile = bodyFile.name,
+            )
+        )
+
+        val existingRules = if (outputFile.exists()) {
+            YamlMappingRuleParser.readRules(outputFile.toPath())
+        } else {
+            emptyList()
+        }
+
+        YamlMappingRuleParser.saveRules(
+            (existingRules + mappingRule).distinct(),
+            outputFile.toPath()
+        )
+    }
+
+    private fun printRequest(request: Request, response: Response, url: URL) {
+        print(
+            ansi()
+                .fg(methodColor(request.method))
+                .render(request.method.value())
+                .fgDefault()
+                .render(" (${response.status})")
+                .render(" $url")
+        )
+        println()
+    }
+
     private fun generateBodyFileName(
         directory: File,
         method: String,
@@ -159,6 +151,30 @@ class RecordNetworkCommand : Callable<Int> {
             ?.count() ?: 0
 
         return "${prefix}_${prefixCount}.${if (isJson) "json" else "txt"}"
+    }
+
+    private fun methodColor(method: RequestMethod): Ansi.Color {
+        return when (method.value()) {
+            "GET" -> Ansi.Color.MAGENTA
+            "POST" -> Ansi.Color.GREEN
+            "PUT" -> Ansi.Color.CYAN
+            "DELETE" -> Ansi.Color.YELLOW
+            else -> Ansi.Color.DEFAULT
+        }
+    }
+
+    companion object {
+
+        private val EXCLUDED_HEADERS = setOf(
+            "date",
+            "last-modified",
+        )
+
+        private val EXCLUDED_RESPONSE_HEADERS = EXCLUDED_HEADERS + setOf(
+            "content-encoding",
+            "content-length",
+        )
+
     }
 
 }

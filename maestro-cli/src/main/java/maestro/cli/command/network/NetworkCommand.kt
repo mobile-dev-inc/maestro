@@ -6,7 +6,6 @@ import picocli.CommandLine
 @CommandLine.Command(
     name = "network",
     subcommands = [
-        ObserveNetworkCommand::class,
         RecordNetworkCommand::class,
         ReplayNetworkCommand::class,
         SetupForProxyCommand::class,
