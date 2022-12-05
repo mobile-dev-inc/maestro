@@ -11,7 +11,7 @@ import org.http4k.server.Http4kServer
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 
-class Server private constructor(private val server: Http4kServer) {
+class MaestroStudio private constructor(private val server: Http4kServer) {
 
     fun stop() {
         server.stop()
@@ -19,7 +19,7 @@ class Server private constructor(private val server: Http4kServer) {
 
     companion object {
 
-        fun start(port: Int): Server {
+        fun start(port: Int): MaestroStudio {
             val api = routes(
                 "/hello" bind GET to {Response(OK).body("HELLO!")}
             )
@@ -29,7 +29,7 @@ class Server private constructor(private val server: Http4kServer) {
             )
             val server = app.asServer(Undertow(port))
             server.start()
-            return Server(server)
+            return MaestroStudio(server)
         }
     }
 }
