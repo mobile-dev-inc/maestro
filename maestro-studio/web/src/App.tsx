@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 
 function App() {
+  const [hierarchy, setHierarchy] = useState<string>()
   useEffect(() => {
     (async () => {
-      const response = await fetch('/api/hello')
-      const body = await response.text()
-      console.log(body)
+      const response = await fetch('/api/hierarchy')
+      const hierarch = await response.text()
+      setHierarchy(hierarch)
     })()
   }, [])
   return (
     <div className="App">
+      {hierarchy}
     </div>
   );
 }

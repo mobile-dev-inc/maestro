@@ -27,6 +27,7 @@ tasks.compileJava {
 }
 
 dependencies {
+    implementation(project(":maestro-client"))
     implementation platform("org.http4k:http4k-bom:4.34.2.0")
     implementation "org.http4k:http4k-core"
     implementation "org.http4k:http4k-server-undertow"

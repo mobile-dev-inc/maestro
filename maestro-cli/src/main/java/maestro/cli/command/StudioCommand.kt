@@ -1,5 +1,8 @@
 package maestro.cli.command
 
+import maestro.cli.App
+import maestro.cli.CliError
+import maestro.cli.util.MaestroFactory
 import maestro.cli.view.blue
 import maestro.cli.view.bold
 import maestro.cli.view.box
@@ -15,9 +18,19 @@ import java.util.concurrent.Callable
 )
 class StudioCommand : Callable<Int> {
 
+    @CommandLine.ParentCommand
+    private val parent: App? = null
+
     override fun call(): Int {
+        if (parent?.platform != null) {
+            throw CliError("--platform option was deprecated. You can remove it to run your test.")
+        }
+
+        val (maestro, _) = MaestroFactory.createMaestro(parent?.host, parent?.port, parent?.deviceId)
+
         val port = getFreePort()
-        MaestroStudio.start(port)
+        MaestroStudio.start(port, maestro)
+
         val studioUrl = "http://localhost:${port}"
         val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
         println()
@@ -25,6 +38,7 @@ class StudioCommand : Callable<Int> {
         if (Desktop.isDesktopSupported()) {
             Desktop.getDesktop().browse(URI(studioUrl))
         }
+
         Thread.currentThread().join()
         return 0
     }
