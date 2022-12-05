@@ -1,0 +1,3 @@
+tasks.register("build", Exec.class) {
+    commandLine("npm", "run", "build")
+}
