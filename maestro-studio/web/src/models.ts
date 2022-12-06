@@ -12,9 +12,9 @@ export type UIElementBounds = {
 
 export type UIElement = {
   id: string
-  bounds: UIElementBounds | null
-  resourceId: string | null
-  text: string | null
+  bounds?: UIElementBounds
+  resourceId?: string
+  text?: string
 }
 
 export type DeviceScreen = {
