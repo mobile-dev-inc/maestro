@@ -1,7 +1,0 @@
-appId: org.wikimedia.wikipedia
----
-- mockNetwork: maestro-demo/rules
-- launchApp
-- tapOn: Search Wikipedia
-- inputText: Hello World
-- assertVisible: .*Hello, Maestro.*
