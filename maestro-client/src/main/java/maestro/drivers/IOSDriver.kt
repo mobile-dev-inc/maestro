@@ -40,7 +40,6 @@ import maestro.utils.FileUtils
 import okio.Sink
 import java.io.File
 import java.nio.file.Files
-import java.security.Key
 import kotlin.collections.set
 
 class IOSDriver(
@@ -80,6 +79,7 @@ class IOSDriver(
 
     override fun close() {
         iosDevice.close()
+        IOSUiTestRunner.cleanup()
 
         widthPixels = null
         heightPixels = null
