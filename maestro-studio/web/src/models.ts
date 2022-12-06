@@ -17,7 +17,7 @@ export type UIElement = {
   text: string | null
 }
 
-export type Hierarchy = {
+export type DeviceScreen = {
   screenshot: string
   elements: UIElement[]
 }

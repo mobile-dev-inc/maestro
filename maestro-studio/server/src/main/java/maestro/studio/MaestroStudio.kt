@@ -16,13 +16,12 @@ import maestro.Maestro
 import maestro.TreeNode
 import java.nio.file.Path
 import java.util.UUID
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 
-data class Hierarchy(
+data class DeviceScreen(
     val screenshot: String,
     val elements: List<UIElement>,
 )
@@ -49,16 +48,16 @@ object MaestroStudio {
     fun start(port: Int, maestro: Maestro) {
         embeddedServer(Netty, port = port) {
             routing {
-                get("/api/hierarchy") {
+                get("/api/device-screen") {
                     val deviceInfo = maestro.deviceInfo()
                     val tree = maestro.viewHierarchy().root
                     val screenshot = takeScreenshot(maestro)
                     val elements = treeToElements(tree, deviceInfo.widthPixels, deviceInfo.heightPixels)
-                    val hierarchy = Hierarchy(screenshot, elements)
+                    val deviceScreen = DeviceScreen(screenshot, elements)
                     val response = jacksonObjectMapper()
                         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                         .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(hierarchy)
+                        .writeValueAsString(deviceScreen)
                     call.respondText(response)
                 }
                 static("/screenshot") {

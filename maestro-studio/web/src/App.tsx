@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { Hierarchy } from './models';
+import { DeviceScreen } from './models';
 import { AnnotatedScreenshot } from './AnnotatedScreenshot';
 
 function App() {
-  const [hierarchy, setHierarchy] = useState<Hierarchy>()
+  const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
   useEffect(() => {
     (async () => {
-      const response = await fetch('/api/hierarchy')
-      const hierarchy: Hierarchy = await response.json()
-      setHierarchy(hierarchy)
+      const response = await fetch('/api/device-screen')
+      const hierarchy: DeviceScreen = await response.json()
+      setDeviceScreen(hierarchy)
     })()
   }, [])
-  if (!hierarchy) {
+  if (!deviceScreen) {
     return (
       <div>Loading...</div>
     )
@@ -21,9 +21,8 @@ function App() {
     <div className="App flex h-full">
       <AnnotatedScreenshot
         className="h-full"
-        hierarchy={hierarchy}
+        deviceScreen={deviceScreen}
       />
-      <p className="overflow-scroll">{JSON.stringify(hierarchy.elements)}</p>
     </div>
   );
 }
