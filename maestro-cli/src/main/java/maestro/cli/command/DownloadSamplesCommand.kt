@@ -13,6 +13,9 @@ import java.util.concurrent.Callable
 
 @CommandLine.Command(
     name = "download-samples",
+    description = [
+        "Downloads sample apps and flows for trying out maestro without setting up your own app"
+    ]
 )
 class DownloadSamplesCommand : Callable<Int> {
 
