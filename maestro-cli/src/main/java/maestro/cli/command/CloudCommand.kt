@@ -29,7 +29,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "cloud",
     description = [
-        "Tests your application on Maestro Cloud (https://docs.mobile.dev)",
+        "Test your application on Maestro Cloud (https://docs.mobile.dev)",
         "Provide your application file and a folder with Maestro flows to run them in parallel on multiple devices in Maestro Cloud",
         "By default, the command will block until all analyses have completed. You can use the --async flag to run the command asynchronously and exit immediately.",
     ]
