@@ -30,10 +30,10 @@ data class DeviceScreen(
 
 // Relative bounds (values between 0 and 1)
 data class UIElementBounds(
-    val x: Float,
-    val y: Float,
-    val width: Float,
-    val height: Float,
+    val x: Int,
+    val y: Int,
+    val width: Int,
+    val height: Int,
 )
 
 data class UIElement(
@@ -56,7 +56,7 @@ object MaestroStudio {
                     val screenshot = takeScreenshot(maestro)
                     val deviceWidth = deviceInfo.widthPixels
                     val deviceHeight = deviceInfo.heightPixels
-                    val elements = treeToElements(tree, deviceWidth, deviceHeight)
+                    val elements = treeToElements(tree)
                     val deviceScreen = DeviceScreen(screenshot, deviceWidth, deviceHeight, elements)
                     val response = jacksonObjectMapper()
                         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -77,19 +77,19 @@ object MaestroStudio {
         }.start()
     }
 
-    private fun treeToElements(tree: TreeNode, deviceWidth: Int, deviceHeight: Int, list: MutableList<UIElement> = mutableListOf()): List<UIElement> {
+    private fun treeToElements(tree: TreeNode, list: MutableList<UIElement> = mutableListOf()): List<UIElement> {
         tree.children.forEach { child ->
-            treeToElements(child, deviceWidth, deviceHeight, list)
+            treeToElements(child, list)
         }
         val id = UUID.randomUUID()
-        val bounds = tree.bounds(deviceHeight, deviceWidth)
+        val bounds = tree.bounds()
         val text = tree.attributes["text"]
         val resourceId = tree.attributes["resource-id"]
         list.add(UIElement(id, bounds, resourceId, text))
         return list
     }
 
-    private fun TreeNode.bounds(deviceHeight: Int, deviceWidth: Int): UIElementBounds? {
+    private fun TreeNode.bounds(): UIElementBounds? {
         val boundsString = attributes["bounds"] ?: return null
         val pattern = Pattern.compile("\\[([0-9]+),([0-9]+)]\\[([0-9]+),([0-9]+)]")
         val m = pattern.matcher(boundsString)
@@ -104,10 +104,10 @@ object MaestroStudio {
         val b = m.group(4).toIntOrNull() ?: return null
 
         return UIElementBounds(
-            x = l.toFloat() / deviceWidth,
-            y = t.toFloat() / deviceHeight,
-            width = (r - l).toFloat() / deviceWidth,
-            height = (b - t).toFloat() / deviceWidth,
+            x = l,
+            y = t,
+            width = r - l,
+            height = b - t,
         )
     }
 
