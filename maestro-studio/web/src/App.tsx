@@ -1,24 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-
-type UIElementBounds = {
-  x: number
-  y: number
-  width: number
-  height: number
-}
-
-type UIElement = {
-  id: string
-  bounds: UIElementBounds | null
-  resourceId: string | null
-  text: string | null
-}
-
-type Hierarchy = {
-  screenshot: string
-  elements: UIElement[]
-}
+import { Hierarchy } from './models';
+import { AnnotatedScreenshot } from './AnnotatedScreenshot';
 
 function App() {
   const [hierarchy, setHierarchy] = useState<Hierarchy>()
@@ -36,7 +19,10 @@ function App() {
   }
   return (
     <div className="App flex h-full">
-      <img className="h-full" src={hierarchy.screenshot} alt="screenshot"/>
+      <AnnotatedScreenshot
+        className="h-full"
+        hierarchy={hierarchy}
+      />
       <p className="overflow-scroll">{JSON.stringify(hierarchy.elements)}</p>
     </div>
   );
