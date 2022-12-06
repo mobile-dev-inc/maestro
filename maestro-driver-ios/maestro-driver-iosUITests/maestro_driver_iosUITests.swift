@@ -1,10 +1,3 @@
-//
-//  maestro_driver_iosUITests.swift
-//  maestro-driver-iosUITests
-//
-//  Created by Amanjeet Singh on 28/11/22.
-//
-
 import XCTest
 import FlyingFox
 import maestro_driver_ios
@@ -26,32 +19,16 @@ class maestro_driver_iosUITests: XCTestCase {
 
     func testHttpServer() async throws {
         let server = HTTPServer(port: 9080)
-        let subTreeRoute = HTTPRoute("/subTree?appId=*")
+        let subTreeRoute = HTTPRoute(Route.subTree.rawValue)
+        let appStateRoute = HTTPRoute(Route.appState.rawValue)
         await server.appendRoute(subTreeRoute) { request in
-            guard let appId = request.query["appId"] else {
-                return HTTPResponse(statusCode: HTTPStatusCode.badRequest)
-            }
-            let viewHierarchyDictionaryResult = await MainActor.run {
-                try? XCUIApplication(bundleIdentifier: appId).snapshot().dictionaryRepresentation
-            }
-            guard let viewHierarchyDictionary = viewHierarchyDictionaryResult else {
-                print("Cannot return view hierarchy, throwing exception..")
-                throw ServerError.ApplicationSnapshotFailure
-            }
-            guard let hierarchyJsonData = try? JSONSerialization.data(
-                withJSONObject: viewHierarchyDictionary,
-                options: .prettyPrinted
-            ) else {
-                print("Serialization of view hierarchy failed")
-                throw ServerError.SnapshotSerializeFailure
-            }
-            return HTTPResponse(statusCode: .ok, body: hierarchyJsonData)
+            let handler = RouteHandlerFactory.createRouteHandler(route: .subTree)
+            return try await handler.handle(request: request)
+        }
+        await server.appendRoute(appStateRoute) { request in
+            let handler = RouteHandlerFactory.createRouteHandler(route: .appState)
+            return try await handler.handle(request: request)
         }
         try await server.start()
-    }
-    
-    enum ServerError: Error {
-        case ApplicationSnapshotFailure
-        case SnapshotSerializeFailure
     }
 }
