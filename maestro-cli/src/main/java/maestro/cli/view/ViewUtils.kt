@@ -18,6 +18,10 @@ fun String.bold(): String {
     return "@|bold $this|@".render()
 }
 
+fun String.faint(): String {
+    return "@|faint $this|@".render()
+}
+
 fun String.box(): String {
     val lines = this.lines()
 

@@ -6,6 +6,7 @@ import maestro.cli.util.MaestroFactory
 import maestro.cli.view.blue
 import maestro.cli.view.bold
 import maestro.cli.view.box
+import maestro.cli.view.faint
 import maestro.studio.MaestroStudio
 import picocli.CommandLine
 import java.awt.Desktop
@@ -38,6 +39,9 @@ class StudioCommand : Callable<Int> {
         if (Desktop.isDesktopSupported()) {
             Desktop.getDesktop().browse(URI(studioUrl))
         }
+
+        println()
+        println("Navigate to $studioUrl in your browser to open Maestro Studio.".faint())
 
         Thread.currentThread().join()
         return 0
