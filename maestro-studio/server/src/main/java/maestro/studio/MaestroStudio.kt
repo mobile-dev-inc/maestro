@@ -2,34 +2,33 @@ package maestro.studio
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.server.application.call
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.singlePageApplication
+import io.ktor.server.netty.Netty
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import maestro.Maestro
-import org.http4k.core.Method.GET
-import org.http4k.core.Response
-import org.http4k.core.Status.Companion.OK
-import org.http4k.routing.ResourceLoader
-import org.http4k.routing.bind
-import org.http4k.routing.routes
-import org.http4k.routing.singlePageApp
-import org.http4k.server.Undertow
-import org.http4k.server.asServer
 
 object MaestroStudio {
 
     fun start(port: Int, maestro: Maestro) {
-        val api = routes(
-            "/hierarchy" bind GET to {
-                val hierarchy = jacksonObjectMapper()
-                    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(maestro.viewHierarchy().root)
-                Response(OK).body(hierarchy)
+        embeddedServer(Netty, port = port) {
+            routing {
+                get("/api/hierarchy") {
+                    val hierarchy = jacksonObjectMapper()
+                        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(maestro.viewHierarchy().root)
+                    call.respondText(hierarchy)
+                }
+                singlePageApplication {
+                    useResources = true
+                    filesPath = "web"
+                    defaultPage = "index.html"
+                }
             }
-        )
-        val app = routes(
-            "/api" bind api,
-            singlePageApp(ResourceLoader.Classpath("/web")),
-        )
-        val server = app.asServer(Undertow(port))
-        server.start()
+        }.start()
     }
 }

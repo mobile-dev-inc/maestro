@@ -29,6 +29,7 @@ tasks.compileJava {
 dependencies {
     implementation(project(":maestro-client"))
     implementation platform("org.http4k:http4k-bom:4.34.2.0")
-    implementation "org.http4k:http4k-core"
-    implementation "org.http4k:http4k-server-undertow"
+    implementation("io.ktor:ktor-server-core:2.1.3")
+    implementation("io.ktor:ktor-server-netty:2.1.3")
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.4'
 }
