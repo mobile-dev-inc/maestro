@@ -12,6 +12,7 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
+      <div className="absolute inset-0 bg-white opacity-50"/>
     </div>
   )
 }
