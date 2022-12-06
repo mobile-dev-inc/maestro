@@ -125,4 +125,8 @@ object Simctl {
             waitForCompletion = false
         )
     }
+
+    fun uninstall(bundleId: String) {
+        CommandLineUtils.runCommand("xcrun simctl uninstall booted $bundleId")
+    }
 }

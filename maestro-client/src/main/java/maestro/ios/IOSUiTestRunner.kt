@@ -41,6 +41,16 @@ object IOSUiTestRunner {
         }
     }
 
+    fun cleanup() {
+        val xctestConfig = "${System.getenv("TMP_DIR")}/$XCTEST_RUN_PATH"
+        val hostApp = "${System.getenv("TMPDIR")}/Debug-iphonesimulator/maestro-driver-ios.app"
+        val uiTestRunnerApp = "${System.getenv("TMPDIR")}/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app"
+        File(xctestConfig).delete()
+        File(uiTestRunnerApp).deleteRecursively()
+        File(hostApp).deleteRecursively()
+        Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+    }
+
     private fun extractZipToApp(appFileName: String, srcAppPath: String) {
         val appFile = File("${System.getenv("TMPDIR")}/Debug-iphonesimulator").apply { mkdir() }
         val appZip = File("${System.getenv("TMPDIR")}/$appFileName.zip")

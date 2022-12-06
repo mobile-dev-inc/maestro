@@ -85,6 +85,7 @@ class IOSDriver(
             resetProxy()
         }
         iosDevice.close()
+        IOSUiTestRunner.cleanup()
 
         widthPixels = null
         heightPixels = null
