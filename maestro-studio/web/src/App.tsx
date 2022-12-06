@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { DeviceScreen } from './models';
 import { AnnotatedScreenshot } from './AnnotatedScreenshot';
+import Inspect from './Inspect';
 
 function App() {
   const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
@@ -18,12 +19,7 @@ function App() {
     )
   }
   return (
-    <div className="App flex h-full">
-      <AnnotatedScreenshot
-        className="h-full"
-        deviceScreen={deviceScreen}
-      />
-    </div>
+    <Inspect deviceScreen={deviceScreen} />
   );
 }
 
