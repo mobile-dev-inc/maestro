@@ -35,7 +35,7 @@ import picocli.CommandLine.Spec
 @Command(
     name = "query",
     description = [
-        "Find elements in the view hierarchy of the currently running app"
+        "Find elements in the view hierarchy of the connected device"
     ]
 )
 class QueryCommand : Runnable {

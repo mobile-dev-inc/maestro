@@ -30,7 +30,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "upload",
     description = [
-        "Deprecated -- Use `maestro cloud` instead"
+        "Deprecated - Use `maestro cloud` instead"
     ]
 )
 class UploadCommand : Callable<Int> {

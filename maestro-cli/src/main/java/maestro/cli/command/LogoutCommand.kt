@@ -10,7 +10,7 @@ import kotlin.io.path.deleteIfExists
 @CommandLine.Command(
     name = "logout",
     description = [
-        "Log out of maestro cloud"
+        "Log out of Maestro Cloud"
     ]
 )
 class LogoutCommand : Callable<Int> {

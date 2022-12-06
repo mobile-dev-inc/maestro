@@ -37,7 +37,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "record",
     description = [
-        "Render a video of a flow being tested on an app -- great for demos and bugreports"
+        "Render a beautiful video of your Flow - Great for demos and bug reports"
     ]
 )
 class RecordCommand : Callable<Int> {

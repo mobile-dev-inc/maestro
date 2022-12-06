@@ -28,7 +28,7 @@ import picocli.CommandLine
 @CommandLine.Command(
     name = "hierarchy",
     description = [
-        "Print out the view hierarchy of the currently running app"
+        "Print out the view hierarchy of the connected device"
     ]
 )
 class PrintHierarchyCommand : Runnable {

@@ -36,7 +36,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "test",
     description = [
-        "Test your application on your computer using an iOS Simulator or an Android emulator"
+        "Test a Flow or set of Flows on a local iOS Simulator or Android Emulator"
     ]
 )
 class TestCommand : Callable<Int> {
