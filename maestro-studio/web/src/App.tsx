@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 
-type TreeNode = {
-  attributes: {[key: string]: string}
-  children: TreeNode[]
-  clickable: boolean | undefined
-  enabled: boolean | undefined
-  focused: boolean | undefined
-  checked: boolean | undefined
-  selected: boolean | undefined
+type UIElementBounds = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+type UIElement = {
+  id: string
+  bounds: UIElementBounds | null
+  resourceId: string | null
+  text: string | null
 }
 
 type Hierarchy = {
   screenshot: string
-  tree: TreeNode
+  elements: UIElement[]
 }
 
 function App() {
@@ -33,7 +37,7 @@ function App() {
   return (
     <div className="App flex h-full">
       <img className="h-full" src={hierarchy.screenshot} alt="screenshot"/>
-      <p className="overflow-scroll">{JSON.stringify(hierarchy.tree)}</p>
+      <p className="overflow-scroll">{JSON.stringify(hierarchy.elements)}</p>
     </div>
   );
 }
