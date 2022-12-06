@@ -31,9 +31,9 @@ function App() {
     )
   }
   return (
-    <div className="App">
-      <img src={hierarchy.screenshot} alt="screenshot"/>
-      <p>{JSON.stringify(hierarchy.tree)}</p>
+    <div className="App flex h-full">
+      <img className="h-full" src={hierarchy.screenshot} alt="screenshot"/>
+      <p className="overflow-scroll">{JSON.stringify(hierarchy.tree)}</p>
     </div>
   );
 }
