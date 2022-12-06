@@ -18,6 +18,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "studio",
     hidden = true,
+    description = ["Launch Maestro Studio"],
 )
 class StudioCommand : Callable<Int> {
 
