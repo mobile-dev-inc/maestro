@@ -19,5 +19,7 @@ export type UIElement = {
 
 export type DeviceScreen = {
   screenshot: string
+  width: number
+  height: number
   elements: UIElement[]
 }

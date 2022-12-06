@@ -9,6 +9,8 @@ export default {
 
 const deviceScreen: DeviceScreen = {
   screenshot: sampleScreenshot,
+  width: 1080,
+  height: 2340,
   elements: sampleElements,
 }
 

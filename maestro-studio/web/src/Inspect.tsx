@@ -8,7 +8,6 @@ const Inspect = ({ deviceScreen }: {
   return (
     <div className="App flex h-full">
       <AnnotatedScreenshot
-        className="h-full"
         deviceScreen={deviceScreen}
       />
     </div>

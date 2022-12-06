@@ -23,6 +23,8 @@ import kotlin.io.path.createTempDirectory
 
 data class DeviceScreen(
     val screenshot: String,
+    val width: Int,
+    val height: Int,
     val elements: List<UIElement>,
 )
 
@@ -52,8 +54,10 @@ object MaestroStudio {
                     val deviceInfo = maestro.deviceInfo()
                     val tree = maestro.viewHierarchy().root
                     val screenshot = takeScreenshot(maestro)
-                    val elements = treeToElements(tree, deviceInfo.widthPixels, deviceInfo.heightPixels)
-                    val deviceScreen = DeviceScreen(screenshot, elements)
+                    val deviceWidth = deviceInfo.widthPixels
+                    val deviceHeight = deviceInfo.heightPixels
+                    val elements = treeToElements(tree, deviceWidth, deviceHeight)
+                    val deviceScreen = DeviceScreen(screenshot, deviceWidth, deviceHeight, elements)
                     val response = jacksonObjectMapper()
                         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                         .writerWithDefaultPrettyPrinter()

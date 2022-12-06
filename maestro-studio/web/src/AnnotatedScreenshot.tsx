@@ -1,11 +1,16 @@
-import { DivProps, DeviceScreen } from './models';
+import { DeviceScreen } from './models';
 import React from 'react';
 
-export const AnnotatedScreenshot = ({deviceScreen, ...rest}: {
+export const AnnotatedScreenshot = ({deviceScreen}: {
   deviceScreen: DeviceScreen
-} & DivProps) => {
+}) => {
   return (
-    <div {...rest}>
+    <div
+      className="relative h-full"
+      style={{
+        aspectRatio: deviceScreen.width / deviceScreen.height
+      }}
+    >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
     </div>
   )
