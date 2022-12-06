@@ -26,10 +26,17 @@ class SetupForProxyCommand : Callable<Int> {
 
         when (device.platform) {
             Platform.IOS -> setupIOS(device)
-            Platform.ANDROID -> TODO()
+            Platform.ANDROID -> setupAndroid()
         }
 
         return 0
+    }
+
+    private fun setupAndroid() {
+        println()
+        println("Please follow the documentation page on how to setup network mocking for Android:")
+        println("https://maestro.mobile.dev/advanced/network-mocking/android")
+        println()
     }
 
     private fun setupIOS(device: Device.Connected) {
