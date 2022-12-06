@@ -9,7 +9,7 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "bugreport",
     description = [
-        "Report a bug - Help us improve yoru experience!"
+        "Report a bug - Help us improve your experience!"
     ]
 )
 class BugReportCommand : Callable<Int> {

@@ -29,6 +29,7 @@ import java.util.concurrent.Callable
 
 @CommandLine.Command(
     name = "upload",
+    hidden = true,
     description = [
         "Deprecated - Use `maestro cloud` instead"
     ]
