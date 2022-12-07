@@ -1,12 +1,14 @@
-package maestro.cli.device.ios
+package maestro.ios
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.MaestroTimer
-import maestro.cli.CliError
-import maestro.cli.util.CommandLineUtils.runCommand
+import maestro.utils.CommandLineUtils
+import okio.buffer
+import okio.source
 
 object Simctl {
+
     fun list(): SimctlList {
         val command = listOf("xcrun", "simctl", "list", "-j")
 
@@ -25,18 +27,18 @@ object Simctl {
                     .find { it.udid == deviceId }
                     ?.state == "Booted"
             ) true else null
-        } ?: throw CliError("Device $deviceId did not boot in time")
+        } ?: throw RuntimeException("Device $deviceId did not boot in time")
     }
 
     fun launchSimulator(deviceId: String) {
-        runCommand("xcrun simctl boot $deviceId")
+        CommandLineUtils.runCommand("xcrun simctl boot $deviceId")
 
         var exceptionToThrow: Exception? = null
 
         // Up to 10 iterations => max wait time of 1 second
         repeat(10) {
             try {
-                runCommand("open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID $deviceId")
+                CommandLineUtils.runCommand("open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID $deviceId")
                 return
             } catch (e: Exception) {
                 exceptionToThrow = e
@@ -47,4 +49,22 @@ object Simctl {
         exceptionToThrow?.let { throw it }
     }
 
+    fun ensureAppAlive(bundleId: String) {
+        MaestroTimer.retryUntilTrue(timeoutMs = 4000, delayMs = 300) {
+            val processOutput = ProcessBuilder(
+                "bash",
+                "-c",
+                "xcrun simctl spawn booted launchctl print system | grep $bundleId | awk '/$bundleId/ {print \$3}'"
+            ).start().inputStream.source().buffer().readUtf8().trim()
+
+            processOutput.contains(bundleId)
+        }
+    }
+
+    fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String) {
+        CommandLineUtils.runCommand(
+            "xcodebuild test-without-building -xctestrun $xcTestRunFilePath -destination id=$deviceId",
+            waitForCompletion = false
+        )
+    }
 }

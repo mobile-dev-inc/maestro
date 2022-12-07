@@ -7,22 +7,17 @@ import ios.idb.IdbIOSDevice
 import maestro.MaestroTimer
 import maestro.cli.CliError
 import maestro.cli.debuglog.DebugLogStore
-import maestro.cli.device.ios.Simctl
-import maestro.cli.device.ios.SimctlList
+import maestro.ios.IOSUiTestRunner
+import maestro.ios.Simctl
+import maestro.ios.SimctlList
 import maestro.cli.util.EnvUtils
+import maestro.drivers.IOSDriver
 import java.io.File
 import java.net.Socket
 import java.util.concurrent.TimeUnit
-import java.util.logging.Logger
 import kotlin.concurrent.thread
 
 object DeviceService {
-
-    private val NULL_FILE = File(
-        if (System.getProperty("os.name")
-                .startsWith("Windows")
-        ) "NUL" else "/dev/null"
-    )
 
     private val logger = DebugLogStore.loggerFor(DeviceService::class.java)
 
@@ -107,7 +102,7 @@ object DeviceService {
             .usePlaintext()
             .build()
 
-        IdbIOSDevice(channel).use { iosDevice ->
+        IdbIOSDevice(channel, device.instanceId).use { iosDevice ->
             logger.warning("Waiting for idb service to start..")
             MaestroTimer.retryUntilTrue(timeoutMs = 60000, delayMs = 100) {
                 Socket(idbHost, idbPort).use { true }
@@ -124,17 +119,9 @@ object DeviceService {
                 process.exitValue() == 0
             } || error("Simulator failed to boot")
 
-            // Test if idb can get accessibility info elements with non-zero frame with
-            logger.warning("Waiting for Accessibility info to become available..")
-            MaestroTimer.retryUntilTrue(timeoutMs = 20000, delayMs = 100) {
-                val nodes = iosDevice
-                    .contentDescriptor()
-                    .get()
-
-                nodes?.any { it.frame?.width != 0F } == true
-            } || error("idb_companion is not able to fetch accessibility info")
-
-            logger.warning("Simulator ready")
+            logger.info("Installing xctest runner app and trying to fetch accessibility info")
+            val iosDriver = IOSDriver(iosDevice)
+            iosDriver.open()
         }
     }
 
