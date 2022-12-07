@@ -1,17 +1,17 @@
-import { DeviceScreen, UIElement, UIElementBounds } from './models';
-import React, { CSSProperties, ReactNode, useRef } from 'react';
+import { DeviceScreen, UIElement } from './models';
+import React, { CSSProperties, ReactNode, useEffect, useRef } from 'react';
 import useMouse, { MousePosition } from '@react-hook/mouse-position';
 
 type AnnotationState = 'default' | 'hidden' | 'hovered' | 'selected'
 
-const Annotation = ({element, deviceWidth, deviceHeight, state}: {
+const Annotation = ({element, deviceWidth, deviceHeight, state, onClick}: {
   element: UIElement
   deviceWidth: number
   deviceHeight: number
   state: AnnotationState
+  onClick: () => void
 }) => {
-  // if (!element.bounds || state === 'hidden') return null
-  if (!element.bounds) return null
+  if (!element.bounds || state === 'hidden') return null
   const {x, y, width, height} = element.bounds
   const l = `${x / deviceWidth * 100}%`
   const t = `${y / deviceHeight * 100}%`
@@ -23,9 +23,14 @@ const Annotation = ({element, deviceWidth, deviceHeight, state}: {
   let overlay: ReactNode = null
 
   if (state === 'hovered') {
-    className = "border-2 border-blue-500 active:active:bg-blue-400/40 z-10"
+    className = "border-4 border-blue-500 active:active:bg-blue-400/40 z-10"
     style = {
       boxShadow: "0 0 0 9999px rgba(244, 114, 182, 0.4)",
+    }
+  } else if (state === 'selected') {
+    className = "border-4 border-blue-500 z-10"
+    style = {
+      boxShadow: "0 0 0 9999px rgba(96, 165, 250, 0.4)",
     }
   }
 
@@ -39,7 +44,8 @@ const Annotation = ({element, deviceWidth, deviceHeight, state}: {
           width: w,
           height: h,
           ...style
-      }}
+        }}
+        onClick={onClick}
       />
       {overlay}
     </>
@@ -74,12 +80,20 @@ const getHoveredElement = (deviceScreen: DeviceScreen, mouse: MousePosition): UI
   })[0]
 }
 
-export const AnnotatedScreenshot = ({deviceScreen}: {
+export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSelected, hoveredElement, onElementHovered}: {
   deviceScreen: DeviceScreen
+  selectedElement: UIElement | null
+  onElementSelected: (element: UIElement | null) => void
+  hoveredElement: UIElement | null
+  onElementHovered: (element: UIElement | null) => void
 }) => {
   const ref = useRef(null)
   const mouse = useMouse(ref)
-  const hoveredElement = getHoveredElement(deviceScreen, mouse)
+  const hoveredElementCandidate = getHoveredElement(deviceScreen, mouse)
+
+  useEffect(() => {
+    onElementHovered(hoveredElementCandidate)
+  }, [onElementHovered, hoveredElementCandidate])
 
   return (
     <div
@@ -90,13 +104,15 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
-      {hoveredElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
-      {deviceScreen.elements.map(element =>{
+      {hoveredElement || selectedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
+      {deviceScreen.elements.map(element => {
         let state: AnnotationState = 'default'
-        if (hoveredElement === element) {
-          state = 'hovered'
-        } else if (hoveredElement !== null) {
+        if (selectedElement === element) {
+          state = 'selected'
+        } else if (selectedElement !== null) {
           state = 'hidden'
+        } else if (hoveredElement === element) {
+          state = 'hovered'
         }
         return (
           <Annotation
@@ -104,6 +120,13 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
             deviceWidth={deviceScreen.width}
             deviceHeight={deviceScreen.height}
             state={state}
+            onClick={() => {
+              if (selectedElement) {
+                onElementSelected(null)
+              } else {
+                onElementSelected(element)
+              }
+            }}
           />
         )
       })}
