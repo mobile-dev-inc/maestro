@@ -20,9 +20,10 @@
 package maestro.drivers
 
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.onSuccess
 import ios.IOSDevice
+import ios.hierarchy.XCUIElement
 import ios.idb.IdbIOSDevice
 import maestro.DeviceInfo
 import maestro.Driver
@@ -37,7 +38,6 @@ import maestro.utils.FileUtils
 import okio.Sink
 import java.io.File
 import java.nio.file.Files
-import java.security.Key
 import kotlin.collections.set
 
 class IOSDriver(
@@ -46,6 +46,7 @@ class IOSDriver(
 
     private var widthPixels: Int? = null
     private var heightPixels: Int? = null
+    private var appId: String? = null
 
     private var proxySet = false
 
@@ -68,6 +69,7 @@ class IOSDriver(
 
         widthPixels = null
         heightPixels = null
+        appId = null
     }
 
     override fun deviceInfo(): DeviceInfo {
@@ -84,6 +86,7 @@ class IOSDriver(
 
     override fun launchApp(appId: String) {
         iosDevice.launch(appId)
+            .onSuccess { this.appId = appId }
             .getOrThrow {
                 MaestroException.UnableToLaunchApp("Unable to launch app $appId ${it.message}")
             }
@@ -164,37 +167,36 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val accessibilityNodes = iosDevice.contentDescriptor().expect {}
+        val xcUiElement = iosDevice.contentDescriptor(appId).expect {}
+
+        return mapHierarchy(xcUiElement)
+    }
+
+    private fun mapHierarchy(xcUiElement: XCUIElement): TreeNode {
+        val attributes = mutableMapOf<String, String>()
+        attributes["text"] = xcUiElement.label
+        attributes["resource-id"] = xcUiElement.identifier
+        val right = xcUiElement.frame.x + xcUiElement.frame.width
+        val bottom = xcUiElement.frame.y + xcUiElement.frame.height
+        attributes["bounds"] = "[${xcUiElement.frame.x.toInt()},${xcUiElement.frame.y.toInt()}][${right.toInt()},${bottom.toInt()}]"
+        attributes["enabled"] = xcUiElement.enabled.toString()
+        attributes["focused"] = xcUiElement.hasFocus.toString()
+        attributes["selected"] = xcUiElement.selected.toString()
+
+        val children = mutableListOf<TreeNode>()
+        val childNodes = xcUiElement.children
+        if (childNodes != null) {
+            (0 until childNodes.size).forEach { i ->
+                children += mapHierarchy(childNodes[i])
+            }
+        }
 
         return TreeNode(
-            children = accessibilityNodes.map { node ->
-                val attributes = mutableMapOf<String, String>()
-
-                (node.title
-                    ?: node.axLabel
-                    ?: node.axValue
-                    )?.let {
-                        attributes["text"] = it
-                    }
-
-                (node.axUniqueId)?.let {
-                    attributes["resource-id"] = it
-                }
-
-                node.frame?.let {
-                    val left = it.x.toInt()
-                    val top = it.y.toInt()
-                    val right = left + it.width.toInt()
-                    val bottom = top + it.height.toInt()
-
-                    attributes["bounds"] = "[$left,$top][$right,$bottom]"
-                }
-
-                TreeNode(
-                    attributes = attributes,
-                    enabled = node.enabled,
-                )
-            }
+            attributes = attributes,
+            children = children,
+            enabled = xcUiElement.enabled,
+            focused = xcUiElement.hasFocus,
+            selected = xcUiElement.selected
         )
     }
 

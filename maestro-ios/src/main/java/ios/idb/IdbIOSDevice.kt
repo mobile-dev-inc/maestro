@@ -30,7 +30,6 @@ import idb.Idb
 import idb.Idb.HIDEvent.HIDButtonType
 import idb.Idb.RecordResponse
 import idb.PushRequestKt.inner
-import idb.accessibilityInfoRequest
 import idb.clearKeychainRequest
 import idb.fileContainer
 import idb.hIDEvent
@@ -55,9 +54,13 @@ import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import ios.IOSDevice
 import ios.IOSScreenRecording
-import ios.device.AccessibilityNode
 import ios.device.DeviceInfo
 import ios.grpc.BlockingStreamObserver
+import ios.hierarchy.XCUIElement
+import ios.logger.IOSDriverLogger
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okio.Buffer
 import okio.Sink
 import okio.buffer
@@ -75,6 +78,12 @@ class IdbIOSDevice(
 
     private val blockingStub = CompanionServiceGrpc.newBlockingStub(channel)
     private val asyncStub = CompanionServiceGrpc.newStub(channel)
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return runCatching {
@@ -90,28 +99,25 @@ class IdbIOSDevice(
         }
     }
 
-    override fun contentDescriptor(): Result<List<AccessibilityNode>, Throwable> {
+    override fun contentDescriptor(appId: String?): Result<XCUIElement, Throwable> {
         return runCatching {
-            val response = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
-
-            GSON.fromJson(response.json, Array<AccessibilityNode>::class.java)
-                .toList()
-        }
-    }
-
-    override fun describePoint(x: Int, y: Int): Result<List<AccessibilityNode>, Throwable> {
-        return runCatching {
-            val response = blockingStub.accessibilityInfo(accessibilityInfoRequest {
-                point = point {
-                    this.x = x.toDouble()
-                    this.y = y.toDouble()
-                }
-                format = Idb.AccessibilityInfoRequest.Format.NESTED
-            })
-
-            listOf(
-                GSON.fromJson(response.json, AccessibilityNode::class.java)
-            )
+            val httpUrl = HttpUrl.Builder()
+                .scheme("http")
+                .host("localhost")
+                .addPathSegment("subTree")
+                .port(9080)
+                .addQueryParameter("appId", appId)
+                .build()
+            val request = Request.Builder().get().url(httpUrl).build()
+            val response = okHttpClient.newCall(request).execute()
+            val xcUiElement = if (response.isSuccessful) {
+                response.body?.let {
+                    GSON.fromJson(String(it.bytes()), XCUIElement::class.java)
+                } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
+            } else {
+                throw IllegalArgumentException("View Hierarchy not available, response from xcUITest not successful")
+            }
+            xcUiElement
         }
     }
 
