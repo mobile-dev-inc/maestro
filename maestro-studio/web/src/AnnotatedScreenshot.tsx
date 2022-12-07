@@ -68,7 +68,7 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
-      <div className="absolute inset-0 bg-white opacity-50"/>
+      {hoveredElement ? null : <div className="absolute inset-0 bg-white opacity-50"/>}
       {deviceScreen.elements.map(element =>{
         let state: AnnotationState = 'default'
         if (hoveredElement === element) {
