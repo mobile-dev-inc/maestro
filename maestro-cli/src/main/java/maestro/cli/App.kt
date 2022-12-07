@@ -30,8 +30,8 @@ import maestro.cli.command.RecordCommand
 import maestro.cli.command.StudioCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
+import maestro.debuglog.DebugLogStore
 import maestro.cli.command.network.NetworkCommand
-import maestro.cli.debuglog.DebugLogStore
 import maestro.cli.update.Updates
 import maestro.cli.view.box
 import org.fusesource.jansi.AnsiConsole

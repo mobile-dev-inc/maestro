@@ -1,6 +1,7 @@
 package maestro.ios
 
 import maestro.Maestro
+import maestro.debuglog.DebugLogStore
 import okio.buffer
 import okio.sink
 import okio.source
@@ -14,6 +15,8 @@ object IOSUiTestRunner {
     private const val UI_TEST_HOST_PATH = "/maestro-driver-ios.zip"
     const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
 
+    private val logger = DebugLogStore.loggerFor(IOSUiTestRunner::class.java)
+
     fun ensureOpen() {
         Simctl.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID)
     }
@@ -26,22 +29,35 @@ object IOSUiTestRunner {
         ).start().inputStream.source().buffer().readUtf8().trim()
 
         if (!processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
+            logger.info("Not able to find ui test runner app, going to install now")
             val tempDir = System.getenv("TMPDIR")
             val xctestRunFile = File("$tempDir/maestro-driver-ios-config.xctestrun")
 
+            logger.info("[Start] Writing xctest run file")
             writeFileToDestination(XCTEST_RUN_PATH, xctestRunFile)
+            logger.info("[Done] Writing xctest run file")
 
+            logger.info("[Start] Writing maestro-driver-iosUITests-Runner app")
             extractZipToApp("maestro-driver-iosUITests-Runner", UI_TEST_RUNNER_PATH)
-            extractZipToApp("maestro-driver-ios", UI_TEST_HOST_PATH)
+            logger.info("[Done] Writing maestro-driver-iosUITests-Runner app")
 
+            logger.info("[Start] Writing maestro-driver-ios app")
+            extractZipToApp("maestro-driver-ios", UI_TEST_HOST_PATH)
+            logger.info("[Done] Writing maestro-driver-ios app")
+
+            logger.info("[Start] Running XcUITest with xcode build command")
             Simctl.runXcTestWithoutBuild(
                 deviceId,
                 xctestRunFile.absolutePath
             )
+            logger.info("[Done] Running XcUITest with xcode build command")
+        } else {
+            logger.info("UI test runner already installed and running")
         }
     }
 
     fun cleanup() {
+        logger.info("[Start] Cleaning up the ui test runner files")
         val xctestConfig = "${System.getenv("TMP_DIR")}/$XCTEST_RUN_PATH"
         val hostApp = "${System.getenv("TMPDIR")}/Debug-iphonesimulator/maestro-driver-ios.app"
         val uiTestRunnerApp = "${System.getenv("TMPDIR")}/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app"
@@ -49,6 +65,7 @@ object IOSUiTestRunner {
         File(uiTestRunnerApp).deleteRecursively()
         File(hostApp).deleteRecursively()
         Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        logger.info("[Done] Cleaning up the ui test runner files")
     }
 
     private fun extractZipToApp(appFileName: String, srcAppPath: String) {

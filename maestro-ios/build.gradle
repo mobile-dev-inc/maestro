@@ -57,6 +57,7 @@ dependencies {
     implementation 'com.squareup.okio:okio:3.2.0'
     api 'com.google.code.gson:gson:2.9.0'
     api "com.squareup.okhttp3:okhttp:4.10.0"
+    api 'net.harawata:appdirs:1.2.1'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'

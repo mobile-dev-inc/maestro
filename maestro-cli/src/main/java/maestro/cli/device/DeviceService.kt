@@ -1,16 +1,18 @@
 package maestro.cli.device
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.get
+import com.github.michaelbull.result.onSuccess
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
 import ios.idb.IdbIOSDevice
 import maestro.MaestroTimer
 import maestro.cli.CliError
-import maestro.cli.debuglog.DebugLogStore
-import maestro.ios.IOSUiTestRunner
 import maestro.ios.Simctl
 import maestro.ios.SimctlList
 import maestro.cli.util.EnvUtils
+import maestro.debuglog.DebugLogStore
 import maestro.drivers.IOSDriver
 import java.io.File
 import java.net.Socket
@@ -117,11 +119,18 @@ object DeviceService {
                 process
                     .waitFor(1000, TimeUnit.MILLISECONDS)
                 process.exitValue() == 0
-            } || error("Simulator failed to boot")
+            }  || error("Simulator failed to boot")
 
-            logger.info("Installing xctest runner app and trying to fetch accessibility info")
-            val iosDriver = IOSDriver(iosDevice)
-            iosDriver.open()
+            // Test if idb can get accessibility info elements with non-zero frame with
+            logger.warning("Waiting for successful taps")
+            MaestroTimer.retryUntilTrue(timeoutMs = 20000, delayMs = 100) {
+                val tapResult = iosDevice
+                    .tap(0, 0)
+
+                tapResult is Ok
+            } || error("idb_companion is not able dispatch successful tap events")
+
+            logger.warning("Simulator ready")
         }
     }
 
