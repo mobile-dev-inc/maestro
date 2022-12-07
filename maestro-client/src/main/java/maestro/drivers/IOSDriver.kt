@@ -22,6 +22,7 @@ package maestro.drivers
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import ios.IOSDevice
 import ios.hierarchy.XCUIElement
@@ -35,11 +36,13 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.debuglog.DebugLogStore
 import maestro.ios.IOSUiTestRunner
 import maestro.utils.FileUtils
 import okio.Sink
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
 class IOSDriver(
@@ -49,6 +52,8 @@ class IOSDriver(
     private var widthPixels: Int? = null
     private var heightPixels: Int? = null
     private var appId: String? = null
+
+    private val logger by lazy { DebugLogStore.loggerFor(IOSDriver::class.java) }
 
     override fun name(): String {
         return "iOS Simulator"
@@ -60,14 +65,22 @@ class IOSDriver(
     }
 
     private fun ensureXCUITestChannel() {
+        logger.info("[Start] Installing xctest ui runner on ${iosDevice.deviceId}")
         IOSUiTestRunner.runXCTest(iosDevice.deviceId ?: throw RuntimeException("No device selected for running UI tests"))
+        logger.info("[Done] Installing xctest ui runner on ${iosDevice.deviceId}")
+
+        logger.info("[Start] Ensuring ui test runner app is launched on ${iosDevice.deviceId}")
         IOSUiTestRunner.ensureOpen()
-        val nodes = iosDevice
-            .contentDescriptor(appId = IOSUiTestRunner.UI_TEST_RUNNER_APP_BUNDLE_ID)
-            .get()
-        MaestroTimer.retryUntilTrue(3000) {
-            nodes?.frame?.width != null && nodes.frame.width != 0F
+        logger.info("[Done] Ensuring ui test runner app is launched on ${iosDevice.deviceId}")
+
+        logger.info("[Start] Trying to view hierarchy for ${iosDevice.deviceId}")
+        MaestroTimer.retryUntilTrue(5000) {
+            val nodes = iosDevice
+                .contentDescriptor(appId = IOSUiTestRunner.UI_TEST_RUNNER_APP_BUNDLE_ID)
+                .get()
+            nodes?.frame?.width != null && nodes.frame.width != 0f
         }
+        logger.info("[Done] Trying to view hierarchy for ${iosDevice.deviceId}")
     }
 
     private fun ensureGrpcChannel() {
@@ -178,7 +191,12 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val xcUiElement = iosDevice.contentDescriptor(appId).expect {}
+        logger.info("Getting view hierarchy for $appId")
+        val result = iosDevice.contentDescriptor(appId)
+        result.onFailure {
+            logger.warning("Maestro was not able to get view hierarchy due to ${it.message}, Stacktrace: ${it.stackTraceToString()}")
+        }
+        val xcUiElement = result.expect {}
 
         return mapHierarchy(xcUiElement)
     }

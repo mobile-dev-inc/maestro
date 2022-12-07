@@ -30,7 +30,7 @@ import maestro.cli.command.RecordCommand
 import maestro.cli.command.StudioCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
-import maestro.cli.debuglog.DebugLogStore
+import maestro.debuglog.DebugLogStore
 import org.fusesource.jansi.AnsiConsole
 import picocli.CommandLine
 import picocli.CommandLine.Command

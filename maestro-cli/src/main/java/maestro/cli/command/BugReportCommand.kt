@@ -1,7 +1,7 @@
 package maestro.cli.command
 
 import maestro.cli.App
-import maestro.cli.debuglog.DebugLogStore
+import maestro.debuglog.DebugLogStore
 import picocli.CommandLine
 import java.io.File
 import java.util.concurrent.Callable
