@@ -10,7 +10,7 @@ const Annotation = ({element, deviceWidth, deviceHeight, state}: {
   deviceHeight: number
   state: AnnotationState
 }) => {
-  if (!element.bounds) return null
+  if (!element.bounds || state === 'hidden') return null
   const {x, y, width, height} = element.bounds
   const l = `${x / deviceWidth * 100}%`
   const t = `${y / deviceHeight * 100}%`
@@ -68,6 +68,8 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
         let state: AnnotationState = 'default'
         if (hoveredElement === element) {
           state = 'hovered'
+        } else if (hoveredElement !== null) {
+          state = 'hidden'
         }
         return (
           <Annotation
