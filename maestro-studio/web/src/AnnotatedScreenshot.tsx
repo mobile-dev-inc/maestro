@@ -16,11 +16,12 @@ const Annotation = ({element, deviceWidth, deviceHeight, state}: {
   const t = `${y / deviceHeight * 100}%`
   const w = `${width / deviceWidth * 100}%`
   const h = `${height / deviceHeight * 100}%`
+  let style = "border border-dashed border-pink-400"
   return (
     <div
-      className="absolute border border-dashed border-pink-400"
+      className={`absolute ${style}`}
       style={{ left: l, top: t, width: w, height: h }}
-    >{state}</div>
+    />
   )
 }
 
@@ -68,7 +69,7 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
-      {hoveredElement ? null : <div className="absolute inset-0 bg-white opacity-50"/>}
+      {hoveredElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
       {deviceScreen.elements.map(element =>{
         let state: AnnotationState = 'default'
         if (hoveredElement === element) {
