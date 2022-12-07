@@ -1,25 +1,5 @@
-import { DeviceScreen, UIElement, UIElementBounds } from './models';
+import { DeviceScreen, UIElement } from './models';
 import React from 'react';
-
-const clamp = (n: number, min: number, max: number) => {
-  return Math.max(Math.min(n, max), min)
-}
-
-const clampBounds = (bounds: UIElementBounds) => {
-  let {x: l, y: t, width, height} = bounds
-  let r = l + width
-  let b = t + height
-
-  l = clamp(l, 0, 1)
-  t = clamp(t, 0, 1)
-  r = clamp(r, l, 1)
-  b = clamp(b, t, 1)
-
-  width = r - l
-  height = b - t
-
-  return { x: l, y: t, width, height}
-}
 
 const Annotation = ({element, deviceWidth, deviceHeight}: {
   element: UIElement

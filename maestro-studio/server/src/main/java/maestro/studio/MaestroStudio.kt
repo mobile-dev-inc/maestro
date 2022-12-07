@@ -14,9 +14,11 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import maestro.Maestro
 import maestro.TreeNode
+import java.io.File
 import java.nio.file.Path
 import java.util.UUID
 import java.util.regex.Pattern
+import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
@@ -51,13 +53,17 @@ object MaestroStudio {
         embeddedServer(Netty, port = port) {
             routing {
                 get("/api/device-screen") {
-                    val deviceInfo = maestro.deviceInfo()
                     val tree = maestro.viewHierarchy().root
-                    val screenshot = takeScreenshot(maestro)
-                    val deviceWidth = deviceInfo.widthPixels
-                    val deviceHeight = deviceInfo.heightPixels
+                    val screenshotFile = takeScreenshot(maestro)
+
+                    // Using screenshot dimensions instead of Maestro.deviceInfo() since
+                    // deviceInfo() is currently inaccurate on Android
+                    val image = ImageIO.read(screenshotFile)
+                    val deviceWidth = image.width
+                    val deviceHeight = image.height
+
                     val elements = treeToElements(tree)
-                    val deviceScreen = DeviceScreen(screenshot, deviceWidth, deviceHeight, elements)
+                    val deviceScreen = DeviceScreen("/screenshot/${screenshotFile.name}", deviceWidth, deviceHeight, elements)
                     val response = jacksonObjectMapper()
                         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                         .writerWithDefaultPrettyPrinter()
@@ -111,12 +117,12 @@ object MaestroStudio {
         )
     }
 
-    private fun takeScreenshot(maestro: Maestro): String {
+    private fun takeScreenshot(maestro: Maestro): File {
         val name = "${UUID.randomUUID()}.png"
         val screenshotFile = screenshotDir.resolve(name).toFile()
         screenshotFile.deleteOnExit()
         maestro.takeScreenshot(screenshotFile)
-        return "/screenshot/$name"
+        return screenshotFile
     }
 
     private fun getScreenshotDir(): Path {
