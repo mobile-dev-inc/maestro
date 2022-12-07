@@ -8,7 +8,6 @@ class RunningAppRouteHandler: RouteHandler {
         let decoder = JSONDecoder()
         
         let str = String(decoding: request.body, as: UTF8.self)
-        print(str)
         
         guard let requestBody = try? decoder.decode(RunningAppRequest.self, from: request.body) else {
             throw ServerError.RunningAppRequestSerializeFailure

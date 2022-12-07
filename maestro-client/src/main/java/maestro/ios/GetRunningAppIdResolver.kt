@@ -2,6 +2,7 @@ package maestro.ios
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import maestro.debuglog.DebugLogStore
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -17,11 +18,13 @@ class GetRunningAppIdResolver {
             .build()
     }
 
+    private val logger = DebugLogStore.loggerFor(GetRunningAppIdResolver::class.java)
+
     fun getRunningAppId(): String {
         val gson = Gson()
         val appIds = GetRunningAppRequest(Simctl.listApps())
 
-        println("installed apps: $appIds")
+        logger.info("installed apps: $appIds")
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val body = gson.toJson(appIds).toRequestBody(mediaType)
@@ -50,7 +53,8 @@ class GetRunningAppIdResolver {
                 "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
         }
 
-        println("found id $runningAppBundleId")
+        logger.info("found running app id $runningAppBundleId")
+        
         return runningAppBundleId
     }
 }
