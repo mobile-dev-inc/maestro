@@ -22,6 +22,7 @@ package maestro.cli.command
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.cli.App
+import maestro.cli.DisableAnsiMixin
 import maestro.cli.util.MaestroFactory
 import picocli.CommandLine
 
@@ -32,6 +33,9 @@ import picocli.CommandLine
     ]
 )
 class PrintHierarchyCommand : Runnable {
+
+    @CommandLine.Mixin
+    var disableANSIMixin: DisableAnsiMixin? = null
 
     @CommandLine.ParentCommand
     private val parent: App? = null

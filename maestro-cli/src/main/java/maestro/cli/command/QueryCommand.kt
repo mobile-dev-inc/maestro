@@ -24,6 +24,7 @@ import maestro.ElementFilter
 import maestro.Filters
 import maestro.Filters.asFilter
 import maestro.cli.App
+import maestro.cli.DisableAnsiMixin
 import maestro.cli.util.MaestroFactory
 import maestro.orchestra.Orchestra
 import picocli.CommandLine
@@ -39,6 +40,9 @@ import picocli.CommandLine.Spec
     ]
 )
 class QueryCommand : Runnable {
+
+    @CommandLine.Mixin
+    var disableANSIMixin: DisableAnsiMixin? = null
 
     @CommandLine.ParentCommand
     private val parent: App? = null
