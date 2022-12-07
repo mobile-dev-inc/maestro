@@ -31,6 +31,8 @@ import java.io.InputStream
 
 interface IOSDevice : AutoCloseable {
 
+    val deviceId: String?
+
     fun deviceInfo(): Result<DeviceInfo, Throwable>
 
     fun contentDescriptor(appId: String?): Result<XCUIElement, Throwable>

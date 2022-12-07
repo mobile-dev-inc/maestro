@@ -57,7 +57,6 @@ import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import ios.grpc.BlockingStreamObserver
 import ios.hierarchy.XCUIElement
-import ios.logger.IOSDriverLogger
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -74,6 +73,7 @@ import java.util.zip.GZIPInputStream
 
 class IdbIOSDevice(
     private val channel: ManagedChannel,
+    override val deviceId: String?,
 ) : IOSDevice {
 
     private val blockingStub = CompanionServiceGrpc.newBlockingStub(channel)

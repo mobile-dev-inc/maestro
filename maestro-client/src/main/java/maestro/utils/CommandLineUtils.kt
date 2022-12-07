@@ -1,4 +1,4 @@
-package maestro.cli.util
+package maestro.utils
 
 import okio.buffer
 import okio.source
