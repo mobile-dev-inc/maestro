@@ -1,5 +1,5 @@
 import { DeviceScreen, UIElement, UIElementBounds } from './models';
-import React, { useRef } from 'react';
+import React, { CSSProperties, ReactNode, useRef } from 'react';
 import useMouse, { MousePosition } from '@react-hook/mouse-position';
 
 type AnnotationState = 'default' | 'hidden' | 'hovered' | 'selected'
@@ -10,18 +10,39 @@ const Annotation = ({element, deviceWidth, deviceHeight, state}: {
   deviceHeight: number
   state: AnnotationState
 }) => {
-  if (!element.bounds || state === 'hidden') return null
+  // if (!element.bounds || state === 'hidden') return null
+  if (!element.bounds) return null
   const {x, y, width, height} = element.bounds
   const l = `${x / deviceWidth * 100}%`
   const t = `${y / deviceHeight * 100}%`
   const w = `${width / deviceWidth * 100}%`
   const h = `${height / deviceHeight * 100}%`
-  let style = "border border-dashed border-pink-400"
+
+  let className = "border border-dashed border-pink-400"
+  let style: CSSProperties = {}
+  let overlay: ReactNode = null
+
+  if (state === 'hovered') {
+    className = "border-2 border-blue-500 active:active:bg-blue-400/40 z-10"
+    style = {
+      boxShadow: "0 0 0 9999px rgba(244, 114, 182, 0.4)",
+    }
+  }
+
   return (
-    <div
-      className={`absolute ${style}`}
-      style={{ left: l, top: t, width: w, height: h }}
-    />
+    <>
+      <div
+        className={`absolute ${className} shadow-pink-400`}
+        style={{
+          left: l,
+          top: t,
+          width: w,
+          height: h,
+          ...style
+      }}
+      />
+      {overlay}
+    </>
   )
 }
 
@@ -63,9 +84,9 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
   return (
     <div
       ref={ref}
-      className="relative h-full bg-red-100"
+      className="relative h-full bg-red-100 overflow-clip"
       style={{
-        aspectRatio: deviceScreen.width / deviceScreen.height
+        aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
