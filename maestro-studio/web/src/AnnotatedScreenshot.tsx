@@ -1,10 +1,13 @@
 import { DeviceScreen, UIElement } from './models';
 import React from 'react';
 
-const Annotation = ({element, deviceWidth, deviceHeight}: {
+type AnnotationState = 'default' | 'hidden' | 'hovered' | 'selected'
+
+const Annotation = ({element, deviceWidth, deviceHeight, state}: {
   element: UIElement
   deviceWidth: number
   deviceHeight: number
+  state: AnnotationState
 }) => {
   if (!element.bounds) return null
   const {x, y, width, height} = element.bounds
@@ -16,7 +19,7 @@ const Annotation = ({element, deviceWidth, deviceHeight}: {
     <div
       className="absolute border border-dashed border-pink-400"
       style={{ left: l, top: t, width: w, height: h }}
-    ></div>
+    >{state}</div>
   )
 }
 
@@ -37,6 +40,7 @@ export const AnnotatedScreenshot = ({deviceScreen}: {
           element={element}
           deviceWidth={deviceScreen.width}
           deviceHeight={deviceScreen.height}
+          state="default"
         />
       ))}
     </div>
