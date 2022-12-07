@@ -899,16 +899,16 @@ class IntegrationTest {
 
         val driver = driver {
             element {
-                text = "Text"
-                bounds = Bounds(0, 0, 200, 100)
+                text = String(CharArray(500))   // Long text
+                bounds = Bounds(0, 200, 200, 400)
             }
             element {
                 text = "Square"
                 bounds = Bounds(0, 100, 100, 200)
             }
             element {
-                text = String(CharArray(500))   // Long text
-                bounds = Bounds(0, 200, 200, 400)
+                text = "Text"
+                bounds = Bounds(0, 0, 200, 100)
             }
         }
 
