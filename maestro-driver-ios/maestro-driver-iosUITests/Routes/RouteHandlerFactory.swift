@@ -5,8 +5,8 @@ class RouteHandlerFactory {
         switch route {
         case .subTree:
             return SubTreeRouteHandler()
-        case .getRunningApp:
-            return GetRunningAppRouteHandler()
+        case .runningApp:
+            return RunningAppRouteHandler()
         }
     }
 }

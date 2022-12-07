@@ -2,6 +2,8 @@ package maestro.ios
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import maestro.MaestroTimer
 import ios.commands.CommandLineUtils
 import okio.buffer
@@ -9,6 +11,17 @@ import okio.source
 import java.util.concurrent.TimeUnit
 
 object Simctl {
+    fun listApps(): Set<String> {
+        val process = ProcessBuilder("bash", "-c", "xcrun simctl listapps booted | plutil -convert json - -o -").start()
+
+        val json = String(process.inputStream.readBytes())
+
+        val gson = Gson()
+        val type = object : TypeToken<Map<String, Any>>() {}.type
+        val appsMap: Map<String, Any> = gson.fromJson(json, type)
+
+        return appsMap.keys
+    }
 
     fun list(): SimctlList {
         val command = listOf("xcrun", "simctl", "list", "-j")
@@ -66,10 +79,10 @@ object Simctl {
     }
 
     fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String) {
-        CommandLineUtils.runCommand(
-            "xcodebuild test-without-building -xctestrun $xcTestRunFilePath -destination id=$deviceId",
-            waitForCompletion = false
-        )
+//        CommandLineUtils.runCommand(
+//            "xcodebuild test-without-building -xctestrun $xcTestRunFilePath -destination id=$deviceId",
+//            waitForCompletion = false
+//        )
     }
 
     fun uninstall(bundleId: String) {

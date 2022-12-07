@@ -20,13 +20,14 @@ class maestro_driver_iosUITests: XCTestCase {
     func testHttpServer() async throws {
         let server = HTTPServer(port: 9080)
         let subTreeRoute = HTTPRoute(Route.subTree.rawValue)
-        let getRunningAppRoute = HTTPRoute(Route.getRunningApp.rawValue, headers: [.contentType: "application/json"])
+        let runningAppRoute = HTTPRoute(method: .POST,
+                                        path: Route.runningApp.rawValue)
         await server.appendRoute(subTreeRoute) { request in
             let handler = RouteHandlerFactory.createRouteHandler(route: .subTree)
             return try await handler.handle(request: request)
         }
-        await server.appendRoute(getRunningAppRoute) { request in
-            let handler = RouteHandlerFactory.createRouteHandler(route: .getRunningApp)
+        await server.appendRoute(runningAppRoute) { request in
+            let handler = RouteHandlerFactory.createRouteHandler(route: .runningApp)
             return try await handler.handle(request: request)
         }
         try await server.start()

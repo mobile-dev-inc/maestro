@@ -98,7 +98,7 @@ class IdbIOSDevice(
         }
     }
 
-    override fun contentDescriptor(appId: String?): Result<XCUIElement, Throwable> {
+    override fun contentDescriptor(appId: String): Result<XCUIElement, Throwable> {
         return runCatching {
             val httpUrl = HttpUrl.Builder()
                 .scheme("http")

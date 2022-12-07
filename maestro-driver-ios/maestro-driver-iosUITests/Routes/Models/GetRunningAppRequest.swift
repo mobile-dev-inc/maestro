@@ -1,3 +1,3 @@
-struct GetRunningAppRequest: Codable {
+struct RunningAppRequest: Codable {
     let appIds: [String]
 }
