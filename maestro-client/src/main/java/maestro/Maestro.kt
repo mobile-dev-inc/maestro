@@ -300,7 +300,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return MaestroTimer.withTimeout(timeoutMs) {
             val rootNode = driver.contentDescriptor()
 
-            filter(rootNode.aggregate())
+            filter(rootNode.aggregate().reversed())
                 .firstOrNull()
         }?.toUiElementOrNull()
     }
