@@ -73,7 +73,7 @@ const getHoveredElement = (deviceScreen: DeviceScreen, mouse: MousePosition): UI
   })
   if (hoveredList.length === 0) return null
   return hoveredList.sort((a, b) => {
-    if (!a.bounds && !a.bounds) return 0
+    if (!a.bounds && !b.bounds) return 0
     if (!a.bounds) return 1
     if (!b.bounds) return -1
     return a.bounds.width * a.bounds.height - b.bounds.width * b.bounds.height

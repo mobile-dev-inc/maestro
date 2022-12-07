@@ -8,8 +8,8 @@ function App() {
   useEffect(() => {
     (async () => {
       const response = await fetch('/api/device-screen')
-      const hierarchy: DeviceScreen = await response.json()
-      setDeviceScreen(hierarchy)
+      const responseJson: DeviceScreen = await response.json()
+      setDeviceScreen(responseJson)
     })()
   }, [])
   if (!deviceScreen) {
