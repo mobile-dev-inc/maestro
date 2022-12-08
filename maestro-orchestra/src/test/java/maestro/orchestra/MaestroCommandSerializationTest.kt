@@ -88,11 +88,9 @@ internal class MaestroCommandSerializationTest {
     fun `serialize TapOnPercentCommand`() {
         // given
         val command = MaestroCommand(
-            TapOnPercentCommand(
-                percentX = 20,
-                percentY = 80,
+            TapOnPointV2Command(
+                point = "20,30",
                 retryIfNoChange = false,
-                waitUntilVisible = true,
                 longPress = false,
             )
         )
@@ -106,8 +104,7 @@ internal class MaestroCommandSerializationTest {
         val expectedJson = """
             {
               "tapOnPercent" : {
-                "percentX" : 20,
-                "percentY" : 80,
+                "point" : "20,30",
                 "retryIfNoChange" : false,
                 "waitUntilVisible" : true,
                 "longPress" : false
