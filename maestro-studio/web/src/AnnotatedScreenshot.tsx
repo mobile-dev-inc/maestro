@@ -52,6 +52,38 @@ const Annotation = ({element, deviceWidth, deviceHeight, state, onClick}: {
   )
 }
 
+const TargetLines = ({ element, deviceScreen, color }: {
+  element: UIElement
+  deviceScreen: DeviceScreen
+  color: string
+}) => {
+  if (!element.bounds) return null
+  const {x, y, width, height} = element.bounds
+  const cx = (x + width / 2) / deviceScreen.width
+  const cy = (y + height / 2) / deviceScreen.height
+  console.log(element.bounds)
+  return (
+    <>
+      <div
+        className={`absolute w-[1px] h-full ${color} -translate-x-1/2`}
+        style={{
+          top: 0,
+          bottom: 0,
+          left: `${cx * 100}%`,
+        }}
+      />
+      <div
+        className={`absolute h-[1px] w-full ${color} -translate-y-1/2`}
+        style={{
+          left: 0,
+          right: 0,
+          top: `${cy * 100}%`,
+        }}
+      />
+    </>
+  )
+}
+
 const pointInBounds = (boundsX: number, boundsY: number, boundsWidth: number, boundsHeight: number, x: number, y: number) => {
   return (x >= boundsX && x <= boundsX + boundsWidth) && (y >= boundsY && y <= boundsY + boundsHeight)
 }
@@ -121,6 +153,8 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
     )
   }
 
+  const focusedElement = selectedElement || hoveredElement
+
   return (
     <div
       ref={ref}
@@ -130,7 +164,14 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
       }}
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
-      {hoveredElement || selectedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
+      {focusedElement ? (
+        <TargetLines
+          element={focusedElement}
+          deviceScreen={deviceScreen}
+          color={focusedElement === selectedElement ? 'bg-pink-400' : 'bg-blue-400'}
+        />
+      ) : null}
+      {focusedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
       {deviceScreen.elements.map(createAnnotation)}
     </div>
   );
