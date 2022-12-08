@@ -1,6 +1,6 @@
 import PageSwitcher from './PageSwitcher';
 import { useState } from 'react';
-import { Banner } from './Inspect';
+import Banner from './Banner';
 
 export default {
   title: 'PageSwitcher'
@@ -10,7 +10,11 @@ export const Main = () => {
   const [showSecond, setShowSecond] = useState(false)
 
   const banner = (
-    <Banner left={"LOG IN / JOIN WIKIPEDIA"} right={"org.wikipedia:id/positiveButton"} />
+    <Banner
+      left={"LOG IN / JOIN WIKIPEDIA"}
+      right={"org.wikipedia:id/positiveButton"}
+      onClick={() => setShowSecond(false)}
+    />
   )
 
   const page1 = (
