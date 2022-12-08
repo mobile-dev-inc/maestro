@@ -21,11 +21,11 @@ const ElementSearch = ({deviceScreen, selectedElement, onElementSelected, hovere
   return (
     <div className="flex flex-col h-full">
       <div className="font-bold text-lg">UI Elements</div>
-      <div className="overflow-scroll">
+      <div className="flex flex-col overflow-scroll ">
         {sortedElements.map(element => (
           <div
+            className="pb-1"
             key={element.id}
-            className={`flex gap-3 items-center p-5 rounded border border overflow-hidden ${hoveredElement === element ? 'bg-slate-100' : ''} active:bg-slate-200`}
             onClick={() => {
               onElementSelected(element)
             }}
@@ -36,9 +36,13 @@ const ElementSearch = ({deviceScreen, selectedElement, onElementSelected, hovere
               onElementHovered(prev => prev === element ? null : prev)
             }}
           >
-            <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.text}</span>
-            <div className="flex-1"/>
-            <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.resourceId}</span>
+            <div
+              className={`flex gap-3 p-5 items-center rounded border ${hoveredElement === element ? 'bg-slate-100' : ''} active:bg-slate-200`}
+            >
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.text}</span>
+              <div className="flex-1"/>
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.resourceId}</span>
+            </div>
           </div>
         ))}
       </div>
