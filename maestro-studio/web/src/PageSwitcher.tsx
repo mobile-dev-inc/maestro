@@ -21,8 +21,8 @@ const PageSwitcher = ({ children, banner }: {
         </motion.div>
       ) : null}
       <motion.div
-        className="w-full h-full relative rounded-lg drop-shadow-md border bg-white shadow-l overflow-clip"
-        layout
+        className="w-full h-full relative rounded-lg border bg-white overflow-clip"
+        layout="position"
         transition={{ duration: animationDuration }}
       >
         <motion.div
