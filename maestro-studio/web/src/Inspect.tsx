@@ -42,7 +42,6 @@ const Inspect = ({ deviceScreen }: {
           onElementHovered={setHoveredElement}
           hoveredElement={hoveredElement}
           onElementSelected={setSelectedElement}
-          selectedElement={selectedElement}
         />
         {detailsPage}
       </PageSwitcher>

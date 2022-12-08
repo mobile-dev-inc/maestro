@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 
@@ -16,9 +15,8 @@ const SearchIcon = (props: React.SVGProps<SVGSVGElement>) => {
   )
 }
 
-const ElementSearch = ({deviceScreen, selectedElement, onElementSelected, hoveredElement, onElementHovered}: {
+const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onElementHovered}: {
   deviceScreen: DeviceScreen
-  selectedElement: UIElement | null
   onElementSelected:  React.Dispatch<React.SetStateAction<UIElement | null>>
   hoveredElement: UIElement | null
   onElementHovered: React.Dispatch<React.SetStateAction<UIElement | null>>
