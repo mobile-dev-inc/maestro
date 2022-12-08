@@ -1,23 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { DeviceScreen } from './models';
-import Inspect from './Inspect';
+import React from 'react';
+import Main from './Main';
 
 function App() {
-  const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
-  useEffect(() => {
-    (async () => {
-      const response = await fetch('/api/device-screen')
-      const responseJson: DeviceScreen = await response.json()
-      setDeviceScreen(responseJson)
-    })()
-  }, [])
-  if (!deviceScreen) {
-    return (
-      <div>Loading...</div>
-    )
+  const getDeviceScreen = async () => {
+    const response = await fetch('/api/device-screen')
+    return await response.json()
   }
   return (
-    <Inspect deviceScreen={deviceScreen} />
+    <Main getDeviceScreen={getDeviceScreen} />
   );
 }
 
