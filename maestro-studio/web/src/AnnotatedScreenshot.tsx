@@ -95,6 +95,32 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
     onElementHovered(hoveredElementCandidate)
   }, [onElementHovered, hoveredElementCandidate])
 
+  const createAnnotation = (element: UIElement) => {
+    let state: AnnotationState = 'default'
+    if (selectedElement === element) {
+      state = 'selected'
+    } else if (selectedElement !== null) {
+      state = 'hidden'
+    } else if (hoveredElement === element) {
+      state = 'hovered'
+    }
+    return (
+      <Annotation
+        element={element}
+        deviceWidth={deviceScreen.width}
+        deviceHeight={deviceScreen.height}
+        state={state}
+        onClick={() => {
+          if (selectedElement) {
+            onElementSelected(null)
+          } else {
+            onElementSelected(element)
+          }
+        }}
+      />
+    )
+  }
+
   return (
     <div
       ref={ref}
@@ -105,31 +131,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
     >
       <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
       {hoveredElement || selectedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
-      {deviceScreen.elements.map(element => {
-        let state: AnnotationState = 'default'
-        if (selectedElement === element) {
-          state = 'selected'
-        } else if (selectedElement !== null) {
-          state = 'hidden'
-        } else if (hoveredElement === element) {
-          state = 'hovered'
-        }
-        return (
-          <Annotation
-            element={element}
-            deviceWidth={deviceScreen.width}
-            deviceHeight={deviceScreen.height}
-            state={state}
-            onClick={() => {
-              if (selectedElement) {
-                onElementSelected(null)
-              } else {
-                onElementSelected(element)
-              }
-            }}
-          />
-        )
-      })}
+      {deviceScreen.elements.map(createAnnotation)}
     </div>
   );
 }
