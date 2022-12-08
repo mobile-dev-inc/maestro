@@ -61,7 +61,6 @@ const TargetLines = ({ element, deviceScreen, color }: {
   const {x, y, width, height} = element.bounds
   const cx = (x + width / 2) / deviceScreen.width
   const cy = (y + height / 2) / deviceScreen.height
-  console.log(element.bounds)
   return (
     <>
       <div
@@ -163,7 +162,14 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
         aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
     >
-      <img className="h-full" src={deviceScreen.screenshot} alt="screenshot"/>
+      <img
+        className="h-full"
+        src={deviceScreen.screenshot}
+        alt="screenshot"
+        onClick={() => {
+          if (selectedElement) onElementSelected(null)
+        }}
+      />
       {focusedElement ? (
         <TargetLines
           element={focusedElement}
