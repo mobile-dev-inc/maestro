@@ -64,7 +64,7 @@ const TargetLines = ({ element, deviceScreen, color }: {
   return (
     <>
       <div
-        className={`absolute w-[1px] h-full ${color} -translate-x-1/2`}
+        className={`absolute z-20 w-[1px] h-full ${color} -translate-x-1/2`}
         style={{
           top: 0,
           bottom: 0,
@@ -72,7 +72,7 @@ const TargetLines = ({ element, deviceScreen, color }: {
         }}
       />
       <div
-        className={`absolute h-[1px] w-full ${color} -translate-y-1/2`}
+        className={`absolute z-20 h-[1px] w-full ${color} -translate-y-1/2`}
         style={{
           left: 0,
           right: 0,
