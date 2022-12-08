@@ -35,7 +35,7 @@ const Inspect = ({ deviceScreen }: {
   ) : null;
   
   return (
-    <div className="App flex h-full gap-10">
+    <div className="App flex h-full gap-10 p-10">
       <AnnotatedScreenshot
         deviceScreen={deviceScreen}
         onElementHovered={setHoveredElement}

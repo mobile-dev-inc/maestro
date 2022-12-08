@@ -1,5 +1,5 @@
 import { DeviceScreen, UIElement } from './models';
-import React, { CSSProperties, ReactNode, useEffect, useRef } from 'react';
+import React, { CSSProperties, useEffect, useRef } from 'react';
 import useMouse, { MousePosition } from '@react-hook/mouse-position';
 
 type AnnotationState = 'default' | 'hidden' | 'hovered' | 'selected'
@@ -20,7 +20,6 @@ const Annotation = ({element, deviceWidth, deviceHeight, state, onClick}: {
 
   let className = "border border-dashed border-pink-400"
   let style: CSSProperties = {}
-  let overlay: ReactNode = null
 
   if (state === 'hovered') {
     className = "border-4 border-blue-500 active:active:bg-blue-400/40 z-10"
@@ -47,7 +46,6 @@ const Annotation = ({element, deviceWidth, deviceHeight, state, onClick}: {
         }}
         onClick={onClick}
       />
-      {overlay}
     </>
   )
 }
@@ -177,7 +175,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
           color={focusedElement === selectedElement ? 'bg-pink-400' : 'bg-blue-400'}
         />
       ) : null}
-      {focusedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}
+      {/*{focusedElement ? null : <div className="absolute inset-0 bg-black opacity-50"/>}*/}
       {deviceScreen.elements.map(createAnnotation)}
     </div>
   );
