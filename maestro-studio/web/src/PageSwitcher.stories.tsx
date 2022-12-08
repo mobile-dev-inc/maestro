@@ -13,7 +13,7 @@ export const Main = () => {
     <Banner
       left={"LOG IN / JOIN WIKIPEDIA"}
       right={"org.wikipedia:id/positiveButton"}
-      onClick={() => setShowSecond(false)}
+      onClose={() => setShowSecond(false)}
     />
   )
 

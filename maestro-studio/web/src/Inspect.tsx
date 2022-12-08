@@ -14,7 +14,7 @@ const Inspect = ({ deviceScreen }: {
     <Banner
       left={selectedElement.text || ''}
       right={selectedElement.resourceId || ''}
-      onClick={() => setSelectedElement(null)}
+      onClose={() => setSelectedElement(null)}
     />
   ) : null
 
