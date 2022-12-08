@@ -8,7 +8,7 @@ const Inspect = ({ deviceScreen }: {
   const [hoveredElement, setHoveredElement] = useState<UIElement | null>(null)
   const [selectedElement, setSelectedElement] = useState<UIElement | null>(null)
   return (
-    <div className="App flex h-full">
+    <div className="App flex h-full gap-10">
       <AnnotatedScreenshot
         deviceScreen={deviceScreen}
         onElementHovered={setHoveredElement}
