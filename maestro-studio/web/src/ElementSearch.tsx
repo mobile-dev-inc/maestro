@@ -24,6 +24,7 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
   const [query, setQuery] = useState("");
 
   const filteredElements = deviceScreen.elements.filter(element => {
+    if (!element.text && !element.resourceId) return false
     return !query || element.text?.toLowerCase().includes(query.toLowerCase()) || element.resourceId?.toLowerCase().includes(query.toLowerCase())
   })
 
