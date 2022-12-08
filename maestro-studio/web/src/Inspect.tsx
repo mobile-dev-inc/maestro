@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import PageSwitcher from './PageSwitcher';
 import Banner from './Banner';
+import ElementSearch from './ElementSearch';
 
 const Inspect = ({ deviceScreen }: {
   deviceScreen: DeviceScreen
@@ -17,14 +18,6 @@ const Inspect = ({ deviceScreen }: {
       onClose={() => setSelectedElement(null)}
     />
   ) : null
-
-  const searchPage = (
-    <div
-      className="font-bold text-lg"
-    >
-      UI Elements
-    </div>
-  )
 
   const detailsPage = selectedElement ? (
     <div
@@ -44,7 +37,13 @@ const Inspect = ({ deviceScreen }: {
         selectedElement={selectedElement}
       />
       <PageSwitcher banner={banner}>
-        {searchPage}
+        <ElementSearch
+          deviceScreen={deviceScreen}
+          onElementHovered={setHoveredElement}
+          hoveredElement={hoveredElement}
+          onElementSelected={setSelectedElement}
+          selectedElement={selectedElement}
+        />
         {detailsPage}
       </PageSwitcher>
     </div>
