@@ -6,10 +6,10 @@ const PageSwitcher = ({ children, banner }: {
   banner: ReactElement | null
   children: [ReactElement, ReactElement | null]
 }) => {
-  const animationDuration = 0.06
+  const animationDuration = .1
   return (
     <motion.div
-      className="flex flex-col gap-2 w-full h-full"
+      className="flex flex-col gap-2 w-full h-full basis-0 flex-1"
     >
       {banner ? (
         <motion.div
@@ -26,17 +26,17 @@ const PageSwitcher = ({ children, banner }: {
         transition={{ duration: animationDuration }}
       >
         <motion.div
-          className="absolute w-full h-full bg-white"
+          className="absolute p-8 w-full h-full bg-white"
         >
           {children[0]}
         </motion.div>
         <AnimatePresence>
           {children[1] ? (
             <motion.div
-              className="absolute w-full h-full bg-white"
-              initial={{ opacity: 0, translateY: '20px' }}
+              className="absolute p-8 w-full h-full bg-white"
+              initial={{ opacity: 0, translateY: '10px' }}
               animate={{ opacity: 1, translateY: 0 }}
-              exit={{ opacity: 0, translateY: '20px' }}
+              exit={{ opacity: 0, translateY: '10px' }}
               transition={{ duration: animationDuration }}
             >
               {children[1]}

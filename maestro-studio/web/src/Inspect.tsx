@@ -1,6 +1,7 @@
 import { AnnotatedScreenshot } from './AnnotatedScreenshot';
 import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
+import PageSwitcher from './PageSwitcher';
 
 const CloseIcon = () => {
   return (
@@ -10,12 +11,13 @@ const CloseIcon = () => {
   )
 }
 
-export const Banner = ({left, right}: {
+export const Banner = ({left, right, onClick}: {
   left: string
   right: string
+  onClick: () => void
 }) => {
   return (
-    <div className="flex justify-between items-center font-bold p-2 pr-5 rounded bg-blue-100 border border-blue-500">
+    <div className="flex justify-between items-center font-bold p-2 pr-5 rounded bg-blue-100 border border-blue-500" onClick={onClick}>
       <div className="flex gap-3 items-center">
         <div className="flex justify-center p-2 rounded items-center hover:bg-blue-900/20 active:bg-blue-900/40">
           <CloseIcon />
@@ -32,6 +34,31 @@ const Inspect = ({ deviceScreen }: {
 }) => {
   const [hoveredElement, setHoveredElement] = useState<UIElement | null>(null)
   const [selectedElement, setSelectedElement] = useState<UIElement | null>(null)
+  
+  const banner = selectedElement ? (
+    <Banner
+      left={selectedElement.text || ''}
+      right={selectedElement.resourceId || ''}
+      onClick={() => setSelectedElement(null)}
+    />
+  ) : null
+
+  const searchPage = (
+    <div
+      className="font-bold text-lg"
+    >
+      UI Elements
+    </div>
+  )
+
+  const detailsPage = selectedElement ? (
+    <div
+      className="font-bold"
+    >
+      Here are some examples of how you can interact with this element:
+    </div>
+  ) : null;
+  
   return (
     <div className="App flex h-full gap-10">
       <AnnotatedScreenshot
@@ -41,6 +68,10 @@ const Inspect = ({ deviceScreen }: {
         onElementSelected={setSelectedElement}
         selectedElement={selectedElement}
       />
+      <PageSwitcher banner={banner}>
+        {searchPage}
+        {detailsPage}
+      </PageSwitcher>
     </div>
   )
 }
