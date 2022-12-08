@@ -4,6 +4,7 @@ import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
 import maestro.cli.device.Platform
 import maestro.cli.device.ios.Simctl
+import maestro.cli.view.red
 import maestro.networkproxy.NetworkProxy
 import picocli.CommandLine
 import picocli.CommandLine.Command
@@ -18,6 +19,10 @@ class SetupForProxyCommand : Callable<Int> {
     lateinit var parent: NetworkCommand
 
     override fun call(): Int {
+        println()
+        println("\uD83D\uDEA7 THIS COMMAND IS A WIP \uD83D\uDEA7".red())
+        println()
+
         if (parent.app.host != null) {
             error("Automatic proxy setup of remote devices is not supported. Please configure the device manually.")
         }

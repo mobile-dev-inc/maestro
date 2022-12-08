@@ -2,6 +2,7 @@ package maestro.cli.command.network
 
 import maestro.cli.util.MaestroFactory
 import maestro.cli.util.PrintUtils
+import maestro.cli.view.red
 import maestro.networkproxy.NetworkProxy
 import maestro.networkproxy.yaml.YamlMappingRuleParser
 import picocli.CommandLine.Command
@@ -29,6 +30,10 @@ class ReplayNetworkCommand : Callable<Int> {
     var verbose: Boolean = false
 
     override fun call(): Int {
+        println()
+        println("\uD83D\uDEA7 THIS COMMAND IS A WIP \uD83D\uDEA7".red())
+        println()
+
         val proxy = NetworkProxy(port = 8080)
         if (verbose) {
             proxy.setRuleListener { matchResult ->

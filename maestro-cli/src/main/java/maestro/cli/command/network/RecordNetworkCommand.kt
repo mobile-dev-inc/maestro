@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.http.Response
 import maestro.cli.util.MaestroFactory
 import maestro.cli.util.PrintUtils
+import maestro.cli.view.red
 import maestro.networkproxy.NetworkProxy
 import maestro.networkproxy.NetworkProxyUtils.decodedBodyString
 import maestro.networkproxy.NetworkProxyUtils.isJsonContent
@@ -40,6 +41,10 @@ class RecordNetworkCommand : Callable<Int> {
     var recordHeaders: Boolean = false
 
     override fun call(): Int {
+        println()
+        println("\uD83D\uDEA7 THIS COMMAND IS A WIP \uD83D\uDEA7".red())
+        println()
+
         val proxy = NetworkProxy(port = 8080)
         proxy.start(emptyList())
         proxy.setListener { request, response ->
