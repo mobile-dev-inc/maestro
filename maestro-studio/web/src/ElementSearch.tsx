@@ -38,8 +38,8 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
 
   return (
     <div className="flex flex-col h-full gap-3">
-      <div className="font-bold text-lg mb-5">UI Elements</div>
-      <div className="flex relative">
+      <div className="font-bold text-lg mb-4">UI Elements</div>
+      <div className="flex relative mb-4">
         <div className="flex items-center pl-5 absolute pointer-events-none inset-y-0">
           <SearchIcon className="w-6 text-slate-500"/>
         </div>
@@ -50,6 +50,10 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
+      </div>
+      <div className="flex justify-between">
+        <div className="text-slate-400">Text</div>
+        <div className="text-slate-400">ID</div>
       </div>
       <div className="flex flex-col overflow-scroll ">
         {sortedElements.map(element => (
