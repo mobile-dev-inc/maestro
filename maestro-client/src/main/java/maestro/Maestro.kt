@@ -29,6 +29,7 @@ import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
+import maestro.utils.SocketUtils
 import okio.Buffer
 import okio.Sink
 import okio.buffer
@@ -103,7 +104,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.hideKeyboard()
         waitForAppToSettle()
     }
-    
+
     fun swipe(swipeDirection: SwipeDirection? = null, start: Point? = null, end: Point? = null, duration: Long) {
         when {
             swipeDirection != null -> driver.swipe(swipeDirection, duration)
@@ -419,7 +420,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         driver.eraseText(charactersToErase)
     }
-    
+
     fun waitForAnimationToEnd(timeout: Long?) {
         val timeout = timeout ?: ANIMATION_TIMEOUT_MS
         LOGGER.info("Waiting for animation to end with timeout $timeout")
@@ -443,6 +444,25 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
             return@retryUntilTrue false
         }
+    }
+
+    fun setProxy(
+        host: String = SocketUtils.localIp(),
+        port: Int
+    ) {
+        LOGGER.info("Setting proxy: $host:$port")
+
+        driver.setProxy(host, port)
+    }
+
+    fun resetProxy() {
+        LOGGER.info("Resetting proxy")
+
+        driver.resetProxy()
+    }
+
+    fun isShutDown(): Boolean {
+        return driver.isShutdown()
     }
 
     companion object {

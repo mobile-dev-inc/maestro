@@ -1,0 +1,6 @@
+appId: com.apple.mobilesafari
+---
+- launchApp
+- tapOn: Address
+- inputText: https://example.com
+- pressKey: Enter

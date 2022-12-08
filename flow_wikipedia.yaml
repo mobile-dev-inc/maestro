@@ -1,0 +1,10 @@
+appId: org.wikimedia.wikipedia
+---
+- mockNetwork: rules
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- tapOn: Skip
+- tapOn: Search Wikipedia
+- inputText: Hello World
+- assertVisible: .*Hello, Maestro.*

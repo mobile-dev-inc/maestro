@@ -1,0 +1,3 @@
+- path: https://en.wikipedia.org/w/api.php?action=query&continue=&coprop=type%7Cdim&format=json&generator=prefixsearch&gpslimit=24&gpsnamespace=0&gpssearch=Hello%20World&list=search&pilimit=24&piprop=thumbnail&pithumbsize=120&ppprop=displaytitle&prop=description%7Cpageprops%7Cpageimages%7Crevisions%7Ccoordinates&redirects=1&rvprop=ids&srinfo=suggestion&srlimit=1&srnamespace=0&sroffset=0&srprop=&srsearch=Hello%20World&srwhat=text
+  response:
+    bodyFile: maestro-demo/fixtures/search.json
