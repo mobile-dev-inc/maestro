@@ -48,7 +48,7 @@ const Main = ({ getDeviceScreen }: {
       console.error(e)
       setError("An error occurred. Please try refreshing.")
     }
-  }, [getDeviceScreen, setError, setDeviceScreen])
+  }, [setError, setDeviceScreen, getDeviceScreen])
 
   useEffect(() => {
     refresh()
