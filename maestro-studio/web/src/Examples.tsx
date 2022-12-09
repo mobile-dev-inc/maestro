@@ -122,13 +122,13 @@ Conditional,https://example.com
 - runFlow:
     when:
       visible: "[text]"
-      file: Subflow.yaml
+    file: Subflow.yaml
 ---
 - runFlow:
     when:
       visible:
         id: "[id]"
-      file: Subflow.yaml
+    file: Subflow.yaml
 `
 
 export default Examples
