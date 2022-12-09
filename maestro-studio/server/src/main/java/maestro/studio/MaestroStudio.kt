@@ -15,6 +15,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import maestro.Maestro
+import maestro.Platform
 import maestro.TreeNode
 import java.io.File
 import java.nio.file.Path
@@ -61,16 +62,25 @@ object MaestroStudio {
                         screenshotFile = takeScreenshot(maestro)
                     }
 
-                    // Using screenshot dimensions instead of Maestro.deviceInfo() since
-                    // deviceInfo() is currently inaccurate on Android
-                    val image = ImageIO.read(screenshotFile)
-                    if (image == null) {
-                        call.respond(HttpStatusCode.InternalServerError, "Failed to retrieve screenshot")
-                        return@get
-                    }
+                    val deviceInfo = maestro.deviceInfo()
 
-                    val deviceWidth = image.width
-                    val deviceHeight = image.height
+                    val deviceWidth: Int
+                    val deviceHeight: Int
+                    if (deviceInfo.platform == Platform.ANDROID) {
+                        // Using screenshot dimensions instead of Maestro.deviceInfo() since
+                        // deviceInfo() is currently inaccurate on Android
+                        val image = ImageIO.read(screenshotFile)
+                        if (image == null) {
+                            call.respond(HttpStatusCode.InternalServerError, "Failed to retrieve screenshot")
+                            return@get
+                        }
+
+                        deviceWidth = image.width
+                        deviceHeight = image.height
+                    } else {
+                        deviceWidth = deviceInfo.widthGrid
+                        deviceHeight = deviceInfo.heightGrid
+                    }
 
                     val elements = treeToElements(tree)
                     val deviceScreen = DeviceScreen("/screenshot/${screenshotFile.name}", deviceWidth, deviceHeight, elements)
