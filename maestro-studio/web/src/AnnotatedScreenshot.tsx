@@ -135,6 +135,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
     }
     return (
       <Annotation
+        key={element.id}
         element={element}
         deviceWidth={deviceScreen.width}
         deviceHeight={deviceScreen.height}

@@ -20,9 +20,9 @@ const deviceScreen: DeviceScreen = {
 export const MainStory = () => {
   const [refreshCount, setRefreshCount] = useState(0)
   const getDeviceScreen = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 1000))
     setRefreshCount(prev => prev + 1)
-    if (refreshCount % 5 === 0) {
+    if (refreshCount % 5 === 4) {
       throw new Error("asdf")
     }
     return deviceScreen
