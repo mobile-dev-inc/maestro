@@ -9,21 +9,23 @@ const CodeSnippet = ({children}: {
   const [copied, setCopied] = useState(false)
   return (
     <CopyToClipboard text={children} onCopy={() => setCopied(true)}>
-      <pre
-        className="relative bg-slate-100 p-5 rounded overflow-x-scroll border border-transparent hover:border-slate-500 active:bg-slate-200 cursor-context-menu"
+      <div
+        className="relative bg-slate-100 rounded border border-transparent hover:border-slate-500 active:bg-slate-200 cursor-context-menu"
         onMouseOver={() => setHovered(true)}
         onMouseLeave={() => {
           setHovered(false)
           setCopied(false)
         }}
       >
-      {children}
+        <pre className="overflow-x-scroll p-5">
+          {children}
+        </pre>
         {hovered ? (
           <div className="absolute top-0 right-0 flex">
             <span className="px-2 py-1 font-sans text-slate-400">{copied ? 'copied' : 'click to copy'}</span>
           </div>
         ) : null}
-    </pre>
+      </div>
     </CopyToClipboard>
   );
 }
@@ -36,10 +38,10 @@ const Section = ({ element, title, documentationUrl, codeSnippets }: {
 }) => {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-between">
-        <span className="text-slate-500">{title}</span>
+      <div className="flex gap-2 justify-between">
+        <span className="text-slate-500 whitespace-nowrap">{title}</span>
         <a
-          className="text-blue-400 underline underline-offset-2"
+          className="text-blue-400 underline underline-offset-2 whitespace-nowrap"
           href={documentationUrl}
           target="_blank"
           rel="noopener noreferrer"
