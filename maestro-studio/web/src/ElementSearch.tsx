@@ -74,9 +74,9 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
             <div
               className={`flex gap-3 p-5 items-center rounded border ${hoveredElement === element ? 'bg-slate-100' : ''} active:bg-slate-200`}
             >
-              <ElementLabel text={element.text} />
+              <ElementLabel text={element.text} cursor="default"/>
               <div className="flex-1"/>
-              <ElementLabel text={element.resourceId} />
+              <ElementLabel text={element.resourceId} cursor="default"/>
             </div>
           </div>
         ))}

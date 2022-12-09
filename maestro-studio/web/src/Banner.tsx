@@ -8,11 +8,19 @@ const CloseIcon = () => {
   )
 }
 
-export const ElementLabel = ({ text }: {
+export const ElementLabel = ({ text, cursor }: {
   text: string | undefined
+  cursor?: string | undefined
 }) => {
   return (
-    <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${text ? '' : 'text-slate-900/20'}`}>{text || '—'}</span>
+    <span
+      className={`whitespace-nowrap overflow-hidden text-ellipsis ${text ? '' : 'text-slate-900/20'}`}
+      style={{
+        cursor: cursor
+      }}
+    >
+      {text || '—'}
+    </span>
   )
 }
 

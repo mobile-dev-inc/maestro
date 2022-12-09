@@ -9,7 +9,7 @@ const PageSwitcher = ({ children, banner }: {
   const animationDuration = .08
   return (
     <motion.div
-      className="flex flex-col gap-2 w-full h-full basis-0 flex-grow overflow-hidden"
+      className="flex flex-col gap-4 w-full h-full basis-0 flex-grow overflow-hidden"
     >
       {banner ? (
         <motion.div
