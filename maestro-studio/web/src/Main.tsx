@@ -23,7 +23,9 @@ const Main = ({ getDeviceScreen }: {
   }
 
   return (
-    <Inspect deviceScreen={deviceScreen} />
+    <div className="flex flex-col h-full overflow-hidden">
+      <Inspect deviceScreen={deviceScreen} />
+    </div>
   )
 }
 
