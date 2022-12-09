@@ -36,11 +36,18 @@ const Main = ({ getDeviceScreen }: {
   getDeviceScreen: () => Promise<DeviceScreen>
 }) => {
   const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
+  const [error, setError] = useState<string>()
 
   const refresh = async () => {
+    setError(undefined)
     setDeviceScreen(undefined)
-    const deviceScreen = await getDeviceScreen()
-    setDeviceScreen(deviceScreen)
+    try {
+      const deviceScreen = await getDeviceScreen()
+      setDeviceScreen(deviceScreen)
+    } catch (e) {
+      console.error(e)
+      setError("An error occurred. Please try refreshing.")
+    }
   }
 
   useEffect(() => {
@@ -54,19 +61,23 @@ const Main = ({ getDeviceScreen }: {
         <Inspect deviceScreen={deviceScreen} />
       ): (
         <div className="flex items-center justify-center flex-1">
-          <motion.div
-            className="text-xl"
-            animate={{
-              opacity: [0, 1, 0],
-              transition: {
-                ease: 'easeOut',
-                duration: 2,
-                repeat: Infinity,
-              },
-            }}
-          >
-            Loading
-          </motion.div>
+          {error ? (
+            <div className="text-xl">{error}</div>
+          ) : (
+            <motion.div
+              className="text-xl"
+              animate={{
+                opacity: [0, 1, 0],
+                transition: {
+                  ease: 'easeOut',
+                  duration: 2,
+                  repeat: Infinity,
+                },
+              }}
+            >
+              Loading
+            </motion.div>
+          )}
         </div>
       )}
     </div>
