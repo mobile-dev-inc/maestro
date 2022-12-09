@@ -19,7 +19,7 @@ const deviceScreen: DeviceScreen = {
 
 export const MainStory = () => {
   const getDeviceScreen = async () => {
-    await new Promise(resolve => setTimeout(resolve, 5000))
+    await new Promise(resolve => setTimeout(resolve, 500))
     return deviceScreen
   }
   return (

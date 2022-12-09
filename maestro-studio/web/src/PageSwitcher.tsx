@@ -6,7 +6,7 @@ const PageSwitcher = ({ children, banner }: {
   banner: ReactElement | null
   children: [ReactElement, ReactElement | null]
 }) => {
-  const animationDuration = .1
+  const animationDuration = .08
   return (
     <motion.div
       className="flex flex-col gap-2 w-full h-full basis-0 flex-grow overflow-hidden"
@@ -23,7 +23,7 @@ const PageSwitcher = ({ children, banner }: {
       <motion.div
         className="w-full h-full relative rounded-lg border bg-white overflow-clip"
         layout="position"
-        transition={{ duration: animationDuration }}
+        transition={{ ease: 'easeOut', duration: animationDuration }}
       >
         <motion.div
           className="absolute p-8 w-full h-full bg-white"
@@ -37,7 +37,7 @@ const PageSwitcher = ({ children, banner }: {
               initial={{ opacity: 0, translateY: '10px' }}
               animate={{ opacity: 1, translateY: 0 }}
               exit={{ opacity: 0, translateY: '10px' }}
-              transition={{ duration: animationDuration }}
+              transition={{ ease: 'easeOut', duration: animationDuration }}
             >
               {children[1]}
             </motion.div>

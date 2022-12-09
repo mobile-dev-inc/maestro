@@ -31,9 +31,9 @@ const Inspect = ({ deviceScreen }: {
   return (
     <motion.div
       className="App flex h-full gap-10 p-10 overflow-hidden"
-      initial={{ scale: .95, opacity: 0 }}
+      initial={{ scale: .97, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: .1 }}
+      transition={{ duration: .08 }}
     >
       <AnnotatedScreenshot
         deviceScreen={deviceScreen}
