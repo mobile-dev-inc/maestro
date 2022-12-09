@@ -2,7 +2,7 @@ import { AnnotatedScreenshot } from './AnnotatedScreenshot';
 import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import PageSwitcher from './PageSwitcher';
-import Banner from './Banner';
+import Banner, { ElementLabel } from './Banner';
 import ElementSearch from './ElementSearch';
 import { motion } from 'framer-motion';
 import Examples from './Examples';
@@ -12,11 +12,21 @@ const Footer = ({selectedElement, hoveredElement}: {
   hoveredElement: UIElement | null
 }) => {
   const content = selectedElement ? (
-    <span>asdf</span>
-  ) : null
+    <span className="whitespace-nowrap">Click on an example to copy the command</span>
+  ) : (
+    hoveredElement ? (
+      <>
+        <ElementLabel text={hoveredElement.text} />
+        <div className="flex-1"/>
+        <ElementLabel text={hoveredElement.resourceId} />
+      </>
+    ) : (
+      <span className="whitespace-nowrap">Click on an element in the screenshot or search for an element by text or ID</span>
+    )
+  )
   return (
     <motion.div
-      className="flex items-center px-3 bg-slate-600 h-8 text-white"
+      className="flex items-center gap-1 justify-center px-3 bg-slate-600 h-10 text-slate-100"
       initial={{ translateY: '40px' }}
       animate={{ translateY: 0 }}
       transition={{ ease: 'easeOut', duration: .05 }}
