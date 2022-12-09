@@ -1,8 +1,9 @@
 import React from 'react';
 import Main from './Main';
+import { DeviceScreen } from './models';
 
 function App() {
-  const getDeviceScreen = async () => {
+  const getDeviceScreen = async (): Promise<DeviceScreen> => {
     const response = await fetch('/api/device-screen')
     return await response.json()
   }

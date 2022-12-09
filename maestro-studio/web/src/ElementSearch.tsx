@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import { ElementLabel } from './Banner';
 
@@ -24,18 +24,20 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
 }) => {
   const [query, setQuery] = useState("");
 
-  const filteredElements = deviceScreen.elements.filter(element => {
-    if (!element.text && !element.resourceId) return false
-    return !query || element.text?.toLowerCase().includes(query.toLowerCase()) || element.resourceId?.toLowerCase().includes(query.toLowerCase())
-  })
+  const sortedElements = useMemo(() => {
+    const filteredElements = deviceScreen.elements.filter(element => {
+      if (!element.text && !element.resourceId) return false
+      return !query || element.text?.toLowerCase().includes(query.toLowerCase()) || element.resourceId?.toLowerCase().includes(query.toLowerCase())
+    })
 
-  const sortedElements = filteredElements.sort((a, b) => {
-    const aTextPrefixMatch = query && a.text?.toLowerCase().startsWith(query.toLowerCase())
-    const bTextPrefixMatch = query && b.text?.toLowerCase().startsWith(query.toLowerCase())
-    if (aTextPrefixMatch && !bTextPrefixMatch) return -1
-    if (bTextPrefixMatch && !aTextPrefixMatch) return 1
-    return compare(a.text, b.text) || compare(a.resourceId, b.resourceId)
-  })
+    return filteredElements.sort((a, b) => {
+      const aTextPrefixMatch = query && a.text?.toLowerCase().startsWith(query.toLowerCase())
+      const bTextPrefixMatch = query && b.text?.toLowerCase().startsWith(query.toLowerCase())
+      if (aTextPrefixMatch && !bTextPrefixMatch) return -1
+      if (bTextPrefixMatch && !aTextPrefixMatch) return 1
+      return compare(a.text, b.text) || compare(a.resourceId, b.resourceId)
+    })
+  }, [query, deviceScreen.elements])
 
   return (
     <div className="flex flex-col h-full gap-3">
