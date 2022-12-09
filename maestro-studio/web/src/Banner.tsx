@@ -8,9 +8,17 @@ const CloseIcon = () => {
   )
 }
 
+export const ElementLabel = ({ text }: {
+  text: string | undefined
+}) => {
+  return (
+    <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${text ? '' : 'text-slate-900/20'}`}>{text || '—'}</span>
+  )
+}
+
 const Banner = ({left, right, onClose}: {
-  left: string
-  right: string
+  left: string | undefined
+  right: string | undefined
   onClose: () => void
 }) => {
   return (
@@ -18,9 +26,9 @@ const Banner = ({left, right, onClose}: {
       <div className="flex justify-center p-2 rounded items-center hover:bg-blue-900/20 active:bg-blue-900/40" onClick={onClose}>
         <CloseIcon />
       </div>
-      <span className="whitespace-nowrap overflow-hidden text-ellipsis">{left}</span>
+      <ElementLabel text={left} />
       <div className="flex-1"/>
-      <span className="whitespace-nowrap overflow-hidden  text-ellipsis">{right}</span>
+      <ElementLabel text={right} />
     </div>
   )
 }

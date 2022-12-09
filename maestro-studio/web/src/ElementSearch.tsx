@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
+import { ElementLabel } from './Banner';
 
 const compare = (a: string | undefined, b: string | undefined) => {
   if (!a) return b ? 1 : 0
@@ -73,9 +74,9 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
             <div
               className={`flex gap-3 p-5 items-center rounded border ${hoveredElement === element ? 'bg-slate-100' : ''} active:bg-slate-200`}
             >
-              <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.text}</span>
+              <ElementLabel text={element.text} />
               <div className="flex-1"/>
-              <span className="whitespace-nowrap overflow-hidden text-ellipsis cursor-default">{element.resourceId}</span>
+              <ElementLabel text={element.resourceId} />
             </div>
           </div>
         ))}
