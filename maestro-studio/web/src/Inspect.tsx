@@ -5,6 +5,7 @@ import PageSwitcher from './PageSwitcher';
 import Banner from './Banner';
 import ElementSearch from './ElementSearch';
 import { motion } from 'framer-motion';
+import Examples from './Examples';
 
 const Inspect = ({ deviceScreen }: {
   deviceScreen: DeviceScreen
@@ -21,11 +22,7 @@ const Inspect = ({ deviceScreen }: {
   ) : null
 
   const detailsPage = selectedElement ? (
-    <div
-      className="font-bold"
-    >
-      Here are some examples of how you can interact with this element:
-    </div>
+    <Examples element={selectedElement}/>
   ) : null;
   
   return (
