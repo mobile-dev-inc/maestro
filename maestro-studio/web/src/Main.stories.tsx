@@ -1,7 +1,6 @@
 import React from 'react';
 import { DeviceScreen } from './models';
 import { sampleElements, sampleScreenshot } from './fixtures';
-import Inspect from './Inspect';
 import Main from './Main';
 
 export default {
@@ -20,7 +19,7 @@ const deviceScreen: DeviceScreen = {
 
 export const MainStory = () => {
   const getDeviceScreen = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 5000))
     return deviceScreen
   }
   return (

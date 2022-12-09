@@ -4,6 +4,7 @@ import { DeviceScreen, UIElement } from './models';
 import PageSwitcher from './PageSwitcher';
 import Banner from './Banner';
 import ElementSearch from './ElementSearch';
+import { motion } from 'framer-motion';
 
 const Inspect = ({ deviceScreen }: {
   deviceScreen: DeviceScreen
@@ -28,7 +29,12 @@ const Inspect = ({ deviceScreen }: {
   ) : null;
   
   return (
-    <div className="App flex h-full gap-10 p-10 overflow-hidden">
+    <motion.div
+      className="App flex h-full gap-10 p-10 overflow-hidden"
+      initial={{ scale: .95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: .1 }}
+    >
       <AnnotatedScreenshot
         deviceScreen={deviceScreen}
         onElementHovered={setHoveredElement}
@@ -45,7 +51,7 @@ const Inspect = ({ deviceScreen }: {
         />
         {detailsPage}
       </PageSwitcher>
-    </div>
+    </motion.div>
   )
 }
 
