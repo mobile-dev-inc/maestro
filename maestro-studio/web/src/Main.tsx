@@ -1,5 +1,5 @@
 import Inspect from './Inspect';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DeviceScreen } from './models';
 import { motion } from 'framer-motion';
 
@@ -38,7 +38,7 @@ const Main = ({ getDeviceScreen }: {
   const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
   const [error, setError] = useState<string>()
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setError(undefined)
     setDeviceScreen(undefined)
     try {
@@ -48,11 +48,11 @@ const Main = ({ getDeviceScreen }: {
       console.error(e)
       setError("An error occurred. Please try refreshing.")
     }
-  }
+  }, [getDeviceScreen, setError, setDeviceScreen])
 
   useEffect(() => {
     refresh()
-  }, [])
+  }, [refresh])
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
