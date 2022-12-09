@@ -103,21 +103,21 @@ const Examples = ({ element }: {
 }
 
 const template = `
-Tap,https://example.com
+Tap,https://maestro.mobile.dev/reference/tap-on-view
 ---
 - tapOn: "[text]"
 ---
 - tapOn:
     id: "[id]"
 ===
-Assertion,https://example.com
+Assertion,https://maestro.mobile.dev/reference/assertions
 ---
 - assertVisible: "[text]"
 ---
 - assertVisible:
     id: "[id]"
 ===
-Conditional,https://example.com
+Conditional,https://maestro.mobile.dev/advanced/conditions
 ---
 - runFlow:
     when:
