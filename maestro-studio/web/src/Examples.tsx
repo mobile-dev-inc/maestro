@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
+const isBoundsEmpty = (element: UIElement): boolean => {
+  return !element.bounds?.width || !element.bounds?.height
+}
+
 const CodeSnippet = ({children}: {
   children: string
 }) => {
@@ -42,6 +46,7 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
     if (codeSnippet.includes('[id]') && !element.resourceId) return null
     if (codeSnippet.includes('[text]') && !element.text) return null
     if (codeSnippet.includes('[bounds]') && !element.bounds) return null
+    if (codeSnippet.includes('tapOn') && isBoundsEmpty(element)) return null
     const id = element.resourceId || ''
     const text = element.text || ''
     const bounds = element.bounds || { x: 0, y: 0, width: 0, height: 0 }
@@ -59,7 +64,7 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
       </CodeSnippet>
     )
   }).filter(c => c)
-  if (codeSnippets.length === 0) return null
+  if (codeSnippetComponents.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2 justify-between">
@@ -72,6 +77,39 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
         >View Documentation</a>
       </div>
       {codeSnippetComponents}
+    </div>
+  )
+}
+
+const Error = ({ element }: {
+  element: UIElement
+}) => {
+  const content = (() => {
+    if (isBoundsEmpty(element)) {
+      const openAGitHubIssueLink = (
+        <a
+          className="underline"
+          href="https://github.com/mobile-dev-inc/maestro/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          open a github issue
+        </a>
+      )
+      return (
+        <span>This element's <b>width or height is 0</b> so you won't be able to tap on it. If you believe this is a problem with Maestro, please {openAGitHubIssueLink} and include a screenshot of this page.</span>
+      );
+    }
+    if (!element.text && !element.resourceId) {
+      return (
+        <span>This element does not have any <b>text</b> or <b>resource id</b> associated with it. You can still tap on this element using screen percentages, but this won't be as resilient to changes to your UI.</span>
+      )
+    }
+  })()
+  if (!content) return null
+  return (
+    <div className="bg-red-100 rounded-md p-5">
+      {content}
     </div>
   )
 }
@@ -100,20 +138,11 @@ const Examples = ({ deviceScreen, element }: {
     <div
       className="flex flex-col gap-5 h-full overflow-y-scroll"
     >
-      {element.text || element.resourceId ? (
-        <>
-          <div className="font-bold">
-            Here are some examples of how you can interact with this element:
-          </div>
-          {sections}
-        </>
-      ) : (
-        <div className="bg-red-100 rounded-md p-5">
-          <p>This element does not have any <b>text</b> or <b>resource id</b> associated with it.</p>
-          <br/>
-          <p>The recommended approach to interact with this element is to first <b>assign it a resource id</b> in code.</p>
-        </div>
-      )}
+      <Error element={element} />
+      <div className="font-bold">
+        Here are some examples of how you can interact with this element:
+      </div>
+      {sections}
     </div>
   )
 }
