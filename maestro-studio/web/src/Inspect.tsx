@@ -51,7 +51,7 @@ const Inspect = ({ deviceScreen }: {
   ) : null
 
   const detailsPage = selectedElement ? (
-    <Examples element={selectedElement}/>
+    <Examples deviceScreen={deviceScreen} element={selectedElement}/>
   ) : null;
   
   return (

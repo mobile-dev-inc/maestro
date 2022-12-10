@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UIElement } from './models';
+import { DeviceScreen, UIElement } from './models';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const CodeSnippet = ({children}: {
@@ -30,12 +30,36 @@ const CodeSnippet = ({children}: {
   );
 }
 
-const Section = ({ element, title, documentationUrl, codeSnippets }: {
+const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets }: {
+  deviceScreen: DeviceScreen
   element: UIElement
   title: string
   documentationUrl: string
   codeSnippets: string[]
 }) => {
+  const toPercent = (n: number, total: number) => `${Math.round((100 * n / total))}%`
+  const codeSnippetComponents = codeSnippets.map(codeSnippet => {
+    if (codeSnippet.includes('[id]') && !element.resourceId) return null
+    if (codeSnippet.includes('[text]') && !element.text) return null
+    if (codeSnippet.includes('[bounds]') && !element.bounds) return null
+    const id = element.resourceId || ''
+    const text = element.text || ''
+    const bounds = element.bounds || { x: 0, y: 0, width: 0, height: 0 }
+    const cx = toPercent(bounds.x + bounds.width / 2, deviceScreen.width)
+    const cy = toPercent(bounds.y + bounds.height / 2, deviceScreen.height)
+    const point = `[${cx},${cy}]`
+    return (
+      <CodeSnippet>
+        {
+          codeSnippet
+            .replace('[id]', id)
+            .replace('[text]', text)
+            .replace('[point]', point)
+        }
+      </CodeSnippet>
+    )
+  }).filter(c => c)
+  if (codeSnippets.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2 justify-between">
@@ -47,24 +71,13 @@ const Section = ({ element, title, documentationUrl, codeSnippets }: {
           rel="noopener noreferrer"
         >View Documentation</a>
       </div>
-      {codeSnippets.map(codeSnippet => {
-        if (codeSnippet.includes('[id]') && !element.resourceId) return null
-        if (codeSnippet.includes('[text]') && !element.text) return null
-        return (
-          <CodeSnippet>
-            {
-              codeSnippet
-                .replace('[id]', element.resourceId || '')
-                .replace('[text]', element.text || '')
-            }
-          </CodeSnippet>
-        )
-      })}
+      {codeSnippetComponents}
     </div>
   )
 }
 
-const Examples = ({ element }: {
+const Examples = ({ deviceScreen, element }: {
+  deviceScreen: DeviceScreen
   element: UIElement
 }) => {
   const sections = template.split('===\n').map(section => {
@@ -74,6 +87,7 @@ const Examples = ({ element }: {
     const documentationUrl = header[1]
     return (
       <Section
+        deviceScreen={deviceScreen}
         element={element}
         title={title}
         documentationUrl={documentationUrl}
@@ -111,6 +125,9 @@ Tap,https://maestro.mobile.dev/reference/tap-on-view
 ---
 - tapOn:
     id: "[id]"
+---
+- tapOn:
+    point: "[point]"
 ===
 Assertion,https://maestro.mobile.dev/reference/assertions
 ---
