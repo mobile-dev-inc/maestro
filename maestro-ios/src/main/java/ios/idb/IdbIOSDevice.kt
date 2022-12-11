@@ -110,15 +110,16 @@ class IdbIOSDevice(
                 .addQueryParameter("appId", appId)
                 .build()
             val request = Request.Builder().get().url(httpUrl).build()
-            val response = okHttpClient.newCall(request).execute()
-            val xcUiElement = if (response.isSuccessful) {
-                response.body?.let {
-                    GSON.fromJson(String(it.bytes()), XCUIElement::class.java)
-                } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
-            } else {
-                IOSDriverLogger.dumpDeviceLogs(deviceId)
-                throw IllegalArgumentException("Maestro was not able to capture view hierarchy. Run maestro bugreport command and submit " +
-                    "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
+            val xcUiElement = okHttpClient.newCall(request).execute().use {
+                if (it.isSuccessful) {
+                    it.body?.let {
+                        GSON.fromJson(String(it.bytes()), XCUIElement::class.java)
+                    } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
+                } else {
+                    IOSDriverLogger.dumpDeviceLogs(deviceId)
+                    throw IllegalArgumentException("Maestro was not able to capture view hierarchy. Run maestro bugreport command and submit " +
+                        "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
+                }
             }
             xcUiElement
         }

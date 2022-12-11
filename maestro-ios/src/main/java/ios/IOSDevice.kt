@@ -21,7 +21,6 @@ package ios
 
 import com.github.michaelbull.result.Result
 import idb.Idb
-import ios.device.AccessibilityNode
 import ios.device.DeviceInfo
 import ios.hierarchy.XCUIElement
 import ios.idb.IdbIOSDevice
