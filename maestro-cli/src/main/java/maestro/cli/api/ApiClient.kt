@@ -404,8 +404,8 @@ data class CliVersion(
             val parts = versionString.split('.')
             if (parts.size != 3) return null
             val major = parts[0].toIntOrNull() ?: return null
-            val minor = parts[0].toIntOrNull() ?: return null
-            val patch = parts[0].toIntOrNull() ?: return null
+            val minor = parts[1].toIntOrNull() ?: return null
+            val patch = parts[2].toIntOrNull() ?: return null
             return CliVersion(major, minor, patch)
         }
     }
