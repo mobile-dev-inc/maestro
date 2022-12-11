@@ -22,6 +22,8 @@ object IOSUiTestRunner {
     }
 
     fun runXCTest(deviceId: String) {
+        Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+
         val processOutput = ProcessBuilder(
             "bash",
             "-c",
