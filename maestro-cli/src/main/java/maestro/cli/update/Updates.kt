@@ -50,13 +50,10 @@ object Updates {
     }
 
     fun checkForUpdates(): CliVersion? {
-        val now = System.currentTimeMillis()
         return try {
             getFuture().get(3, TimeUnit.SECONDS)
         } catch (e: Exception) {
             return null
-        } finally {
-            println(System.currentTimeMillis() - now)
         }
     }
 
