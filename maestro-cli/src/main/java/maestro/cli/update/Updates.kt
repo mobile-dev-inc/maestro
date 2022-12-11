@@ -7,10 +7,8 @@ import java.nio.file.Paths
 import java.util.Properties
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -19,10 +17,6 @@ import kotlin.io.path.writeText
 object Updates {
 
     private val BASE_API_URL = "https://api.mobile.dev"
-    private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()
-    private val EXECUTOR = Executors.newCachedThreadPool {
-        DEFAULT_THREAD_FACTORY.newThread(it).apply { isDaemon = true }
-    }
     private val OS_NAME = System.getProperty("os.name")
     private val FRESH_INSTALL: Boolean
     private val DEVICE_UUID: String
@@ -31,6 +25,13 @@ object Updates {
             System.err.println("\nWarning: Failed to parse current version".red())
         }
     }
+
+    private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()
+    private val EXECUTOR = Executors.newCachedThreadPool {
+        DEFAULT_THREAD_FACTORY.newThread(it).apply { isDaemon = true }
+    }
+
+    private var future: CompletableFuture<CliVersion?>? = null
 
     init {
         val uuidPath = Paths.get(System.getProperty("user.home"), ".mobiledev", "uuid")
@@ -44,31 +45,48 @@ object Updates {
         DEVICE_UUID = uuidPath.readText()
     }
 
+    fun fetchUpdatesAsync() {
+        getFuture()
+    }
+
     fun checkForUpdates(): CliVersion? {
+        val now = System.currentTimeMillis()
+        return try {
+            getFuture().get(3, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            return null
+        } finally {
+            println(System.currentTimeMillis() - now)
+        }
+    }
+
+    private fun fetchUpdates(): CliVersion? {
         if (CLI_VERSION == null) {
             return null
         }
 
-        val future = CompletableFuture.supplyAsync({
-            ApiClient(BASE_API_URL).getLatestCliVersion(
-                deviceUuid = DEVICE_UUID,
-                osName = OS_NAME,
-                currentVersion = CLI_VERSION,
-                freshInstall = FRESH_INSTALL,
-            )
-        }, EXECUTOR)
-
-        val latestCliVersion = try {
-            future.get(3, TimeUnit.SECONDS)
-        } catch (e: Exception) {
-            return null
-        }
+        val latestCliVersion = ApiClient(BASE_API_URL).getLatestCliVersion(
+            deviceUuid = DEVICE_UUID,
+            osName = OS_NAME,
+            currentVersion = CLI_VERSION,
+            freshInstall = FRESH_INSTALL,
+        )
 
         return if (latestCliVersion > CLI_VERSION) {
             latestCliVersion
         } else {
             null
         }
+    }
+
+    @Synchronized
+    private fun getFuture(): CompletableFuture<CliVersion?> {
+        var future = this.future
+        if (future == null) {
+            future = CompletableFuture.supplyAsync(this::fetchUpdates, EXECUTOR)!!
+            this.future = future
+        }
+        return future
     }
 
     private fun getVersion(): CliVersion? {
@@ -84,8 +102,4 @@ object Updates {
 
         return CliVersion.parse(versionString)
     }
-}
-
-fun main() {
-    println(Updates.checkForUpdates())
 }
