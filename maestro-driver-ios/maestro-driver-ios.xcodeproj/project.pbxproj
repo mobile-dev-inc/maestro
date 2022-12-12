@@ -22,7 +22,6 @@
 		943A907E293F5B8600C85136 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A907D293F5B8600C85136 /* Route.swift */; };
 		943A9081293F5C2500C85136 /* RouteHandlerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A9080293F5C2500C85136 /* RouteHandlerFactory.swift */; };
 		943A9084293F5CC400C85136 /* SubTreeRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A9083293F5CC400C85136 /* SubTreeRouteHandler.swift */; };
-		943A9086293F5E8900C85136 /* ServerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A9085293F5E8900C85136 /* ServerError.swift */; };
 		943A9088293F5EAA00C85136 /* RunningAppRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A9087293F5EAA00C85136 /* RunningAppRouteHandler.swift */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +51,6 @@
 		943A907D293F5B8600C85136 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		943A9080293F5C2500C85136 /* RouteHandlerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteHandlerFactory.swift; sourceTree = "<group>"; };
 		943A9083293F5CC400C85136 /* SubTreeRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTreeRouteHandler.swift; sourceTree = "<group>"; };
-		943A9085293F5E8900C85136 /* ServerError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerError.swift; sourceTree = "<group>"; };
 		943A9087293F5EAA00C85136 /* RunningAppRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningAppRouteHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -141,7 +139,6 @@
 				943A9082293F5CA700C85136 /* Handlers */,
 				943A907D293F5B8600C85136 /* Route.swift */,
 				943A9080293F5C2500C85136 /* RouteHandlerFactory.swift */,
-				943A9085293F5E8900C85136 /* ServerError.swift */,
 			);
 			path = Routes;
 			sourceTree = "<group>";
@@ -284,7 +281,6 @@
 				943A9081293F5C2500C85136 /* RouteHandlerFactory.swift in Sources */,
 				943A907C293F5B1A00C85136 /* RouteHandler.swift in Sources */,
 				52049BF8293503A200807AA3 /* maestro_driver_iosUITests.swift in Sources */,
-				943A9086293F5E8900C85136 /* ServerError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
