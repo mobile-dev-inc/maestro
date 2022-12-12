@@ -34,7 +34,7 @@ object Updates {
     private var future: CompletableFuture<CliVersion?>? = null
 
     init {
-        val uuidPath = Paths.get(System.getProperty("user.home"), ".mobiledev", "uuid")
+        val uuidPath = Paths.get(System.getProperty("user.home"), ".maestro", "uuid")
         FRESH_INSTALL = if (uuidPath.exists()) {
             false
         } else {
