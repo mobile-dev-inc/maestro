@@ -18,6 +18,7 @@ import maestro.Filters
 import maestro.Maestro
 import maestro.Platform
 import maestro.TreeNode
+import maestro.UiElement
 import java.io.File
 import java.nio.file.Path
 import java.util.UUID
@@ -114,18 +115,30 @@ object MaestroStudio {
             list.add(tree)
             return list
         }
+        fun TreeNode.attribute(key: String): String? {
+            val value = attributes[key]
+            if (value.isNullOrEmpty()) return null
+            return value
+        }
 
         val elements = gatherElements(tree, mutableListOf())
             .sortedWith(Filters.INDEX_COMPARATOR)
 
+        fun getIndex(element: TreeNode, attribute: String): Int? {
+            val value = element.attribute(attribute) ?: return null
+            val matchingElements = elements.filter { value == it.attributes[attribute] }
+            if (matchingElements.size < 2) return null
+            return matchingElements.indexOf(element)
+        }
+
         return elements.map { element ->
             val id = UUID.randomUUID()
             val bounds = element.bounds()
-            val text = element.attributes["text"]
-            val resourceId = element.attributes["resource-id"]
-            val textIndex = if (text == null) null else elements.filter { text == it.attributes["text"] }.indexOf(element)
-            val resourceIndex = if (resourceId == null) null else elements.filter { resourceId == it.attributes["resource-id"] }.indexOf(element)
-            UIElement(id, bounds, resourceId, textIndex, text, resourceIndex)
+            val text = element.attribute("text")
+            val resourceId = element.attribute("resource-id")
+            val textIndex = getIndex(element, "text")
+            val resourceIdIndex = getIndex(element, "resource-id")
+            UIElement(id, bounds, resourceId, resourceIdIndex, text, textIndex)
         }
     }
 
