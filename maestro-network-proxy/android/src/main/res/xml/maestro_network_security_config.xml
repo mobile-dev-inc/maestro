@@ -3,6 +3,7 @@
     <debug-overrides>
         <trust-anchors>
             <certificates src="@raw/maestro"/>
+            <certificates src="system"/>
         </trust-anchors>
     </debug-overrides>
 </network-security-config>
