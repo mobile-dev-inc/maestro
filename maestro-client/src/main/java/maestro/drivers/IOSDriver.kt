@@ -191,10 +191,12 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val getRunningAppId = GetRunningAppIdResolver().getRunningAppId()
-        logger.info("Getting view hierarchy for $getRunningAppId")
+        val runningAppId = GetRunningAppIdResolver().getRunningAppId()
+        logger.info("Getting view hierarchy for $runningAppId")
 
-        val result = iosDevice.contentDescriptor(appId ?: getRunningAppId)
+        val resolvedAppId = runningAppId ?: appId
+
+        val result = iosDevice.contentDescriptor(resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt"))
         result.onFailure {
             logger.warning("Maestro was not able to get view hierarchy due to ${it.message}, Stacktrace: ${it.stackTraceToString()}")
         }

@@ -20,11 +20,12 @@ class GetRunningAppIdResolver {
 
     private val logger = DebugLogStore.loggerFor(GetRunningAppIdResolver::class.java)
 
-    fun getRunningAppId(): String {
+    fun getRunningAppId(): String? {
         val gson = Gson()
-        val appIds = GetRunningAppRequest(Simctl.listApps())
+        val listApps = Simctl.listApps()
+        val appIds = GetRunningAppRequest(listApps)
 
-        logger.info("installed apps: $appIds")
+        logger.info("installed apps: $listApps")
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val body = gson.toJson(appIds).toRequestBody(mediaType)
@@ -47,10 +48,11 @@ class GetRunningAppIdResolver {
                 val responseBody: Map<String, Any> = gson.fromJson(String(it.bytes()), type)
 
                 responseBody["runningAppBundleId"] as? String
-            } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
+            }
         } else {
-            throw IllegalArgumentException("Maestro was not able to capture view hierarchy. Run maestro bugreport command and submit " +
-                "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
+            logger.info("request to resolve running app id failed with exception - ${response.body?.toString()}")
+
+            return null
         }
 
         logger.info("found running app id $runningAppBundleId")
