@@ -45,21 +45,27 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
   const elementHasResourceIdIndex = typeof element.resourceIdIndex === 'number'
   const elementHasTextIndex = typeof element.textIndex === 'number'
   const codeSnippetComponents = codeSnippets.map(codeSnippet => {
+    // If the snippet references a resource id but the element doesn't have one, skip it
     if (codeSnippet.includes('[id]') && !element.resourceId) return null
+    // If the snippet references a resource id index but the element doesn't have one, skip it
     if (codeSnippet.includes('[resource-id-index]') && !elementHasResourceIdIndex) return null
-    if (codeSnippet.includes('[text-index]') && !elementHasTextIndex) return null
+    // If the snippet references text index but the element doesn't have any, skip it
     if (codeSnippet.includes('[text]') && !element.text) return null
+    // If the snippet references a text id index but the element doesn't have one, skip it
+    if (codeSnippet.includes('[text-index]') && !elementHasTextIndex) return null
+    // If the snippet references bounds but the element doesn't have any, skip it
     if (codeSnippet.includes('[bounds]') && !element.bounds) return null
+    // If the snippet references tapOn but the element doesn't have bounds, skip it
     if (codeSnippet.includes('tapOn') && isBoundsEmpty(element)) return null
-
+    // If the element has a resource id index, and the snippet doesn't specify one, skip it
     if (elementHasResourceIdIndex && codeSnippet.includes('[id]') && !codeSnippet.includes('[resource-id-index]')) return null
+    // If the element has a text id index, and the snippet doesn't specify one, skip it
     if (elementHasTextIndex && codeSnippet.includes('[text]') && !codeSnippet.includes('[text-index]')) return null
 
     const id = element.resourceId || ''
     const text = element.text || ''
     const resourceIdIndex = `${element.resourceIdIndex}`
     const textIndex = `${element.textIndex}`
-    console.log(element)
     const bounds = element.bounds || { x: 0, y: 0, width: 0, height: 0 }
     const cx = toPercent(bounds.x + bounds.width / 2, deviceScreen.width)
     const cy = toPercent(bounds.y + bounds.height / 2, deviceScreen.height)
