@@ -14,6 +14,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import maestro.Filters
 import maestro.Maestro
 import maestro.Platform
 import maestro.TreeNode
@@ -105,16 +106,27 @@ object MaestroStudio {
         }.start()
     }
 
-    private fun treeToElements(tree: TreeNode, list: MutableList<UIElement> = mutableListOf()): List<UIElement> {
-        tree.children.forEach { child ->
-            treeToElements(child, list)
+    private fun treeToElements(tree: TreeNode): List<UIElement> {
+        fun gatherElements(tree: TreeNode, list: MutableList<TreeNode>): List<TreeNode> {
+            tree.children.forEach { child ->
+                gatherElements(child, list)
+            }
+            list.add(tree)
+            return list
         }
-        val id = UUID.randomUUID()
-        val bounds = tree.bounds()
-        val text = tree.attributes["text"]
-        val resourceId = tree.attributes["resource-id"]
-        list.add(UIElement(id, bounds, resourceId, null, text, null))
-        return list
+
+        val elements = gatherElements(tree, mutableListOf())
+            .sortedWith(Filters.INDEX_COMPARATOR)
+
+        return elements.map { element ->
+            val id = UUID.randomUUID()
+            val bounds = element.bounds()
+            val text = element.attributes["text"]
+            val resourceId = element.attributes["resource-id"]
+            val textIndex = if (text == null) null else elements.filter { text == it.attributes["text"] }.indexOf(element)
+            val resourceIndex = if (resourceId == null) null else elements.filter { resourceId == it.attributes["resource-id"] }.indexOf(element)
+            UIElement(id, bounds, resourceId, textIndex, text, resourceIndex)
+        }
     }
 
     private fun TreeNode.bounds(): UIElementBounds? {
