@@ -1,6 +1,6 @@
 package maestro.api
 
-import com.google.gson.Gson
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import ios.api.GetRunningAppRequest
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,7 +22,7 @@ object XCTestDriverClient {
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
 
-    private val gson = Gson()
+    private val mapper = jacksonObjectMapper()
 
     fun subTree(appId: String): Response {
         val type = RequestType.SUBTREE
@@ -35,7 +35,7 @@ object XCTestDriverClient {
     fun runningAppId(appIds: Set<String>): Response {
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val appIdsRequest = GetRunningAppRequest(appIds)
-        val body = gson.toJson(appIdsRequest).toRequestBody(mediaType)
+        val body = mapper.writeValueAsString(appIdsRequest).toRequestBody(mediaType)
 
         val type = RequestType.RUNNING_APP_ID
         val url = buildUrl(type, null)

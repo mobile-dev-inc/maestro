@@ -2,8 +2,6 @@ package maestro.ios
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import maestro.MaestroTimer
 import ios.commands.CommandLineUtils
 import okio.buffer
@@ -16,9 +14,8 @@ object Simctl {
 
         val json = String(process.inputStream.readBytes())
 
-        val gson = Gson()
-        val type = object : TypeToken<Map<String, Any>>() {}.type
-        val appsMap: Map<String, Any> = gson.fromJson(json, type)
+        val mapper = jacksonObjectMapper()
+        val appsMap = mapper.readValue(json, Map::class.java) as Map<String, Any>
 
         return appsMap.keys
     }

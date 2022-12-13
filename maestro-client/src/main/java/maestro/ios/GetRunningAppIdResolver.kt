@@ -1,19 +1,12 @@
 package maestro.ios
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.api.XCTestDriverClient
 import maestro.debuglog.DebugLogStore
-import okhttp3.HttpUrl
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import sun.security.krb5.Confounder.bytes
-import java.util.concurrent.TimeUnit
 
 object GetRunningAppIdResolver {
     private val logger = DebugLogStore.loggerFor(GetRunningAppIdResolver::class.java)
+    private val mapper = jacksonObjectMapper()
 
     fun getRunningAppId(): String? {
         val appIds = Simctl.listApps()
@@ -21,12 +14,13 @@ object GetRunningAppIdResolver {
 
         return XCTestDriverClient.runningAppId(appIds).use { response ->
             val runningAppBundleId = if (response.isSuccessful) {
-                val gson = Gson()
                 response.body?.let { body ->
-                    val type = object : TypeToken<Map<String, Any>>() {}.type
-                    val responseBody: Map<String, Any> = gson.fromJson(String(body.bytes()), type)
+                    val responseBody: GetRunningAppIdResponse = mapper.readValue(
+                        String(body.bytes()),
+                        GetRunningAppIdResponse::class.java
+                    )
 
-                    responseBody["runningAppBundleId"] as? String
+                    responseBody.runningAppBundleId
                 }
             } else {
                 logger.info("request to resolve running app id failed with exception - ${response.body?.toString()}")
