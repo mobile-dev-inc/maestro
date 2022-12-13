@@ -24,6 +24,7 @@ import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.getOrThrow
 import ios.IOSDevice
 import ios.idb.IdbIOSDevice
+import ios.xcrun.Simctl
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -44,6 +45,9 @@ class IOSDriver(
     private val iosDevice: IOSDevice,
 ) : Driver {
 
+    var udid: String? = null
+        private set
+
     private var widthPixels: Int? = null
     private var heightPixels: Int? = null
 
@@ -56,6 +60,7 @@ class IOSDriver(
     override fun open() {
         val response = iosDevice.deviceInfo().expect {}
 
+        udid = response.id
         widthPixels = response.widthPixels
         heightPixels = response.heightPixels
     }
@@ -95,6 +100,11 @@ class IOSDriver(
 
     override fun clearAppState(appId: String) {
         iosDevice.clearAppState(appId)
+        resetPermissions(appId)
+    }
+
+    private fun resetPermissions(appId: String) {
+        Simctl.resetPermissions(udid, appId)
     }
 
     override fun clearKeychain() {

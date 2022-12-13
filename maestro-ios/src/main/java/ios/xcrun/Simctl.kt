@@ -106,4 +106,18 @@ object Simctl {
         reboot(deviceId)
     }
 
+    fun resetPermissions(deviceId: String, bundleId: String?) {
+        runCommand(
+            listOfNotNull(
+                "xcrun",
+                "simctl",
+                "privacy",
+                deviceId,
+                "reset",
+                "all",
+                bundleId
+            ),
+            waitForCompletion = true
+        )
+    }
 }

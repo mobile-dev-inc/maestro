@@ -492,12 +492,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
         private const val ANIMATION_TIMEOUT_MS: Long = 15000
 
-        fun ios(host: String, port: Int): Maestro {
+        fun ios(udid: String, host: String, port: Int): Maestro {
             val channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build()
 
-            return ios(channel)
+            return ios(udid, channel)
         }
 
         fun ios(channel: ManagedChannel): Maestro {

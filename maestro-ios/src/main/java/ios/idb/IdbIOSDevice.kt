@@ -82,6 +82,7 @@ class IdbIOSDevice(
             val screenDimensions = response.targetDescription.screenDimensions
 
             DeviceInfo(
+                id = response.targetDescription.udid,
                 widthPixels = screenDimensions.width.toInt(),
                 heightPixels = screenDimensions.height.toInt(),
                 widthPoints = screenDimensions.widthPoints.toInt(),

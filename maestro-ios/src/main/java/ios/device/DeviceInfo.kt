@@ -20,6 +20,7 @@
 package ios.device
 
 data class DeviceInfo(
+    val id: String,
     val widthPixels: Int,
     val heightPixels: Int,
     val widthPoints: Int,
