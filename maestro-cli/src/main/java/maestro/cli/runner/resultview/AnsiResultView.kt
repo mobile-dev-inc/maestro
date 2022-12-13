@@ -33,9 +33,7 @@ class AnsiResultView(
     private val frames = mutableListOf<Frame>()
 
     private var previousFrame: String? = null
-
-    private val plainTextResultView = PlainTextResultView()
-
+    
     init {
         println(Ansi.ansi().eraseScreen())
     }
