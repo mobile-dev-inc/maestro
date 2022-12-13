@@ -191,7 +191,7 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val runningAppId = GetRunningAppIdResolver().getRunningAppId()
+        val runningAppId = GetRunningAppIdResolver.getRunningAppId()
         logger.info("Getting view hierarchy for $runningAppId")
 
         val resolvedAppId = runningAppId ?: appId

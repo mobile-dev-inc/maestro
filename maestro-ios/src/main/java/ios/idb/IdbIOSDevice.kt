@@ -58,13 +58,12 @@ import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import ios.grpc.BlockingStreamObserver
 import ios.hierarchy.XCUIElement
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import maestro.api.XCTestDriverClient
 import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.source
+import sun.security.krb5.Confounder.bytes
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.CompletableFuture
@@ -79,12 +78,6 @@ class IdbIOSDevice(
 
     private val blockingStub = CompanionServiceGrpc.newBlockingStub(channel)
     private val asyncStub = CompanionServiceGrpc.newStub(channel)
-    private val okHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return runCatching {
@@ -100,15 +93,7 @@ class IdbIOSDevice(
 
     override fun contentDescriptor(appId: String): Result<XCUIElement, Throwable> {
         return runCatching {
-            val httpUrl = HttpUrl.Builder()
-                .scheme("http")
-                .host("localhost")
-                .addPathSegment("subTree")
-                .port(9080)
-                .addQueryParameter("appId", appId)
-                .build()
-            val request = Request.Builder().get().url(httpUrl).build()
-            val xcUiElement = okHttpClient.newCall(request).execute().use {
+            val xcUiElement = XCTestDriverClient.subTree(appId).use {
                 if (it.isSuccessful) {
                     it.body?.let {
                         GSON.fromJson(String(it.bytes()), XCUIElement::class.java)

@@ -1,4 +1,4 @@
-package maestro.ios
+package ios.api
 
 import com.google.gson.annotations.SerializedName
 
