@@ -1,10 +1,10 @@
 package ios.hierarchy
 
-import com.google.gson.annotations.SerializedName
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Frame(
-    @SerializedName("Width") val width: Float,
-    @SerializedName("Height") val height: Float,
-    @SerializedName("Y") val y: Float,
-    @SerializedName("X") val x: Float
+    @JsonProperty("Width") val width: Float,
+    @JsonProperty("Height") val height: Float,
+    @JsonProperty("Y") val y: Float,
+    @JsonProperty("X") val x: Float
 )

@@ -3,8 +3,8 @@ package maestro.cli.command.network
 import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
 import maestro.cli.device.Platform
-import maestro.cli.device.ios.Simctl
 import maestro.cli.view.red
+import maestro.ios.Simctl
 import maestro.networkproxy.NetworkProxy
 import picocli.CommandLine
 import picocli.CommandLine.Command

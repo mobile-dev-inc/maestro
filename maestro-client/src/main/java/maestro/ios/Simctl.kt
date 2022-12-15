@@ -10,6 +10,16 @@ import java.util.concurrent.TimeUnit
 import java.io.File
 
 object Simctl {
+    fun listApps(): Set<String> {
+        val process = ProcessBuilder("bash", "-c", "xcrun simctl listapps booted | plutil -convert json - -o -").start()
+
+        val json = String(process.inputStream.readBytes())
+
+        val mapper = jacksonObjectMapper()
+        val appsMap = mapper.readValue(json, Map::class.java) as Map<String, Any>
+
+        return appsMap.keys
+    }
 
     fun list(): SimctlList {
         val command = listOf("xcrun", "simctl", "list", "-j")
@@ -93,7 +103,7 @@ object Simctl {
         deviceId: String,
         certificate: File,
     ) {
-        runCommand(
+        CommandLineUtils.runCommand(
             listOf(
                 "xcrun",
                 "simctl",

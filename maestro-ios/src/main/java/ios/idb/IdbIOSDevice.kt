@@ -19,14 +19,13 @@
 
 package ios.idb
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.runCatching
-import com.google.gson.Gson
 import com.google.protobuf.ByteString
 import idb.CompanionServiceGrpc
 import idb.HIDEventKt
-import ios.logger.IOSDriverLogger
 import idb.Idb
 import idb.Idb.HIDEvent.HIDButtonType
 import idb.Idb.RecordResponse
@@ -58,9 +57,8 @@ import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import ios.grpc.BlockingStreamObserver
 import ios.hierarchy.XCUIElement
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import ios.logger.IOSDriverLogger
+import maestro.api.XCTestDriverClient
 import okio.Buffer
 import okio.Sink
 import okio.buffer
@@ -79,12 +77,6 @@ class IdbIOSDevice(
 
     private val blockingStub = CompanionServiceGrpc.newBlockingStub(channel)
     private val asyncStub = CompanionServiceGrpc.newStub(channel)
-    private val okHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return runCatching {
@@ -100,20 +92,12 @@ class IdbIOSDevice(
         }
     }
 
-    override fun contentDescriptor(appId: String?): Result<XCUIElement, Throwable> {
+    override fun contentDescriptor(appId: String): Result<XCUIElement, Throwable> {
         return runCatching {
-            val httpUrl = HttpUrl.Builder()
-                .scheme("http")
-                .host("localhost")
-                .addPathSegment("subTree")
-                .port(9080)
-                .addQueryParameter("appId", appId)
-                .build()
-            val request = Request.Builder().get().url(httpUrl).build()
-            val xcUiElement = okHttpClient.newCall(request).execute().use {
+            val xcUiElement = XCTestDriverClient.subTree(appId).use {
                 if (it.isSuccessful) {
-                    it.body?.let {
-                        GSON.fromJson(String(it.bytes()), XCUIElement::class.java)
+                    it.body?.let { response ->
+                        mapper.readValue(String(response.bytes()), XCUIElement::class.java)
                     } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
                 } else {
                     IOSDriverLogger.dumpDeviceLogs(deviceId)
@@ -518,7 +502,7 @@ class IdbIOSDevice(
     companion object {
         // 4Mb, the default max read for gRPC
         private const val CHUNK_SIZE = 1024 * 1024 * 3
-        private val GSON = Gson()
+        private val mapper = jacksonObjectMapper()
         private const val SCROLL_FACTOR = 0.07
         const val DEFAULT_SWIPE_DURATION_MILLIS = 1000L
     }

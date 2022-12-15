@@ -1,19 +1,21 @@
 package ios.hierarchy
 
-import com.google.gson.annotations.SerializedName
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class XCUIElement(
-    @SerializedName("label") val label: String,
-    @SerializedName("elementType") val elementType: Int,
-    @SerializedName("identifier") val identifier: String,
-    @SerializedName("frame") val frame: Frame,
-    @SerializedName("enabled") val enabled: Boolean,
-    @SerializedName("horizontalSizeClass") val horizontalSizeClass: Int,
-    @SerializedName("title") val title: String,
-    @SerializedName("windowContextID") val windowContextID: Long,
-    @SerializedName("verticalSizeClass") val verticalSizeClass: Int,
-    @SerializedName("selected") val selected: Boolean,
-    @SerializedName("displayID") val displayID: Int,
-    @SerializedName("children") val children: ArrayList<XCUIElement>?,
-    @SerializedName("hasFocus") val hasFocus: Boolean
+    @JsonProperty("label") val label: String,
+    @JsonProperty("elementType") val elementType: Int,
+    @JsonProperty("identifier") val identifier: String,
+    @JsonProperty("frame") val frame: Frame,
+    @JsonProperty("enabled") val enabled: Boolean,
+    @JsonProperty("horizontalSizeClass") val horizontalSizeClass: Int,
+    @JsonProperty("title") val title: String,
+    @JsonProperty("windowContextID") val windowContextID: Long,
+    @JsonProperty("verticalSizeClass") val verticalSizeClass: Int,
+    @JsonProperty("selected") val selected: Boolean,
+    @JsonProperty("displayID") val displayID: Int,
+    @JsonProperty("children") val children: ArrayList<XCUIElement>?,
+    @JsonProperty("hasFocus") val hasFocus: Boolean,
+    @JsonProperty("placeholderValue") val placeholderValue: String?,
+    @JsonProperty("value") val value: String?
 )

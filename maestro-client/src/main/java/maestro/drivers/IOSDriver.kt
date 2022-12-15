@@ -38,6 +38,7 @@ import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.debuglog.DebugLogStore
+import maestro.ios.GetRunningAppIdResolver
 import maestro.ios.IOSUiTestRunner
 import maestro.utils.FileUtils
 import okio.Sink
@@ -198,8 +199,12 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        logger.info("Getting view hierarchy for $appId")
-        val result = iosDevice.contentDescriptor(appId)
+        val runningAppId = GetRunningAppIdResolver.getRunningAppId()
+        logger.info("Getting view hierarchy for $runningAppId")
+
+        val resolvedAppId = runningAppId ?: appId
+
+        val result = iosDevice.contentDescriptor(resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt"))
         result.onFailure {
             logger.warning("Maestro was not able to get view hierarchy due to ${it.message}, Stacktrace: ${it.stackTraceToString()}")
         }
