@@ -28,7 +28,6 @@ import maestro.Driver
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.MaestroException.UnableToTakeScreenshot
-import maestro.MaestroTimer
 import maestro.Platform
 import maestro.Point
 import maestro.ScreenRecording
