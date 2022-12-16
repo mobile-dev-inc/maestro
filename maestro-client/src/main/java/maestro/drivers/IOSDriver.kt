@@ -26,7 +26,6 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import ios.IOSDevice
-import ios.hierarchy.AccessibilityNode
 import ios.hierarchy.IdbElementNode
 import ios.hierarchy.XCUIElement
 import ios.hierarchy.XCUIElementNode
@@ -213,6 +212,7 @@ class IOSDriver(
         val contentDescriptorResult = iosDevice.contentDescriptor(
             resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt")
         )
+
         return when (contentDescriptorResult) {
             is Ok -> mapHierarchy(contentDescriptorResult.value)
             is Err -> TreeNode()

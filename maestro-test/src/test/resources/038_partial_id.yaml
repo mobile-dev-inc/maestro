@@ -4,5 +4,5 @@ appId: com.example.app
     id: "keyboard_area"
     retryTapIfNoChange: false
 - tapOn:
-    id: ".*another_keyboard_area"
+    id: ".*keyboard_area"
     retryTapIfNoChange: false

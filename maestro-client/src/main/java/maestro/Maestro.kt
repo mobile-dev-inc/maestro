@@ -21,14 +21,10 @@ package maestro
 
 import com.github.romankh3.image.comparison.ImageComparison
 import dadb.Dadb
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
-import ios.idb.IdbIOSDevice
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
-import maestro.drivers.IOSDriver
 import maestro.utils.SocketUtils
 import okio.Buffer
 import okio.Sink
@@ -339,7 +335,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return MaestroTimer.withTimeout(timeoutMs) {
             val rootNode = driver.contentDescriptor()
 
-            filter(rootNode.aggregate().reversed())
+            filter(rootNode.aggregate())
                 .firstOrNull()
         }?.toUiElementOrNull()
     }

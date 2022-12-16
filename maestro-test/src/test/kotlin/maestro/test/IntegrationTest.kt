@@ -899,16 +899,16 @@ class IntegrationTest {
 
         val driver = driver {
             element {
-                text = String(CharArray(500))   // Long text
-                bounds = Bounds(0, 200, 200, 400)
+                text = "Text"
+                bounds = Bounds(0, 0, 200, 100)
             }
             element {
                 text = "Square"
                 bounds = Bounds(0, 100, 100, 200)
             }
             element {
-                text = "Text"
-                bounds = Bounds(0, 0, 200, 100)
+                text = String(CharArray(500))   // Long text
+                bounds = Bounds(0, 200, 200, 400)
             }
         }
 
@@ -1948,6 +1948,38 @@ class IntegrationTest {
                 Event.Tap(Point(deviceInfo.widthGrid / 4, deviceInfo.heightGrid / 4)),
             )
         )
+    }
+
+    @Test
+    fun `Case 072 - Assert element visible by id`() {
+        // Given
+        val commands = readCommands("072_searchDepthFirst")
+
+        val driver = driver {
+            element {
+                text = "Element"
+                bounds = Bounds(0, 0, 100, 100)
+
+                element {
+                    text = "Element"
+                    bounds = Bounds(0, 0, 50, 50)
+                }
+            }
+
+            element {
+                text = "Element"
+                bounds = Bounds(0, 100, 100, 200)
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.Tap(Point(25, 25)))
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(
