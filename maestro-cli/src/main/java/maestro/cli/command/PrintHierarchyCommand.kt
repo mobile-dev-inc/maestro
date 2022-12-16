@@ -54,6 +54,6 @@ class PrintHierarchyCommand : Runnable {
                 println(hierarchy)
             }
 
-        System.err.println("Have you tried running “maestro studio” to inspect your app using an interactive tool?".green())
+        System.err.println("Have you tried running “maestro studio” to visually inspect your app’s UI elements?".green())
     }
 }
