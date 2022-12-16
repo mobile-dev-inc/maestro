@@ -17,6 +17,10 @@ class SubTreeRouteHandler: RouteHandler {
                 logger.info("Trying to capture hierarchy snapshot for \(appId)")
                 let start = NSDate().timeIntervalSince1970 * 1000
                 let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
+                let springboardApplication = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+                if appId != "dev.mobile.maestro-driver-iosUITests.xctrunner" && springboardApplication.buttons["Allow"].exists {
+                    xcuiApplication.tap()
+                }
                 logger.info("Now trying hierarchy")
                 let viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
                 let end = NSDate().timeIntervalSince1970 * 1000
