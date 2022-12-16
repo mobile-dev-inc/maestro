@@ -59,10 +59,7 @@ class IOSDriver(
     private var proxySet = false
 
     private val logger by lazy { DebugLogStore.loggerFor(IOSDriver::class.java) }
-    private val runningAppId by lazy {
-        appId = GetRunningAppIdResolver.getRunningAppId()
-        appId
-    }
+    private val runningAppId get() = GetRunningAppIdResolver.getRunningAppId()
 
     override fun name(): String {
         return "iOS Simulator"
@@ -85,7 +82,7 @@ class IOSDriver(
         logger.info("[Start] Trying to view hierarchy for ${iosDevice.deviceId}")
         MaestroTimer.retryUntilTrue(5000) {
             val nodes = iosDevice
-                .contentDescriptor(appId = IOSUiTestRunner.UI_TEST_RUNNER_APP_BUNDLE_ID)
+                .contentDescriptor(appId = "com.apple.springboard")
                 .get() as XCUIElementNode?
             nodes?.frame?.width != null && nodes.frame.width != 0f
         }
@@ -206,8 +203,9 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        logger.info("Getting view hierarchy for $runningAppId")
         val resolvedAppId = runningAppId ?: appId
+
+        logger.info("Getting view hierarchy for $resolvedAppId")
 
         val contentDescriptorResult = iosDevice.contentDescriptor(
             resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt")
