@@ -20,6 +20,7 @@
 package ios.idb
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.runCatching
@@ -30,6 +31,7 @@ import idb.Idb
 import idb.Idb.HIDEvent.HIDButtonType
 import idb.Idb.RecordResponse
 import idb.PushRequestKt.inner
+import idb.accessibilityInfoRequest
 import idb.clearKeychainRequest
 import idb.fileContainer
 import idb.hIDEvent
@@ -56,6 +58,7 @@ import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import ios.grpc.BlockingStreamObserver
+import ios.hierarchy.Error
 import ios.hierarchy.XCUIElement
 import ios.logger.IOSDriverLogger
 import maestro.api.XCTestDriverClient
@@ -100,12 +103,25 @@ class IdbIOSDevice(
                         mapper.readValue(String(response.bytes()), XCUIElement::class.java)
                     } ?: throw IllegalStateException("View Hierarchy not available, response body is null")
                 } else {
-                    IOSDriverLogger.dumpDeviceLogs(deviceId)
-                    throw IllegalArgumentException("Maestro was not able to capture view hierarchy. Run maestro bugreport command and submit " +
-                        "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
+                    it.body?.let { response ->
+                        val errorResponse = String(response.bytes()).trim()
+                        val error = mapper.readValue(errorResponse, Error::class.java)
+                        when (error.errorCode) {
+                            VIEW_HIERARCHY_SNAPSHOT_ERROR_CODE -> {
+                                val accessibilityResponse = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
+                                val accessibilityNode: XCUIElement = mapper.readValue(accessibilityResponse.json)
+                                accessibilityNode
+                            }
+                            else -> {
+                                IOSDriverLogger.dumpDeviceLogs(deviceId)
+                                throw IllegalArgumentException("Maestro was not able to capture view hierarchy. Run maestro bugreport command and submit " +
+                                    "new github issue on https://github.com/mobile-dev-inc/maestro/issues/new with the bugreport created.")
+                            }
+                        }
+                    }
                 }
             }
-            xcUiElement
+            xcUiElement as XCUIElement
         }
     }
 
@@ -504,6 +520,7 @@ class IdbIOSDevice(
         private const val CHUNK_SIZE = 1024 * 1024 * 3
         private val mapper = jacksonObjectMapper()
         private const val SCROLL_FACTOR = 0.07
+        private const val VIEW_HIERARCHY_SNAPSHOT_ERROR_CODE = "illegal-argument-snapshot-failure"
         const val DEFAULT_SWIPE_DURATION_MILLIS = 1000L
     }
 

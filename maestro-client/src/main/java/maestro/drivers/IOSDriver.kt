@@ -19,13 +19,17 @@
 
 package maestro.drivers
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import ios.IOSDevice
+import ios.hierarchy.AccessibilityNode
+import ios.hierarchy.IdbElementNode
 import ios.hierarchy.XCUIElement
+import ios.hierarchy.XCUIElementNode
 import ios.idb.IdbIOSDevice
 import maestro.DeviceInfo
 import maestro.Driver
@@ -56,6 +60,10 @@ class IOSDriver(
     private var proxySet = false
 
     private val logger by lazy { DebugLogStore.loggerFor(IOSDriver::class.java) }
+    private val runningAppId by lazy {
+        appId = GetRunningAppIdResolver.getRunningAppId()
+        appId
+    }
 
     override fun name(): String {
         return "iOS Simulator"
@@ -79,7 +87,7 @@ class IOSDriver(
         MaestroTimer.retryUntilTrue(5000) {
             val nodes = iosDevice
                 .contentDescriptor(appId = IOSUiTestRunner.UI_TEST_RUNNER_APP_BUNDLE_ID)
-                .get()
+                .get() as XCUIElementNode?
             nodes?.frame?.width != null && nodes.frame.width != 0f
         }
         logger.info("[Done] Trying to view hierarchy for ${iosDevice.deviceId}")
@@ -199,21 +207,58 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val runningAppId = GetRunningAppIdResolver.getRunningAppId()
         logger.info("Getting view hierarchy for $runningAppId")
-
         val resolvedAppId = runningAppId ?: appId
 
-        val result = iosDevice.contentDescriptor(resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt"))
-        result.onFailure {
-            logger.warning("Maestro was not able to get view hierarchy due to ${it.message}, Stacktrace: ${it.stackTraceToString()}")
+        val contentDescriptorResult = iosDevice.contentDescriptor(
+            resolvedAppId ?: throw IllegalStateException("Failed to get view hierarchy, app id was not resolvedGetRunningAppRequest.kt")
+        )
+        return when (contentDescriptorResult) {
+            is Ok -> mapHierarchy(contentDescriptorResult.value)
+            is Err -> TreeNode()
         }
-        val xcUiElement = result.expect {}
-
-        return mapHierarchy(xcUiElement)
     }
 
     private fun mapHierarchy(xcUiElement: XCUIElement): TreeNode {
+        return when (xcUiElement) {
+            is XCUIElementNode -> parseXCUIElementNode(xcUiElement)
+            is IdbElementNode -> parseIdbElementNode(xcUiElement)
+            else -> throw IllegalStateException("Illegal instance for parsing hierarchy")
+        }
+    }
+
+    private fun parseIdbElementNode(xcUiElement: IdbElementNode) = TreeNode(
+        children = xcUiElement.children.map {
+            val attributes = mutableMapOf<String, String>()
+
+            (it.title
+                ?: it.axLabel
+                ?: it.axValue
+                )?.let { title ->
+                    attributes["text"] = title
+                }
+
+            (it.axUniqueId)?.let { resourceId ->
+                attributes["resource-id"] = resourceId
+            }
+
+            it.frame.let { frame ->
+                val left = frame.x.toInt()
+                val top = frame.y.toInt()
+                val right = left + frame.width.toInt()
+                val bottom = top + frame.height.toInt()
+
+                attributes["bounds"] = "[$left,$top][$right,$bottom]"
+            }
+
+            TreeNode(
+                attributes = attributes,
+                enabled = it.enabled,
+            )
+        }
+    )
+
+    private fun parseXCUIElementNode(xcUiElement: XCUIElementNode): TreeNode {
         val attributes = mutableMapOf<String, String>()
         attributes["text"] = xcUiElement.label
         attributes["resource-id"] = xcUiElement.identifier

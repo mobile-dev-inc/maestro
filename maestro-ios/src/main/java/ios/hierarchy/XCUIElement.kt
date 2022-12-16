@@ -1,21 +1,50 @@
 package ios.hierarchy
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.TreeNode
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.module.kotlin.convertValue
 
-data class XCUIElement(
-    @JsonProperty("label") val label: String,
-    @JsonProperty("elementType") val elementType: Int,
-    @JsonProperty("identifier") val identifier: String,
-    @JsonProperty("frame") val frame: Frame,
-    @JsonProperty("enabled") val enabled: Boolean,
-    @JsonProperty("horizontalSizeClass") val horizontalSizeClass: Int,
-    @JsonProperty("title") val title: String,
-    @JsonProperty("windowContextID") val windowContextID: Long,
-    @JsonProperty("verticalSizeClass") val verticalSizeClass: Int,
-    @JsonProperty("selected") val selected: Boolean,
-    @JsonProperty("displayID") val displayID: Int,
-    @JsonProperty("children") val children: ArrayList<XCUIElement>?,
-    @JsonProperty("hasFocus") val hasFocus: Boolean,
-    @JsonProperty("placeholderValue") val placeholderValue: String?,
-    @JsonProperty("value") val value: String?
-)
+@JsonDeserialize(using = XCUIElementDeserializer::class)
+interface XCUIElement
+
+data class IdbElementNode(val children: List<AccessibilityNode>) : XCUIElement
+
+@JsonDeserialize(`as` = XCUIElementNode::class)
+data class XCUIElementNode(
+    val label: String,
+    val elementType: Int,
+    val identifier: String,
+    val horizontalSizeClass: Int,
+    val windowContextID: Long,
+    val verticalSizeClass: Int,
+    val selected: Boolean,
+    val displayID: Int,
+    val hasFocus: Boolean,
+    val placeholderValue: String?,
+    val value: String?,
+    val frame: Frame,
+    val enabled: Boolean,
+    val title: String?,
+    val children: ArrayList<XCUIElement>?,
+) : XCUIElement
+
+class XCUIElementDeserializer : JsonDeserializer<XCUIElement>() {
+
+    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): XCUIElement {
+        val mapper = parser.codec as ObjectMapper
+        val root: TreeNode = mapper.readTree(parser)
+        if (root.get(ELEMENT_TYPE_PROPERTY) != null) {
+            return mapper.convertValue(root, XCUIElementNode::class.java)
+        }
+        val accessibilityNode: List<AccessibilityNode> = mapper.convertValue(root)
+        return IdbElementNode(accessibilityNode)
+    }
+
+    companion object {
+        private const val ELEMENT_TYPE_PROPERTY = "elementType"
+    }
+}
