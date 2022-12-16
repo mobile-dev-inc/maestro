@@ -28,6 +28,7 @@ import maestro.Driver
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.MaestroException.UnableToTakeScreenshot
+import maestro.MaestroTimer
 import maestro.Platform
 import maestro.Point
 import maestro.ScreenRecording
@@ -36,7 +37,6 @@ import maestro.TreeNode
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
-import maestro.utils.MaestroTimer
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
@@ -272,14 +272,14 @@ class AndroidDriver(
         when (swipeDirection) {
             SwipeDirection.UP -> {
                 val startX = deviceInfo.widthPixels / 2
-                val startY = deviceInfo.heightPixels
+                val startY = deviceInfo.heightPixels / 8
                 val endY = deviceInfo.heightPixels / 2
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.DOWN -> {
                 val startX = deviceInfo.widthPixels / 2
-                val startY = 0
-                val endY = deviceInfo.heightPixels / 2
+                val startY = deviceInfo.widthPixels / 2
+                val endY = deviceInfo.heightPixels / 8
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.RIGHT -> {
