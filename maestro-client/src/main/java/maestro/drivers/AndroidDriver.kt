@@ -271,26 +271,26 @@ class AndroidDriver(
         val deviceInfo = deviceInfo()
         when (swipeDirection) {
             SwipeDirection.UP -> {
-                val startX = deviceInfo.widthPixels / 2
-                val startY = deviceInfo.heightPixels / 8
-                val endY = deviceInfo.heightPixels / 2
+                val startX = deviceInfo.widthGrid / 2
+                val startY = deviceInfo.heightGrid / 1
+                val endY = deviceInfo.heightGrid / 2
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.DOWN -> {
-                val startX = deviceInfo.widthPixels / 2
-                val startY = deviceInfo.widthPixels / 2
-                val endY = deviceInfo.heightPixels / 8
+                val startX = deviceInfo.widthGrid / 2
+                val startY = deviceInfo.widthGrid / 2
+                val endY = deviceInfo.heightGrid / 8
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.RIGHT -> {
-                val startX = deviceInfo.widthPixels / 2
-                val startY = deviceInfo.heightPixels / 2
-                val endX = deviceInfo.widthPixels
+                val startX = deviceInfo.widthGrid / 2
+                val startY = deviceInfo.heightGrid / 2
+                val endX = deviceInfo.widthGrid
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
             SwipeDirection.LEFT -> {
                 val startX = deviceInfo.widthPixels / 2
-                val startY = deviceInfo.heightPixels / 2
+                val startY = deviceInfo.heightGrid / 2
                 val endX = 0
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
