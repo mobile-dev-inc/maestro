@@ -9,6 +9,12 @@ import java.util.concurrent.TimeoutException
 
 object CommandLineUtils {
 
+    private val NULL_FILE = File(
+        if (System.getProperty("os.name")
+                .startsWith("Windows")
+        ) "NUL" else "/dev/null"
+    )
+
     fun runCommand(command: String, waitForCompletion: Boolean = true, outputFile: File? = null): Process {
         LOGGER.info("Running command line operation: $command")
 
@@ -29,8 +35,8 @@ object CommandLineUtils {
                 .start()
         } else {
             ProcessBuilder(*parts.toTypedArray())
-                .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .redirectError(ProcessBuilder.Redirect.PIPE)
+                .redirectOutput(NULL_FILE)
+                .redirectError(NULL_FILE)
                 .start()
         }
 
