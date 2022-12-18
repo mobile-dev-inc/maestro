@@ -1,14 +1,11 @@
 import React from 'react';
 import Main from './Main';
-import { DeviceScreen } from './models';
+import { REAL_API } from './api';
 
 function App() {
-  const getDeviceScreen = async (): Promise<DeviceScreen> => {
-    const response = await fetch('/api/device-screen')
-    return await response.json()
-  }
+  const api = REAL_API
   return (
-    <Main getDeviceScreen={getDeviceScreen} />
+    <Main getDeviceScreen={api.getDeviceScreen} />
   );
 }
 
