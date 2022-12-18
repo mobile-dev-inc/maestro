@@ -25,3 +25,15 @@ export type DeviceScreen = {
   height: number
   elements: UIElement[]
 }
+
+export type ReplCommandStatus = 'pending' | 'running' | 'success' | 'error' | 'canceled'
+
+export type ReplCommand = {
+  id: string
+  yaml: string
+  status: ReplCommandStatus
+}
+
+export type Repl = {
+  commands: ReplCommand[]
+}
