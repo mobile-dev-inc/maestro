@@ -22,7 +22,6 @@ package maestro.drivers
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import ios.IOSDevice
@@ -34,7 +33,6 @@ import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
 import maestro.MaestroException
-import maestro.MaestroTimer
 import maestro.Platform
 import maestro.Point
 import maestro.ScreenRecording
@@ -46,6 +44,7 @@ import maestro.ios.IOSUiTestRunner
 import maestro.utils.FileUtils
 import okio.Sink
 import java.io.File
+import java.net.ConnectException
 import java.nio.file.Files
 import kotlin.collections.set
 
@@ -59,7 +58,6 @@ class IOSDriver(
     private var proxySet = false
 
     private val logger by lazy { DebugLogStore.loggerFor(IOSDriver::class.java) }
-    private val runningAppId get() = GetRunningAppIdResolver.getRunningAppId()
 
     override fun name(): String {
         return "iOS Simulator"
@@ -71,6 +69,9 @@ class IOSDriver(
     }
 
     private fun ensureXCUITestChannel() {
+        logger.info("[Start] Uninstalling xctest ui runner app on ${iosDevice.deviceId}")
+        IOSUiTestRunner.uninstall()
+        logger.info("[Done] Uninstalling xctest ui runner app on ${iosDevice.deviceId}")
         logger.info("[Start] Installing xctest ui runner on ${iosDevice.deviceId}")
         IOSUiTestRunner.runXCTest(iosDevice.deviceId ?: throw RuntimeException("No device selected for running UI tests"))
         logger.info("[Done] Installing xctest ui runner on ${iosDevice.deviceId}")
@@ -78,15 +79,6 @@ class IOSDriver(
         logger.info("[Start] Ensuring ui test runner app is launched on ${iosDevice.deviceId}")
         IOSUiTestRunner.ensureOpen()
         logger.info("[Done] Ensuring ui test runner app is launched on ${iosDevice.deviceId}")
-
-        logger.info("[Start] Trying to view hierarchy for ${iosDevice.deviceId}")
-        MaestroTimer.retryUntilTrue(5000) {
-            val nodes = iosDevice
-                .contentDescriptor(appId = "com.apple.springboard")
-                .get() as XCUIElementNode?
-            nodes?.frame?.width != null && nodes.frame.width != 0f
-        }
-        logger.info("[Done] Trying to view hierarchy for ${iosDevice.deviceId}")
     }
 
     private fun ensureGrpcChannel() {
@@ -203,7 +195,14 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val resolvedAppId = runningAppId ?: appId
+        var resolvedAppId: String? = ""
+        runCatching {
+            resolvedAppId = GetRunningAppIdResolver.getRunningAppId() ?: appId
+        }.onFailure {
+            if (it is ConnectException) {
+                IOSUiTestRunner.runXCTest(iosDevice.deviceId ?: throw IllegalArgumentException())
+            }
+        }
 
         logger.info("Getting view hierarchy for $resolvedAppId")
 

@@ -61,7 +61,7 @@ import ios.grpc.BlockingStreamObserver
 import ios.hierarchy.Error
 import ios.hierarchy.XCUIElement
 import ios.logger.IOSDriverLogger
-import maestro.api.XCTestDriverClient
+import ios.api.XCTestDriverClient
 import okio.Buffer
 import okio.Sink
 import okio.buffer

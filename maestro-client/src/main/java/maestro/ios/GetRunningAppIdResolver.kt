@@ -1,7 +1,7 @@
 package maestro.ios
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import maestro.api.XCTestDriverClient
+import ios.api.XCTestDriverClient
 import maestro.debuglog.DebugLogStore
 
 object GetRunningAppIdResolver {

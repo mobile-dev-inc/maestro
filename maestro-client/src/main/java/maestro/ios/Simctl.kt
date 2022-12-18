@@ -10,6 +10,13 @@ import java.util.concurrent.TimeUnit
 import java.io.File
 
 object Simctl {
+
+    private val NULL_FILE = File(
+        if (System.getProperty("os.name")
+                .startsWith("Windows")
+        ) "NUL" else "/dev/null"
+    )
+
     fun listApps(): Set<String> {
         val process = ProcessBuilder("bash", "-c", "xcrun simctl listapps booted | plutil -convert json - -o -").start()
 
@@ -123,7 +130,7 @@ object Simctl {
             val process = ProcessBuilder(
                 "bash",
                 "-c",
-                "xcrun simctl spawn booted launchctl print system | grep $bundleId | awk '/$bundleId/ {print \$3}'"
+                "xcrun simctl spawn booted launchctl list | grep $bundleId | awk '/$bundleId/ {print \$3}'"
             ).start()
 
             val processOutput = process.inputStream.source().buffer().readUtf8().trim()
@@ -136,7 +143,8 @@ object Simctl {
     fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String) {
         CommandLineUtils.runCommand(
             "xcodebuild test-without-building -xctestrun $xcTestRunFilePath -destination id=$deviceId",
-            waitForCompletion = false
+            waitForCompletion = false,
+            outputFile = NULL_FILE
         )
     }
 

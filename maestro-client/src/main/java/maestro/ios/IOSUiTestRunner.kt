@@ -13,7 +13,7 @@ object IOSUiTestRunner {
     private const val UI_TEST_RUNNER_PATH = "/maestro-driver-iosUITests-Runner.zip"
     private const val XCTEST_RUN_PATH = "/maestro-driver-ios-config.xctestrun"
     private const val UI_TEST_HOST_PATH = "/maestro-driver-ios.zip"
-    const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
+    private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
 
     private val logger = DebugLogStore.loggerFor(IOSUiTestRunner::class.java)
 
@@ -21,13 +21,15 @@ object IOSUiTestRunner {
         Simctl.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID)
     }
 
-    fun runXCTest(deviceId: String) {
+    fun uninstall() {
         Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+    }
 
+    fun runXCTest(deviceId: String) {
         val processOutput = ProcessBuilder(
             "bash",
             "-c",
-            "xcrun simctl spawn booted launchctl print system | grep $UI_TEST_RUNNER_APP_BUNDLE_ID | awk '/$UI_TEST_RUNNER_APP_BUNDLE_ID/ {print \$3}'"
+            "xcrun simctl spawn booted launchctl list | grep $UI_TEST_RUNNER_APP_BUNDLE_ID | awk '/$UI_TEST_RUNNER_APP_BUNDLE_ID/ {print \$3}'"
         ).start().inputStream.source().buffer().readUtf8().trim()
 
         if (!processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {

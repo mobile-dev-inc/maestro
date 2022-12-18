@@ -1,7 +1,6 @@
-package maestro.api
+package ios.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import ios.api.GetRunningAppRequest
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -19,7 +18,6 @@ object XCTestDriverClient {
     private val okHttpClient =
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
 

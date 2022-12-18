@@ -4,6 +4,13 @@
 <dict>
 	<key>__xctestrun_metadata__</key>
 	<dict>
+		<key>ContainerInfo</key>
+		<dict>
+			<key>ContainerName</key>
+			<string>maestro-driver-ios</string>
+			<key>SchemeName</key>
+			<string>maestro-driver-ios</string>
+		</dict>
 		<key>FormatVersion</key>
 		<integer>1</integer>
 	</dict>
@@ -25,6 +32,7 @@
 		<key>DependentProductPaths</key>
 		<array>
 			<string>__TESTROOT__/Debug-iphonesimulator/maestro-driver-ios.app</string>
+			<string>__TESTROOT__/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app</string>
 			<string>__TESTROOT__/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app/PlugIns/maestro-driver-iosUITests.xctest</string>
 		</array>
 		<key>EnvironmentVariables</key>
@@ -58,16 +66,12 @@
 		<false/>
 		<key>TestingEnvironmentVariables</key>
 		<dict>
-			<key>DYLD_FALLBACK_FRAMEWORK_PATH</key>
-			<string>__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/Frameworks</string>
-			<key>DYLD_FALLBACK_LIBRARY_PATH</key>
-			<string>__PLATFORMS__/iPhoneSimulator.platform/Developer/usr/lib</string>
 			<key>DYLD_FRAMEWORK_PATH</key>
-			<string>__TESTROOT__/Debug-iphonesimulator:__TESTROOT__/Debug-iphonesimulator/PackageFrameworks</string>
+			<string>__TESTROOT__/Debug-iphonesimulator:__TESTROOT__/Debug-iphonesimulator/PackageFrameworks:__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/Frameworks</string>
 			<key>DYLD_INSERT_LIBRARIES</key>
 			<string>__PLATFORMS__/iPhoneOS.platform/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS.simruntime/Contents/Resources/RuntimeRoot/usr/lib/libMainThreadChecker.dylib</string>
 			<key>DYLD_LIBRARY_PATH</key>
-			<string>__TESTROOT__/Debug-iphonesimulator</string>
+			<string>__TESTROOT__/Debug-iphonesimulator:__PLATFORMS__/iPhoneSimulator.platform/Developer/usr/lib</string>
 			<key>MTC_CRASH_ON_REPORT</key>
 			<string>1</string>
 			<key>__XCODE_BUILT_PRODUCTS_DIR_PATHS</key>
