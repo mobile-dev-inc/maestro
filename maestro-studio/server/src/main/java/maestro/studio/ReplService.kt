@@ -106,7 +106,7 @@ object ReplService {
         val newEntries = try {
             readNodes(yaml).map { node ->
                 val yamlCommand = YamlCommandReader.MAPPER.convertValue(node, YamlFluentCommand::class.java)
-                val yamlString = YamlCommandReader.MAPPER.writeValueAsString(node)
+                val yamlString = YamlCommandReader.MAPPER.writeValueAsString(listOf(node))
                 val commands = yamlCommand.toCommands(Paths.get(""), "com.example.app")
                 ReplEntry(UUID.randomUUID(), yamlString, commands, ReplCommandStatus.PENDING)
             }
@@ -125,6 +125,7 @@ object ReplService {
             try {
                 entriesToRun.forEach { it.status = ReplCommandStatus.PENDING }
                 for (entry in entriesToRun) {
+                    entry.status = ReplCommandStatus.RUNNING
                     val failure = executeCommands(maestro, entry.commands)
                     if (failure == null) {
                         entry.status = ReplCommandStatus.SUCCESS

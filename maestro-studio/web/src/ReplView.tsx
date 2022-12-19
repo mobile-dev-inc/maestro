@@ -23,16 +23,34 @@ const ReplView = ({api}: {
 
   return (
     <div>
-      <div className="flex flex-col">
+      <div className="flex flex-col border">
         {data.commands.map(command => (
-          <div className="flex flex-row border">
-            <div>{command.yaml}</div>
+          <div className="flex flex-row p-4 border-b justify-between">
+            <div className="font-mono">{command.yaml}</div>
             <div>{command.status}</div>
           </div>
         ))}
+        <textarea
+          className="bg-gray-50 font-mono p-2"
+          placeholder="Enter a command or interact with the device screenshot"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+        />
+        <button
+          className="bg-blue-700 text-white"
+          onClick={() => {
+            (async () => {
+              try {
+                await api.repl.runCommand(input)
+              } finally {
+                setInput("")
+              }
+            })()
+          }}
+        >
+          Send
+        </button>
       </div>
-      <textarea value={input} onChange={e => setInput(e.target.value)}/>
-      <button onClick={() => api.repl.runCommand(input)}>Send</button>
     </div>
   )
 }
