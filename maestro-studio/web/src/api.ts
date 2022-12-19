@@ -1,19 +1,43 @@
 import { DeviceScreen, Repl } from './models';
-import useSWR, { mutate, SWRConfiguration, SWRResponse } from 'swr';
-
-const fetcher = async <JSON = any>(input: RequestInfo, init?: RequestInit): Promise<JSON> => {
-  const res = await fetch(input, init)
-  return res.json()
-}
+import { mutate } from 'swr';
+import { useEffect, useState } from 'react';
 
 export type Api = {
   getDeviceScreen: () => Promise<DeviceScreen>
   repl: {
-    useRepl: (config?: SWRConfiguration) => SWRResponse<Repl>
+    useRepl: () => ReplResponse
     runCommand: (yaml: string) => Promise<Repl>
     runCommandsById: (ids: string[]) => Promise<Repl>
     deleteCommands: (ids: string[]) => Promise<Repl>
   }
+}
+
+export type ReplResponse = {
+  repl?: Repl | undefined
+  error?: any
+}
+
+const useRepl = (): ReplResponse => {
+  const [response, setResponse] = useState<ReplResponse>({})
+  useEffect(() => {
+    const state = { running: true };
+    ;(async () => {
+      let currentVersion = -1
+      while (state.running) {
+        try {
+          const res = await fetch(`/api/repl/watch?currentVersion=${currentVersion}`)
+          const json = await res.json()
+          currentVersion = json.version
+          setResponse({ repl: json })
+        } catch (e) {
+          setResponse({ error: e })
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+    })()
+    return () => { state.running = false }
+  }, [])
+  return response
 }
 
 export const REAL_API: Api = {
@@ -22,9 +46,7 @@ export const REAL_API: Api = {
     return await response.json()
   },
   repl: {
-    useRepl: (config?: SWRConfiguration): SWRResponse<Repl> => {
-      return useSWR<Repl>('/api/repl', fetcher, config)
-    },
+    useRepl,
     runCommand: async (yaml: string): Promise<Repl> => {
       const response = await fetch('/api/repl/command', {
         method: 'POST',

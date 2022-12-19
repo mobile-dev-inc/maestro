@@ -39,13 +39,69 @@ private data class ReplEntry(
     var status: ReplCommandStatus,
 )
 
+private class ReplState {
+
+    private var entries = mutableListOf<ReplEntry>()
+    private var replVersion = 0
+
+    @Synchronized
+    fun toModel(): Repl {
+        val commands = entries.map { entry ->
+            ReplCommand(entry.id, entry.yaml, entry.status)
+        }
+        return Repl(replVersion, commands)
+    }
+
+    @Synchronized
+    fun getEntriesById(ids: List<UUID>): List<ReplEntry> {
+        return entries.filter { it.id in ids }
+    }
+
+    @Synchronized
+    fun addEntries(newEntries: List<ReplEntry>) {
+        entries.addAll(newEntries)
+        notifyChange()
+    }
+
+    @Synchronized
+    fun deleteEntries(ids: List<UUID>) {
+        entries.removeIf { it.id in ids }
+        notifyChange()
+    }
+
+    @Synchronized
+    fun setEntryStatus(id: UUID, status: ReplCommandStatus) {
+        entries.filter { it.id == id }.forEach { it.status = status }
+        notifyChange()
+    }
+
+    // Wait for a change in the repl state or 1 second, whichever comes first
+    @Synchronized
+    fun waitForChange(currentReplVersion: Int) {
+        if (replVersion > currentReplVersion) return
+        (this as Object).wait()
+    }
+
+    @Synchronized
+    private fun notifyChange() {
+        replVersion++
+        (this as Object).notifyAll()
+    }
+}
+
 object ReplService {
 
     private val executionLock = Object()
-    private val entries = mutableListOf<ReplEntry>()
+    private val state = ReplState()
 
     fun routes(routing: Routing, maestro: Maestro) {
         routing.get("/api/repl") {
+            call.respondRepl()
+        }
+        routing.get("/api/repl/watch") {
+            val currentReplVersion = call.parameters["currentVersion"]?.toIntOrNull()
+                ?: throw HttpException(HttpStatusCode.BadRequest, "Must specify current repl version")
+            state.waitForChange(currentReplVersion)
             call.respondRepl()
         }
         routing.post("/api/repl/command") {
@@ -70,18 +126,13 @@ object ReplService {
         }
         routing.delete("/api/repl/command") {
             val request = call.parseBody<DeleteCommandsRequest>()
-            deleteEntries(request.ids)
+            state.deleteEntries(request.ids)
             call.respondRepl()
         }
     }
 
     private suspend fun ApplicationCall.respondRepl() {
-        val replCommands = synchronized(entries) {
-            entries.map { entry ->
-                ReplCommand(entry.id, entry.yaml, entry.status)
-            }
-        }
-        val repl = Repl(replCommands)
+        val repl = state.toModel()
         val response = jacksonObjectMapper().writeValueAsString(repl)
         respondText(response)
     }
@@ -96,12 +147,6 @@ object ReplService {
         }
     }
 
-    private fun deleteEntries(ids: List<UUID>) {
-        synchronized(entries) {
-            entries.removeIf { it.id in ids }
-        }
-    }
-
     private fun createEntries(yaml: String): List<ReplEntry> {
         val newEntries = try {
             readNodes(yaml).map { node ->
@@ -113,29 +158,29 @@ object ReplService {
         } catch (e: Exception) {
             throw HttpException(HttpStatusCode.BadRequest, "Failed to parse yaml: ${e.message}")
         }
-        synchronized(entries) {
-            entries.addAll(newEntries)
-        }
+        state.addEntries(newEntries)
         return newEntries
     }
 
     private fun runEntries(maestro: Maestro, ids: List<UUID>) {
         synchronized(executionLock) {
-            val entriesToRun = entries.filter { it.id in ids }
+            val entriesToRun = state.getEntriesById(ids)
             try {
-                entriesToRun.forEach { it.status = ReplCommandStatus.PENDING }
+                entriesToRun.forEach { state.setEntryStatus(it.id, ReplCommandStatus.PENDING) }
                 for (entry in entriesToRun) {
-                    entry.status = ReplCommandStatus.RUNNING
+                    state.setEntryStatus(entry.id, ReplCommandStatus.RUNNING)
                     val failure = executeCommands(maestro, entry.commands)
                     if (failure == null) {
-                        entry.status = ReplCommandStatus.SUCCESS
+                        state.setEntryStatus(entry.id, ReplCommandStatus.SUCCESS)
                     } else {
-                        entry.status = ReplCommandStatus.ERROR
+                        state.setEntryStatus(entry.id, ReplCommandStatus.ERROR)
                         return
                     }
                 }
             } finally {
-                entriesToRun.filter { it.status == ReplCommandStatus.PENDING }.forEach { it.status = ReplCommandStatus.CANCELED }
+                entriesToRun.filter { it.status == ReplCommandStatus.PENDING }.forEach {
+                    state.setEntryStatus(it.id, ReplCommandStatus.CANCELED)
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package maestro.studio
 
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.singlePageApplication
@@ -16,6 +17,9 @@ object MaestroStudio {
             install(StatusPages) {
                 exception<HttpException> { call, cause ->
                     call.respond(cause.statusCode, cause.errorMessage)
+                }
+                exception { _, cause: Throwable ->
+                    cause.printStackTrace()
                 }
             }
             routing {

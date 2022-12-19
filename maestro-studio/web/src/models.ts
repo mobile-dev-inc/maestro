@@ -35,5 +35,6 @@ export type ReplCommand = {
 }
 
 export type Repl = {
+  version: number
   commands: ReplCommand[]
 }

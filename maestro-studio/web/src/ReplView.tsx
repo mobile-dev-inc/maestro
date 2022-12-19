@@ -5,9 +5,7 @@ const ReplView = ({api}: {
   api: Api
 }) => {
   const [input, setInput] = useState("")
-  const {error, data} = api.repl.useRepl({
-    refreshInterval: 1000
-  })
+  const {error, repl} = api.repl.useRepl()
 
   if (error) {
     return (
@@ -15,7 +13,7 @@ const ReplView = ({api}: {
     )
   }
 
-  if (!data) {
+  if (!repl) {
     return (
       <div>Loading...</div>
     )
@@ -24,7 +22,7 @@ const ReplView = ({api}: {
   return (
     <div>
       <div className="flex flex-col border">
-        {data.commands.map(command => (
+        {repl.commands.map(command => (
           <div className="flex flex-row p-4 border-b justify-between">
             <div className="font-mono">{command.yaml}</div>
             <div>{command.status}</div>

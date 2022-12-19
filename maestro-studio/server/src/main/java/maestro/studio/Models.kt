@@ -46,5 +46,6 @@ data class ReplCommand(
 )
 
 data class Repl(
-    val commands: List<ReplCommand>
+    val version: Int,
+    val commands: List<ReplCommand>,
 )

@@ -12,6 +12,7 @@ export const sampleDeviceScreen: DeviceScreen = {
 }
 
 const sampleRepl: Repl = {
+  version: 1,
   commands: [
     { id: '1', yaml: '- inputText: hello', status: 'success' },
     { id: '2', yaml: '- inputText:\n    text: "hello"', status: 'success' },
@@ -26,11 +27,8 @@ export const fakeApi: Api = {
   getDeviceScreen: async () => sampleDeviceScreen,
   repl: {
     useRepl: () => ({
-      data: sampleRepl,
+      repl: sampleRepl,
       error: undefined,
-      isLoading: false,
-      isValidating: false,
-      mutate: async () => { return undefined }
     }),
     runCommand: async () => sampleRepl,
     deleteCommands: async () => sampleRepl,
