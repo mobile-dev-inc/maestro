@@ -40,7 +40,7 @@ enum class ReplCommandStatus {
 }
 
 data class ReplCommand(
-    val id: String,
+    val id: UUID,
     val yaml: String,
     val status: ReplCommandStatus,
 )
