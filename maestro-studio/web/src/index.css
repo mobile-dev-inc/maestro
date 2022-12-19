@@ -11,3 +11,9 @@ html, body, #root {
   margin: 0;
   height: 100%;
 }
+
+[contenteditable=true]:empty:before {
+  content: attr(placeholder);
+  display: block;
+  @apply text-slate-400;
+}
