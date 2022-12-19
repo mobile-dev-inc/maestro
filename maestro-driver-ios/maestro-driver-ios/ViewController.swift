@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  maestro-driver-ios
 //
-//  Created by Amanjeet Singh on 28/11/22.
+//
 //
 
 import UIKit

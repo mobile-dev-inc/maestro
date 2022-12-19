@@ -11,34 +11,43 @@ class SubTreeRouteHandler: RouteHandler {
             logger.error("Requested view hierarchy for an invalid appId")
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest)
         }
-        let viewHierarchyDictionaryResult = await MainActor.run { () -> [XCUIElement.AttributeName : Any]? in
+        
+        let viewHierarchyHttpResponse = await MainActor.run { () -> HTTPResponse in
             do {
                 logger.info("Trying to capture hierarchy snapshot for \(appId)")
-                return try XCUIApplication(bundleIdentifier: appId).snapshot().dictionaryRepresentation
+                let start = NSDate().timeIntervalSince1970 * 1000
+                let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
+                let springboardApplication = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+                if appId != "dev.mobile.maestro-driver-iosUITests.xctrunner" && springboardApplication.buttons["Allow"].exists {
+                    xcuiApplication.tap()
+                }
+                logger.info("Now trying hierarchy")
+                let viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
+                let end = NSDate().timeIntervalSince1970 * 1000
+                logger.info("Successfully got view hierarchy for \(appId) in \(end - start)")
+                let hierarchyJsonData = try JSONSerialization.data(
+                    withJSONObject: viewHierarchyDictionary,
+                    options: .prettyPrinted
+                )
+                return HTTPResponse(statusCode: .ok, body: hierarchyJsonData)
             } catch let error {
                 let message = error.localizedDescription
                 logger.error("Snapshot failure, cannot return view hierarchy due to \(message)")
-                return nil
+                let errorCode = getErrorCode(message: message)
+                let errorJson = """
+                 { "errorMessage" : "Snapshot failure while getting view hierarchy", "errorCode": "\(errorCode)" }
+                """
+                return HTTPResponse(statusCode: .badRequest, body:  Data(errorJson.utf8))
             }
         }
-        guard let viewHierarchyDictionary = viewHierarchyDictionaryResult else {
-            let jsonString = """
-             { "errorMessage" : "Snapshot failure while getting view hierarchy" }
-            """
-            let errorData = Data(jsonString.utf8)
-            return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
+        return viewHierarchyHttpResponse
+    }
+    
+    private func getErrorCode(message: String) -> String {
+        if message.contains("Error kAXErrorIllegalArgument getting snapshot for element") {
+           return "illegal-argument-snapshot-failure"
+        } else {
+           return "unknown-snapshot-failure"
         }
-        guard let hierarchyJsonData = try? JSONSerialization.data(
-            withJSONObject: viewHierarchyDictionary,
-            options: .prettyPrinted
-        ) else {
-            logger.error("Serialization of view hierarchy failed \(viewHierarchyDictionary.debugDescription)")
-            let jsonString = """
-             { "errorMessage" : "Not able to serialize the view hierarchy response" }
-            """
-            return HTTPResponse(statusCode: .badRequest, body: Data(jsonString.utf8))
-        }
-        logger.info("Successfully got view hierarchy for \(appId)")
-        return HTTPResponse(statusCode: .ok, body: hierarchyJsonData)
     }
 }

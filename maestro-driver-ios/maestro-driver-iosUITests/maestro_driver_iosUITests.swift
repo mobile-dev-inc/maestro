@@ -9,6 +9,14 @@ class maestro_driver_iosUITests: XCTestCase {
 
         // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
+        addUIInterruptionMonitor(withDescription: "Tracking Usage Permission Alert") { (alert) -> Bool in
+            if alert.buttons["Allow"].exists {
+                alert.buttons["Allow"].tap()
+                return true
+                
+            }
+            return false
+        }
 
         // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
@@ -20,13 +28,14 @@ class maestro_driver_iosUITests: XCTestCase {
     func testHttpServer() async throws {
         let server = HTTPServer(port: 9080)
         let subTreeRoute = HTTPRoute(Route.subTree.rawValue)
-        let appStateRoute = HTTPRoute(Route.appState.rawValue)
+        let runningAppRoute = HTTPRoute(method: .POST,
+                                        path: Route.runningApp.rawValue)
         await server.appendRoute(subTreeRoute) { request in
             let handler = RouteHandlerFactory.createRouteHandler(route: .subTree)
             return try await handler.handle(request: request)
         }
-        await server.appendRoute(appStateRoute) { request in
-            let handler = RouteHandlerFactory.createRouteHandler(route: .appState)
+        await server.appendRoute(runningAppRoute) { request in
+            let handler = RouteHandlerFactory.createRouteHandler(route: .runningApp)
             return try await handler.handle(request: request)
         }
         try await server.start()
