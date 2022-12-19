@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { DeviceScreen } from './models';
-import { sampleElements, sampleScreenshot } from './fixtures';
+import { sampleScreenshot } from './fixtures';
 import Main from './Main';
+import { sampleElements } from './sampleElements';
 
 export default {
   title: 'Main',

@@ -1,7 +1,8 @@
 import React from 'react';
 import { DeviceScreen } from './models';
-import { sampleElements, sampleScreenshot } from './fixtures';
+import { sampleScreenshot } from './fixtures';
 import Inspect from './Inspect';
+import { sampleElements } from './sampleElements';
 
 export default {
   title: 'Inspect'
