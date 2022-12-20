@@ -1,6 +1,6 @@
 import { DeviceScreen, Repl } from './models';
-import { mutate } from 'swr';
-import { useEffect, useState } from 'react';
+import useSWR, { mutate } from 'swr';
+import { useRef } from 'react';
 
 export type Api = {
   getDeviceScreen: () => Promise<DeviceScreen>
@@ -34,25 +34,16 @@ const makeRequest = async <T>(method: string, path: string, body?: Object | unde
 }
 
 const useRepl = (): ReplResponse => {
-  const [response, setResponse] = useState<ReplResponse>({})
-  useEffect(() => {
-    const state = { running: true };
-    ;(async () => {
-      let currentVersion = -1
-      while (state.running) {
-        try {
-          const repl: Repl = await makeRequest('GET', `/api/repl/watch?currentVersion=${currentVersion}`)
-          currentVersion = repl.version
-          setResponse({ repl })
-        } catch (e) {
-          setResponse({ error: e })
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-      }
-    })()
-    return () => { state.running = false }
-  }, [])
-  return response
+  const version = useRef(-1)
+  // Long-poll watch endpoint by immediately triggering a refresh
+  const {data, error} = useSWR<Repl>('/api/repl/watch', async (url) => {
+    const repl: Repl = await makeRequest('GET', `${url}?currentVersion=${version.current}`)
+    version.current = repl.version
+    // Immediate trigger a refresh, and use the current data as the cache to avoid loading state
+    mutate('/api/repl/watch', repl)
+    return repl
+  })
+  return { repl: data, error }
 }
 
 export const REAL_API: Api = {
