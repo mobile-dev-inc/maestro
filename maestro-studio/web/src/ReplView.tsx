@@ -36,21 +36,37 @@ const LoadingIcon = () => {
   )
 }
 
-const CheckBox = ({type, checked}: {
+const CheckBox = ({type, checked, onChange}: {
   type: 'circle' | 'square'
   checked: boolean
+  onChange?: (checked: boolean) => void
 }) => {
+  const onClick = () => {
+    onChange && onChange(!checked)
+  }
   if (type === 'circle') {
     if (checked) {
       return (
-        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          onClick={onClick}
+        >
           <rect width="20" height="20" rx="10" fill="#2563EB"/>
           <path d="M7 10.25L9.6 12.85L13.5 7" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )
     } else {
       return (
-        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          onClick={onClick}
+        >
           <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#CBD5E1"/>
         </svg>
       );
@@ -58,15 +74,27 @@ const CheckBox = ({type, checked}: {
   } else {
     if (checked) {
       return (
-        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-          <rect width="20" height="20" transform="translate(0 0.5)" fill="#0F172A"/>
-          <path d="M7 10.75L9.6 13.35L13.5 7.5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg
+          viewBox="0 0 20 21"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 text-slate-900 hover:text-slate-600 active:text-slate-400"
+          onClick={onClick}
+        >
+          <rect width="20" height="20" transform="translate(0 0.5)" fill="currentColor"/>
+          <path d="M7 10.75L9.6 13.35L13.5 7.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )
     } else {
       return (
-        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-          <rect x="0.5" y="1" width="19" height="19" stroke="#CBD5E1"/>
+        <svg
+          viewBox="0 0 20 21"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 text-transparent hover:text-slate-300 active:text-slate-400"
+          onClick={onClick}
+        >
+          <rect x="0.5" y="1" width="19" height="19" stroke="#CBD5E1" fill="currentColor"/>
         </svg>
       )
     }
@@ -109,6 +137,37 @@ const CommandRow = ({command, selected, onClick}: {
   )
 }
 
+const ReplHeader = ({onSelectAll, onDeselectAll, selected}: {
+  onSelectAll: () => void
+  onDeselectAll: () => void
+  selected: number
+}) => {
+  return (
+    <div
+      className="flex border-b items-center gap-2"
+    >
+      <div
+        className="flex flex-col p-2 border-r"
+      >
+        <CheckBox
+          type="square"
+          checked={selected > 0}
+          onChange={checked => {
+            if (checked) {
+              onSelectAll()
+            } else {
+              onDeselectAll()
+            }
+          }}
+        />
+      </div>
+      <span className="data-[selectall=true]:text-slate-400 select-none" data-selectall={selected === 0}>
+        {selected > 0 ? `${selected} Selected` : 'Select All'}
+      </span>
+    </div>
+  )
+}
+
 const ReplView = ({api}: {
   api: Api
 }) => {
@@ -137,19 +196,26 @@ const ReplView = ({api}: {
   return (
     <div>
       <div className="flex flex-col border">
-        {repl.commands.map(command => (
-          <CommandRow
-            command={command}
-            selected={selected.includes(command.id)}
-            onClick={() => {
-              if (selected.includes(command.id)) {
-                setSelected(prevState => prevState.filter(id => id !== command.id))
-              } else {
-                setSelected(prevState => [...prevState, command.id])
-              }
-            }}
-          />
-        ))}
+        <ReplHeader
+          onSelectAll={() => setSelected(repl.commands.map(c => c.id))}
+          onDeselectAll={() => setSelected([])}
+          selected={selected.length}
+        />
+        <div className="flex flex-col overflow-y-scroll">
+          {repl.commands.map(command => (
+            <CommandRow
+              command={command}
+              selected={selected.includes(command.id)}
+              onClick={() => {
+                if (selected.includes(command.id)) {
+                  setSelected(prevState => prevState.filter(id => id !== command.id))
+                } else {
+                  setSelected(prevState => [...prevState, command.id])
+                }
+              }}
+            />
+          ))}
+        </div>
         <div
           className="relative flex flex-col"
           onKeyDown={e => {
