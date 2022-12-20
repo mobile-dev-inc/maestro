@@ -1,6 +1,6 @@
 import { Api } from './api';
-import { useState } from 'react';
-import ContentEditable from 'react-contenteditable';
+import React, { useState } from 'react';
+import AutosizingTextArea from './AutosizingTextArea';
 
 const PlayIcon = () => {
   return (
@@ -16,12 +16,10 @@ const ReplView = ({api}: {
   const [input, setInput] = useState("")
   const {error, repl} = api.repl.useRepl()
 
-  const runCommand = async () => {
-    try {
-      await api.repl.runCommand(input)
-    } finally {
-      setInput("")
-    }
+  const runCommand = () => {
+    console.log(input)
+    api.repl.runCommand(input)
+    setInput("")
   }
 
   if (error) {
@@ -40,23 +38,25 @@ const ReplView = ({api}: {
     <div>
       <div className="flex flex-col border">
         {repl.commands.map(command => (
-          <div className="flex flex-row p-4 border-b justify-between">
+          <div key={command.id} className="flex flex-row p-4 border-b justify-between">
             <pre className="font-mono">{command.yaml}</pre>
             <div>{command.status}</div>
           </div>
         ))}
-        <div className="relative">
-          <ContentEditable
-            className="p-4 bg-gray-50 font-mono cursor-text outline-none border border-transparent focus:border focus:border-slate-400"
-            html={input}
-            onChange={e => setInput(e.target.value)}
+        <div
+          className="relative flex flex-col"
+          onKeyDown={e => {
+            if (e.code === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              runCommand()
+            }
+          }}
+        >
+          <AutosizingTextArea
+            className="resize-none p-4 overflow-scroll bg-gray-50 font-mono cursor-text outline-none border border-transparent focus:border focus:border-slate-400"
+            setValue={value => setInput(value)}
+            value={input}
             placeholder="Enter a command or interact with the device screenshot. Cmd-ENTER to run."
-            onKeyDown={e => {
-              if (e.code === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                runCommand()
-              }
-            }}
           />
           <button
             className="absolute flex items-center right-1 top-1 rounded bottom-1 px-4 disabled:text-slate-400 enabled:text-blue-600 enabled:hover:bg-slate-200 enabled:active:bg-slate-300 cursor-default"

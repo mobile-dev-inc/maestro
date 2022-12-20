@@ -17,9 +17,9 @@ const sampleRepl: Repl = {
     { id: '1', yaml: '- inputText: hello', status: 'success' },
     { id: '2', yaml: '- inputText:\n    text: "hello"', status: 'success' },
     { id: '3', yaml: '- tapOn:\n    id: buttonId', status: 'error' },
-    { id: '3', yaml: '- inputText: hello', status: 'canceled' },
-    { id: '4', yaml: '- inputText: hello', status: 'running' },
-    { id: '4', yaml: '- inputText: hello', status: 'pending' },
+    { id: '4', yaml: '- inputText: hello', status: 'canceled' },
+    { id: '5', yaml: '- inputText: hello', status: 'running' },
+    { id: '6', yaml: '- inputText: hello', status: 'pending' },
   ]
 }
 

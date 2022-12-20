@@ -1,6 +1,7 @@
 import React from 'react';
 
 export type HTMLProps<T> = React.DetailedHTMLProps<React.HTMLAttributes<T>, T>
+export type TextAreaProps = React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>
 export type DivProps = HTMLProps<HTMLDivElement>
 
 export type UIElementBounds = {
