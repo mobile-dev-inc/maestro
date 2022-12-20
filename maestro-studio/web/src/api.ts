@@ -2,16 +2,6 @@ import { DeviceScreen, Repl } from './models';
 import useSWR, { mutate } from 'swr';
 import { useRef } from 'react';
 
-export type Api = {
-  getDeviceScreen: () => Promise<DeviceScreen>
-  repl: {
-    useRepl: () => ReplResponse
-    runCommand: (yaml: string) => Promise<Repl>
-    runCommandsById: (ids: string[]) => Promise<Repl>
-    deleteCommands: (ids: string[]) => Promise<Repl>
-  }
-}
-
 export type ReplResponse = {
   repl?: Repl | undefined
   error?: any
@@ -46,16 +36,14 @@ const useRepl = (): ReplResponse => {
   return { repl: data, error }
 }
 
-export const REAL_API: Api = {
+export const API = {
   getDeviceScreen: async (): Promise<DeviceScreen> => {
     return makeRequest('GET', '/api/device-screen')
   },
   repl: {
     useRepl,
     runCommand: async (yaml: string): Promise<Repl> => {
-      const repl: Repl = await makeRequest('POST', '/api/repl/command', { yaml })
-      await mutate('/api/repl', repl)
-      return repl
+      return makeRequest('POST', '/api/repl/command', { yaml })
     },
     runCommandsById: async (ids: string[]): Promise<Repl> => {
       return makeRequest('POST', '/api/repl/command', { ids })

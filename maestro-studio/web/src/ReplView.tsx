@@ -1,4 +1,4 @@
-import { Api } from './api';
+import { API } from './api';
 import React, { ReactElement, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
 import { ReplCommand, ReplCommandStatus } from './models';
@@ -168,16 +168,14 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected}: {
   )
 }
 
-const ReplView = ({api}: {
-  api: Api
-}) => {
+const ReplView = () => {
   const [input, setInput] = useState("")
   const [selected, setSelected] = useState<string[]>([])
-  const {error, repl} = api.repl.useRepl()
+  const {error, repl} = API.repl.useRepl()
 
   const runCommand = () => {
     console.log(input)
-    api.repl.runCommand(input)
+    API.repl.runCommand(input)
     setInput("")
   }
 
