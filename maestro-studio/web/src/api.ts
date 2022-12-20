@@ -17,6 +17,22 @@ export type ReplResponse = {
   error?: any
 }
 
+const makeRequest = async <T>(method: string, path: string, body?: Object | undefined): Promise<T> => {
+  const response = await fetch(path, {
+    method,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Request failed ${response.status}: ${body}`)
+  }
+  return await response.json()
+}
+
 const useRepl = (): ReplResponse => {
   const [response, setResponse] = useState<ReplResponse>({})
   useEffect(() => {
@@ -25,10 +41,9 @@ const useRepl = (): ReplResponse => {
       let currentVersion = -1
       while (state.running) {
         try {
-          const res = await fetch(`/api/repl/watch?currentVersion=${currentVersion}`)
-          const json = await res.json()
-          currentVersion = json.version
-          setResponse({ repl: json })
+          const repl: Repl = await makeRequest('GET', `/api/repl/watch?currentVersion=${currentVersion}`)
+          currentVersion = repl.version
+          setResponse({ repl })
         } catch (e) {
           setResponse({ error: e })
           await new Promise(resolve => setTimeout(resolve, 1000))
@@ -42,51 +57,20 @@ const useRepl = (): ReplResponse => {
 
 export const REAL_API: Api = {
   getDeviceScreen: async (): Promise<DeviceScreen> => {
-    const response = await fetch('/api/device-screen')
-    return await response.json()
+    return makeRequest('GET', '/api/device-screen')
   },
   repl: {
     useRepl,
     runCommand: async (yaml: string): Promise<Repl> => {
-      const response = await fetch('/api/repl/command', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          yaml
-        })
-      })
-      const repl: Repl = await response.json()
+      const repl: Repl = await makeRequest('POST', '/api/repl/command', { yaml })
       await mutate('/api/repl', repl)
       return repl
     },
     runCommandsById: async (ids: string[]): Promise<Repl> => {
-      const response = await fetch('/api/repl/command', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ids
-        })
-      })
-      return await response.json()
+      return makeRequest('POST', '/api/repl/command', { ids })
     },
     deleteCommands: async (ids: string[]): Promise<Repl> => {
-      const response = await fetch('/api/repl/command', {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ids
-        })
-      })
-      return await response.json()
+      return makeRequest('DELETE', '/api/repl/command', { ids })
     }
   }
 }
