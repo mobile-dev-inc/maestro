@@ -36,6 +36,25 @@ const LoadingIcon = () => {
   )
 }
 
+const CheckBox = ({checked}: {
+  checked: boolean
+}) => {
+  if (checked) {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+        <rect width="20" height="20" rx="10" fill="#2563EB"/>
+        <path d="M7 10.25L9.6 12.85L13.5 7" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    )
+  } else {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#CBD5E1"/>
+      </svg>
+    );
+  }
+}
+
 const StatusIcon = ({status}: {
   status: ReplCommandStatus
 }): ReactElement | null => {
@@ -52,6 +71,7 @@ const ReplView = ({api}: {
   api: Api
 }) => {
   const [input, setInput] = useState("")
+  const [selected, setSelected] = useState<string[]>([])
   const {error, repl} = api.repl.useRepl()
 
   const runCommand = () => {
@@ -78,11 +98,25 @@ const ReplView = ({api}: {
         {repl.commands.map(command => (
           <div
             key={command.id}
-            className="flex flex-row p-4 border-b justify-between data-[running=true]:bg-blue-50"
+            className="flex flex-row border-b data-[running=true]:bg-blue-50 hover:bg-slate-50 active:bg-slate-100 data-[running=true]:hover:bg-blue-100 data-[running=true]:active:bg-blue-200"
             data-running={command.status === 'running'}
+            onClick={() => {
+              if (selected.includes(command.id)) {
+                setSelected(prevState => prevState.filter(id => id !== command.id))
+              } else {
+                setSelected(prevState => [...prevState, command.id])
+              }
+            }}
           >
-            <pre className="font-mono">{command.yaml}</pre>
-            <StatusIcon status={command.status} />
+            <div
+              className="flex flex-col px-2 pt-4 border-r"
+            >
+              <CheckBox checked={selected.includes(command.id)} />
+            </div>
+            <pre className="p-4 font-mono cursor-default flex-1">{command.yaml}</pre>
+            <div className="p-4">
+              <StatusIcon status={command.status} />
+            </div>
           </div>
         ))}
         <div
