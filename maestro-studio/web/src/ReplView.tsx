@@ -1,7 +1,7 @@
 import { Api } from './api';
 import React, { ReactElement, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
-import { ReplCommandStatus } from './models';
+import { ReplCommand, ReplCommandStatus } from './models';
 
 const PlayIcon = () => {
   return (
@@ -85,6 +85,30 @@ const StatusIcon = ({status}: {
   }
 }
 
+const CommandRow = ({command, selected, onClick}: {
+  command: ReplCommand
+  selected: boolean
+  onClick: () => void
+}) => {
+  return (
+    <div
+      key={command.id}
+      className="flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
+      onClick={onClick}
+    >
+      <div
+        className="flex flex-col px-2 pt-4 border-r"
+      >
+        <CheckBox type="circle" checked={selected} />
+      </div>
+      <pre className="p-4 font-mono cursor-default flex-1">{command.yaml}</pre>
+      <div className="p-4">
+        <StatusIcon status={command.status} />
+      </div>
+    </div>
+  )
+}
+
 const ReplView = ({api}: {
   api: Api
 }) => {
@@ -114,9 +138,9 @@ const ReplView = ({api}: {
     <div>
       <div className="flex flex-col border">
         {repl.commands.map(command => (
-          <div
-            key={command.id}
-            className="flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
+          <CommandRow
+            command={command}
+            selected={selected.includes(command.id)}
             onClick={() => {
               if (selected.includes(command.id)) {
                 setSelected(prevState => prevState.filter(id => id !== command.id))
@@ -124,17 +148,7 @@ const ReplView = ({api}: {
                 setSelected(prevState => [...prevState, command.id])
               }
             }}
-          >
-            <div
-              className="flex flex-col px-2 pt-4 border-r"
-            >
-              <CheckBox type="circle" checked={selected.includes(command.id)} />
-            </div>
-            <pre className="p-4 font-mono cursor-default flex-1">{command.yaml}</pre>
-            <div className="p-4">
-              <StatusIcon status={command.status} />
-            </div>
-          </div>
+          />
         ))}
         <div
           className="relative flex flex-col"
