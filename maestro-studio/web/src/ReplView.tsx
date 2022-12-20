@@ -98,8 +98,7 @@ const ReplView = ({api}: {
         {repl.commands.map(command => (
           <div
             key={command.id}
-            className="flex flex-row border-b data-[running=true]:bg-blue-50 hover:bg-slate-50 active:bg-slate-100 data-[running=true]:hover:bg-blue-100 data-[running=true]:active:bg-blue-200"
-            data-running={command.status === 'running'}
+            className="flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
             onClick={() => {
               if (selected.includes(command.id)) {
                 setSelected(prevState => prevState.filter(id => id !== command.id))
