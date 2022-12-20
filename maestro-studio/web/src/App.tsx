@@ -4,15 +4,13 @@ import { REAL_API } from './api';
 import ReplView from './ReplView';
 
 function App() {
-  const api = REAL_API
-  // TODO delete this
-  if (true) {
+  if (window.location.pathname === '/interact') {
     return (
-      <ReplView api={api} />
+      <ReplView api={REAL_API} />
     )
   }
   return (
-    <Main getDeviceScreen={api.getDeviceScreen} />
+    <Main getDeviceScreen={REAL_API.getDeviceScreen} />
   );
 }
 
