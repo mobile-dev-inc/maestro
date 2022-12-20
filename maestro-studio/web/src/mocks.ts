@@ -1,6 +1,7 @@
 import { ResponseComposition, rest, RestContext, setupWorker } from 'msw';
 import { DeviceScreen, ReplCommand } from './models';
 import { sampleElements } from './sampleElements';
+import { wait } from './api';
 
 export const mockDeviceScreen: DeviceScreen = {
   screenshot: '/sample-screenshot.png',
@@ -12,10 +13,6 @@ export const mockDeviceScreen: DeviceScreen = {
 let nextId = 0
 let version = 0
 let commands: ReplCommand[] = []
-
-const wait = async (durationMs: number) => {
-  return new Promise(resolve => setTimeout(resolve, durationMs))
-}
 
 const replResponse = (res: ResponseComposition, ctx: RestContext) => {
   return res(ctx.status(200), ctx.json({
@@ -76,6 +73,23 @@ const handlers = [
   rest.delete('/api/repl/command', async (req, res, ctx) => {
     const {ids}: { ids: string[] } = await req.json()
     commands = commands.filter(c => ids.includes(c.id))
+    return replResponse(res, ctx)
+  }),
+  rest.post('/api/repl/command/reorder', async (req, res, ctx) => {
+    const {ids}: { ids: string[] } = await req.json()
+    const newCommands: ReplCommand[] = []
+    ids.forEach(id => {
+      const command = commands.find(c => c.id === id)
+      command && newCommands.push(command)
+    })
+    commands.forEach(command => {
+      if (!newCommands.includes(command)) {
+        newCommands.push(command)
+      }
+    })
+    await wait(1000)
+    commands = newCommands
+    version++
     return replResponse(res, ctx)
   }),
   rest.get('/api/device-screen', (req, res, ctx) => {

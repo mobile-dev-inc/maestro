@@ -32,6 +32,10 @@ private data class DeleteCommandsRequest(
     val ids: List<UUID>,
 )
 
+private data class ReorderCommandsRequest(
+    val ids: List<UUID>,
+)
+
 private data class ReplEntry(
     val id: UUID,
     val yaml: String,
@@ -41,7 +45,7 @@ private data class ReplEntry(
 
 private class ReplState {
 
-    private var entries = mutableListOf<ReplEntry>()
+    private val entries = mutableListOf<ReplEntry>()
     private var replVersion = 0
 
     @Synchronized
@@ -66,6 +70,16 @@ private class ReplState {
     @Synchronized
     fun deleteEntries(ids: List<UUID>) {
         entries.removeIf { it.id in ids }
+        notifyChange()
+    }
+
+    @Synchronized
+    fun reorderEntries(ids: List<UUID>) {
+        entries.sortWith { a, b ->
+            val aIdx = ids.indexOfFirst { it == a.id }.takeIf { it != -1 } ?: Int.MAX_VALUE
+            val bIdx = ids.indexOfFirst { it == b.id }.takeIf { it != -1 } ?: Int.MAX_VALUE
+            aIdx - bIdx
+        }
         notifyChange()
     }
 
@@ -127,6 +141,11 @@ object ReplService {
         routing.delete("/api/repl/command") {
             val request = call.parseBody<DeleteCommandsRequest>()
             state.deleteEntries(request.ids)
+            call.respondRepl()
+        }
+        routing.post("/api/repl/command/reorder") {
+            val request = call.parseBody<ReorderCommandsRequest>()
+            state.reorderEntries(request.ids)
             call.respondRepl()
         }
     }

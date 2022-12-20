@@ -1,10 +1,13 @@
-import { DeviceScreen, Repl } from './models';
+import { DeviceScreen, Repl, ReplCommand } from './models';
 import useSWR, { mutate } from 'swr';
-import { useRef } from 'react';
 
 export type ReplResponse = {
   repl?: Repl | undefined
   error?: any
+}
+
+export const wait = async (durationMs: number) => {
+  return new Promise(resolve => setTimeout(resolve, durationMs))
 }
 
 const makeRequest = async <T>(method: string, path: string, body?: Object | undefined): Promise<T> => {
@@ -24,16 +27,8 @@ const makeRequest = async <T>(method: string, path: string, body?: Object | unde
 }
 
 const useRepl = (): ReplResponse => {
-  const version = useRef(-1)
-  // Long-poll watch endpoint by immediately triggering a refresh
-  const {data, error} = useSWR<Repl>('/api/repl/watch', async (url) => {
-    const repl: Repl = await makeRequest('GET', `${url}?currentVersion=${version.current}`)
-    version.current = repl.version
-    // Immediate trigger a refresh, and use the current data as the cache to avoid loading state
-    mutate('/api/repl/watch', repl)
-    return repl
-  })
-  return { repl: data, error }
+  const {data: repl, error} = useSWR<Repl>('/api/repl/watch')
+  return { repl, error }
 }
 
 export const API = {
@@ -50,6 +45,35 @@ export const API = {
     },
     deleteCommands: async (ids: string[]): Promise<Repl> => {
       return makeRequest('DELETE', '/api/repl/command', { ids })
+    },
+    reorderCommands: async (ids: string[]) => {
+      makeRequest('POST', '/api/repl/command/reorder', { ids })
+      mutate<Repl>('/api/repl/watch', (repl) => {
+        if (!repl) return undefined
+        const newCommands: ReplCommand[] = []
+        ids.forEach(id => {
+          const command = repl.commands.find(c => c.id === id)
+          command && newCommands.push(command)
+        })
+        return {...repl, commands: newCommands}
+      }, {
+        revalidate: false
+      })
+    },
+  }
+}
+
+const startReplLongPoll = async () => {
+  let replVersion = -1
+  while (true) {
+    try {
+      const repl: Repl = await makeRequest('GET', `/api/repl/watch?currentVersion=${replVersion}`)
+      mutate('/api/repl/watch', repl, { revalidate: false })
+      replVersion = repl.version
+    } catch (e) {
+      await wait(1000)
     }
   }
 }
+
+startReplLongPoll()

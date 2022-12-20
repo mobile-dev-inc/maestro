@@ -2,6 +2,7 @@ import { API } from './api';
 import React, { ReactElement, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
 import { ReplCommand, ReplCommandStatus } from './models';
+import { Reorder } from 'framer-motion';
 
 const PlayIcon = () => {
   return (
@@ -179,6 +180,10 @@ const ReplView = () => {
     setInput("")
   }
 
+  const onReorder = (newOrder: ReplCommand[]) => {
+    API.repl.reorderCommands(newOrder.map(c => c.id))
+  }
+
   if (error) {
     return (
       <div>Error fetching repl</div>
@@ -199,21 +204,26 @@ const ReplView = () => {
           onDeselectAll={() => setSelected([])}
           selected={selected.length}
         />
-        <div className="flex flex-col overflow-y-scroll">
+        <Reorder.Group
+          onReorder={onReorder}
+          values={repl.commands}
+        >
           {repl.commands.map(command => (
-            <CommandRow
-              command={command}
-              selected={selected.includes(command.id)}
-              onClick={() => {
-                if (selected.includes(command.id)) {
-                  setSelected(prevState => prevState.filter(id => id !== command.id))
-                } else {
-                  setSelected(prevState => [...prevState, command.id])
-                }
-              }}
-            />
+            <Reorder.Item value={command} key={command.id}>
+              <CommandRow
+                command={command}
+                selected={selected.includes(command.id)}
+                onClick={() => {
+                  if (selected.includes(command.id)) {
+                    setSelected(prevState => prevState.filter(id => id !== command.id))
+                  } else {
+                    setSelected(prevState => [...prevState, command.id])
+                  }
+                }}
+              />
+            </Reorder.Item>
           ))}
-        </div>
+        </Reorder.Group>
         <div
           className="relative flex flex-col"
           onKeyDown={e => {
