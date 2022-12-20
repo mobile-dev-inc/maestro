@@ -36,22 +36,40 @@ const LoadingIcon = () => {
   )
 }
 
-const CheckBox = ({checked}: {
+const CheckBox = ({type, checked}: {
+  type: 'circle' | 'square'
   checked: boolean
 }) => {
-  if (checked) {
-    return (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-        <rect width="20" height="20" rx="10" fill="#2563EB"/>
-        <path d="M7 10.25L9.6 12.85L13.5 7" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )
+  if (type === 'circle') {
+    if (checked) {
+      return (
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+          <rect width="20" height="20" rx="10" fill="#2563EB"/>
+          <path d="M7 10.25L9.6 12.85L13.5 7" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    } else {
+      return (
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+          <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#CBD5E1"/>
+        </svg>
+      );
+    }
   } else {
-    return (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#CBD5E1"/>
-      </svg>
-    );
+    if (checked) {
+      return (
+        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+          <rect width="20" height="20" transform="translate(0 0.5)" fill="#0F172A"/>
+          <path d="M7 10.75L9.6 13.35L13.5 7.5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      )
+    } else {
+      return (
+        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+          <rect x="0.5" y="1" width="19" height="19" stroke="#CBD5E1"/>
+        </svg>
+      )
+    }
   }
 }
 
@@ -110,7 +128,7 @@ const ReplView = ({api}: {
             <div
               className="flex flex-col px-2 pt-4 border-r"
             >
-              <CheckBox checked={selected.includes(command.id)} />
+              <CheckBox type="circle" checked={selected.includes(command.id)} />
             </div>
             <pre className="p-4 font-mono cursor-default flex-1">{command.yaml}</pre>
             <div className="p-4">

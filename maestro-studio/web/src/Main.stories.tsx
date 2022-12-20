@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DeviceScreen } from './models';
 import { sampleScreenshot } from './fixtures';
 import Main from './Main';
