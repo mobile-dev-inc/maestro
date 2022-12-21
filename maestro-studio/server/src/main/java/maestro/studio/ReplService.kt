@@ -163,7 +163,7 @@ object ReplService {
             readNodes(yaml).map { node ->
                 val yamlCommand = YamlCommandReader.MAPPER.convertValue(node, YamlFluentCommand::class.java)
                 val yamlString = YamlCommandReader.MAPPER.writeValueAsString(listOf(node))
-                val commands = yamlCommand.toCommands(Paths.get(""), "com.example.app")
+                val commands = yamlCommand.toCommands(Paths.get(""), "")
                 ReplEntry(UUID.randomUUID(), yamlString, commands, ReplCommandStatus.PENDING)
             }
         } catch (e: Exception) {
