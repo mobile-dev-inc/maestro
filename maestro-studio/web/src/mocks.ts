@@ -23,6 +23,11 @@ const replResponse = (res: ResponseComposition, ctx: RestContext) => {
 
 const runCommands = async (ids: string[]) => {
   for (const id of ids) {
+    const command = commands.find(c => c.id === id)
+    if (command) command.status = 'pending'
+  }
+  version++
+  for (const id of ids) {
     await runCommand(id)
   }
 }
@@ -72,7 +77,8 @@ const handlers = [
   }),
   rest.delete('/api/repl/command', async (req, res, ctx) => {
     const {ids}: { ids: string[] } = await req.json()
-    commands = commands.filter(c => ids.includes(c.id))
+    commands = commands.filter(c => !ids.includes(c.id))
+    version++
     return replResponse(res, ctx)
   }),
   rest.post('/api/repl/command/reorder', async (req, res, ctx) => {

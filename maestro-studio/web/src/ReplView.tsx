@@ -3,6 +3,8 @@ import React, { ReactElement, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
 import { ReplCommand, ReplCommandStatus } from './models';
 import { Reorder } from 'framer-motion';
+import { Simulate } from 'react-dom/test-utils';
+import copy = Simulate.copy;
 
 const PlayIcon = () => {
   return (
@@ -138,14 +140,76 @@ const CommandRow = ({command, selected, onClick}: {
   )
 }
 
-const ReplHeader = ({onSelectAll, onDeselectAll, selected}: {
-  onSelectAll: () => void
-  onDeselectAll: () => void
-  selected: number
+const PlayIconSmall = () => {
+  return (
+    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5">
+      <path d="M1.07422 1.69354C1.07422 1.11266 1.69649 0.744861 2.20544 1.02444L10.0364 5.33217C10.1561 5.39807 10.2559 5.49489 10.3255 5.61252C10.395 5.73015 10.4316 5.86428 10.4316 6.00092C10.4316 6.13756 10.395 6.27169 10.3255 6.38932C10.2559 6.50696 10.1561 6.60377 10.0364 6.66968L2.20544 10.9767C2.08923 11.0406 1.95839 11.0731 1.8258 11.0711C1.69321 11.069 1.56344 11.0325 1.44928 10.965C1.33511 10.8975 1.24049 10.8015 1.17472 10.6864C1.10895 10.5712 1.07432 10.4409 1.07422 10.3083V1.69354V1.69354Z" stroke="#0F172A" strokeWidth="1.20135" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+const ExportIconSmall = () => {
+  return (
+    <svg viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[1.15rem] h-[1.15rem]">
+      <path d="M3.18652 3.76739L5.50079 1.45312L7.81505 3.76739" stroke="black" strokeWidth="0.881624" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5.50098 7.62449V1.45312" stroke="black" strokeWidth="0.881624" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8.14576 5.86121H9.4682C9.58511 5.86121 9.69723 5.90765 9.7799 5.99032C9.86257 6.07299 9.90901 6.18511 9.90901 6.30202V12.0326C9.90901 12.1495 9.86257 12.2616 9.7799 12.3443C9.69723 12.4269 9.58511 12.4734 9.4682 12.4734H1.53359C1.41667 12.4734 1.30455 12.4269 1.22188 12.3443C1.13922 12.2616 1.09277 12.1495 1.09277 12.0326V6.30202C1.09277 6.18511 1.13922 6.07299 1.22188 5.99032C1.30455 5.90765 1.41667 5.86121 1.53359 5.86121H2.85602" stroke="black" strokeWidth="0.881624" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+const CopyIconSmall = () => {
+  return (
+    <svg viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+      <g clipPath="url(#clip0_3088_2750)">
+        <path d="M7.54914 2.20715H9.84975C9.97178 2.20715 10.0888 2.25563 10.1751 2.34192C10.2614 2.42821 10.3099 2.54524 10.3099 2.66728V12.3299C10.3099 12.4519 10.2614 12.5689 10.1751 12.6552C10.0888 12.7415 9.97178 12.79 9.84975 12.79H1.56754C1.44551 12.79 1.32848 12.7415 1.24219 12.6552C1.1559 12.5689 1.10742 12.4519 1.10742 12.3299V2.66728C1.10742 2.54524 1.1559 2.42821 1.24219 2.34192C1.32848 2.25563 1.44551 2.20715 1.56754 2.20715H3.86816" stroke="black" strokeWidth="0.920245" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M3.40723 4.04748V3.58736C3.40723 2.9772 3.64961 2.39203 4.08106 1.96058C4.51251 1.52913 5.09768 1.28674 5.70784 1.28674C6.318 1.28674 6.90317 1.52913 7.33462 1.96058C7.76607 2.39203 8.00845 2.9772 8.00845 3.58736V4.04748H3.40723Z" stroke="black" strokeWidth="0.920245" strokeLinecap="round" strokeLinejoin="round"/>
+      </g>
+      <defs>
+        <clipPath id="clip0_3088_2750">
+          <rect width="10.2761" height="12.5" fill="white" transform="translate(0.570312 0.75)"/>
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
+
+const DeleteIconSmall = () => {
+  return (
+    <svg viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5">
+      <path d="M6.94335 4.33589L6.7514 9.32861M4.09528 9.32861L3.90333 4.33589M9.43305 2.55516C9.62277 2.584 9.81139 2.61451 10 2.64724M9.43305 2.55571L8.84058 10.2567C8.8164 10.5703 8.67475 10.8631 8.44395 11.0768C8.21315 11.2904 7.91022 11.409 7.59573 11.4089H3.25095C2.93646 11.409 2.63353 11.2904 2.40273 11.0768C2.17193 10.8631 2.03028 10.5703 2.0061 10.2567L1.41363 2.55516M9.43305 2.55516C8.7928 2.45836 8.14924 2.3849 7.50364 2.33492M0.84668 2.64669C1.03529 2.61396 1.22391 2.58345 1.41363 2.55516M1.41363 2.55516C2.05388 2.45836 2.69744 2.3849 3.34304 2.33492M7.50364 2.33492V1.82677C7.50364 1.17217 6.99882 0.626303 6.34422 0.605777C5.73046 0.58616 5.11622 0.58616 4.50246 0.605777C3.84786 0.626303 3.34304 1.17273 3.34304 1.82677V2.33492M7.50364 2.33492C6.11884 2.2279 4.72784 2.2279 3.34304 2.33492" stroke="black" strokeWidth="0.83212" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+const HeaderButton = ({text, icon, onClick}: {
+  text: string
+  icon: ReactElement
+  onClick: () => void
 }) => {
   return (
     <div
-      className="flex border-b items-center gap-2"
+      className="flex items-center text-sm px-2.5 gap-1.5 border-l select-none hover:bg-slate-100 active:bg-slate-200"
+      onClick={onClick}
+    >
+      {icon}
+      {text}
+    </div>
+  )
+}
+
+const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onCopy, onDelete}: {
+  onSelectAll: () => void
+  onDeselectAll: () => void
+  selected: number
+  onPlay: () => void
+  onExport: () => void
+  onCopy: () => void
+  onDelete: () => void
+}) => {
+  return (
+    <div
+      className="flex border-b"
     >
       <div
         className="flex flex-col p-2 border-r"
@@ -162,28 +226,28 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected}: {
           }}
         />
       </div>
-      <span className="data-[selectall=true]:text-slate-400 select-none" data-selectall={selected === 0}>
-        {selected > 0 ? `${selected} Selected` : 'Select All'}
-      </span>
+      <div className="flex flex-1 gap-2 justify-between">
+        <span className="px-2 data-[selectall=true]:text-slate-400 select-none self-center" data-selectall={selected === 0}>
+          {selected > 0 ? `${selected} Selected` : 'Select All'}
+        </span>
+        {selected > 0 && (
+          <div className="flex">
+            <HeaderButton text="Play" icon={<PlayIconSmall />} onClick={onPlay}/>
+            <HeaderButton text="Export" icon={<ExportIconSmall />} onClick={onExport}/>
+            <HeaderButton text="Copy" icon={<CopyIconSmall />} onClick={onCopy}/>
+            <HeaderButton text="Delete" icon={<DeleteIconSmall />} onClick={onDelete}/>
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
 const ReplView = () => {
   const [input, setInput] = useState("")
-  const [selected, setSelected] = useState<string[]>([])
+  const [_selected, setSelected] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
   const {error, repl} = API.repl.useRepl()
-
-  const runCommand = () => {
-    console.log(input)
-    API.repl.runCommand(input)
-    setInput("")
-  }
-
-  const onReorder = (newOrder: ReplCommand[]) => {
-    API.repl.reorderCommands(newOrder.map(c => c.id))
-  }
 
   if (error) {
     return (
@@ -197,6 +261,28 @@ const ReplView = () => {
     )
   }
 
+  const selected = _selected.filter(id => repl.commands.find(c => c.id === id))
+
+  const runCommand = () => {
+    if (!input) return
+    API.repl.runCommand(input)
+    setInput("")
+  }
+
+  const onReorder = (newOrder: ReplCommand[]) => {
+    API.repl.reorderCommands(newOrder.map(c => c.id))
+  }
+
+  const onPlay = () => {
+    API.repl.runCommandsById(selected)
+  }
+
+  const onExport = () => {}
+  const onCopy = () => {}
+  const onDelete = () => {
+    API.repl.deleteCommands(selected)
+  }
+
   return (
     <div>
       <div className="flex flex-col border">
@@ -204,6 +290,10 @@ const ReplView = () => {
           onSelectAll={() => setSelected(repl.commands.map(c => c.id))}
           onDeselectAll={() => setSelected([])}
           selected={selected.length}
+          onPlay={onPlay}
+          onExport={onExport}
+          onCopy={onCopy}
+          onDelete={onDelete}
         />
         <Reorder.Group
           onReorder={onReorder}
