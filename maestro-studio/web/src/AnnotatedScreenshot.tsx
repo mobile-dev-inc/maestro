@@ -50,15 +50,11 @@ const Annotation = ({element, deviceWidth, deviceHeight, state, onClick}: {
   )
 }
 
-const TargetLines = ({ element, deviceScreen, color }: {
-  element: UIElement
-  deviceScreen: DeviceScreen
+const Crosshairs = ({ cx, cy, color }: {
+  cx: number
+  cy: number
   color: string
 }) => {
-  if (!element.bounds) return null
-  const {x, y, width, height} = element.bounds
-  const cx = (x + width / 2) / deviceScreen.width
-  const cy = (y + height / 2) / deviceScreen.height
   return (
     <>
       <div
@@ -109,12 +105,13 @@ const getHoveredElement = (deviceScreen: DeviceScreen, mouse: MousePosition): UI
   })[0]
 }
 
-export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSelected, hoveredElement, onElementHovered}: {
+export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSelected, hoveredElement, onElementHovered, annotationsEnabled = true}: {
   deviceScreen: DeviceScreen
   selectedElement: UIElement | null
   onElementSelected: (element: UIElement | null) => void
   hoveredElement: UIElement | null
   onElementHovered: (element: UIElement | null) => void
+  annotationsEnabled?: boolean
 }) => {
   const ref = useRef(null)
   const mouse = useMouse(ref)
@@ -153,6 +150,24 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
 
   const focusedElement = selectedElement || hoveredElement
 
+  const createCrosshairs = () => {
+    if (annotationsEnabled) {
+      const bounds = focusedElement?.bounds
+      if (!bounds) return null
+      const {x, y, width, height} = bounds
+      const cx = (x + width / 2) / deviceScreen.width
+      const cy = (y + height / 2) / deviceScreen.height
+      const color = focusedElement === selectedElement ? 'bg-pink-400' : 'bg-blue-400'
+      return <Crosshairs cx={cx} cy={cy} color={color} />
+    } else {
+      if (mouse.isOver && mouse.x && mouse.y && mouse.elementWidth && mouse.elementHeight) {
+        return <Crosshairs cx={mouse.x / mouse.elementWidth} cy={mouse.y / mouse.elementHeight} color="bg-blue-400" />
+      } else {
+        return null
+      }
+    }
+  }
+
   return (
     <div
       ref={ref}
@@ -160,23 +175,17 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
       style={{
         aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
+      onClick={() => {
+        if (selectedElement) onElementSelected(null)
+      }}
     >
       <img
-        className="h-full"
+        className="h-full pointer-events-none select-none"
         src={deviceScreen.screenshot}
         alt="screenshot"
-        onClick={() => {
-          if (selectedElement) onElementSelected(null)
-        }}
       />
-      {focusedElement ? (
-        <TargetLines
-          element={focusedElement}
-          deviceScreen={deviceScreen}
-          color={focusedElement === selectedElement ? 'bg-pink-400' : 'bg-blue-400'}
-        />
-      ) : null}
-      {deviceScreen.elements.map(createAnnotation)}
+      {createCrosshairs()}
+      {(annotationsEnabled || !mouse.isOver) && deviceScreen.elements.map(createAnnotation)}
     </div>
   );
 }
