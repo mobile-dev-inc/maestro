@@ -172,6 +172,7 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected}: {
 const ReplView = () => {
   const [input, setInput] = useState("")
   const [selected, setSelected] = useState<string[]>([])
+  const [dragging, setDragging] = useState(false)
   const {error, repl} = API.repl.useRepl()
 
   const runCommand = () => {
@@ -214,11 +215,14 @@ const ReplView = () => {
               key={command.id}
               transition={{duration: .1}}
               dragTransition={{bounceStiffness: 2000, bounceDamping: 100}}
+              onDragStart={() => { setDragging(true) }}
+              onDragEnd={() => { setTimeout(() => setDragging(false)) }}
             >
               <CommandRow
                 command={command}
                 selected={selected.includes(command.id)}
                 onClick={() => {
+                  if (dragging) return
                   if (selected.includes(command.id)) {
                     setSelected(prevState => prevState.filter(id => id !== command.id))
                   } else {
