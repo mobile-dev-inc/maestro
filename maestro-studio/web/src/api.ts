@@ -2,7 +2,7 @@ import { DeviceScreen, Repl, ReplCommand } from './models';
 import useSWR, { mutate } from 'swr';
 
 export type ReplResponse = {
-  repl?: Repl | undefined
+  repl?: Repl
   error?: any
 }
 
