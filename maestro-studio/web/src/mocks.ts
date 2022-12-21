@@ -87,7 +87,7 @@ const handlers = [
         newCommands.push(command)
       }
     })
-    await wait(1000)
+    await wait(30)
     commands = newCommands
     version++
     return replResponse(res, ctx)

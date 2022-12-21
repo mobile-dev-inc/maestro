@@ -209,7 +209,12 @@ const ReplView = () => {
           values={repl.commands}
         >
           {repl.commands.map(command => (
-            <Reorder.Item value={command} key={command.id}>
+            <Reorder.Item
+              value={command}
+              key={command.id}
+              transition={{duration: .1}}
+              dragTransition={{bounceStiffness: 2000, bounceDamping: 100}}
+            >
               <CommandRow
                 command={command}
                 selected={selected.includes(command.id)}
