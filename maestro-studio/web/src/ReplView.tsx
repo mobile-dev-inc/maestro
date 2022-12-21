@@ -282,7 +282,7 @@ const ReplView = () => {
   }
 
   return (
-    <div>
+    <div className="flex-1">
       <div className="flex flex-col border">
         <ReplHeader
           onSelectAll={() => setSelected(repl.commands.map(c => c.id))}

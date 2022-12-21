@@ -23,13 +23,22 @@ import kotlin.io.path.createTempDirectory
 object DeviceScreenService {
 
     private val SCREENSHOT_DIR = getScreenshotDir()
+
+    private var previousScreenshot: File? = null
+
     fun routes(routing: Routing, maestro: Maestro) {
         routing.get("/api/device-screen") {
+            val deletePrevious = call.request.queryParameters["deletePrevious"] == "true"
+
             val tree: TreeNode
             val screenshotFile: File
             synchronized(DeviceScreenService) {
                 tree = maestro.viewHierarchy().root
                 screenshotFile = takeScreenshot(maestro)
+                if (deletePrevious) {
+                    previousScreenshot?.delete()
+                    previousScreenshot = screenshotFile
+                }
             }
 
             val deviceInfo = maestro.deviceInfo()
