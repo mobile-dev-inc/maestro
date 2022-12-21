@@ -3,8 +3,6 @@ import React, { ReactElement, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
 import { ReplCommand, ReplCommandStatus } from './models';
 import { Reorder } from 'framer-motion';
-import { Simulate } from 'react-dom/test-utils';
-import copy = Simulate.copy;
 
 const PlayIcon = () => {
   return (
