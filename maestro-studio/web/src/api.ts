@@ -51,10 +51,8 @@ export const API = {
       mutate<Repl>('/api/repl/watch', (repl) => {
         if (!repl) return undefined
         const newCommands: ReplCommand[] = []
-        ids.forEach(id => {
-          const command = repl.commands.find(c => c.id === id)
-          command && newCommands.push(command)
-        })
+       const idsAsSet = new Set(ids)
+       repl.commands.filter(c => !!c && idsAsSet.has(c.id)).forEach(c => newCommands.push(c))
         return {...repl, commands: newCommands}
       }, {
         revalidate: false
