@@ -13,6 +13,8 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import maestro.Maestro
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
@@ -154,16 +156,6 @@ object ReplService {
         val repl = state.toModel()
         val response = jacksonObjectMapper().writeValueAsString(repl)
         respondText(response)
-    }
-
-    private suspend inline fun <reified T> ApplicationCall.parseBody(): T {
-        return try {
-            receiveStream().use { body ->
-                jacksonObjectMapper().readValue(body, T::class.java)
-            }
-        } catch (e: IOException) {
-            throw HttpException(HttpStatusCode.BadRequest, "Failed to parse request body")
-        }
     }
 
     private fun createEntries(yaml: String): List<ReplEntry> {
