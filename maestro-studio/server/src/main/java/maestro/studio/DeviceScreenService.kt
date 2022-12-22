@@ -121,7 +121,11 @@ object DeviceScreenService {
         val name = "${UUID.randomUUID()}.png"
         val screenshotFile = SCREENSHOT_DIR.resolve(name).toFile()
         screenshotFile.deleteOnExit()
-        maestro.takeScreenshot(screenshotFile)
+        try {
+            maestro.takeScreenshot(screenshotFile)
+        } catch (ignore: Exception) {
+            // ignore intermittent screenshot errors
+        }
         return screenshotFile
     }
 
