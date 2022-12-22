@@ -122,7 +122,7 @@ const CommandRow = ({command, selected, onClick}: {
   return (
     <div
       key={command.id}
-      className="flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
+      className="relative flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
       onClick={onClick}
     >
       <div
@@ -130,8 +130,8 @@ const CommandRow = ({command, selected, onClick}: {
       >
         <CheckBox type="circle" checked={selected} />
       </div>
-      <pre className="p-4 font-mono cursor-default flex-1">{command.yaml}</pre>
-      <div className="p-4">
+      <pre className="p-4 pr-14 font-mono cursor-default flex-1 overflow-x-scroll">{command.yaml}</pre>
+      <div className="absolute p-4 right-0">
         <StatusIcon status={command.status} />
       </div>
     </div>
@@ -225,7 +225,7 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onC
         />
       </div>
       <div className="flex flex-1 gap-2 justify-between">
-        <span className="px-2 data-[selectall=true]:text-slate-400 select-none self-center" data-selectall={selected === 0}>
+        <span className="px-2 whitespace-nowrap data-[selectall=true]:text-slate-400 select-none self-center" data-selectall={selected === 0}>
           {selected > 0 ? `${selected} Selected` : 'Select All'}
         </span>
         {selected > 0 && (
@@ -306,7 +306,7 @@ const ReplView = () => {
       />
       <Reorder.Group
         ref={listRef}
-        className="overflow-y-scroll"
+        className="overflow-y-scroll overflow-hidden"
         onReorder={onReorder}
         values={repl.commands}
       >
@@ -344,7 +344,7 @@ const ReplView = () => {
         }}
       >
         <AutosizingTextArea
-          className="resize-none p-4 overflow-scroll bg-gray-50 font-mono cursor-text outline-none border border-transparent border-b-slate-200 focus:border focus:border-slate-400"
+          className="resize-none p-4 pr-16 overflow-y-scroll overflow-hidden bg-gray-50 font-mono cursor-text outline-none border border-transparent border-b-slate-200 focus:border focus:border-slate-400"
           setValue={value => setInput(value)}
           value={input}
           placeholder="Enter a command, then press ENTER to run"
