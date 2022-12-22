@@ -1,20 +1,14 @@
-package maestro.ios
+package maestro.drivers
 
-import ios.logger.Logger
+import maestro.utils.logger.Logger
 import ios.xcrun.Simctl
 import maestro.Maestro
+import maestro.utils.xcuitest.XcUITestDriver
 import okio.buffer
 import okio.sink
 import okio.source
 import org.rauschig.jarchivelib.ArchiverFactory
 import java.io.File
-
-interface XcUITestDriver {
-    fun listApps(): Set<String>
-    fun uninstall()
-    fun setup()
-    fun cleanup()
-}
 
 class XcUITestDriverImpl(private val logger: Logger, private val deviceId: String): XcUITestDriver {
 
