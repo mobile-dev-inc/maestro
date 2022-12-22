@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useEffect, useState } from 'react';
 import { DeviceScreen, DivProps, UIElement } from './models';
-import { API, wait } from './api';
+import { API } from './api';
 import { AnnotatedScreenshot } from './AnnotatedScreenshot';
 
 type GestureEvent = {

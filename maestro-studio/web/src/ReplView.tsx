@@ -1,5 +1,5 @@
 import { API } from './api';
-import React, { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
 import { ReplCommand, ReplCommandStatus } from './models';
 import { Reorder } from 'framer-motion';
