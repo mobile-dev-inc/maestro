@@ -123,7 +123,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
     } else {
       onElementHovered(null)
     }
-  }, [mouse])
+  }, [deviceScreen, mouse, onElementHovered])
 
   const createAnnotation = (element: UIElement) => {
     let state: AnnotationState = 'default'
