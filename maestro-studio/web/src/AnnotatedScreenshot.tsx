@@ -189,7 +189,11 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
         alt="screenshot"
       />
       {createCrosshairs()}
-      {(annotationsEnabled || !mouse.isOver) && deviceScreen.elements.map(createAnnotation)}
+      {(annotationsEnabled || !mouse.isOver) && (
+        <div className="w-full h-full">
+          {deviceScreen.elements.map(createAnnotation)}
+        </div>
+      )}
     </div>
   );
 }
