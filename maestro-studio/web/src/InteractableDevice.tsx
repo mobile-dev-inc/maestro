@@ -90,8 +90,10 @@ const useMetaKeyDown = () => {
 const InteractableDevice = ({deviceScreen}: {
   deviceScreen: DeviceScreen
 }) => {
-  const [hoveredElement, setHoveredElement] = useState<UIElement | null>(null)
+  const [hoveredElementId, setHoveredElementId] = useState<string | null>(null)
   const metaKeyDown = useMetaKeyDown()
+
+  const hoveredElement = deviceScreen.elements.find(e => e.id === hoveredElementId) || null
 
   const onTapGesture = (x: number, y: number) => {
     API.repl.runCommand(`
@@ -153,7 +155,7 @@ const InteractableDevice = ({deviceScreen}: {
         selectedElement={null}
         onElementSelected={onElementTap}
         hoveredElement={hoveredElement}
-        onElementHovered={setHoveredElement}
+        onElementHovered={e => setHoveredElementId(e?.id || null)}
         annotationsEnabled={!metaKeyDown}
       />
     </GestureDiv>
