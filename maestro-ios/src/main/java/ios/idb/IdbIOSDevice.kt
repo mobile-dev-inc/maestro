@@ -101,9 +101,11 @@ class IdbIOSDevice(
             is Err -> {
                 when (result.error) {
                     is GetViewHierarchy.IllegalArgumentSnapshotFailure -> {
-                        val accessibilityResponse = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
-                        val accessibilityNode: XCUIElement = mapper.readValue(accessibilityResponse.json)
-                        Ok(accessibilityNode)
+                        runCatching {
+                            val accessibilityResponse = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
+                            val accessibilityNode: XCUIElement = mapper.readValue(accessibilityResponse.json)
+                            accessibilityNode
+                        }
                     }
                     is GetViewHierarchy.UnknownFailure -> Err(result.error)
                     else -> Err(result.error)
