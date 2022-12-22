@@ -87,28 +87,11 @@ const useMetaKeyDown = () => {
   return metaKeyDown
 }
 
-const InteractableDevice = () => {
-  const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
+const InteractableDevice = ({deviceScreen}: {
+  deviceScreen: DeviceScreen
+}) => {
   const [hoveredElement, setHoveredElement] = useState<UIElement | null>(null)
   const metaKeyDown = useMetaKeyDown()
-
-  useEffect(() => {
-    let running = true;
-    (async () => {
-      while (running) {
-        try {
-          const deviceScreen = await API.getDeviceScreen(true)
-          setDeviceScreen(deviceScreen)
-        } catch (e) {
-          console.error(e)
-          await wait(1000)
-        }
-      }
-    })()
-    return () => { running = false }
-  }, [setDeviceScreen])
-
-  if (!deviceScreen) return null
 
   const onTapGesture = (x: number, y: number) => {
     API.repl.runCommand(`

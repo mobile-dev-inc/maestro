@@ -1,15 +1,11 @@
 import React from 'react';
 import Main from './Main';
-import ReplView from './ReplView';
-import InteractableDevice from './InteractableDevice';
+import InteractPage from './InteractPage';
 
 function App() {
   if (window.location.pathname === '/interact') {
     return (
-      <div className="flex h-full overflow-hidden">
-        <InteractableDevice />
-        <ReplView />
-      </div>
+      <InteractPage />
     )
   }
   return (

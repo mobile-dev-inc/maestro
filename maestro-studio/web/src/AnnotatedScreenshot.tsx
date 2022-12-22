@@ -171,7 +171,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
   return (
     <div
       ref={ref}
-      className="relative border h-full bg-red-100 rounded-md overflow-hidden"
+      className="relative border h-full rounded-md overflow-hidden"
       style={{
         aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
