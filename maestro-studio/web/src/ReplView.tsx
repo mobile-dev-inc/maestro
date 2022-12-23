@@ -1,8 +1,9 @@
 import { API } from './api';
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
-import { ReplCommand, ReplCommandStatus } from './models';
+import { ReplCommand, ReplCommandStatus, UIElement } from './models';
 import { Reorder } from 'framer-motion';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const PlayIcon = () => {
   return (
@@ -196,10 +197,11 @@ const HeaderButton = ({text, icon, onClick}: {
   )
 }
 
-const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onCopy, onDelete}: {
+const ReplHeader = ({onSelectAll, onDeselectAll, selected, copyText, onPlay, onExport, onCopy, onDelete}: {
   onSelectAll: () => void
   onDeselectAll: () => void
   selected: number
+  copyText: string
   onPlay: () => void
   onExport: () => void
   onCopy: () => void
@@ -232,7 +234,9 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onC
           <div className="flex">
             <HeaderButton text="Play" icon={<PlayIconSmall />} onClick={onPlay}/>
             <HeaderButton text="Export" icon={<ExportIconSmall />} onClick={onExport}/>
-            <HeaderButton text="Copy" icon={<CopyIconSmall />} onClick={onCopy}/>
+            <CopyToClipboard text={copyText}>
+              <HeaderButton text="Copy" icon={<CopyIconSmall />} onClick={onCopy}/>
+            </CopyToClipboard>
             <HeaderButton text="Delete" icon={<DeleteIconSmall />} onClick={onDelete}/>
           </div>
         )}
@@ -241,12 +245,17 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onC
   );
 }
 
+const getFlowText = (selected: ReplCommand[]): string => {
+  return selected.map(c => (
+    c.yaml.endsWith('\n') ? c.yaml : `${c.yaml}\n`
+  )).join('')
+}
+
 const ReplView = ({onError}: {
   onError: (error: string | null) => void
 }) => {
   const listRef = useRef<HTMLElement>()
   const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
   const [_selected, setSelected] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
   const {error, repl} = API.repl.useRepl()
@@ -274,19 +283,17 @@ const ReplView = ({onError}: {
     )
   }
 
-  const selected = _selected.filter(id => repl.commands.find(c => c.id === id))
+  const selectedCommands = _selected.map(id => repl.commands.find(c => c.id === id)).filter((c): c is ReplCommand => !!c)
+  const selectedIds = selectedCommands.map(c => c.id)
 
   const runCommand = async () => {
     if (!input) return
-    setLoading(true)
     onError(null)
     try {
       await API.repl.runCommand(input)
       setInput("")
     } catch (e: any) {
       onError(e.message || 'Failed to run command')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -295,21 +302,24 @@ const ReplView = ({onError}: {
   }
 
   const onPlay = () => {
-    API.repl.runCommandsById(selected)
+    API.repl.runCommandsById(selectedIds)
   }
 
   const onExport = () => {}
   const onCopy = () => {}
   const onDelete = () => {
-    API.repl.deleteCommands(selected)
+    API.repl.deleteCommands(selectedIds)
   }
+
+  const flowText = getFlowText(selectedCommands);
 
   return (
     <div className="flex flex-col border rounded overflow-hidden h-full">
       <ReplHeader
         onSelectAll={() => setSelected(repl.commands.map(c => c.id))}
         onDeselectAll={() => setSelected([])}
-        selected={selected.length}
+        selected={selectedIds.length}
+        copyText={flowText}
         onPlay={onPlay}
         onExport={onExport}
         onCopy={onCopy}
@@ -332,10 +342,10 @@ const ReplView = ({onError}: {
           >
             <CommandRow
               command={command}
-              selected={selected.includes(command.id)}
+              selected={selectedIds.includes(command.id)}
               onClick={() => {
                 if (dragging) return
-                if (selected.includes(command.id)) {
+                if (selectedIds.includes(command.id)) {
                   setSelected(prevState => prevState.filter(id => id !== command.id))
                 } else {
                   setSelected(prevState => [...prevState, command.id])
@@ -359,7 +369,6 @@ const ReplView = ({onError}: {
           setValue={value => setInput(value)}
           value={input}
           placeholder="Enter a command, then press ENTER to run"
-          disabled={loading}
         />
         <button
           className="absolute flex items-center right-1 top-1 rounded bottom-1 px-4 disabled:text-slate-400 enabled:text-blue-600 enabled:hover:bg-slate-200 enabled:active:bg-slate-300 cursor-default"
