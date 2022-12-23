@@ -27,9 +27,9 @@ class SubTreeRouteHandler: RouteHandler {
                 let springboardHierarchyDictionary = try springboardApplication.snapshot().dictionaryRepresentation
                 logger.info("[Done] Now trying hierarchy for: \(springboardBundleId)")
                 
-                let children = viewHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as! Array<[XCUIElement.AttributeName: Any]>
-                let springChildren = springboardHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as! Array<[XCUIElement.AttributeName: Any]>
-                let unifiedChildren = children + springChildren
+                let children = viewHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as? Array<[XCUIElement.AttributeName: Any]>
+                let springChildren = springboardHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as? Array<[XCUIElement.AttributeName: Any]>
+                let unifiedChildren = (children ?? [[XCUIElement.AttributeName: Any]]()) + (springChildren ?? [[XCUIElement.AttributeName: Any]]())
                 viewHierarchyDictionary.updateValue(unifiedChildren as Any, forKey: XCUIElement.AttributeName.children)
                 
                 
