@@ -6,6 +6,16 @@ export type ReplResponse = {
   error?: any
 }
 
+export class HttpError extends Error {
+
+  constructor(
+    public status: number,
+    public message: string,
+  ) {
+    super(message);
+  }
+}
+
 export const wait = async (durationMs: number) => {
   return new Promise(resolve => setTimeout(resolve, durationMs))
 }
@@ -21,7 +31,7 @@ const makeRequest = async <T>(method: string, path: string, body?: Object | unde
   })
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`Request failed ${response.status}: ${body}`)
+    throw new HttpError(response.status, body)
   }
   return await response.json()
 }

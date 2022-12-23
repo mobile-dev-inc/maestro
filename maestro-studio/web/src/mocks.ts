@@ -67,6 +67,9 @@ const handlers = [
   rest.post('/api/repl/command', async (req, res, ctx) => {
     const {yaml, ids}: { yaml?: string, ids?: string[] } = await req.json()
     if (yaml) {
+      if (yaml.includes('error')) {
+        return res(ctx.status(400), ctx.text('Invalid command'))
+      }
       createCommand(yaml)
     } else if (ids) {
       runCommands(ids)

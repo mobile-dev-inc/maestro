@@ -241,9 +241,12 @@ const ReplHeader = ({onSelectAll, onDeselectAll, selected, onPlay, onExport, onC
   );
 }
 
-const ReplView = () => {
+const ReplView = ({onError}: {
+  onError: (error: string | null) => void
+}) => {
   const listRef = useRef<HTMLElement>()
   const [input, setInput] = useState("")
+  const [loading, setLoading] = useState(false)
   const [_selected, setSelected] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
   const {error, repl} = API.repl.useRepl()
@@ -273,10 +276,18 @@ const ReplView = () => {
 
   const selected = _selected.filter(id => repl.commands.find(c => c.id === id))
 
-  const runCommand = () => {
+  const runCommand = async () => {
     if (!input) return
-    API.repl.runCommand(input)
-    setInput("")
+    setLoading(true)
+    onError(null)
+    try {
+      await API.repl.runCommand(input)
+      setInput("")
+    } catch (e: any) {
+      onError(e.message || 'Failed to run command')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onReorder = (newOrder: ReplCommand[]) => {
@@ -348,6 +359,7 @@ const ReplView = () => {
           setValue={value => setInput(value)}
           value={input}
           placeholder="Enter a command, then press ENTER to run"
+          disabled={loading}
         />
         <button
           className="absolute flex items-center right-1 top-1 rounded bottom-1 px-4 disabled:text-slate-400 enabled:text-blue-600 enabled:hover:bg-slate-200 enabled:active:bg-slate-300 cursor-default"
