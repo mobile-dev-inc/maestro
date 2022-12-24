@@ -1,9 +1,10 @@
 import { API } from './api';
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import AutosizingTextArea from './AutosizingTextArea';
-import { ReplCommand, ReplCommandStatus, UIElement } from './models';
+import { FormattedFlow, ReplCommand, ReplCommandStatus } from './models';
 import { Reorder } from 'framer-motion';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { SaveFlowModal } from './SaveFlowModal';
 
 const PlayIcon = () => {
   return (
@@ -123,8 +124,9 @@ const CommandRow = ({command, selected, onClick}: {
   return (
     <div
       key={command.id}
-      className="relative flex flex-row border-b hover:bg-slate-50 active:bg-slate-100"
+      className="relative flex flex-row border-b hover:bg-slate-50 active:bg-slate-100 data-[running]:bg-blue-50"
       onClick={onClick}
+      data-running={command.status === 'running' ? true : undefined}
     >
       <div
         className="flex flex-col px-2 pt-4 border-r"
@@ -251,6 +253,18 @@ const getFlowText = (selected: ReplCommand[]): string => {
   )).join('')
 }
 
+const Instructions = () => {
+  return (
+    <div className="flex-1 flex flex-col p-16 items-center">
+      <div className="flex flex-col gap-4 font-mono p-12 bg-blue-50 rounded-md border border-blue-400 text-blue-900">
+        <p>• Type a command above, then hit ENTER to run</p>
+        <p>• Tap on the device screen on the left to generate commands</p>
+        <p>• Hold CMD (⌘) down to freely tap and swipe on the device screen</p>
+      </div>
+    </div>
+  )
+}
+
 const ReplView = ({onError}: {
   onError: (error: string | null) => void
 }) => {
@@ -258,6 +272,7 @@ const ReplView = ({onError}: {
   const [input, setInput] = useState("")
   const [_selected, setSelected] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
+  const [formattedFlow, setFormattedFlow] = useState<FormattedFlow | null>(null)
   const {error, repl} = API.repl.useRepl()
   const listSize = repl?.commands.length || 0
   const previousListSize = useRef(0);
@@ -278,9 +293,7 @@ const ReplView = ({onError}: {
   }
 
   if (!repl) {
-    return (
-      <div>Loading...</div>
-    )
+    return null
   }
 
   const selectedCommands = _selected.map(id => repl.commands.find(c => c.id === id)).filter((c): c is ReplCommand => !!c)
@@ -305,7 +318,10 @@ const ReplView = ({onError}: {
     API.repl.runCommandsById(selectedIds)
   }
 
-  const onExport = () => {}
+  const onExport = () => {
+    if (selectedIds.length === 0) return
+    API.repl.formatFlow(selectedIds).then(setFormattedFlow)
+  }
   const onCopy = () => {}
   const onDelete = () => {
     API.repl.deleteCommands(selectedIds)
@@ -378,6 +394,12 @@ const ReplView = ({onError}: {
           <PlayIcon />
         </button>
       </div>
+      {repl.commands.length === 0 && (
+        <Instructions />
+      )}
+      {formattedFlow && (
+        <SaveFlowModal formattedFlow={formattedFlow} onClose={()=>{ setFormattedFlow(null) }} />
+      )}
     </div>
   )
 }

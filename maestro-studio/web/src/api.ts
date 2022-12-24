@@ -1,4 +1,4 @@
-import { DeviceScreen, Repl, ReplCommand } from './models';
+import { DeviceScreen, FormattedFlow, Repl, ReplCommand } from './models';
 import useSWR, { mutate, SWRConfiguration, SWRResponse } from 'swr';
 
 export type ReplResponse = {
@@ -71,6 +71,9 @@ export const API = {
       }, {
         revalidate: false
       })
+    },
+    formatFlow: async (ids: string[]): Promise<FormattedFlow> => {
+      return makeRequest('POST', '/api/repl/command/format', { ids })
     },
   }
 }

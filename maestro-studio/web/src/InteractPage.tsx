@@ -1,7 +1,7 @@
 import InteractableDevice from './InteractableDevice';
 import ReplView from './ReplView';
 import React, { useEffect, useState } from 'react';
-import { DeviceScreen, UIElement } from './models';
+import { DeviceScreen } from './models';
 import { API, wait } from './api';
 
 const InteractPage = () => {

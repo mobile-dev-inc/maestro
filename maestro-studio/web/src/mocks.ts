@@ -1,5 +1,5 @@
 import { ResponseComposition, rest, RestContext, setupWorker } from 'msw';
-import { DeviceScreen, ReplCommand } from './models';
+import { DeviceScreen, FormattedFlow, ReplCommand } from './models';
 import { sampleElements } from './sampleElements';
 import { wait } from './api';
 
@@ -103,7 +103,17 @@ const handlers = [
   }),
   rest.get('/api/device-screen', (req, res, ctx) => {
     return res(ctx.delay(500), ctx.status(200), ctx.json(mockDeviceScreen))
-  })
+  }),
+  rest.post('/api/repl/command/format', async (req, res, ctx) => {
+    const {ids}: { ids: string[] } = await req.json()
+    const contentString = commands.filter(c => ids.includes(c.id))
+      .map(c => c.yaml.endsWith('\n') ? c.yaml : `${c.yaml}\n`)
+      .join('')
+    return res(ctx.status(200), ctx.json({
+      config: 'appId: com.example.app',
+      commands: contentString,
+    }))
+  }),
 ]
 
 export const installMocks = () => {
