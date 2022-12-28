@@ -14,7 +14,14 @@ import java.net.ConnectException
 
 class XcUITestDriver(private val logger: Logger, private val deviceId: String) {
 
-    fun uninstall() {
+    private var xcTestProcess: Process? = null
+
+    fun killAndUninstall() {
+        if (xcTestProcess?.isAlive == true) {
+            logger.info("[Start] Killing the started XCUITest")
+            xcTestProcess?.destroy()
+            logger.info("[Done] Killing the started XCUITest")
+        }
         logger.info("[Start] Uninstalling the XCUITest runner app")
         Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
         logger.info("[Done] Uninstalling the XCUITest runner app")
@@ -73,7 +80,7 @@ class XcUITestDriver(private val logger: Logger, private val deviceId: String) {
             logger.info("[Done] Writing maestro-driver-ios app")
 
             logger.info("[Start] Running XcUITest with xcode build command")
-            Simctl.runXcTestWithoutBuild(
+            xcTestProcess = Simctl.runXcTestWithoutBuild(
                 deviceId,
                 xctestRunFile.absolutePath
             )
@@ -91,7 +98,7 @@ class XcUITestDriver(private val logger: Logger, private val deviceId: String) {
         File(xctestConfig).delete()
         File(uiTestRunnerApp).deleteRecursively()
         File(hostApp).deleteRecursively()
-        Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        killAndUninstall()
         logger.info("[Done] Cleaning up the ui test runner files")
     }
 
