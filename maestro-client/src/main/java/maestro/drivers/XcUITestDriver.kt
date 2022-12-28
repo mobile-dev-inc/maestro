@@ -15,7 +15,9 @@ import java.net.ConnectException
 class XcUITestDriver(private val logger: Logger, private val deviceId: String) {
 
     fun uninstall() {
+        logger.info("[Start] Uninstalling the XCUITest runner app")
         Simctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        logger.info("[Done] Uninstalling the XCUITest runner app")
     }
 
     fun setup() {
