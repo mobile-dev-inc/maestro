@@ -26,8 +26,6 @@ object WorkspaceUtils {
             excludeTags = excludeTags,
         )
 
-        println(flowsMatchingTagsRule)
-
         val outUri = URI.create("jar:file:${out.toAbsolutePath()}")
         FileSystems.newFileSystem(outUri, mapOf("create" to "true")).use { fs ->
             flowsMatchingTagsRule.forEach {
