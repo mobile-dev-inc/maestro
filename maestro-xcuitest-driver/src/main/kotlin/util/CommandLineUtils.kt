@@ -15,6 +15,7 @@ object CommandLineUtils {
         ) "NUL" else "/dev/null"
     )
 
+    @Deprecated("use runCommand(listOf(...)) instead")
     fun runCommand(command: String, waitForCompletion: Boolean = true, outputFile: File? = null): Process {
         LOGGER.info("Running command line operation: $command")
 
