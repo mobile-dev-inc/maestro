@@ -271,27 +271,27 @@ class AndroidDriver(
         val deviceInfo = deviceInfo()
         when (swipeDirection) {
             SwipeDirection.UP -> {
-                val startX = deviceInfo.widthGrid / 2
-                val startY = deviceInfo.heightGrid / 3
-                val endY = deviceInfo.heightGrid / 9
+                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startY = (deviceInfo.heightGrid * 0.5f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.25f).toInt()
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.DOWN -> {
-                val startX = deviceInfo.widthGrid / 2
-                val startY = deviceInfo.heightGrid / 9
-                val endY = deviceInfo.heightGrid / 3
+                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startY = (deviceInfo.heightGrid * 0.25f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.RIGHT -> {
-                val startX = deviceInfo.widthGrid / 2
-                val startY = deviceInfo.heightGrid / 2
-                val endX = deviceInfo.widthGrid
+                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startY = (deviceInfo.heightGrid * 0.5f).toInt()
+                val endX = (deviceInfo.widthGrid * 0.9f).toInt()
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
             SwipeDirection.LEFT -> {
-                val startX = deviceInfo.widthGrid / 2
-                val startY = deviceInfo.heightGrid / 2
-                val endX = 0
+                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startY = (deviceInfo.heightGrid * 0.5f).toInt()
+                val endX = (deviceInfo.widthGrid * 0.1f).toInt()
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
         }
