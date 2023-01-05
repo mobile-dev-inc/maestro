@@ -260,7 +260,7 @@ class AndroidDriver(
     }
 
     override fun scrollVertical() {
-        dadb.shell("input swipe 500 1000 700 -900 2000")
+        swipe(SwipeDirection.UP, 2000)
     }
 
     override fun swipe(start: Point, end: Point, durationMs: Long) {
