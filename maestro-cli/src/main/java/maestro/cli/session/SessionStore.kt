@@ -35,7 +35,7 @@ object SessionStore {
         keyValueStore.keys()
             .forEach { key ->
                 val lastHeartbeat = keyValueStore.get(key)?.toLongOrNull()
-                if (lastHeartbeat != null && System.currentTimeMillis() - lastHeartbeat >= TimeUnit.SECONDS.toMillis(30)) {
+                if (lastHeartbeat != null && System.currentTimeMillis() - lastHeartbeat >= TimeUnit.SECONDS.toMillis(21)) {
                     keyValueStore.delete(key)
                 }
             }
@@ -55,7 +55,7 @@ object SessionStore {
                 .keys()
                 .filter { key ->
                     val lastHeartbeat = keyValueStore.get(key)?.toLongOrNull()
-                    lastHeartbeat != null && System.currentTimeMillis() - lastHeartbeat < TimeUnit.SECONDS.toMillis(30)
+                    lastHeartbeat != null && System.currentTimeMillis() - lastHeartbeat < TimeUnit.SECONDS.toMillis(21)
                 }
         }
     }

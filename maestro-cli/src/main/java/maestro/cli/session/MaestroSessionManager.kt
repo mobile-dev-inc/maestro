@@ -66,6 +66,7 @@ object MaestroSessionManager {
 
         Runtime.getRuntime().addShutdownHook(thread(start = false) {
             SessionStore.withExclusiveLock {
+                heartbeatFuture.cancel(true)
                 SessionStore.delete(sessionId, selectedDevice.platform)
 
                 if (!SessionStore.hasActiveSessions(sessionId, selectedDevice.platform)) {
@@ -74,11 +75,7 @@ object MaestroSessionManager {
             }
         })
 
-        return try {
-            block(session)
-        } finally {
-            heartbeatFuture.cancel(true)
-        }
+        return block(session)
     }
 
     private fun selectDevice(
