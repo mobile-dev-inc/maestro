@@ -17,7 +17,7 @@ interface YamlSwipe {
 data class YamlSwipeDirection(val direction: SwipeDirection, override val duration: Long = DEFAULT_DURATION_IN_MILLIS) : YamlSwipe
 data class YamlCoordinateSwipe(val start: String, val end: String, override val duration: Long = DEFAULT_DURATION_IN_MILLIS) : YamlSwipe
 
-private const val DEFAULT_DURATION_IN_MILLIS = 2000L
+private const val DEFAULT_DURATION_IN_MILLIS = 400L
 
 class YamlSwipeDeserializer: JsonDeserializer<YamlSwipe>() {
 
