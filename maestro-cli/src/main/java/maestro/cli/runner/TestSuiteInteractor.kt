@@ -16,6 +16,7 @@ import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.Sink
 import java.io.File
+import kotlin.io.path.name
 
 class TestSuiteInteractor(
     private val maestro: Maestro,
@@ -43,7 +44,7 @@ class TestSuiteInteractor(
             }
 
             runTestSuite(
-                flowFiles.map { it.toFile() },
+                flowFiles.sortedBy { it.name }.map { it.toFile() },
                 reportOut,
                 env,
             )
