@@ -283,13 +283,13 @@ class AndroidDriver(
                 dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
             }
             SwipeDirection.RIGHT -> {
-                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startX = (deviceInfo.widthGrid * 0.1f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
                 val endX = (deviceInfo.widthGrid * 0.9f).toInt()
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
             SwipeDirection.LEFT -> {
-                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startX = (deviceInfo.widthGrid * 0.9f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
                 val endX = (deviceInfo.widthGrid * 0.1f).toInt()
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
