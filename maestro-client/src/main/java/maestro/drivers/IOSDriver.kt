@@ -288,9 +288,9 @@ class IOSDriver(
         iosDevice.scroll(
             appId = appId,
             xStart = 0.5f,
-            yStart = 0.5f,
+            yStart = 0.9f,
             xEnd = 0.5f,
-            yEnd = 0.25f,
+            yEnd = 0.1f,
             velocity = null
         ).expect {}
     }

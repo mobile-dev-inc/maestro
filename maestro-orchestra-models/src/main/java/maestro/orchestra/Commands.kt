@@ -47,7 +47,7 @@ data class SwipeCommand(
     val startPoint: Point? = null,
     val endPoint: Point? = null,
     val elementSelector: ElementSelector? = null,
-    val duration: Long
+    val duration: Long = DEFAULT_DURATION_IN_MILLIS
 ) : Command {
 
     override fun description(): String {
@@ -67,6 +67,10 @@ data class SwipeCommand(
 
     override fun evaluateScripts(jsEngine: JsEngine): SwipeCommand {
         return this
+    }
+
+    companion object {
+        private const val DEFAULT_DURATION_IN_MILLIS = 400L
     }
 }
 
