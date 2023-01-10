@@ -33,6 +33,7 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
@@ -295,6 +296,10 @@ class AndroidDriver(
                 dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
             }
         }
+    }
+
+    override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
+        TODO("Not yet implemented")
     }
 
     override fun backPress() {

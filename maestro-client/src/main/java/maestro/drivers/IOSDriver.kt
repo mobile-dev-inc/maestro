@@ -40,6 +40,7 @@ import maestro.PointF
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement
 import maestro.debuglog.IOSDriverLogger
 import maestro.logger.Logger
 import maestro.utils.FileUtils
@@ -413,6 +414,10 @@ class IOSDriver(
                 Float.MAX_VALUE
             }
         ).expect {}
+    }
+
+    override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
+        TODO()
     }
 
     override fun backPress() {}

@@ -46,11 +46,15 @@ data class SwipeCommand(
     val direction: SwipeDirection? = null,
     val startPoint: Point? = null,
     val endPoint: Point? = null,
+    val elementSelector: ElementSelector? = null,
     val duration: Long
 ) : Command {
 
     override fun description(): String {
         return when {
+            elementSelector != null && direction != null -> {
+                "Swiping in $direction direction on ${elementSelector.description()}"
+            }
             direction != null -> {
                 "Swiping in $direction direction in $duration ms"
             }

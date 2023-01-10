@@ -1,0 +1,6 @@
+appId: com.example.app
+---
+- swipe:
+    direction: RIGHT
+    element:
+        text: "swiping element"
