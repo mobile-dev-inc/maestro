@@ -360,21 +360,21 @@ class IOSDriver(
             SwipeDirection.UP -> {
                 startPoint = PointF(
                     x = 0.5f,
-                    y = 0.5f,
+                    y = 0.9f,
                 )
                 endPoint = PointF(
                     x = 0.5F,
-                    y = 0.25f,
+                    y = 0.1f,
                 )
             }
             SwipeDirection.DOWN -> {
                 startPoint = PointF(
                     x = 0.5f,
-                    y = 0.5f,
+                    y = 0.1f,
                 )
                 endPoint = PointF(
                     x = 0.5F,
-                    y = 0.75f,
+                    y = 0.9f,
                 )
             }
             SwipeDirection.RIGHT -> {
