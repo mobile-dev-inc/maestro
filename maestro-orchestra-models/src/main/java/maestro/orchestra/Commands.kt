@@ -258,7 +258,7 @@ data class AssertCommand(
                 visible = visible,
                 notVisible = notVisible,
             ),
-            timeout = timeout,
+            timeout = timeout?.toString(),
         )
     }
 
@@ -266,8 +266,10 @@ data class AssertCommand(
 
 data class AssertConditionCommand(
     val condition: Condition,
-    val timeout: Long? = null,
+    private val timeout: String? = null,
 ) : Command {
+
+    fun timeoutMs() = timeout?.toLong()
 
     override fun description(): String {
         return "Assert that ${condition.description()}"
@@ -276,6 +278,7 @@ data class AssertConditionCommand(
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
             condition = condition.evaluateScripts(jsEngine),
+            timeout = timeout?.evaluateScripts(jsEngine)
         )
     }
 }
