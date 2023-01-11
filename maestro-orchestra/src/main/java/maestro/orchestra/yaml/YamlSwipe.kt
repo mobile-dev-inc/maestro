@@ -23,7 +23,7 @@ data class YamlCoordinateSwipe(val start: String, val end: String, override val 
 data class YamlSwipeElement(
     @JsonFormat(with = [JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES])
     val direction: SwipeDirection,
-    val element: YamlElementSelectorUnion,
+    val from: YamlElementSelectorUnion,
     override val duration: Long = DEFAULT_DURATION_IN_MILLIS
 ) : YamlSwipe
 

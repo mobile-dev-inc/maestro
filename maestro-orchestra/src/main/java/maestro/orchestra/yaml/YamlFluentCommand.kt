@@ -358,7 +358,7 @@ data class YamlFluentCommand(
         return MaestroCommand(
             swipeCommand = SwipeCommand(
                 direction = swipeElement.direction,
-                elementSelector = toElementSelector(swipeElement.element),
+                elementSelector = toElementSelector(swipeElement.from),
                 duration = swipeElement.duration
             )
         )
