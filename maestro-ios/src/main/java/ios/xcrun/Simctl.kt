@@ -106,4 +106,15 @@ object Simctl {
 
         reboot(deviceId)
     }
+
+    fun resetPermissions() {
+        CommandLineUtils.runCommand(listOf(
+            "xcrun",
+            "simctl",
+            "privacy",
+            deviceId,
+            "reset",
+            "all"
+        ), waitForCompletion = true)
+    }
 }

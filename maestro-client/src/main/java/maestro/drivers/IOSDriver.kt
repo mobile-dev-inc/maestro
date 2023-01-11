@@ -30,6 +30,7 @@ import hierarchy.IdbElementNode
 import hierarchy.XCUIElement
 import hierarchy.XCUIElementNode
 import ios.IOSDevice
+import ios.xcrun.Simctl
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -128,6 +129,7 @@ class IOSDriver(
     }
 
     override fun clearAppState(appId: String) {
+        Simctl.resetPermissions()
         iosDevice.clearAppState(appId)
     }
 
