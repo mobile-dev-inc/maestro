@@ -41,6 +41,8 @@ class SwipeRouteHandler: RouteHandler {
                     dy: CGFloat(requestBody.endY)
             ))
             
+            logger.info("Swiping from \(startPoint) to \(endPoint) with \(velocity.rawValue) velocity")
+            
             startPoint.press(
                 forDuration: 0.05,
                 thenDragTo: endPoint,
