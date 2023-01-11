@@ -107,7 +107,7 @@ object Simctl {
         reboot(deviceId)
     }
 
-    fun resetPermissions() {
+    fun resetPermissions(deviceId: String) {
         CommandLineUtils.runCommand(listOf(
             "xcrun",
             "simctl",
