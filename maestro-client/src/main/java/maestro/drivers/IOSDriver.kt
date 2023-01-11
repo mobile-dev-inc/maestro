@@ -48,7 +48,6 @@ import util.XCRunnerSimctl
 import java.io.File
 import java.net.ConnectException
 import java.nio.file.Files
-import java.util.concurrent.TimeUnit
 import kotlin.collections.set
 
 class IOSDriver(
@@ -289,9 +288,9 @@ class IOSDriver(
         iosDevice.scroll(
             appId = appId,
             xStart = 0.5f,
-            yStart = 0.5f,
+            yStart = 0.9f,
             xEnd = 0.5f,
-            yEnd = 0.25f,
+            yEnd = 0.1f,
             velocity = null
         ).expect {}
     }
@@ -349,9 +348,6 @@ class IOSDriver(
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
-        val width = widthPoints ?: throw IllegalStateException("Device width not available")
-        val height = heightPoints ?: throw IllegalStateException("Device height not available")
-
         val startPoint: PointF
         val endPoint: PointF
 
@@ -359,26 +355,26 @@ class IOSDriver(
             SwipeDirection.UP -> {
                 startPoint = PointF(
                     x = 0.5f,
-                    y = 0.5f,
+                    y = 0.9f,
                 )
                 endPoint = PointF(
                     x = 0.5F,
-                    y = 0.25f,
+                    y = 0.1f,
                 )
             }
             SwipeDirection.DOWN -> {
                 startPoint = PointF(
                     x = 0.5f,
-                    y = 0.5f,
+                    y = 0.1f,
                 )
                 endPoint = PointF(
                     x = 0.5F,
-                    y = 0.75f,
+                    y = 0.9f,
                 )
             }
             SwipeDirection.RIGHT -> {
                 startPoint = PointF(
-                    x = 0.5f,
+                    x = 0.1f,
                     y = 0.5f,
                 )
                 endPoint = PointF(
@@ -388,7 +384,7 @@ class IOSDriver(
             }
             SwipeDirection.LEFT -> {
                 startPoint = PointF(
-                    x = 0.5f,
+                    x = 0.9f,
                     y = 0.5f,
                 )
                 endPoint = PointF(
@@ -397,16 +393,50 @@ class IOSDriver(
                 )
             }
         }
+        directionalSwipe(durationMs, startPoint, endPoint)
+    }
 
-        val denormalizedDistance = PointF(startPoint.x * width, startPoint.y * height)
-            .distance(PointF(endPoint.x * width, endPoint.y * height))
+    override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
+        val width = widthPoints ?: throw IllegalStateException("Device width not available")
+        val height = heightPoints ?: throw IllegalStateException("Device height not available")
+
+        when (direction) {
+            SwipeDirection.UP -> {
+                val end = PointF(x = 0.5f, y = 0.1f)
+                val start = elementPoint.normalise(width, height)
+                directionalSwipe(durationMs, start, end)
+            }
+            SwipeDirection.DOWN -> {
+                val end = PointF(x = 0.5f, y = 0.9f)
+                val start = elementPoint.normalise(width, height)
+                directionalSwipe(durationMs, start, end)
+            }
+            SwipeDirection.RIGHT -> {
+                val end = PointF(x = 0.9f, y = 0.5f)
+                val start = elementPoint.normalise(width, height)
+                directionalSwipe(durationMs, start, end)
+            }
+            SwipeDirection.LEFT -> {
+                val end = PointF(x = 0.1f, y = 0.5f)
+                val start = elementPoint.normalise(width, height)
+                directionalSwipe(durationMs, start, end)
+            }
+        }
+    }
+
+    private fun directionalSwipe(durationMs: Long, start: PointF, end: PointF) {
+        val width = widthPoints ?: throw IllegalStateException("Device width not available")
+        val height = heightPoints ?: throw IllegalStateException("Device height not available")
+
+        val denormalizedDistance = PointF(start.x * width, start.y * height)
+            .distance(PointF(end.x * width, end.y * height))
 
         iosDevice.scroll(
             appId = activeAppId() ?: return,
-            xStart = startPoint.x,
-            yStart = startPoint.y,
-            xEnd = endPoint.x,
-            yEnd = endPoint.y,
+            xStart = start.x,
+            yStart = start.y,
+            xEnd = end.x,
+            yEnd = end.y,
             velocity = if (durationMs > 0) {
                 denormalizedDistance / toSeconds(durationMs)
             } else {

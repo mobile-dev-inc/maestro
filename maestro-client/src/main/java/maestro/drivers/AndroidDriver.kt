@@ -269,32 +269,82 @@ class AndroidDriver(
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
         val deviceInfo = deviceInfo()
-        when (swipeDirection) {
+        when(swipeDirection) {
             SwipeDirection.UP -> {
                 val startX = (deviceInfo.widthGrid * 0.5f).toInt()
-                val startY = (deviceInfo.heightGrid * 0.5f).toInt()
-                val endY = (deviceInfo.heightGrid * 0.25f).toInt()
-                dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
+                val startY = (deviceInfo.heightGrid * 0.9f).toInt()
+                val endX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.1f).toInt()
+                directionalSwipe(
+                    durationMs,
+                    Point(startX, startY),
+                    Point(endX, endY)
+                )
             }
             SwipeDirection.DOWN -> {
                 val startX = (deviceInfo.widthGrid * 0.5f).toInt()
-                val startY = (deviceInfo.heightGrid * 0.25f).toInt()
-                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
-                dadb.shell("input swipe $startX $startY $startX $endY $durationMs")
+                val startY = (deviceInfo.heightGrid * 0.1f).toInt()
+                val endX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.9f).toInt()
+                directionalSwipe(
+                    durationMs,
+                    Point(startX, startY),
+                    Point(endX, endY)
+                )
             }
             SwipeDirection.RIGHT -> {
-                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startX = (deviceInfo.widthGrid * 0.1f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
                 val endX = (deviceInfo.widthGrid * 0.9f).toInt()
-                dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
+                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
+                directionalSwipe(
+                    durationMs,
+                    Point(startX, startY),
+                    Point(endX, endY)
+                )
             }
             SwipeDirection.LEFT -> {
-                val startX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val startX = (deviceInfo.widthGrid * 0.9f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
                 val endX = (deviceInfo.widthGrid * 0.1f).toInt()
-                dadb.shell("input swipe $startX $startY $endX $startY $durationMs")
+                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
+                directionalSwipe(
+                    durationMs,
+                    Point(startX, startY),
+                    Point(endX, endY)
+                )
             }
         }
+    }
+
+    override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
+        val deviceInfo = deviceInfo()
+        when(direction) {
+            SwipeDirection.UP -> {
+                val endX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.1f).toInt()
+                directionalSwipe(durationMs, elementPoint, Point(endX, endY))
+            }
+            SwipeDirection.DOWN -> {
+                val endX = (deviceInfo.widthGrid * 0.5f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.9f).toInt()
+                directionalSwipe(durationMs, elementPoint, Point(endX, endY))
+            }
+            SwipeDirection.RIGHT -> {
+                val endX = (deviceInfo.widthGrid * 0.9f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
+                directionalSwipe(durationMs, elementPoint, Point(endX, endY))
+            }
+            SwipeDirection.LEFT -> {
+                val endX = (deviceInfo.widthGrid * 0.1f).toInt()
+                val endY = (deviceInfo.heightGrid * 0.5f).toInt()
+                directionalSwipe(durationMs, elementPoint, Point(endX, endY))
+            }
+        }
+    }
+
+    private fun directionalSwipe(durationMs: Long, start: Point, end: Point) {
+        dadb.shell("input swipe ${start.x} ${start.y} ${end.x} ${end.y} $durationMs")
     }
 
     override fun backPress() {

@@ -215,7 +215,7 @@ class IdbIOSDevice(
                 endX = xEnd,
                 endY = yEnd,
                 velocity = velocity,
-            )
+            ).use {  }
         }
     }
 
@@ -507,9 +507,6 @@ class IdbIOSDevice(
         // 4Mb, the default max read for gRPC
         private const val CHUNK_SIZE = 1024 * 1024 * 3
         private val mapper = jacksonObjectMapper()
-        private const val SCROLL_FACTOR = 0.07
-        private const val VIEW_HIERARCHY_SNAPSHOT_ERROR_CODE = "illegal-argument-snapshot-failure"
-        const val DEFAULT_SWIPE_DURATION_MILLIS = 1000L
     }
 
 }
