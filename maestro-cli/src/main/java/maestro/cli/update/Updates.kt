@@ -25,7 +25,7 @@ object Updates {
         }
     }
 
-    private const val BASE_API_URL = "https://api.mobile.dev"
+    const val BASE_API_URL = "https://api.mobile.dev"
     private val FRESH_INSTALL: Boolean
 
     private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()

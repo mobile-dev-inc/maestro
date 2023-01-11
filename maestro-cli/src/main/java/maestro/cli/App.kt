@@ -101,7 +101,7 @@ fun main(args: Array<String>) {
         .setCaseInsensitiveEnumValuesAllowed(true)
         .setExecutionStrategy(DisableAnsiMixin::executionStrategy)
         .setExecutionExceptionHandler { ex, cmd, cmdParseResult->
-            ErrorReporter.report(ex, cmdParseResult)
+            runCatching { ErrorReporter.report(ex, cmdParseResult) }
 
             val message = if (ex is CliError) {
                 ex.message

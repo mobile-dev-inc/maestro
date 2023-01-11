@@ -1,6 +1,7 @@
 package maestro.cli.util
 
 import maestro.cli.api.ApiClient
+import maestro.cli.update.Updates.BASE_API_URL
 import picocli.CommandLine
 import java.security.MessageDigest
 import java.util.concurrent.Executors
@@ -9,7 +10,6 @@ import kotlin.Exception
 
 object ErrorReporter {
 
-    private const val BASE_API_URL = "https://api.mobile.dev"
     private val executor = Executors.newCachedThreadPool {
         Executors.defaultThreadFactory().newThread(it).apply { isDaemon = true }
     }
@@ -23,12 +23,14 @@ object ErrorReporter {
             } else arg
         }
 
-        executor.submit {
+        val task = executor.submit {
             ApiClient(BASE_API_URL).sendErrorReport(
                 exception,
                 scrubbedArgs.joinToString(" ")
             )
-        }.get(1, TimeUnit.SECONDS)
+        }
+
+        runCatching { task.get(1, TimeUnit.SECONDS) }
     }
 
     private fun hashString(input: String): String {
