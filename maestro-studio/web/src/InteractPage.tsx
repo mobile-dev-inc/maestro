@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import { API, wait } from './api';
 import Examples from './Examples';
+import { Modal } from './Modal';
 
 const InspectModal = ({deviceScreen, element, onClose}: {
   deviceScreen: DeviceScreen
@@ -11,22 +12,13 @@ const InspectModal = ({deviceScreen, element, onClose}: {
   onClose: () => void
 }) => {
   return (
-    <div
-      className="fixed inset-0 p-16 bg-black/50 z-20"
-      onClick={e => {
-        e.stopPropagation()
-        onClose()
-      }}
-    >
+    <Modal onClose={onClose}>
       <div
-        className="bg-white h-full p-4 rounded max-w-[1000px]"
-        onClick={e => {
-          e.stopPropagation()
-        }}
+        className="p-10"
       >
         <Examples deviceScreen={deviceScreen} element={element} />
       </div>
-    </div>
+    </Modal>
   )
 }
 
