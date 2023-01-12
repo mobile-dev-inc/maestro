@@ -95,6 +95,7 @@ const InteractableDevice = ({deviceScreen, onHint}: {
   onHint: (hint: string | null) => void
 }) => {
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null)
+  const [inspectedElement, setInspectedElement] = useState<UIElement | null>(null)
   const metaKeyDown = useMetaKeyDown()
 
   const hoveredElement = deviceScreen.elements.find(e => e.id === hoveredElementId) || null
@@ -189,6 +190,7 @@ const InteractableDevice = ({deviceScreen, onHint}: {
         onElementSelected={onElementTap}
         hoveredElement={hoveredElement}
         onHover={onHover}
+        onInspect={setInspectedElement}
         annotationsEnabled={!metaKeyDown}
       />
     </GestureDiv>
