@@ -129,7 +129,7 @@ class IOSDriver(
     }
 
     override fun clearAppState(appId: String) {
-        iosDevice.deviceId?.let { Simctl.resetPermissions(it) }
+        iosDevice.deviceId?.let { Simctl.resetPermissions(it, appId) }
         iosDevice.clearAppState(appId)
     }
 
