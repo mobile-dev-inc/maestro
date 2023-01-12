@@ -167,7 +167,6 @@ const InteractableDevice = ({deviceScreen, onHint}: {
   }
 
   const onHover = (element: UIElement | null, mouse: MousePosition | null) => {
-
     const mouseHint = mouse == null ? null : getMouseHint(mouse)
     const elementHint = element == null ? null : getElementHint(element)
     onHint(elementHint || mouseHint)
