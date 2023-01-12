@@ -90,12 +90,12 @@ const useMetaKeyDown = () => {
 
 const toPercent = (n: number, total: number) => `${Math.round((100 * n / total))}%`
 
-const InteractableDevice = ({deviceScreen, onHint}: {
+const InteractableDevice = ({deviceScreen, onHint, onInspectElement}: {
   deviceScreen: DeviceScreen
   onHint: (hint: string | null) => void
+  onInspectElement: (element: UIElement) => void
 }) => {
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null)
-  const [inspectedElement, setInspectedElement] = useState<UIElement | null>(null)
   const metaKeyDown = useMetaKeyDown()
 
   const hoveredElement = deviceScreen.elements.find(e => e.id === hoveredElementId) || null
@@ -190,7 +190,7 @@ const InteractableDevice = ({deviceScreen, onHint}: {
         onElementSelected={onElementTap}
         hoveredElement={hoveredElement}
         onHover={onHover}
-        onInspect={setInspectedElement}
+        onInspect={onInspectElement}
         annotationsEnabled={!metaKeyDown}
       />
     </GestureDiv>
