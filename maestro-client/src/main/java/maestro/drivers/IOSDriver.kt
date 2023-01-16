@@ -76,8 +76,6 @@ class IOSDriver(
             resetProxy()
         }
         iosDevice.close()
-        widthPoints = null
-        heightPoints = null
         appId = null
     }
 
