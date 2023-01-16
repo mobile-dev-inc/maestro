@@ -6,15 +6,17 @@ import com.github.michaelbull.result.recoverIf
 import hierarchy.XCUIElement
 import idb.Idb
 import ios.device.DeviceInfo
+import ios.xcrun.XCRunIOSDevice
 import ios.xctest.XCTestIOSDevice
 import okio.Sink
 import java.io.File
 import java.io.InputStream
 
-class CompositeIOSDevice(
+class LocalIOSDevice(
     override val deviceId: String?,
     private val idbIOSDevice: IOSDevice,
     private val xcTestDevice: IOSDevice,
+    private val xcRunIOSDevice: XCRunIOSDevice,
 ) : IOSDevice {
 
     override fun open() {
@@ -104,7 +106,7 @@ class CompositeIOSDevice(
     }
 
     override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
-        return idbIOSDevice.takeScreenshot(out)
+        return xcRunIOSDevice.takeScreenshot(out)
     }
 
     override fun startScreenRecording(out: Sink): Result<IOSScreenRecording, Throwable> {

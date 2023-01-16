@@ -62,16 +62,12 @@ import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.source
-import util.XCRunnerSimctl
 import java.io.File
 import java.io.InputStream
-import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.zip.GZIPInputStream
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.pathString
 
 class IdbIOSDevice(
     private val channel: ManagedChannel,
@@ -386,16 +382,7 @@ class IdbIOSDevice(
     }
 
     override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
-        return runCatching {
-            val tmpImage = Files.createTempFile("tmp_image", ".png")
-            XCRunnerSimctl.screenshot(tmpImage.toAbsolutePath().pathString)
-            out
-                .buffer()
-                .use {
-                    it.write(tmpImage.source().buffer().readByteArray())
-                }
-            tmpImage.deleteIfExists()
-        }
+        error("Not supported")
     }
 
     // Warning: This method reads all bytes into memory. This can probably be optimized if necessary.

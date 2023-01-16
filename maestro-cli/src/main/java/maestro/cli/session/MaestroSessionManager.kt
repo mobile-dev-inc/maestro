@@ -22,8 +22,9 @@ package maestro.cli.session
 import dadb.Dadb
 import dadb.adbserver.AdbServer
 import io.grpc.ManagedChannelBuilder
-import ios.CompositeIOSDevice
+import ios.LocalIOSDevice
 import ios.idb.IdbIOSDevice
+import ios.xcrun.XCRunIOSDevice
 import ios.xctest.XCTestIOSDevice
 import maestro.Maestro
 import maestro.cli.device.Device
@@ -151,7 +152,7 @@ object MaestroSessionManager {
 
                         Maestro.ios(
                             driver = IOSDriver(
-                                CompositeIOSDevice(
+                                LocalIOSDevice(
                                     deviceId = selectedDevice.device.instanceId,
                                     idbIOSDevice = IdbIOSDevice(
                                         channel = channel,
@@ -166,7 +167,8 @@ object MaestroSessionManager {
                                             driverClient = xcTestDriverClient
                                         ),
                                         logger = IOSDriverLogger(),
-                                    )
+                                    ),
+                                    xcRunIOSDevice = XCRunIOSDevice(selectedDevice.device.instanceId),
                                 )
                             ),
                             openDriver = !connectToExistingSession,
@@ -269,7 +271,7 @@ object MaestroSessionManager {
         val xcTestDriverClient = XCTestDriverClient(defaultHost, xcTestPort)
 
         val iosDriver = IOSDriver(
-            CompositeIOSDevice(
+            LocalIOSDevice(
                 deviceId = device.instanceId,
                 idbIOSDevice = idbIOSDevice,
                 xcTestDevice = XCTestIOSDevice(
@@ -281,7 +283,8 @@ object MaestroSessionManager {
                         driverClient = xcTestDriverClient
                     ),
                     logger = IOSDriverLogger(),
-                )
+                ),
+                xcRunIOSDevice = XCRunIOSDevice(device.instanceId),
             )
         )
         return Maestro.ios(

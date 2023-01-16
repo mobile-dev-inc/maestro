@@ -29,14 +29,6 @@ class XCTestIOSDevice(
 
     private var closed: Boolean = false
 
-//    private val xcTestInstaller by lazy {
-//        LocalXCTestInstaller(
-//            logger,
-//            deviceId ?: error("No device id found"),
-//            client,
-//        )
-//    }
-
     override fun open() {
         ensureXCUITestChannel()
     }
