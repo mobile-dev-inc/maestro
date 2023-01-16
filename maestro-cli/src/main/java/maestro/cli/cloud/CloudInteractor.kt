@@ -240,7 +240,12 @@ class CloudInteractor(
         }
     }
 
-    private fun saveReport(reportFormat: ReportFormat, passed: Boolean, upload: UploadStatus, reportOutputSink: BufferedSink?) {
+    private fun saveReport(
+        reportFormat: ReportFormat,
+        passed: Boolean,
+        upload: UploadStatus,
+        reportOutputSink: BufferedSink
+    ) {
         ReporterFactory.buildReporter(reportFormat)
             .report(
                 TestExecutionSummary(
