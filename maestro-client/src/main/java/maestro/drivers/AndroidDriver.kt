@@ -400,8 +400,26 @@ class AndroidDriver(
     }
 
     override fun openLink(link: String) {
-        dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+        if (link.startsWith(HTTPS_SCHEME) || link.startsWith(HTTP_SCHEME)) {
+            val installedPackages = installedPackages()
+            when {
+                installedPackages.contains("com.android.chrome") -> {
+                    dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" com.android.chrome")
+                }
+                installedPackages.contains("org.mozilla.firefox") -> {
+                    dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" org.mozilla.firefox")
+                }
+                else -> dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+            }
+        } else {
+            dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+        }
     }
+
+    private fun installedPackages() = shell("pm list packages").split("\n")
+        .map { line: String -> line.split(":".toRegex()).toTypedArray() }
+        .filter { parts: Array<String> -> parts.size == 2 }
+        .map { parts: Array<String> -> parts[1] }
 
     override fun setLocation(latitude: Double, longitude: Double) {
         TODO("Not yet implemented")
@@ -577,6 +595,8 @@ class AndroidDriver(
         private const val SERVER_LAUNCH_TIMEOUT_MS = 15000
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
+        private const val HTTPS_SCHEME = "https"
+        private const val HTTP_SCHEME = "http"
 
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()
         private val PORT_TO_ALLOCATION_POINT = mutableMapOf<Int, String>()
