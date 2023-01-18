@@ -1,4 +1,6 @@
 appId: org.wikipedia
+tags:
+  - end-to-end-tests
 ---
 - runFlow: subflows/onboarding-android.yaml
 - tapOn:
