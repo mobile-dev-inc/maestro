@@ -53,9 +53,14 @@ object MaestroSessionManager {
         host: String?,
         port: Int?,
         deviceId: String?,
+
+        // needed for experimental web support
+        launchWebDevice: Boolean = false,
+        isStudio: Boolean = false,
+
         block: (MaestroSession) -> T,
     ): T {
-        val selectedDevice = selectDevice(host, port, deviceId)
+        val selectedDevice = selectDevice(host, port, deviceId, launchWebDevice)
         val sessionId = UUID.randomUUID().toString()
 
         val heartbeatFuture = executor.scheduleAtFixedRate(
@@ -75,6 +80,7 @@ object MaestroSessionManager {
             createMaestro(
                 selectedDevice = selectedDevice,
                 connectToExistingSession = SessionStore.hasActiveSessions(sessionId, selectedDevice.platform),
+                isStudio = isStudio
             )
         }
 
@@ -95,8 +101,15 @@ object MaestroSessionManager {
     private fun selectDevice(
         host: String?,
         port: Int?,
-        deviceId: String?
+        deviceId: String?,
+        launchWebDevice: Boolean? = false,
     ): SelectedDevice {
+        if (launchWebDevice == true) {
+            return SelectedDevice(
+                platform = Platform.WEB
+            )
+        }
+
         if (host == null) {
             val device = PickDeviceInteractor.pickDevice(deviceId)
 
@@ -130,6 +143,7 @@ object MaestroSessionManager {
     private fun createMaestro(
         selectedDevice: SelectedDevice,
         connectToExistingSession: Boolean,
+        isStudio: Boolean
     ): MaestroSession {
         return when {
             selectedDevice.device != null -> MaestroSession(
@@ -176,6 +190,7 @@ object MaestroSessionManager {
                             openDriver = !connectToExistingSession,
                         )
                     }
+                    Platform.WEB -> createWeb(isStudio = isStudio)
                 },
                 device = selectedDevice.device,
             )
@@ -195,6 +210,10 @@ object MaestroSessionManager {
                     !connectToExistingSession,
                 ),
                 device = null,
+            )
+            selectedDevice.platform == Platform.WEB -> MaestroSession(
+                maestro = createWeb(isStudio),
+                device = null
             )
             else -> error("Unable to create Maestro session")
         }
@@ -247,7 +266,7 @@ object MaestroSessionManager {
 
         return Maestro.android(
             dadb = dadb,
-            openDriver = openDriver
+            openDriver = openDriver,
         )
     }
 
@@ -294,6 +313,10 @@ object MaestroSessionManager {
             driver = iosDriver,
             openDriver = openDriver,
         )
+    }
+
+    private fun createWeb(isStudio: Boolean): Maestro {
+        return Maestro.web(isStudio)
     }
 
     private data class SelectedDevice(
