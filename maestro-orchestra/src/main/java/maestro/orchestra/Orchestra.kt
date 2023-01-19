@@ -285,8 +285,7 @@ class Orchestra(
         do {
             try {
                 maestro.waitForAppToSettle()
-                val e =  findElement(command.selector, 500)
-                println("Bounds: ${e.bounds}")
+                findElement(command.selector, 500)
                 return true
             } catch (ignored: MaestroException.ElementNotFound) {
                 error = ignored
