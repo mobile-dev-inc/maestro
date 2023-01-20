@@ -357,12 +357,3 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return true
     }
 }
-
-fun main() {
-    WebDriver(false).apply {
-        launchApp("https://ubereats.com")
-
-        val cd = contentDescriptor()
-        tap(Point(932, 1409))
-    }
-}
