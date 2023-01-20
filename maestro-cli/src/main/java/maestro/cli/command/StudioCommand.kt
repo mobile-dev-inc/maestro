@@ -33,7 +33,7 @@ class StudioCommand : Callable<Int> {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
 
-        MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, launchWebDevice = false, isStudio = true) { session ->
+        MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, true) { session ->
             val port = getFreePort()
             MaestroStudio.start(port, session.maestro)
 

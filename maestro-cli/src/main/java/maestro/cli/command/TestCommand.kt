@@ -29,6 +29,7 @@ import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.runner.resultview.PlainTextResultView
 import maestro.cli.session.MaestroSessionManager
+import maestro.cli.util.PrintUtils
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.buffer
 import okio.sink
@@ -107,11 +108,11 @@ class TestCommand : Callable<Int> {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
 
-        val launchWebDevice = isWebFlow().also {
-            if (it) println("WARNING! Web support is an experimental feature and may be removed in future versions.\n")
-        }
+        val deviceId =
+            if (isWebFlow()) "chromium".also { PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n") }
+            else parent?.deviceId
         
-        return MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, launchWebDevice) { session ->
+        return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->
             val maestro = session.maestro
             val device = session.device
 

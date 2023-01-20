@@ -55,12 +55,11 @@ object MaestroSessionManager {
         deviceId: String?,
 
         // needed for experimental web support
-        launchWebDevice: Boolean = false,
         isStudio: Boolean = false,
 
         block: (MaestroSession) -> T,
     ): T {
-        val selectedDevice = selectDevice(host, port, deviceId, launchWebDevice)
+        val selectedDevice = selectDevice(host, port, deviceId)
         val sessionId = UUID.randomUUID().toString()
 
         val heartbeatFuture = executor.scheduleAtFixedRate(
@@ -102,9 +101,8 @@ object MaestroSessionManager {
         host: String?,
         port: Int?,
         deviceId: String?,
-        launchWebDevice: Boolean? = false,
     ): SelectedDevice {
-        if (launchWebDevice == true) {
+        if (deviceId == "chromium") {
             return SelectedDevice(
                 platform = Platform.WEB
             )
