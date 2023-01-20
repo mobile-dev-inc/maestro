@@ -432,14 +432,14 @@ data class YamlFluentCommand(
 
     private fun scrollUntilVisibleCommand(yaml: YamlScrollUntilVisible): MaestroCommand {
         val timeout =
-            if (yaml.timeout == null || yaml.timeout < ScrollUntilVisibleCommand.DEFAULT_TIMEOUT_IN_MILLIS) {
+            if (yaml.timeout < ScrollUntilVisibleCommand.DEFAULT_TIMEOUT_IN_MILLIS) {
                 ScrollUntilVisibleCommand.DEFAULT_TIMEOUT_IN_MILLIS
             } else yaml.timeout
 
         return MaestroCommand(
             ScrollUntilVisibleCommand(
                 selector = toElementSelector(yaml.element),
-                direction = yaml.direction ?: ScrollDirection.DOWN,
+                direction = yaml.direction,
                 timeout = timeout
             )
         )
