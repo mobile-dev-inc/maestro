@@ -185,6 +185,7 @@ class Service(
             })
             responseObserver.onCompleted()
         } else {
+            Log.e("Maestro", "Failed to compress bitmap")
             responseObserver.onError(Throwable("Failed to compress bitmap"))
         }
     }
