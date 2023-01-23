@@ -155,10 +155,6 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-//    fun tap(element: TreeNode) {
-//        tap(element.toUiElement())
-//    }
-
     fun tap(
         element: UiElement,
         hierarchyBeforeTap: ViewHierarchy,
