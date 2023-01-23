@@ -65,6 +65,9 @@ class CloudCommand : Callable<Int> {
     @Option(order = 5, names = ["--branch"], description = ["The branch this upload originated from"])
     private var branch: String? = null
 
+    @Option(order = 6, names = ["--commitSha"], description = ["The commit SHA from this upload originated from"])
+    private var commitSha: String? = null
+
     @Option(order = 6, names = ["--pullRequestId"], description = ["The ID of the pull request this upload originated from"])
     private var pullRequestId: String? = null
 
@@ -127,6 +130,7 @@ class CloudCommand : Callable<Int> {
             repoOwner = repoOwner,
             repoName = repoName,
             branch = branch,
+            commitSha = commitSha,
             pullRequestId = pullRequestId,
             apiKey = apiKey,
             androidApiLevel = androidApiLevel,
