@@ -155,19 +155,18 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun tap(element: TreeNode) {
-        tap(element.toUiElement())
-    }
+//    fun tap(element: TreeNode) {
+//        tap(element.toUiElement())
+//    }
 
     fun tap(
         element: UiElement,
+        hierarchyBeforeTap: ViewHierarchy,
         retryIfNoChange: Boolean = true,
         waitUntilVisible: Boolean = false,
         longPress: Boolean = false,
     ) {
         LOGGER.info("Tapping on element: $element")
-
-        val hierarchyBeforeTap = waitForAppToSettle()
 
         val center = (
             hierarchyBeforeTap
@@ -193,9 +192,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             ) {
                 LOGGER.info("Still no change in hierarchy. Wait until element is visible and try again.")
 
-                waitUntilVisible(element)
+                val hierarchy = waitUntilVisible(element)
+
                 tap(
                     element,
+                    hierarchy,
                     retryIfNoChange = false,
                     waitUntilVisible = false,
                     longPress = longPress,
@@ -292,16 +293,20 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         null
     }
 
-    private fun waitUntilVisible(element: UiElement) {
+    private fun waitUntilVisible(element: UiElement): ViewHierarchy {
+        var hierarchy = ViewHierarchy(TreeNode())
         repeat(10) {
-            if (!viewHierarchy().isVisible(element.treeNode)) {
+            hierarchy = viewHierarchy()
+            if (!hierarchy.isVisible(element.treeNode)) {
                 LOGGER.info("Element is not visible yet. Waiting.")
                 MaestroTimer.sleep(MaestroTimer.Reason.WAIT_UNTIL_VISIBLE, 1000)
             } else {
                 LOGGER.info("Element became visible.")
-                return
+                return hierarchy
             }
         }
+
+        return hierarchy
     }
 
     private fun getNumberOfRetries(retryIfNoChange: Boolean): Int {
@@ -321,7 +326,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementByText(text: String, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by text: $text (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.textMatches(text).asFilter())
+        return findElementWithTimeout(timeoutMs, Filters.textMatches(text).asFilter())?.element
             ?: throw MaestroException.ElementNotFound(
                 "No element with text: $text",
                 viewHierarchy().root
@@ -331,7 +336,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementByRegexp(regex: Regex, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by regex: ${regex.pattern} (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.textMatches(regex).asFilter())
+        return findElementWithTimeout(timeoutMs, Filters.textMatches(regex).asFilter())?.element
             ?: throw MaestroException.ElementNotFound(
                 "No element that matches regex: $regex",
                 viewHierarchy().root
@@ -345,7 +350,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementByIdRegex(regex: Regex, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by id regex: ${regex.pattern} (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.idMatches(regex))
+        return findElementWithTimeout(timeoutMs, Filters.idMatches(regex))?.element
             ?: throw MaestroException.ElementNotFound(
                 "No element has id that matches regex $regex",
                 viewHierarchy().root
@@ -355,19 +360,26 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementBySize(width: Int?, height: Int?, tolerance: Int?, timeoutMs: Long): UiElement? {
         LOGGER.info("Looking for element by size: $width x $height (tolerance $tolerance) (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.sizeMatches(width, height, tolerance).asFilter())
+        return findElementWithTimeout(timeoutMs, Filters.sizeMatches(width, height, tolerance).asFilter())?.element
     }
 
     fun findElementWithTimeout(
         timeoutMs: Long,
         filter: ElementFilter,
-    ): UiElement? {
-        return MaestroTimer.withTimeout(timeoutMs) {
+    ): FindElementResult? {
+        var hierarchy = ViewHierarchy(TreeNode())
+        val element = MaestroTimer.withTimeout(timeoutMs) {
             val rootNode = driver.contentDescriptor()
+            hierarchy = ViewHierarchy(rootNode)
 
-            filter(rootNode.aggregate())
-                .firstOrNull()
+            filter(rootNode.aggregate()).firstOrNull()
         }?.toUiElementOrNull()
+
+        return if (element == null) {
+            null
+        } else {
+            return FindElementResult(element, hierarchy)
+        }
     }
 
     fun allElementsMatching(filter: ElementFilter): List<TreeNode> {
