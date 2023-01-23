@@ -27,14 +27,15 @@ import maestro.cli.command.LogoutCommand
 import maestro.cli.command.PrintHierarchyCommand
 import maestro.cli.command.QueryCommand
 import maestro.cli.command.RecordCommand
+import maestro.cli.command.StudioCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
-import maestro.debuglog.DebugLogStore
 import maestro.cli.command.network.NetworkCommand
 import maestro.cli.update.Updates
-import maestro.cli.view.box
-import maestro.cli.command.StudioCommand
 import maestro.cli.util.ErrorReporter
+import maestro.cli.view.InsightsView
+import maestro.cli.view.box
+import maestro.debuglog.DebugLogStore
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -100,7 +101,7 @@ fun main(args: Array<String>) {
         .setUsageHelpWidth(160)
         .setCaseInsensitiveEnumValuesAllowed(true)
         .setExecutionStrategy(DisableAnsiMixin::executionStrategy)
-        .setExecutionExceptionHandler { ex, cmd, cmdParseResult->
+        .setExecutionExceptionHandler { ex, cmd, cmdParseResult ->
             runCatching { ErrorReporter.report(ex, cmdParseResult) }
 
             val message = if (ex is CliError) {
@@ -120,6 +121,8 @@ fun main(args: Array<String>) {
 
     val exitCode = commandLine
         .execute(*args)
+
+    InsightsView.printInsights()
 
     DebugLogStore.finalizeRun()
 

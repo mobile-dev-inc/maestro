@@ -8,6 +8,8 @@ import idb.Idb
 import ios.device.DeviceInfo
 import ios.xcrun.XCRunIOSDevice
 import ios.xctest.XCTestIOSDevice
+import maestro.utils.maestro.insight.Insight
+import maestro.utils.maestro.insight.Insights
 import okio.Sink
 import java.io.File
 import java.io.InputStream
@@ -70,6 +72,15 @@ class LocalIOSDevice(
             .recoverIf(
                 { it is XCTestIOSDevice.InputFieldNotFound },
                 {
+                    Insights.report(
+                        Insight(
+                            level = Insight.Level.WARNING,
+                            message = "inputText($text) failed to find a focused field and had to fallback to a safe-mode. To fix this warning in a React Native app please refer" +
+                                " to " +
+                                "the documentation: https://maestro.mobile.dev/platform-support/react-native#entering-text-in-a-text-input"
+                        )
+                    )
+
                     idbIOSDevice.input(text)
                         .getOrThrow()
                 }

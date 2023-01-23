@@ -12,6 +12,7 @@ import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
 import maestro.cli.view.ErrorViewUtils
+import maestro.utils.maestro.insight.Insights
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.OrchestraAppState
@@ -106,6 +107,7 @@ object TestRunner {
             if (CliWatcher.waitForFileChangeOrEnter(fileWatcher, watchFiles) == CliWatcher.SignalType.ENTER) {
                 // On ENTER force re-run of flow even if commands have not changed
                 previousCommands = null
+                Insights.clear()
             }
         } while (true)
     }
