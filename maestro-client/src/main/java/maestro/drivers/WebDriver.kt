@@ -186,7 +186,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun clearAppState(appId: String) {
-        // TODO
+        // Do nothing
     }
 
     override fun clearKeychain() {
@@ -194,12 +194,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun pullAppState(appId: String, outFile: File) {
-        TODO("Not yet implemented")
-        return
+        // Do nothing (for now)
     }
 
     override fun pushAppState(appId: String, stateFile: File) {
-        TODO("Not yet implemented")
+        // Do nothing (for now)
     }
 
     override fun tap(point: Point) {
