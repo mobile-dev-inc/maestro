@@ -1,7 +1,6 @@
 package maestro.drivers
 
 import io.github.bonigarcia.wdm.WebDriverManager
-import jdk.jfr.Timespan
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -26,7 +25,6 @@ import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.support.ui.Wait
 import org.openqa.selenium.support.ui.WebDriverWait
 import java.io.File
 import java.time.Duration
@@ -206,8 +204,8 @@ class WebDriver(val isStudio: Boolean) : Driver {
         val pixelsScrolled = scrollToPoint(point)
 
         val mouse = PointerInput(PointerInput.Kind.MOUSE, "default mouse")
-        val actions = org.openqa.selenium.interactions.Sequence(mouse, 0)
-            .addAction(mouse.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), point.x, point.y - pixelsScrolled.toInt()))
+        val actions = org.openqa.selenium.interactions.Sequence(mouse, 1)
+            .addAction(mouse.createPointerMove(Duration.ofMillis(400), PointerInput.Origin.viewport(), point.x, point.y - pixelsScrolled.toInt()))
 
         (driver as RemoteWebDriver).perform(listOf(actions))
 
