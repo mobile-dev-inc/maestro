@@ -5,7 +5,7 @@ import os
 class InputTextRouteHandler : RouteHandler {
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "InputTextRouteHandler")
-    private let maximumTextInputFrequency = 10
+    private let maximumTextInputFrequency = 50
     
     func handle(request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
