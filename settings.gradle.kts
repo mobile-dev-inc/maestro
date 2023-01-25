@@ -17,5 +17,6 @@ include("maestro-studio:web")
 include("maestro-test")
 include("examples:apps:android-app")
 include("maestro-xcuitest-driver")
+include("maestro-sdk:android")
 //include("examples:samples")
 //findProject(":examples:samples")?.name = "samples"
