@@ -41,7 +41,7 @@ class XCTestDriverClient(
     }
 
     fun screenshot(): Response {
-        val url = xctestAPIBuilder("subTree").build()
+        val url = xctestAPIBuilder("screenshot").build()
 
         val request = Request.Builder()
             .get()
