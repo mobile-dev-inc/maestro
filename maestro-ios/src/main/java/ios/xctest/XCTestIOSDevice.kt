@@ -13,6 +13,7 @@ import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import maestro.logger.Logger
 import okio.Sink
+import okio.buffer
 import xcuitest.XCTestDriverClient
 import xcuitest.api.GetRunningAppIdResponse
 import xcuitest.installer.XCTestInstaller
@@ -177,7 +178,20 @@ class XCTestIOSDevice(
     }
 
     override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
-        error("Not supported")
+        return runCatching {
+            client.screenshot().use { response ->
+                response.body?.let { body ->
+                    if (response.isSuccessful) {
+                        out.buffer().use {
+                            it.write(body.bytes())
+                        }
+                    } else {
+                        val errorResponse = String(body.bytes()).trim()
+                        return throw UnknownFailure(errorResponse)
+                    }
+                } ?: throw UnknownFailure("Error - body for snapshot request not available")
+            }
+        }
     }
 
     override fun startScreenRecording(out: Sink): Result<IOSScreenRecording, Throwable> {
