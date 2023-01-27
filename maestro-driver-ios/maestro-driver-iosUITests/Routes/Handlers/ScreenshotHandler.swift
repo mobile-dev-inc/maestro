@@ -16,12 +16,6 @@ class ScreenshotHandler : RouteHandler {
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
         
-        let bcf = ByteCountFormatter()
-        bcf.allowedUnits = [.useMB] // optional: restricts the units to MB only
-        bcf.countStyle = .file
-        let string = bcf.string(fromByteCount: Int64(image.count))
-        print("formatted result: \(string)")
-        
         return HTTPResponse(statusCode: .ok, body: image)
     }
     
