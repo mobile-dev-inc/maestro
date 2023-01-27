@@ -106,7 +106,7 @@ class LocalIOSDevice(
     }
 
     override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
-        return xcRunIOSDevice.takeScreenshot(out)
+        return xcTestDevice.takeScreenshot(out)
     }
 
     override fun startScreenRecording(out: Sink): Result<IOSScreenRecording, Throwable> {
