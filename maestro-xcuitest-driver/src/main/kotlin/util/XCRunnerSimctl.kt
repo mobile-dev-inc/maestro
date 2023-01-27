@@ -39,6 +39,8 @@ object XCRunnerSimctl {
 
         val json = String(process.inputStream.readBytes())
 
+        if (json.isEmpty()) return emptySet()
+
         val mapper = jacksonObjectMapper()
         val appsMap = mapper.readValue(json, Map::class.java) as Map<String, Any>
 

@@ -34,6 +34,7 @@ class XCTestDriverClient(
 
         val request = Request.Builder()
             .get()
+            .tag(TAG_SUBTREE_CALL)
             .url(url)
             .build()
 
@@ -64,6 +65,7 @@ class XCTestDriverClient(
             .addHeader("Content-Type", "application/json")
             .url(url)
             .post(body)
+            .tag(TAG_RUNNING_APP_CALL)
             .build()
 
         return okHttpClient.newCall(request).execute()
@@ -156,4 +158,15 @@ class XCTestDriverClient(
             .port(port)
     }
 
+    fun cancelOngoingRequests() {
+        okHttpClient.dispatcher.runningCalls().filter { it.request().tag() == TAG_RUNNING_APP_CALL }
+            .forEach { it.cancel() }
+        okHttpClient.dispatcher.runningCalls().filter { it.request().tag() == TAG_SUBTREE_CALL }
+            .forEach { it.cancel() }
+    }
+
+    companion object {
+        private const val TAG_SUBTREE_CALL = "SUBTREE_CALL"
+        private const val TAG_RUNNING_APP_CALL = "RUNNING_APP_ID"
+    }
 }

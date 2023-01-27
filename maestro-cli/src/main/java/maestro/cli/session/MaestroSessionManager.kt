@@ -162,6 +162,10 @@ object MaestroSessionManager {
 
                         val xcTestDriverClient = XCTestDriverClient(defaultHost, xcTestPort)
 
+                        Runtime.getRuntime().addShutdownHook(Thread {
+                            xcTestDriverClient.cancelOngoingRequests()
+                        })
+
                         Maestro.ios(
                             driver = IOSDriver(
                                 LocalIOSDevice(
@@ -286,7 +290,9 @@ object MaestroSessionManager {
         val device = PickDeviceInteractor.pickDevice(deviceId)
         val idbIOSDevice = IdbIOSDevice(channel, device.instanceId)
         val xcTestDriverClient = XCTestDriverClient(defaultHost, xcTestPort)
-
+        Runtime.getRuntime().addShutdownHook(Thread {
+            xcTestDriverClient.cancelOngoingRequests()
+        })
         val iosDriver = IOSDriver(
             LocalIOSDevice(
                 deviceId = device.instanceId,
