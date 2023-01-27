@@ -87,7 +87,7 @@ object MaestroSessionManager {
                 heartbeatFuture.cancel(true)
                 SessionStore.delete(sessionId, selectedDevice.platform)
 
-                if (!SessionStore.hasActiveSessions(sessionId, selectedDevice.platform)) {
+                if (SessionStore.activeSessions().isEmpty()) {
                     session.close()
                 }
             }
