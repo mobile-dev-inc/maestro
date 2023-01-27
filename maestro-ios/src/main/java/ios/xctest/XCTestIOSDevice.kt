@@ -187,7 +187,7 @@ class XCTestIOSDevice(
                         }
                     } else {
                         val errorResponse = String(body.bytes()).trim()
-                        return throw UnknownFailure(errorResponse)
+                        throw UnknownFailure(errorResponse)
                     }
                 } ?: throw UnknownFailure("Error - body for snapshot request not available")
             }
@@ -243,7 +243,7 @@ class XCTestIOSDevice(
 
     class IllegalArgumentSnapshotFailure : Throwable("Failed to capture view hierarchy due to kAXErrorIllegalArgument")
     class InputFieldNotFound : Throwable("Unable to find focused input field")
-    class UnknownFailure(val errorResponse: String) : Throwable()
+    class UnknownFailure(errorResponse: String) : Throwable(errorResponse)
 
     companion object {
 

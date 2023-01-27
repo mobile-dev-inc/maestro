@@ -421,7 +421,7 @@ class IOSDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        iosDevice.takeScreenshot(out).expect {}
+        iosDevice.takeScreenshot(out, compressed).expect {}
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
