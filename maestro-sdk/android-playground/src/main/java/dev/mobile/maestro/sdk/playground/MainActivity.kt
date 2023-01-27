@@ -1,55 +1,37 @@
 package dev.mobile.maestro.sdk.playground
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import dev.mobile.maestro.sdk.MaestroSdk
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import dev.mobile.maestro.sdk.playground.api.CatFactsRepository
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    private val httpClient = OkHttpClient.Builder()
-        .build()
+    private val repository = CatFactsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d(TAG, "Playground started")
-
         val executor = Executors.newSingleThreadExecutor()
         executor.submit {
-            Log.d(TAG, "Generating URL")
-            val baseUrl = MaestroSdk.mockServer().url("https://www.rijksmuseum.nl")
-            Log.d(TAG, "URL: $baseUrl")
+            try {
+                setResult("Loading...")
 
-            Log.d(TAG, "Making request")
-            val request = Request.Builder()
-                .get()
-                .url("$baseUrl/api/en/collection?key=mhaVinBw")
-                .build()
+                val breeds = repository.getBreeds()
 
-            httpClient.newCall(request)
-                .execute()
-                .use {
-                    val body = it.body?.string()
-                    Log.d(TAG, "Response: ${it.code} $body")
-
-                    runOnUiThread {
-                        Log.d(TAG, "Updating UI")
-                        findViewById<TextView>(R.id.result).text = body
-                    }
-                }
+                setResult(breeds.joinToString("\n"))
+            } catch (e: Exception) {
+                setResult(e.stackTraceToString())
+            }
         }
     }
 
-    companion object {
-
-        private val TAG = "MaestroPlayground"
-
+    private fun setResult(text: String) {
+        runOnUiThread {
+            findViewById<TextView>(R.id.result).text = text
+        }
     }
 
 }

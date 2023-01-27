@@ -5,6 +5,7 @@ plugins {
     id "com.vanniktech.maven.publish"
 }
 
+// TODO see if we can lower min required version of Kotlin
 android {
     namespace 'dev.mobile.maestro.sdk'
     compileSdk 32

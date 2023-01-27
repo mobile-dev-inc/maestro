@@ -8,6 +8,6 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        MaestroSdk.init("local")
+        MaestroSdk.init("dima")
     }
 }
