@@ -177,9 +177,9 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
+    override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
         return runCatching {
-            client.screenshot().use { response ->
+            client.screenshot(compressed).use { response ->
                 response.body?.let { body ->
                     if (response.isSuccessful) {
                         out.buffer().use {

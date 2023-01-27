@@ -40,8 +40,10 @@ class XCTestDriverClient(
         return okHttpClient.newCall(request).execute()
     }
 
-    fun screenshot(): Response {
-        val url = xctestAPIBuilder("screenshot").build()
+    fun screenshot(compressed: Boolean): Response {
+        val url = xctestAPIBuilder("screenshot")
+            .addQueryParameter("compressed", compressed.toString())
+            .build()
 
         val request = Request.Builder()
             .get()

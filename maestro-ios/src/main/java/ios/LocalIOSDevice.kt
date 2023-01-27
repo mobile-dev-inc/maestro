@@ -103,8 +103,8 @@ class LocalIOSDevice(
         return idbIOSDevice.openLink(link)
     }
 
-    override fun takeScreenshot(out: Sink): Result<Unit, Throwable> {
-        return xcTestDevice.takeScreenshot(out)
+    override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
+        return xcTestDevice.takeScreenshot(out, compressed)
     }
 
     override fun startScreenRecording(out: Sink): Result<IOSScreenRecording, Throwable> {

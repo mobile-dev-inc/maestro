@@ -32,6 +32,7 @@ import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.sink
+import org.bouncycastle.asn1.x500.style.RFC4519Style.ou
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
@@ -287,7 +288,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     private fun tryTakingScreenshot() = try {
-        ImageIO.read(takeScreenshot().inputStream())
+        ImageIO.read(takeScreenshot(true).inputStream())
     } catch (e: Exception) {
         LOGGER.warn("Failed to take screenshot", e)
         null
@@ -417,7 +418,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 .sink()
                 .buffer()
                 .use {
-                    takeScreenshot(it)
+                    takeScreenshot(it, false)
                 }
         } else {
             throw MaestroException.DestinationIsNotWritable(
@@ -444,17 +445,17 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }
     }
 
-    fun takeScreenshot(out: Sink) {
+    fun takeScreenshot(out: Sink, compressed: Boolean) {
         LOGGER.info("Taking screenshot to output sink")
 
-        driver.takeScreenshot(out)
+        driver.takeScreenshot(out, compressed)
     }
 
-    fun takeScreenshot(): ByteArray {
+    private fun takeScreenshot(compressed: Boolean): ByteArray {
         LOGGER.info("Taking screenshot to byte array")
 
         val buffer = Buffer()
-        takeScreenshot(buffer)
+        takeScreenshot(buffer, compressed)
 
         return buffer.readByteArray()
     }
