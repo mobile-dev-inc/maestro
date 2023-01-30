@@ -1,6 +1,7 @@
 package dev.mobile.maestro.sdk.playground
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import dev.mobile.maestro.sdk.playground.api.CatFactsRepository
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
 
                 setResult(breeds.joinToString("\n"))
             } catch (e: Exception) {
+                Log.e("SDK Playground", "Failed to fetch cat breeds", e)
+
                 setResult(e.stackTraceToString())
             }
         }

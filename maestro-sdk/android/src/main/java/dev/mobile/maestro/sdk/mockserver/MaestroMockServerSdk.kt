@@ -32,7 +32,7 @@ class MaestroMockServerSdk internal constructor() {
             targetUrl = baseUrl,
         )
 
-        return "http://34.82.169.0/$sessionPayload/"
+        return "https://mock.mobile.dev/$sessionPayload/"
     }
 
     private fun obtainSessionInfo(): SessionInfo {

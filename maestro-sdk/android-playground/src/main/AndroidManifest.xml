@@ -11,7 +11,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Maestro"
-        android:usesCleartextTraffic="true"
         android:name=".App">
         <activity
             android:name=".MainActivity"
