@@ -24,8 +24,14 @@ import maestro.UiElement.Companion.toUiElement
 @JvmInline
 value class ViewHierarchy(val root: TreeNode) {
     companion object {
-        fun from(driver: Driver): ViewHierarchy =
-            ViewHierarchy(driver.contentDescriptor())
+        fun from(driver: Driver): ViewHierarchy {
+            val deviceInfo = driver.deviceInfo()
+            val filtered = driver.contentDescriptor().filterOutOfBounds(
+                width = deviceInfo.widthGrid,
+                height = deviceInfo.heightGrid
+            ) ?: throw IllegalArgumentException("Root should not be null")
+            return ViewHierarchy(filtered)
+        }
     }
 
     fun isVisible(node: TreeNode): Boolean {
@@ -88,4 +94,28 @@ value class ViewHierarchy(val root: TreeNode) {
     fun aggregate(): List<TreeNode> {
         return root.aggregate()
     }
+}
+
+fun TreeNode.filterOutOfBounds(width: Int, height: Int): TreeNode? {
+    val element = toUiElement()
+    val isXWithinBounds = element.bounds.x in 0..width
+    val isYWithinBounds = element.bounds.y in 0..height
+
+    if (!isXWithinBounds || !isYWithinBounds) {
+        return null
+    }
+
+    val filtered = children.mapNotNull {
+        it.filterOutOfBounds(width, height)
+    }.toList()
+
+    return TreeNode(
+        attributes = attributes,
+        children = filtered,
+        clickable = clickable,
+        enabled = enabled,
+        focused = focused,
+        checked = checked,
+        selected = selected
+    )
 }
