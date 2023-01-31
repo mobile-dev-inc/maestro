@@ -28,6 +28,14 @@ data class UiElement(
         return bounds.center().distance(other.bounds.center())
     }
 
+    fun getVisiblePercentage(screenWidth: Int, screenHeight: Int): Double {
+        val visibleX = maxOf(0, minOf(bounds.x + bounds.width, screenWidth) - maxOf(bounds.x, 0))
+        val visibleY = maxOf(0, minOf(bounds.y + bounds.height, screenHeight) - maxOf(bounds.y, 0))
+        val visibleArea = visibleX * visibleY
+        val totalArea = bounds.width * bounds.height
+        return visibleArea.toDouble() / totalArea.toDouble()
+    }
+
     fun isWithinViewPortBounds(info: DeviceInfo, paddingHorizontal: Float = 0f, paddingVertical: Float = 0f): Boolean {
         val paddingX = (info.widthGrid * paddingHorizontal).toInt()
         val paddingY = (info.heightGrid * paddingVertical).toInt()

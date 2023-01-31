@@ -97,11 +97,9 @@ value class ViewHierarchy(val root: TreeNode) {
 }
 
 fun TreeNode.filterOutOfBounds(width: Int, height: Int): TreeNode? {
-    val element = toUiElement()
-    val isXWithinBounds = element.bounds.x in 0..width
-    val isYWithinBounds = element.bounds.y in 0..height
+    val visiblePercentage = toUiElement().getVisiblePercentage(width, height);
 
-    if (!isXWithinBounds || !isYWithinBounds) {
+    if (visiblePercentage < 0.1) {
         return null
     }
 
@@ -119,3 +117,5 @@ fun TreeNode.filterOutOfBounds(width: Int, height: Int): TreeNode? {
         selected = selected
     )
 }
+
+
