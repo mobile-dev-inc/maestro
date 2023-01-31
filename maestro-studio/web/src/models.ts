@@ -44,3 +44,12 @@ export type FormattedFlow = {
   config: string
   commands: string
 }
+
+export type MockEvent = {
+  timestamp: string,
+  id: string,
+  path: string,
+  matched: boolean,
+  response: any,
+  statusCode: number
+}
