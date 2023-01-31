@@ -75,17 +75,21 @@ object XCRunnerSimctl {
 
     fun ensureAppAlive(bundleId: String) {
         MaestroTimer.retryUntilTrue(timeoutMs = 4000, delayMs = 300) {
-            val process = ProcessBuilder(
-                "bash",
-                "-c",
-                "xcrun simctl spawn booted launchctl list | grep $bundleId | awk '/$bundleId/ {print \$3}'"
-            ).start()
-
-            val processOutput = process.inputStream.source().buffer().readUtf8().trim()
-            process.waitFor(3000, TimeUnit.MILLISECONDS)
-
-            processOutput.contains(bundleId)
+            isAppAlive(bundleId)
         }
+    }
+
+    fun isAppAlive(bundleId: String): Boolean {
+        val process = ProcessBuilder(
+            "bash",
+            "-c",
+            "xcrun simctl spawn booted launchctl list | grep $bundleId | awk '/$bundleId/ {print \$3}'"
+        ).start()
+
+        val processOutput = process.inputStream.source().buffer().readUtf8().trim()
+        process.waitFor(3000, TimeUnit.MILLISECONDS)
+
+        return processOutput.contains(bundleId)
     }
 
     fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String): Process {

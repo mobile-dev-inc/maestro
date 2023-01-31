@@ -47,6 +47,12 @@ class LocalXCTestInstaller(
         }
     }
 
+
+    override fun isChannelAlive(): Boolean {
+        return XCRunnerSimctl.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID) &&
+            subTree(UI_TEST_RUNNER_APP_BUNDLE_ID).use { it.isSuccessful }
+    }
+
     private fun ensureOpen(): Boolean {
         XCRunnerSimctl.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID)
         return MaestroTimer.retryUntilTrue(10_000, 100) {

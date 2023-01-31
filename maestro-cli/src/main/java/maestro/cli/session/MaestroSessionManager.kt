@@ -187,7 +187,7 @@ object MaestroSessionManager {
                                     ),
                                 )
                             ),
-                            openDriver = !connectToExistingSession,
+                            openDriver = !connectToExistingSession || xcTestDevice.isShutdown(),
                         )
                     }
                     Platform.WEB -> createWeb(isStudio = isStudio)
@@ -312,7 +312,7 @@ object MaestroSessionManager {
         )
         return Maestro.ios(
             driver = iosDriver,
-            openDriver = openDriver,
+            openDriver = openDriver || xcTestDevice.isShutdown(),
         )
     }
 
