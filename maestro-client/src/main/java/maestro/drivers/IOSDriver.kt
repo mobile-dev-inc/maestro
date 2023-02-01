@@ -64,7 +64,7 @@ class IOSDriver(
     private var proxySet = false
 
     override fun name(): String {
-        return "iOS Simulator"
+        return NAME
     }
 
     override fun open() {
@@ -469,6 +469,6 @@ class IOSDriver(
     }
 
     companion object {
-        private const val MAX_RETRIES = 3
+        const val NAME = "iOS Simulator"
     }
 }

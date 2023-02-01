@@ -25,6 +25,7 @@ import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
+import maestro.drivers.IOSDriver
 import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
 import maestro.utils.SocketUtils
@@ -39,6 +40,8 @@ import javax.imageio.ImageIO
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Maestro(private val driver: Driver) : AutoCloseable {
+    private val isIOS: Boolean
+        get() = driver.name() == IOSDriver.NAME
 
     private val cachedDeviceInfo by lazy {
         fetchDeviceInfo()
@@ -391,21 +394,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null): ViewHierarchy {
-        var latestHierarchy = initialHierarchy ?: viewHierarchy()
-        repeat(10) {
-            val hierarchyAfter = viewHierarchy()
-            if (latestHierarchy == hierarchyAfter) {
-                val isLoading = latestHierarchy.root.attributes.getOrDefault("is-loading", "false").toBoolean()
-                if (!isLoading) {
-                    return hierarchyAfter
-                }
-            }
-            latestHierarchy = hierarchyAfter
-
-            MaestroTimer.sleep(MaestroTimer.Reason.WAIT_TO_SETTLE, 200)
-        }
-
-        return latestHierarchy
+        return if(isIOS) screenshotWaitForAppToSettle(initialHierarchy) else genericWaitForAppToSettle(initialHierarchy)
     }
 
     fun inputText(text: String) {
@@ -490,25 +479,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         val timeout = timeout ?: ANIMATION_TIMEOUT_MS
         LOGGER.info("Waiting for animation to end with timeout $timeout")
 
-        MaestroTimer.retryUntilTrue(timeout) {
-            val startScreenshot: BufferedImage? = tryTakingScreenshot()
-            val endScreenshot: BufferedImage? = tryTakingScreenshot()
-
-            if (startScreenshot != null &&
-                endScreenshot != null &&
-                startScreenshot.width == endScreenshot.width &&
-                startScreenshot.height == endScreenshot.height
-            ) {
-                val imageDiff = ImageComparison(
-                    startScreenshot,
-                    endScreenshot
-                ).compareImages().differencePercent
-
-                return@retryUntilTrue imageDiff <= SCREENSHOT_DIFF_THRESHOLD
-            }
-
-            return@retryUntilTrue false
-        }
+        waitUntilScreenIsStatic(timeout)
     }
 
     fun setProxy(
@@ -534,11 +505,58 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return driver.isUnicodeInputSupported()
     }
 
+    private fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return MaestroTimer.retryUntilTrue(timeoutMs) {
+            val startScreenshot: BufferedImage? = tryTakingScreenshot()
+            val endScreenshot: BufferedImage? = tryTakingScreenshot()
+
+            if (startScreenshot != null &&
+                endScreenshot != null &&
+                startScreenshot.width == endScreenshot.width &&
+                startScreenshot.height == endScreenshot.height
+            ) {
+                val imageDiff = ImageComparison(
+                    startScreenshot,
+                    endScreenshot
+                ).compareImages().differencePercent
+
+                return@retryUntilTrue imageDiff <= SCREENSHOT_DIFF_THRESHOLD
+            }
+
+            return@retryUntilTrue false
+        }
+    }
+    private fun screenshotWaitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
+        val timeout = ANIMATION_TIMEOUT_MS
+        LOGGER.info("Waiting for animation to end with timeout $timeout")
+        val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
+
+        return if (didFinishOnTime) viewHierarchy() else genericWaitForAppToSettle(initialHierarchy)
+    }
+    private fun genericWaitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
+        var latestHierarchy = initialHierarchy ?: viewHierarchy()
+        repeat(10) {
+            val hierarchyAfter = viewHierarchy()
+            if (latestHierarchy == hierarchyAfter) {
+                val isLoading = latestHierarchy.root.attributes.getOrDefault("is-loading", "false").toBoolean()
+                if (!isLoading) {
+                    return hierarchyAfter
+                }
+            }
+            latestHierarchy = hierarchyAfter
+
+            MaestroTimer.sleep(MaestroTimer.Reason.WAIT_TO_SETTLE, 200)
+        }
+
+        return latestHierarchy
+    }
+
     companion object {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
         private const val ANIMATION_TIMEOUT_MS: Long = 15000
+        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 2000
 
         fun ios(
             driver: Driver,
