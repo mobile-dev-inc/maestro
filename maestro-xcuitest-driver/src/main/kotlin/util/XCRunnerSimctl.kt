@@ -35,7 +35,7 @@ object XCRunnerSimctl {
     }
 
     fun listApps(): Set<String> {
-        val process = ProcessBuilder("bash", "-c", "xcrun simctl listapps booted | plutil -convert json - -o -").start()
+        val process = Runtime.getRuntime().exec(arrayOf("bash", "-c", "xcrun simctl listapps booted | plutil -convert json - -o -"))
 
         val json = String(process.inputStream.readBytes())
 

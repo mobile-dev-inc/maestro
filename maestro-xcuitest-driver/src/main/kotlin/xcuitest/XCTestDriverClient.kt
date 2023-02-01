@@ -5,24 +5,38 @@ import xcuitest.api.SwipeRequest
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.api.GetRunningAppRequest
 import okhttp3.HttpUrl
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import xcuitest.api.TouchRequest
+import java.net.ConnectException
 import java.util.concurrent.TimeUnit
 
 class XCTestDriverClient(
     private val host: String = "localhost",
     private val port: Int = 9080,
+    private val restoreConnection: () -> Boolean = { false }
 ) {
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .build()
+            .addInterceptor(Interceptor {
+                val request = it.request()
+                try {
+                    it.proceed(request)
+                } catch (connectException: ConnectException) {
+                    if (restoreConnection()) {
+                        it.proceed(request)
+                    } else {
+                        throw IllegalStateException("Failed to reach out XCUITest Server")
+                    }
+                }
+            }).build()
     }
 
     private val mapper = jacksonObjectMapper()
