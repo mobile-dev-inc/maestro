@@ -3,9 +3,13 @@ import XCTest
 import os
 
 class InputTextRouteHandler : RouteHandler {
+    private enum Constants {
+        // 15 characters per second
+        static let typingFrequency = 15
+        static let maxTextLength = 45
+    }
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "InputTextRouteHandler")
-    private static let typingFrequency = 15
 
     func handle(request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
@@ -15,11 +19,34 @@ class InputTextRouteHandler : RouteHandler {
         }
 
         do {
-            try await send(text: requestBody.text)
-            return HTTPResponse(statusCode: .ok)
+            if (requestBody.text.count > Constants.maxTextLength) {
+                return fallbackOnCopyPaste(text: requestBody.text, request: request)
+            } else {
+                try await send(text: requestBody.text)
+                return HTTPResponse(statusCode: .ok)
+            }
         } catch {
             return errorResponse(message: "internal error")
         }
+    }
+    
+    private func fallbackOnCopyPaste(text: String, request: FlyingFox.HTTPRequest) -> FlyingFox.HTTPResponse {
+        guard let appId = request.query["appId"] else {
+            logger.error("Requested view hierarchy for an invalid appId")
+            return HTTPResponse(statusCode: HTTPStatusCode.badRequest)
+        }
+        
+        let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
+        
+        let element = xcuiApplication
+            .descendants(matching: .any)
+            .element(matching: NSPredicate(format: "hasKeyboardFocus == true"))
+        
+        if (!element.exists) {
+            return HTTPResponse(statusCode: .notFound)
+        }
+        
+        element.setText(text: text, application: xcuiApplication)
     }
 
     private func send(text: String) async throws {
