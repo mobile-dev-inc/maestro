@@ -24,7 +24,7 @@ function App() {
   const page = mode === 'mock' ? <MockPage /> : <InteractPage />
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-100-vh h-screen	w-screen overflow-y-hidden">
       <div className="flex flex-row justify-center">
         <ModeButton isActive={mode === 'interact'} onClick={() => setMode('interact')}>Interact page</ModeButton>
         <ModeButton isActive={mode === 'mock'} onClick={() => setMode('mock')}>Mock page</ModeButton>

@@ -46,12 +46,6 @@ const useRepl = (): ReplResponse => {
   return { repl, error }
 }
 
-const useMockEvents = (): MockEventsReponse => {
-    const {data: events, error} = useSWR<MockEvent[]>('')
-    console.log(events, error)
-    return { events, error }
-}
-
 export const API = {
   useDeviceScreen: (config?: SWRConfiguration<DeviceScreen>): SWRResponse<DeviceScreen> => {
     return useSWR('/api/device-screen', (url) => makeRequest('GET', url), config)
@@ -85,9 +79,6 @@ export const API = {
     formatFlow: async (ids: string[]): Promise<FormattedFlow> => {
       return makeRequest('POST', '/api/repl/command/format', { ids })
     },
-  },
-  getMockEvents: (): Promise<{events: MockEvent[]}> => {
-    return makeRequest('GET', 'http://localhost:8010/bWFlc3Ryby1zdHVkaW8tbW9jawpmMzQ0Y2RkZC05ODdhLTQ2MDUtODY5Ni04OGIxZDI3OTRlZTIKaHR0cHM6Ly9jYXRmYWN0Lm5pbmphLw==/events?projectId=maestro-studio-mock')
   },
 }
 

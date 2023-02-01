@@ -47,9 +47,10 @@ export type FormattedFlow = {
 
 export type MockEvent = {
   timestamp: string,
-  id: string,
   path: string,
   matched: boolean,
   response: any,
-  statusCode: number
+  statusCode: number,
+  sessionId: string,
+  projectId: string
 }
