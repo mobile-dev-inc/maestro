@@ -74,7 +74,7 @@ class LocalXCTestInstaller(
                 .scheme("http")
                 .host("localhost")
                 .addPathSegment(pathSegment)
-                .port(9080)
+                .port(22087)
         }
         val url = xctestAPIBuilder("subTree")
             .addQueryParameter("appId", UI_TEST_RUNNER_APP_BUNDLE_ID)

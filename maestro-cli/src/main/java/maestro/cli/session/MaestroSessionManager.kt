@@ -44,7 +44,7 @@ import kotlin.concurrent.thread
 object MaestroSessionManager {
     private const val defaultHost = "localhost"
     private const val idbPort = 10882
-    private const val xcTestPort = 9080
+    private const val xcTestPort = 22087
 
     private val executor = Executors.newScheduledThreadPool(1)
     private val logger = LoggerFactory.getLogger(MaestroSessionManager::class.java)

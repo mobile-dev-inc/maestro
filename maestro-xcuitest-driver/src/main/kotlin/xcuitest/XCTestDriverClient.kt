@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 class XCTestDriverClient(
     private val host: String = "localhost",
-    private val port: Int = 9080,
+    private val port: Int = 22087,
     private val restoreConnection: () -> Boolean = { false }
 ) {
 
