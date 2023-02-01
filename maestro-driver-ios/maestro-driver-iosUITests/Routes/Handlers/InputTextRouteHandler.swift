@@ -47,6 +47,8 @@ class InputTextRouteHandler : RouteHandler {
         }
         
         element.setText(text: text, application: xcuiApplication)
+        
+        return HTTPResponse(statusCode: .ok)
     }
 
     private func send(text: String) async throws {
@@ -73,10 +75,10 @@ class InputTextRouteHandler : RouteHandler {
             let selector = NSSelectorFromString("_XCT_sendString:maximumFrequency:completion:")
             let methodIMP = proxy.method(for: selector)
 
-            logger.info("typing frequency: \(InputTextRouteHandler.typingFrequency)")
+            logger.info("typing frequency: \(Constants.typingFrequency)")
             let method = unsafeBitCast(methodIMP, to: sendStringMethod.self)
             let start = Date()
-            method(proxy, selector, text as NSString, InputTextRouteHandler.typingFrequency, { error in
+            method(proxy, selector, text as NSString, Constants.typingFrequency, { error in
                 if let error = error {
                     self.logger.error("Error inputting text '\(text)': \(error)")
                     continuation.resume(with: .failure(error))
