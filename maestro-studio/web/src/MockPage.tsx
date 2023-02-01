@@ -20,6 +20,17 @@ const useMockData = () => {
   return useSWR<GetMockDataResponse>('/api/mock-server/data', fetcher)
 }
 
+const safeParse = (res: any, fallback: Object): Object => {
+  if (typeof res === 'object') return res
+
+  try {
+    const parsed = JSON.parse(res);
+    return parsed;
+  } catch (err) {
+    return fallback
+  }
+}
+
 const MockPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<MockEvent | undefined>()
   const [query, setQuery] = useState<string>('')
@@ -77,13 +88,13 @@ const MockPage = () => {
           {!selectedEvent ? <p>No event selected</p> : null}
           {!!selectedEvent ? (
             <JsonViewer 
-            value={selectedEvent.response || {}}
-            theme="dark"
-            displayDataTypes={false}
-            displayObjectSize={false}
-            defaultInspectDepth={6}
-            rootName={false}
-            style={{padding: 20, fontSize: '1.25em'}}
+              value={safeParse(selectedEvent.response, {})}
+              theme="dark"
+              displayDataTypes={false}
+              displayObjectSize={false}
+              defaultInspectDepth={6}
+              rootName={false}
+              style={{padding: 20, fontSize: '1.25em', maxHeight: 800, overflowY: 'scroll'}}
             />
           ) : null}
         </div>

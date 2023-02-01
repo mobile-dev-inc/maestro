@@ -92,7 +92,7 @@ class MockInteractor(
     }
 
     companion object {
-        private const val API_URL = "http://localhost:8000"
+        private const val API_URL = "https://api.mobile.dev"
 
         private val cachedAuthTokenFile by lazy {
             Paths.get(
