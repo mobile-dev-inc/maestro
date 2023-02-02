@@ -51,6 +51,7 @@ export type MockEvent = {
   matched: boolean,
   response: any,
   statusCode: number,
+  method: string,
   sessionId: string,
   projectId: string
 }

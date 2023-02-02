@@ -138,6 +138,7 @@ const handlers = [
         path: `/posts/${i}`,
         matched: i % 3 != 0,
         response,
+        method: (i + 1) % 3 === 0 ? 'POST' : 'GET',
         statusCode: simulateRuntimeError ? 500 : 200 ,
         sessionId: sessionId,
         projectId: projectId,
