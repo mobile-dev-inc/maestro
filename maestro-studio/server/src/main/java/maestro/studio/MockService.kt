@@ -21,6 +21,7 @@ private data class GetMockDataResponse(
     val statusCode: Int,
     val sessionId: UUID,
     val projectId: UUID,
+    val method: String,
 )
 
 object MockService {

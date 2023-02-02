@@ -1,13 +1,22 @@
-get('/v2/featured', async (req, res, session) => {
-  const response = await req.propagate()
-  const data = response.json()
+// get('/v2/featured', async (req, res, session) => {
+//   const response = await req.propagate()
+//   const data = response.json()
 
-  session.hits = (session.hits || 0) + 1
+//   data.data[0].title = 'Mocked by Maestro Mock Server'
 
-  data.data[0].title = 'Mocked by Maestro'
+//   res.json(data);
+// })
 
-  res.json({
-    hits: session.hits,
-    ...data
-  })
-})
+get('/v2/feature', async (req, res, session) => {
+	const originalRes = await req.propagate();
+	const data = originalRes.json();
+  session.count = (session.count || 0) + 1;
+
+  data.data[0].title = 'Mocked by Maestro Mock Server'
+
+	res.status(200).json({
+		...data,
+		mockedResponse: true,
+    session
+	});
+});
