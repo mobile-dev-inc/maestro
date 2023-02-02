@@ -27,7 +27,7 @@ const ModeButton = ({isActive, onClick, children}: {isActive: boolean, onClick: 
 )
 
 function App() {
-  const [mode, setMode] = useState<Mode>('mock')
+  const [mode, setMode] = useState<Mode>('interact')
 
   if (window.location.pathname === '/inspect') {
     return (
