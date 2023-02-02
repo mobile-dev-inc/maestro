@@ -97,15 +97,18 @@ value class ViewHierarchy(val root: TreeNode) {
 }
 
 fun TreeNode.filterOutOfBounds(width: Int, height: Int): TreeNode? {
-    val visiblePercentage = toUiElement().getVisiblePercentage(width, height);
-
-    if (visiblePercentage < 0.1) {
-        return null
-    }
 
     val filtered = children.mapNotNull {
         it.filterOutOfBounds(width, height)
     }.toList()
+
+    // parent can have missing bounds
+    val element = kotlin.runCatching { toUiElement() }.getOrNull()
+    val visiblePercentage = element?.getVisiblePercentage(width, height) ?: 0.0
+
+    if (visiblePercentage < 0.1 && filtered.isEmpty()) {
+        return null
+    }
 
     return TreeNode(
         attributes = attributes,

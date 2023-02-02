@@ -1,7 +1,7 @@
 package maestro
 
-import org.junit.jupiter.api.Test
 import com.google.common.truth.Truth.assertThat
+import org.junit.jupiter.api.Test
 
 internal class UiElementTest {
 
@@ -37,7 +37,6 @@ internal class UiElementTest {
         val percent = element.getVisiblePercentage(screenWidth, screenHeight)
         assertThat(percent).isEqualTo(0.15)
     }
-
 
     @Test
     internal fun `check visible percentage on screen - right bottom 10 percent`() {
