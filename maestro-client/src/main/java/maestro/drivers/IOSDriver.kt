@@ -464,6 +464,10 @@ class IOSDriver(
         return iosDevice.isShutdown()
     }
 
+    override fun isScreenChanged(): Boolean {
+        return iosDevice.isScreenChanged().expect {}
+    }
+
     private fun toSeconds(ms: Long): Float {
         return ms / 1000f
     }

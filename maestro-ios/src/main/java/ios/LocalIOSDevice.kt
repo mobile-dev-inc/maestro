@@ -124,4 +124,7 @@ class LocalIOSDevice(
         xcTestDevice.close()
     }
 
+    override fun isScreenChanged(): Result<Boolean, Throwable> {
+        return xcTestDevice.isScreenChanged()
+    }
 }

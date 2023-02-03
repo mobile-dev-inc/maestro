@@ -506,24 +506,33 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     private fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
-        return MaestroTimer.retryUntilTrue(timeoutMs) {
-            val startScreenshot: BufferedImage? = tryTakingScreenshot()
-            val endScreenshot: BufferedImage? = tryTakingScreenshot()
+        if (isIOS) {
+            return MaestroTimer.retryUntilTrue(timeoutMs) {
+                val screenChanged = driver.isScreenChanged()
 
-            if (startScreenshot != null &&
-                endScreenshot != null &&
-                startScreenshot.width == endScreenshot.width &&
-                startScreenshot.height == endScreenshot.height
-            ) {
-                val imageDiff = ImageComparison(
-                    startScreenshot,
-                    endScreenshot
-                ).compareImages().differencePercent
-
-                return@retryUntilTrue imageDiff <= SCREENSHOT_DIFF_THRESHOLD
+                LOGGER.info("screen changed = $screenChanged")
+                return@retryUntilTrue !screenChanged
             }
+        } else {
+            return MaestroTimer.retryUntilTrue(timeoutMs) {
+                val startScreenshot: BufferedImage? = tryTakingScreenshot()
+                val endScreenshot: BufferedImage? = tryTakingScreenshot()
 
-            return@retryUntilTrue false
+                if (startScreenshot != null &&
+                    endScreenshot != null &&
+                    startScreenshot.width == endScreenshot.width &&
+                    startScreenshot.height == endScreenshot.height
+                ) {
+                    val imageDiff = ImageComparison(
+                        startScreenshot,
+                        endScreenshot
+                    ).compareImages().differencePercent
+
+                    return@retryUntilTrue imageDiff <= SCREENSHOT_DIFF_THRESHOLD
+                }
+
+                return@retryUntilTrue false
+            }
         }
     }
     private fun screenshotWaitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
@@ -556,7 +565,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
         private const val ANIMATION_TIMEOUT_MS: Long = 15000
-        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 2000
+        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 3000
 
         fun ios(
             driver: Driver,

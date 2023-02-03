@@ -16,6 +16,7 @@ import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
 import xcuitest.api.GetRunningAppIdResponse
+import xcuitest.api.GetScreenDiffResponse
 import xcuitest.installer.XCTestInstaller
 import java.io.File
 import java.io.InputStream
@@ -206,6 +207,27 @@ class XCTestIOSDevice(
 
     override fun close() {
         installer.close()
+    }
+
+    override fun isScreenChanged(): Result<Boolean, Throwable> {
+        return runCatching {
+            client.isScreenChanged().use { response ->
+                response.body?.let { body ->
+                    if (response.isSuccessful) {
+                        val responseBody: GetScreenDiffResponse = mapper.readValue(
+                            String(body.bytes()),
+                            GetScreenDiffResponse::class.java
+                        )
+                        val screenChanged = responseBody.screenChanged
+                        logger.info("Screen diff request finished with changed = $screenChanged")
+                        screenChanged
+                    } else {
+                        val errorResponse = String(body.bytes()).trim()
+                        throw UnknownFailure(errorResponse)
+                    }
+                } ?: throw UnknownFailure("Error - body for screenDiff request not available")
+            }
+        }
     }
 
     private fun activeAppId(): String? {
