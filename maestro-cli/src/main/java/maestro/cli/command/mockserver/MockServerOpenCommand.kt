@@ -1,53 +1,53 @@
-package maestro.cli.command
+package maestro.cli.command.mockserver
 
-import maestro.cli.App
 import maestro.cli.CliError
-import maestro.cli.DisableAnsiMixin
+import maestro.cli.api.ApiClient
+import maestro.cli.cloud.CloudInteractor
 import maestro.cli.session.MaestroSessionManager
+import maestro.cli.util.PrintUtils
 import maestro.cli.view.blue
 import maestro.cli.view.bold
 import maestro.cli.view.box
 import maestro.cli.view.faint
+import maestro.cli.view.red
+import maestro.networkproxy.NetworkProxy
+import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.studio.MaestroStudio
 import picocli.CommandLine
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
+import picocli.CommandLine.ParentCommand
 import java.awt.Desktop
+import java.io.File
 import java.net.ServerSocket
 import java.net.URI
 import java.util.concurrent.Callable
 
-@CommandLine.Command(
-    name = "studio",
-    hidden = true,
-    description = ["Launch Maestro Studio"],
+@Command(
+    name = "open",
 )
-class StudioCommand : Callable<Int> {
+class MockServerOpenCommand : Callable<Int> {
 
-    @CommandLine.Mixin
-    var disableANSIMixin: DisableAnsiMixin? = null
+    @ParentCommand
+    lateinit var parent: MockServerCommand
 
-    @CommandLine.ParentCommand
-    private val parent: App? = null
+    @CommandLine.Spec
+    lateinit var commandSpec: CommandLine.Model.CommandSpec
 
     override fun call(): Int {
-        if (parent?.platform != null) {
-            throw CliError("--platform option was deprecated. You can remove it to run your test.")
-        }
-
-        MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, true) { session ->
+        MaestroSessionManager.newSession(null, null, null, true) { session ->
             val port = getFreePort()
             MaestroStudio.start(port, session.maestro)
 
-            val studioUrl = "http://localhost:${port}/interact"
-            val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
+            val studioUrl = "http://localhost:${port}/mock"
+            val message = ("Maestro Studio".bold() + " Mock Server is running at " + studioUrl.blue()).box()
             println()
             println(message)
             tryOpenUrl(studioUrl)
 
             println()
-            println("Tip: Maestro Studio can now run simultaneously alongside other Maestro CLI commands!")
-
-            println()
-            println("Navigate to $studioUrl in your browser to open Maestro Studio. Ctrl-C to exit.".faint())
+            println("Navigate to $studioUrl in your browser to open Maestro Studio Mock Server. Ctrl-C to exit.".faint())
 
             Thread.currentThread().join()
         }
