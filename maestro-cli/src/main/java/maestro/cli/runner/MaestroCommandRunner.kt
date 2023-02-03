@@ -89,7 +89,6 @@ object MaestroCommandRunner {
                 logger.info("${command.description()} FAILED")
                 commandStatuses[command] = CommandStatus.FAILED
                 refreshUi()
-                Orchestra.ErrorResolution.FAIL
             },
             onCommandSkipped = { _, command ->
                 logger.info("${command.description()} SKIPPED")

@@ -53,7 +53,7 @@ class Orchestra(
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
-    private val onCommandFailed: (Int, MaestroCommand, Throwable) -> ErrorResolution = { _, _, e -> throw e },
+    private val onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit = { _, _, e -> throw e },
     private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandReset: (MaestroCommand) -> Unit = {},
     private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
@@ -142,12 +142,8 @@ class Orchestra(
                     // Swallow exception
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
-                    when (onCommandFailed(index, command, e)) {
-                        ErrorResolution.FAIL -> return false
-                        ErrorResolution.CONTINUE -> {
-                            // Do nothing
-                        }
-                    }
+                    onCommandFailed(index, command, e)
+                    return false
                 }
             }
         return true
@@ -469,13 +465,8 @@ class Orchestra(
                         onCommandSkipped(index, command)
                         false
                     } catch (e: Throwable) {
-                        when (onCommandFailed(index, command, e)) {
-                            ErrorResolution.FAIL -> throw e
-                            ErrorResolution.CONTINUE -> {
-                                // Do nothing
-                                false
-                            }
-                        }
+                        onCommandFailed(index, command, e)
+                        throw e
                     }
                 }
                 .any { it }
@@ -826,11 +817,6 @@ class Orchestra(
         val numberOfRuns: Int? = null,
         val evaluatedCommand: MaestroCommand? = null,
     )
-
-    enum class ErrorResolution {
-        CONTINUE,
-        FAIL
-    }
 
     companion object {
 

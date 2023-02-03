@@ -1574,37 +1574,6 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 056 - Ignore an error in Orchestra`() {
-        // Given
-        val commands = readCommands("056_ignore_error")
-
-        val driver = driver {
-            element {
-                text = "Button"
-                bounds = Bounds(0, 100, 100, 200)
-            }
-        }
-
-        // When
-        Maestro(driver).use {
-            orchestra(
-                maestro = it,
-                onCommandFailed = { _, command, _ ->
-                    if (command.tapOnElement?.selector?.textRegex == "Non existent text") {
-                        Orchestra.ErrorResolution.CONTINUE
-                    } else {
-                        Orchestra.ErrorResolution.FAIL
-                    }
-                },
-            ).runFlow(commands)
-        }
-
-        // Then
-        // No test failure
-        driver.assertHasEvent(Event.Tap(Point(50, 150)))
-    }
-
-    @Test
     fun `Case 057 - Pass inner env variables to runFlow`() {
         // Given
         val commands = readCommands("057_runFlow_env")
@@ -2192,7 +2161,7 @@ class IntegrationTest {
 
     private fun orchestra(
         maestro: Maestro,
-        onCommandFailed: (Int, MaestroCommand, Throwable) -> Orchestra.ErrorResolution,
+        onCommandFailed: (Int, MaestroCommand, Throwable) -> Unit,
     ) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,
