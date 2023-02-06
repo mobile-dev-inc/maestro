@@ -1,5 +1,5 @@
 import { ResponseComposition, rest, RestContext, setupWorker } from 'msw';
-import { DeviceScreen, FormattedFlow, ReplCommand } from './models';
+import { DeviceScreen, ReplCommand } from './models';
 import { sampleElements } from './sampleElements';
 import { wait } from './api';
 
@@ -136,10 +136,10 @@ const handlers = [
       events.push({
         timestamp: Date.now(),
         path: `/posts/${i}`,
-        matched: i % 3 != 0,
+        matched: i % 3 !== 0,
         response,
         method: (i + 1) % 3 === 0 ? 'POST' : 'GET',
-        statusCode: simulateRuntimeError ? 500 : 200 ,
+        statusCode: simulateRuntimeError ? 500 : (i % 7 === 0 ? 401 : 200) ,
         sessionId: sessionId,
         projectId: projectId,
         })

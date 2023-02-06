@@ -2,25 +2,16 @@ import { useMemo, useState } from "react"
 import { MockEvent } from "./models"
 import { formatDistance } from 'date-fns'
 import { JsonViewer } from "@textea/json-viewer"
-import useSWR from 'swr';
 import { CodeSnippet } from "./Examples";
+import { API } from "./api";
 
 const getStatusCodeColor = (statusCode: number): string => {
-  if (statusCode < 400) return 'text-green-600'
-  if (statusCode < 500) return 'text-orange-600'
-  return 'text-red-600'
+  if (statusCode < 400) return 'green'
+  if (statusCode < 500) return 'orange'
+  return 'red'
 }
 
-const getMockMethod = (method: string): string => {
-  switch (method) {
-    case 'POST':
-      return 'post'
-
-    case 'GET':
-    default:
-        return 'get'
-  }
-}
+const getMockMethod = (method: string): string => method.toLowerCase()
 
 const LoadingIcon = () => {
   return (
@@ -29,16 +20,6 @@ const LoadingIcon = () => {
       <path d="M23.9997 11.9187C24.0168 14.4512 23.2323 16.9242 21.7584 18.9837C20.2846 21.0432 18.1969 22.5836 15.7942 23.3843C13.3916 24.1851 10.7972 24.2052 8.38251 23.4417C5.96776 22.6783 3.85647 21.1704 2.35085 19.134L4.92838 17.2283C6.0318 18.7208 7.57912 19.8258 9.34882 20.3854C11.1185 20.9449 13.0199 20.9301 14.7807 20.3433C16.5415 19.7564 18.0715 18.6275 19.1517 17.1182C20.2319 15.6088 20.8068 13.7964 20.7942 11.9404L23.9997 11.9187Z" fill="#2563EB"/>
     </svg>
   )
-}
-
-type GetMockDataResponse = {
-  projectId: string,
-  events: MockEvent[]
-}
-
-const useMockData = () => {
-  const fetcher = (url: string) => fetch(url).then(r => r.json())
-  return useSWR<GetMockDataResponse>('/api/mock-server/data', fetcher)
 }
 
 const safeParse = (res: any, fallback: Object): Object => {
@@ -55,7 +36,7 @@ const safeParse = (res: any, fallback: Object): Object => {
 const MockPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<MockEvent | undefined>()
   const [query, setQuery] = useState<string>('')
-  const {data, isLoading} = useMockData()
+  const {data, isLoading} = API.useMockData()
 
   const filteredEvents = useMemo(() => {
     return data?.events?.filter(event => {
@@ -126,7 +107,7 @@ const MockPage = () => {
                     <div className="flex flex-row justify-between space-x-4 my-1">
                       <span className="grow">{event.method} {event.path}</span>
                       <span className={`${!!event.matched ? 'font-bold' : ''}`}>{!!event.matched ? 'matched' : 'unmatched'}</span>
-                      <span className={`${getStatusCodeColor(event.statusCode)} font-bold`}>{event.statusCode}</span>
+                      <span className={`text-${getStatusCodeColor(event.statusCode)}-600 font-bold`}>{event.statusCode}</span>
                     </div>
                     <span className={"text-xs text-gray-500"}>{formatDistance(new Date(event.timestamp), new Date(), { addSuffix: true })}</span>
                   </div>

@@ -6,9 +6,9 @@ export type ReplResponse = {
   error?: any
 }
 
-export type MockEventsReponse = {
-  events?: MockEvent[],
-  error?: any
+type GetMockDataResponse = {
+  projectId: string,
+  events: MockEvent[]
 }
 
 export class HttpError extends Error {
@@ -46,6 +46,8 @@ const useRepl = (): ReplResponse => {
   return { repl, error }
 }
 
+const fetcher = (url: string) => fetch(url).then(r => r.json())
+
 export const API = {
   useDeviceScreen: (config?: SWRConfiguration<DeviceScreen>): SWRResponse<DeviceScreen> => {
     return useSWR('/api/device-screen', (url) => makeRequest('GET', url), config)
@@ -80,6 +82,9 @@ export const API = {
       return makeRequest('POST', '/api/repl/command/format', { ids })
     },
   },
+  useMockData: () => {
+    return useSWR<GetMockDataResponse>('/api/mock-server/data', fetcher)
+  }
 }
 
 const startReplLongPoll = async () => {
