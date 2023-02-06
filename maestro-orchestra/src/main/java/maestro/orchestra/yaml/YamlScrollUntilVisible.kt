@@ -9,4 +9,6 @@ data class YamlScrollUntilVisible(
     val direction: ScrollDirection = ScrollDirection.DOWN,
     val element: YamlElementSelectorUnion,
     val timeout: Long = ScrollUntilVisibleCommand.DEFAULT_TIMEOUT_IN_MILLIS,
+    val speed: Long = ScrollUntilVisibleCommand.DEFAULT_SCROLL_DURATION,
+    val visibilityPercentage: Int = ScrollUntilVisibleCommand.DEFAULT_ELEMENT_VISIBILITY_PERCENTAGE
 )
