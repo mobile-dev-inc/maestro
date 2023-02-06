@@ -26,11 +26,14 @@ value class ViewHierarchy(val root: TreeNode) {
     companion object {
         fun from(driver: Driver): ViewHierarchy {
             val deviceInfo = driver.deviceInfo()
-            val filtered = driver.contentDescriptor().filterOutOfBounds(
-                width = deviceInfo.widthGrid,
-                height = deviceInfo.heightGrid
-            ) ?: throw IllegalArgumentException("Root should not be null")
-            return ViewHierarchy(filtered)
+            val root = driver.contentDescriptor().let {
+                val filtered = it.filterOutOfBounds(
+                    width = deviceInfo.widthGrid,
+                    height = deviceInfo.heightGrid
+                )
+                filtered ?: it
+            }
+            return ViewHierarchy(root)
         }
     }
 
