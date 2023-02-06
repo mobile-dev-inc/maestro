@@ -2230,7 +2230,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 081 - Assert not visible - no element with id`() {
+    fun `Case 081 - Hierarchy pruning assert not visible`() {
         // Given
         val commands = readCommands("081_hierarchy_pruning_assert_not_visible")
 
