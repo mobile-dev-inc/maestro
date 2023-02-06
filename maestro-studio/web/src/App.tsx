@@ -8,12 +8,12 @@ function App() {
     case '/inspect':
       return <DeprecatedInspectPage />
     
-      case '/mock':
-        return <MockPage />
+    case '/mock':
+      return <MockPage />
 
-      case '/interact':
-      default:
-        return <InteractPage />
+    case '/interact':
+    default:
+      return <InteractPage />
   }
 }
 
