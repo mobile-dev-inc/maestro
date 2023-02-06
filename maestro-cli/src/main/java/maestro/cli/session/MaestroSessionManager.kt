@@ -173,10 +173,6 @@ object MaestroSessionManager {
                             return@XCTestDriverClient false
                         }
 
-                        Runtime.getRuntime().addShutdownHook(Thread {
-                            xcTestDriverClient.cancelOngoingRequests()
-                        })
-
                         val xcTestDevice = XCTestIOSDevice(
                             deviceId = selectedDevice.device.instanceId,
                             client = xcTestDriverClient,
@@ -309,9 +305,6 @@ object MaestroSessionManager {
             }
             return@XCTestDriverClient false
         }
-        Runtime.getRuntime().addShutdownHook(Thread {
-            xcTestDriverClient.cancelOngoingRequests()
-        })
         val xcTestDevice = XCTestIOSDevice(
             deviceId = device.instanceId,
             client = xcTestDriverClient,
