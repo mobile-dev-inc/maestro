@@ -293,7 +293,7 @@ class Orchestra(
 
             } catch (ignored: MaestroException.ElementNotFound) {
             }
-            maestro.swipeFromCenter(direction, durationMs = command.speed)
+            maestro.swipeFromCenter(direction, durationMs = command.scrollDuration)
         } while (System.currentTimeMillis() < endTime)
 
         throw MaestroException.ElementNotFound("No visible element found: ${command.selector.description()}", maestro.viewHierarchy().root)

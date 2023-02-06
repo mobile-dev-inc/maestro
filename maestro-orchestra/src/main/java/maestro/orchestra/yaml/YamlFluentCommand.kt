@@ -436,13 +436,12 @@ data class YamlFluentCommand(
             } else yaml.timeout
 
         val visibility = if (yaml.visibilityPercentage < 0) 0 else if (yaml.visibilityPercentage > 100) 100 else yaml.visibilityPercentage
-
         return MaestroCommand(
             ScrollUntilVisibleCommand(
                 selector = toElementSelector(yaml.element),
                 direction = yaml.direction,
                 timeout = timeout,
-                speed = yaml.speed,
+                scrollDuration = yaml.speedToDuration(),
                 visibilityPercentage = visibility
             )
         )

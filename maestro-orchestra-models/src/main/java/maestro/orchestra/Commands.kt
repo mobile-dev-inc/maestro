@@ -90,7 +90,7 @@ data class SwipeCommand(
 data class ScrollUntilVisibleCommand(
     val selector: ElementSelector,
     val direction: ScrollDirection,
-    val speed: Long,
+    val scrollDuration: Long,
     val visibilityPercentage: Int,
     val timeout: Long = DEFAULT_TIMEOUT_IN_MILLIS
 ) : Command {
@@ -109,7 +109,7 @@ data class ScrollUntilVisibleCommand(
 
     companion object {
         const val DEFAULT_TIMEOUT_IN_MILLIS = 20 * 1000L
-        const val DEFAULT_SCROLL_DURATION = 600L
+        const val DEFAULT_SCROLL_DURATION = 40
         const val DEFAULT_ELEMENT_VISIBILITY_PERCENTAGE = 100
     }
 }
