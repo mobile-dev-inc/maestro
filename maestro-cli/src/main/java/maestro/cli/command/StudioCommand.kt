@@ -37,7 +37,7 @@ class StudioCommand : Callable<Int> {
             val port = getFreePort()
             MaestroStudio.start(port, session.maestro)
 
-            val studioUrl = "http://localhost:${port}/interact"
+            val studioUrl = "http://localhost:${port}"
             val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
             println()
             println(message)

@@ -32,9 +32,6 @@ class MockServerOpenCommand : Callable<Int> {
     @ParentCommand
     lateinit var parent: MockServerCommand
 
-    @CommandLine.Spec
-    lateinit var commandSpec: CommandLine.Model.CommandSpec
-
     override fun call(): Int {
         MaestroSessionManager.newSession(null, null, null, true) { session ->
             val port = getFreePort()
