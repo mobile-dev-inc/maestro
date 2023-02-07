@@ -13,7 +13,7 @@ class ScreenDiffHandler : RouteHandler {
         let hash1 = SHA256.hash(data: screenshot1.pngRepresentation)
         let hash2 = SHA256.hash(data: screenshot2.pngRepresentation)
         
-        var screenChanged = hash1 != hash2
+        let screenChanged = hash1 != hash2
         
         let response = ["screenChanged" : screenChanged]
         
