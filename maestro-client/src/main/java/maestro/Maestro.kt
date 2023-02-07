@@ -536,8 +536,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }
     }
     private fun screenshotWaitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
-        val timeout = ANIMATION_TIMEOUT_MS
-        LOGGER.info("Waiting for animation to end with timeout $timeout")
+        LOGGER.info("Waiting for animation to end with timeout $SCREEN_SETTLE_TIMEOUT_MS")
         val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
 
         return if (didFinishOnTime) viewHierarchy() else genericWaitForAppToSettle(initialHierarchy)
