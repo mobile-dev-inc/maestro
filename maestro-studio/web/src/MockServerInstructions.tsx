@@ -12,7 +12,7 @@ const MockServerInstructions = ({ projectId }: { projectId?: string }) => (
 
       <div>
         <p className="text-md">Then, initialize the Maestro SDK in your app:</p>
-        <CodeSnippet>{`MaestroSdk.init('${projectId || '<your_project_id>'}')`}</CodeSnippet>
+        <CodeSnippet>{`MaestroSdk.init("${projectId || '<your_project_id>'}")`}</CodeSnippet>
         <p className="text-md">You can retrieve your project id by running <span className="italic">maestro mockserver projectid</span>.</p>
       </div>
 
