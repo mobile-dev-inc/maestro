@@ -1,3 +1,3 @@
 package xcuitest.api
 
-data class GetScreenDiffResponse(val screenChanged: Boolean)
+data class GetScreenDiffResponse(val isScreenStatic: Boolean)

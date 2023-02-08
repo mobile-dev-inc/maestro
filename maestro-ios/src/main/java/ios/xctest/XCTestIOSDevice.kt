@@ -218,9 +218,9 @@ class XCTestIOSDevice(
                             String(body.bytes()),
                             GetScreenDiffResponse::class.java
                         )
-                        val screenChanged = responseBody.screenChanged
-                        logger.info("Screen diff request finished with changed = $screenChanged")
-                        screenChanged
+                        val isScreenStatic = responseBody.isScreenStatic
+                        logger.info("Screen diff request finished with isScreenStatic = $isScreenStatic")
+                        isScreenStatic
                     } else {
                         val errorResponse = String(body.bytes()).trim()
                         logger.info("Screen diff request failed with error = $errorResponse")

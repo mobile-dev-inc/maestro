@@ -4,8 +4,8 @@ import CryptoKit
 import FlyingFox
 import os
 
-class ScreenDiffHandler : RouteHandler {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ScreenDiffHandler")
+class IsScreenStaticHandler : RouteHandler {
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "IsScreenStaticHandler")
     
     func handle(request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let screenshot1 = XCUIScreen.main.screenshot()
@@ -13,15 +13,15 @@ class ScreenDiffHandler : RouteHandler {
         let hash1 = SHA256.hash(data: screenshot1.pngRepresentation)
         let hash2 = SHA256.hash(data: screenshot2.pngRepresentation)
         
-        let screenChanged = hash1 != hash2
+        let isScreenStatic = hash1 == hash2
         
-        let response = ["screenChanged" : screenChanged]
+        let response = ["isScreenStatic" : isScreenStatic]
         
         guard let responseData = try? JSONSerialization.data(
             withJSONObject: response,
             options: .prettyPrinted
         ) else {
-            let errorData = handleError(message: "serialization of screenChanged failed")
+            let errorData = handleError(message: "serialization of isScreenStatic failed")
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
         
