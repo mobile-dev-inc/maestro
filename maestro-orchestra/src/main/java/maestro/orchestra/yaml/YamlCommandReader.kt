@@ -64,8 +64,12 @@ object YamlCommandReader {
         return config
     }
 
-    fun readWorkspaceConfig(configPath: Path): WorkspaceConfig = mapParsingErrors {
-        MAPPER.readValue(configPath.inputStream(), WorkspaceConfig::class.java)
+    fun readWorkspaceConfig(configPath: Path): WorkspaceConfig = try {
+        mapParsingErrors {
+            MAPPER.readValue(configPath.inputStream(), WorkspaceConfig::class.java)
+        }
+    } catch (ignored: NoInputException) {
+        WorkspaceConfig()
     }
 
     // Files to watch for changes. Includes any referenced files.

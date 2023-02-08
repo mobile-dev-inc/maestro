@@ -24,8 +24,7 @@ object WorkspaceExecutionPlanner {
             )
         }
 
-        val workspaceConfig = input.resolve("config.yaml")
-            .takeIf { it.exists() }
+        val workspaceConfig = findConfigFile(input)
             ?.let { YamlCommandReader.readWorkspaceConfig(it) }
             ?: WorkspaceConfig()
 
@@ -61,6 +60,13 @@ object WorkspaceExecutionPlanner {
                         && (excludeTags.isEmpty() || !tags.any(excludeTags::contains))
                 }
         )
+    }
+
+    private fun findConfigFile(input: Path): Path? {
+        return input.resolve("config.yaml")
+            .takeIf { it.exists() }
+            ?: input.resolve("config.yml")
+                .takeIf { it.exists() }
     }
 
     data class ExecutionPlan(

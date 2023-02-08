@@ -118,6 +118,22 @@ internal class WorkspaceExecutionPlannerTest {
         )
     }
 
+    @Test
+    internal fun `007 - Empty config`() {
+        // When
+        val plan = WorkspaceExecutionPlanner.plan(
+            input = path("/workspaces/007_empty_config"),
+            includeTags = listOf(),
+            excludeTags = listOf(),
+        )
+
+        // Then
+        assertThat(plan.flowsToRun).containsExactly(
+            path("/workspaces/007_empty_config/flowA.yaml"),
+            path("/workspaces/007_empty_config/flowB.yaml"),
+        )
+    }
+
     private fun path(pathStr: String): Path {
         return Path.of(WorkspaceExecutionPlannerTest::class.java.getResource(pathStr).toURI())
     }
