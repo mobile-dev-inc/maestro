@@ -223,6 +223,7 @@ class XCTestIOSDevice(
                         screenChanged
                     } else {
                         val errorResponse = String(body.bytes()).trim()
+                        logger.info("Screen diff request failed with error = $errorResponse")
                         throw UnknownFailure(errorResponse)
                     }
                 } ?: throw UnknownFailure("Error - body for screenDiff request not available")
