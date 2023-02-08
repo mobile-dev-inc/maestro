@@ -1,10 +1,16 @@
 package maestro.orchestra
 
+import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonCreator
 
 data class WorkspaceConfig(
     val flows: FlowList? = null,
 ) {
+
+    @JsonAnySetter
+    fun setOtherField(key: String, other: Any?) {
+        // Do nothing
+    }
 
     class FlowList : ArrayList<String>() {
 

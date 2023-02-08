@@ -150,6 +150,22 @@ internal class WorkspaceExecutionPlannerTest {
         )
     }
 
+    @Test
+    internal fun `009 - Custom fields in config`() {
+        // When
+        val plan = WorkspaceExecutionPlanner.plan(
+            input = path("/workspaces/009_custom_config_fields"),
+            includeTags = listOf(),
+            excludeTags = listOf(),
+        )
+
+        // Then
+        assertThat(plan.flowsToRun).containsExactly(
+            path("/workspaces/009_custom_config_fields/flowA.yaml"),
+            path("/workspaces/009_custom_config_fields/flowB.yaml"),
+        )
+    }
+
     private fun path(pathStr: String): Path {
         return Paths.get(WorkspaceExecutionPlannerTest::class.java.getResource(pathStr).toURI())
     }
