@@ -16,7 +16,7 @@ import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
 import xcuitest.api.GetRunningAppIdResponse
-import xcuitest.api.GetScreenDiffResponse
+import xcuitest.api.IsScreenStaticResponse
 import xcuitest.installer.XCTestInstaller
 import java.io.File
 import java.io.InputStream
@@ -214,9 +214,9 @@ class XCTestIOSDevice(
             client.isScreenStatic().use { response ->
                 response.body?.let { body ->
                     if (response.isSuccessful) {
-                        val responseBody: GetScreenDiffResponse = mapper.readValue(
+                        val responseBody: IsScreenStaticResponse = mapper.readValue(
                             String(body.bytes()),
-                            GetScreenDiffResponse::class.java
+                            IsScreenStaticResponse::class.java
                         )
                         val isScreenStatic = responseBody.isScreenStatic
                         logger.info("Screen diff request finished with isScreenStatic = $isScreenStatic")
@@ -226,7 +226,7 @@ class XCTestIOSDevice(
                         logger.info("Screen diff request failed with error = $errorResponse")
                         throw UnknownFailure(errorResponse)
                     }
-                } ?: throw UnknownFailure("Error - body for screenDiff request not available")
+                } ?: throw UnknownFailure("Error - body for isScreenStatic request not available")
             }
         }
     }

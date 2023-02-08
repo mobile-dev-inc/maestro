@@ -94,7 +94,7 @@ class XCTestDriverClient(
     }
 
     fun isScreenStatic(): Response {
-        val url = xctestAPIBuilder("screenDiff")
+        val url = xctestAPIBuilder("isScreenStatic")
             .build()
 
         val request = Request.Builder()
