@@ -401,8 +401,24 @@ class AndroidDriver(
     }
 
     override fun openBrowser(link: String) {
-        TODO("Not yet implemented")
+        val installedPackages = installedPackages()
+        when {
+            installedPackages.contains("com.android.chrome") -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" com.android.chrome")
+            }
+            installedPackages.contains("org.mozilla.firefox") -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" org.mozilla.firefox")
+            }
+            else -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+            }
+        }
     }
+
+    private fun installedPackages() = shell("pm list packages").split("\n")
+        .map { line: String -> line.split(":".toRegex()).toTypedArray() }
+        .filter { parts: Array<String> -> parts.size == 2 }
+        .map { parts: Array<String> -> parts[1] }
 
     override fun setLocation(latitude: Double, longitude: Double) {
         TODO("Not yet implemented")

@@ -308,7 +308,9 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun openBrowser(link: String) {
-        TODO("Not yet implemented")
+        val driver = ensureOpen()
+
+        driver.get(link)
     }
 
     override fun hideKeyboard() {

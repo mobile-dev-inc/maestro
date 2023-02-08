@@ -10,6 +10,7 @@ import hierarchy.XCUIElement
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
+import ios.xcrun.Simctl
 import maestro.logger.Logger
 import okio.Sink
 import okio.buffer
@@ -169,6 +170,10 @@ class XCTestIOSDevice(
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {
+        error("Not supported")
+    }
+
+    override fun openBrowser(link: String): Result<Unit, Throwable> {
         error("Not supported")
     }
 

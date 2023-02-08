@@ -407,7 +407,7 @@ class IOSDriver(
     }
 
     override fun openBrowser(link: String) {
-        TODO("Not yet implemented")
+        iosDevice.openBrowser(link).expect{}
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
