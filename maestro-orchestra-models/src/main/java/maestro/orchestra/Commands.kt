@@ -392,11 +392,12 @@ data class ApplyConfigurationCommand(
 }
 
 data class OpenLinkCommand(
-    val link: String
+    val link: String,
+    val autoVerify: Boolean? = null,
 ) : Command {
 
     override fun description(): String {
-        return "Open $link"
+        return if (autoVerify == true) "Open $link with auto verification" else "Open $link"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): OpenLinkCommand {

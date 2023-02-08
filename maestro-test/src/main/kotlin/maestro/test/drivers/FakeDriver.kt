@@ -257,10 +257,10 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, autoVerify: Boolean) {
         ensureOpen()
 
-        events += Event.OpenLink(link)
+        events += Event.OpenLink(link, autoVerify)
     }
 
     override fun openBrowser(link: String) {
@@ -417,6 +417,7 @@ class FakeDriver : Driver {
 
         data class OpenLink(
             val link: String,
+            val autoLink: Boolean = false
         ) : Event()
 
         data class OpenBrowser(

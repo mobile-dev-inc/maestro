@@ -2368,6 +2368,27 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `085 - Open link with auto verify`() {
+        // Given
+        val commands = readCommands("083_open_link_auto_verify")
+
+        val driver = driver {}
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.OpenLink("https://example.com", autoLink = true)
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,

@@ -522,7 +522,7 @@ class Orchestra(
     }
 
     private fun openLinkCommand(command: OpenLinkCommand): Boolean {
-        maestro.openLink(command.link)
+        maestro.openLink(command.link, command.autoVerify ?: false)
 
         return true
     }

@@ -424,8 +424,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun openLink(link: String) {
-        driver.openLink(link)
+    fun openLink(link: String, autoVerify: Boolean) {
+        driver.openLink(link, autoVerify)
         waitForAppToSettle()
     }
 

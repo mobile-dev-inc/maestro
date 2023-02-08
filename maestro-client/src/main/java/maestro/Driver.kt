@@ -64,7 +64,7 @@ interface Driver {
 
     fun inputText(text: String)
 
-    fun openLink(link: String)
+    fun openLink(link: String, autoVerify: Boolean)
 
     fun openBrowser(link: String)
 

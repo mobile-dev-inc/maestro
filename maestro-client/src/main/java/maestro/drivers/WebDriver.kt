@@ -301,7 +301,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         }
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, autoVerify: Boolean) {
         val driver = ensureOpen()
 
         driver.get(link)

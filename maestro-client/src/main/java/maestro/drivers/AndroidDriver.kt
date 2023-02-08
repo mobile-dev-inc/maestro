@@ -396,7 +396,7 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, autoVerify: Boolean) {
         dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
     }
 
