@@ -3,6 +3,7 @@ package maestro.cli.util
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.nio.file.Paths
 
 internal class WorkspaceExecutionPlannerTest {
 
@@ -150,7 +151,7 @@ internal class WorkspaceExecutionPlannerTest {
     }
 
     private fun path(pathStr: String): Path {
-        return Path.of(WorkspaceExecutionPlannerTest::class.java.getResource(pathStr).toURI())
+        return Paths.get(WorkspaceExecutionPlannerTest::class.java.getResource(pathStr).toURI())
     }
 
 }
