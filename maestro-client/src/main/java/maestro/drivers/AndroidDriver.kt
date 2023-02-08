@@ -400,6 +400,10 @@ class AndroidDriver(
         dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
     }
 
+    override fun openBrowser(link: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun setLocation(latitude: Double, longitude: Double) {
         TODO("Not yet implemented")
     }

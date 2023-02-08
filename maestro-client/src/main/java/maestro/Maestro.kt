@@ -429,6 +429,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
+    fun openBrowser(link: String) {
+        driver.openBrowser(link)
+        waitForAppToSettle()
+    }
+
     override fun close() {
         driver.close()
     }

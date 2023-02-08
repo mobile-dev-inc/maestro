@@ -406,6 +406,22 @@ data class OpenLinkCommand(
     }
 }
 
+data class OpenBrowserCommand(
+    val link: String
+): Command {
+
+    override fun description(): String {
+        return "Open $link in browser"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            link = link.evaluateScripts(jsEngine)
+        )
+    }
+
+}
+
 data class PressKeyCommand(
     val code: KeyCode,
 ) : Command {

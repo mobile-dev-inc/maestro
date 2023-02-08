@@ -2348,6 +2348,26 @@ class IntegrationTest {
         driver.assertHasEvent(Event.Tap(Point(50, 150)))
     }
 
+    @Test
+    fun `Case 084 - Open Browser`() {
+        // given
+        val commands = readCommands("084_open_browser")
+
+        val driver = driver {}
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.OpenBrowser("https://example.com")
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,

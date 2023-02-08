@@ -38,6 +38,7 @@ import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MockNetworkCommand
+import maestro.orchestra.OpenBrowserCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PasteTextCommand
 import maestro.orchestra.PressKeyCommand
@@ -76,6 +77,7 @@ data class YamlFluentCommand(
     val launchApp: YamlLaunchApp? = null,
     val swipe: YamlSwipe? = null,
     val openLink: String? = null,
+    val openBrowser: String? = null,
     val pressKey: String? = null,
     val eraseText: YamlEraseText? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
@@ -133,6 +135,7 @@ data class YamlFluentCommand(
             inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME)))
             swipe != null -> listOf(swipeCommand(swipe))
             openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink)))
+            openBrowser != null -> listOf(MaestroCommand(OpenBrowserCommand(openBrowser)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
             eraseText != null -> listOf(eraseCommand(eraseText))
             action != null -> listOf(

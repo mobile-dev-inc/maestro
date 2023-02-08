@@ -66,6 +66,8 @@ interface Driver {
 
     fun openLink(link: String)
 
+    fun openBrowser(link: String)
+
     fun hideKeyboard()
 
     fun takeScreenshot(out: Sink, compressed: Boolean)
