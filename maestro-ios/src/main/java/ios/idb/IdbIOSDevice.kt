@@ -317,49 +317,7 @@ class IdbIOSDevice(
     }
 
     override fun clearAppState(id: String): Result<Unit, Throwable> {
-
-        // Stop the app before clearing the file system
-        // This prevents the app from saving its state after it has been cleared
-        stop(id)
-
-        // Wait for the app to be stopped, unfortunately idb's stop()
-        // does not wait for the process to finish
-        Thread.sleep(1500)
-
-        // deletes app data, including container folder
-        val result = runCatching {
-            blockingStub.rm(rmRequest {
-                container = fileContainer {
-                    kind = Idb.FileContainer.Kind.APPLICATION
-                    bundleId = id
-                }
-                paths.add("/")
-            })
-        }
-
-        // forces app container folder to be re-created
-        val paths = listOf(
-            "Documents",
-            "Library",
-            "Library/Caches",
-            "Library/Preferences",
-            "SystemData",
-            "tmp"
-        )
-
-        runCatching {
-            paths.forEach { path ->
-                blockingStub.mkdir(mkdirRequest {
-                    container = fileContainer {
-                        kind = Idb.FileContainer.Kind.APPLICATION
-                        bundleId = id
-                    }
-                    this.path = path
-                })
-            }
-        }
-
-        return result.map {  }
+        error("Not supported")
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {

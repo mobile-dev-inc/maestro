@@ -85,7 +85,7 @@ class LocalIOSDevice(
     }
 
     override fun clearAppState(id: String): Result<Unit, Throwable> {
-        return idbIOSDevice.clearAppState(id)
+        return xcTestDevice.clearAppState(id)
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
