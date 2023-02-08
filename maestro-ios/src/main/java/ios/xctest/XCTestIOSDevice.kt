@@ -209,9 +209,9 @@ class XCTestIOSDevice(
         installer.close()
     }
 
-    override fun isScreenChanged(): Result<Boolean, Throwable> {
+    override fun isScreenStatic(): Result<Boolean, Throwable> {
         return runCatching {
-            client.isScreenChanged().use { response ->
+            client.isScreenStatic().use { response ->
                 response.body?.let { body ->
                     if (response.isSuccessful) {
                         val responseBody: GetScreenDiffResponse = mapper.readValue(

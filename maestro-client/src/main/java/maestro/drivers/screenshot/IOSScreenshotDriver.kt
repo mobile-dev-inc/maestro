@@ -11,10 +11,10 @@ class IOSScreenshotDriver(override val driver: Driver) : ScreenshotDriver {
         get() = LoggerFactory.getLogger(IOSScreenshotDriver::class.java)
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return MaestroTimer.retryUntilTrue(timeoutMs) {
-            val screenChanged = driver.isScreenChanged()
+            val isScreenStatic = driver.isScreenStatic()
 
-            logger.info("screen changed = $screenChanged")
-            return@retryUntilTrue !screenChanged
+            logger.info("screen static = $isScreenStatic")
+            return@retryUntilTrue isScreenStatic
         }
     }
 

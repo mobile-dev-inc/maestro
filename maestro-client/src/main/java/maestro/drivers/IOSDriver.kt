@@ -464,8 +464,8 @@ class IOSDriver(
         return iosDevice.isShutdown()
     }
 
-    override fun isScreenChanged(): Boolean {
-        return iosDevice.isScreenChanged().expect {}
+    override fun isScreenStatic(): Boolean {
+        return iosDevice.isScreenStatic().expect {}
     }
 
     private fun toSeconds(ms: Long): Float {

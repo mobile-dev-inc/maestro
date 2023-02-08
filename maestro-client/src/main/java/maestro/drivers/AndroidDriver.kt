@@ -423,7 +423,7 @@ class AndroidDriver(
         return false
     }
 
-    override fun isScreenChanged(): Boolean {
+    override fun isScreenStatic(): Boolean {
         TODO("Not yet implemented")
     }
 

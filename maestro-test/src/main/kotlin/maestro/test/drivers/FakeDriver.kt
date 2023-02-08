@@ -277,7 +277,7 @@ class FakeDriver : Driver {
         return state != State.OPEN
     }
 
-    override fun isScreenChanged(): Boolean {
+    override fun isScreenStatic(): Boolean {
         return false
     }
 

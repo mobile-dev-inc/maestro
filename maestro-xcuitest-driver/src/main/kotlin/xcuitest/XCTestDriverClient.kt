@@ -93,7 +93,7 @@ class XCTestDriverClient(
         return okHttpClient.newCall(request).execute()
     }
 
-    fun isScreenChanged(): Response {
+    fun isScreenStatic(): Response {
         val url = xctestAPIBuilder("screenDiff")
             .build()
 

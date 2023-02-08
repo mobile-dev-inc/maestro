@@ -354,7 +354,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return true
     }
 
-    override fun isScreenChanged(): Boolean {
+    override fun isScreenStatic(): Boolean {
         TODO("Not yet implemented")
     }
 }

@@ -487,7 +487,7 @@ class IdbIOSDevice(
         }
     }
 
-    override fun isScreenChanged(): Result<Boolean, Throwable> {
+    override fun isScreenStatic(): Result<Boolean, Throwable> {
         TODO("Not yet implemented")
     }
 
