@@ -134,6 +134,21 @@ internal class WorkspaceExecutionPlannerTest {
         )
     }
 
+    @Test
+    internal fun `008 - Literal pattern`() {
+        // When
+        val plan = WorkspaceExecutionPlanner.plan(
+            input = path("/workspaces/008_literal_pattern"),
+            includeTags = listOf(),
+            excludeTags = listOf(),
+        )
+
+        // Then
+        assertThat(plan.flowsToRun).containsExactly(
+            path("/workspaces/008_literal_pattern/featureA/flowA.yaml"),
+        )
+    }
+
     private fun path(pathStr: String): Path {
         return Path.of(WorkspaceExecutionPlannerTest::class.java.getResource(pathStr).toURI())
     }
