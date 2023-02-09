@@ -174,4 +174,17 @@ object Simctl {
             )
         )
     }
+
+    fun setLocation(deviceId: String, latitude: Double, longitude: Double) {
+        CommandLineUtils.runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "location",
+                deviceId,
+                "set",
+                "$latitude,$longitude",
+            )
+        )
+    }
 }
