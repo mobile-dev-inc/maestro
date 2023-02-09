@@ -4,18 +4,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.map
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
 import hierarchy.XCUIElement
 import idb.Idb
-import idb.fileContainer
-import idb.mkdirRequest
-import idb.rmRequest
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
-import ios.xcrun.Simctl
 import maestro.logger.Logger
 import okio.Sink
 import okio.buffer
@@ -162,8 +157,7 @@ class XCTestIOSDevice(
     }
 
     override fun clearAppState(id: String): Result<Unit, Throwable> {
-        deviceId?.let { Simctl.clearAppState(deviceId, id) }
-        return Ok(Unit)
+        error("Not supported")
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
@@ -175,8 +169,7 @@ class XCTestIOSDevice(
     }
 
     override fun stop(id: String): Result<Unit, Throwable> {
-        deviceId?.let { deviceId -> Simctl.terminate(deviceId, id) }
-        return Ok(Unit)
+        error("Not supported")
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {
