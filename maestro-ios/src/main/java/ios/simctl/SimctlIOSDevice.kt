@@ -77,7 +77,9 @@ class SimctlIOSDevice(
     }
 
     override fun launch(id: String): Result<Unit, Throwable> {
-        Simctl.launch(deviceId, id)
+        runCatching {
+            Simctl.launch(deviceId, id)
+        }
         return Ok(Unit)
     }
 
