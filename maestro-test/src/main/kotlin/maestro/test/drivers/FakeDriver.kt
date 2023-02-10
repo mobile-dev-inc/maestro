@@ -20,6 +20,7 @@
 package maestro.test.drivers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.michaelbull.result.expect
 import com.google.common.truth.Truth.assertThat
 import maestro.DeviceInfo
 import maestro.Driver
@@ -32,6 +33,10 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.UiElement
 import maestro.ViewHierarchy
+import maestro.drivers.AndroidDriver
+import maestro.drivers.IOSDriver
+import maestro.drivers.screenshot.ScreenshotUtils
+import maestro.utils.MaestroTimer
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
@@ -339,11 +344,11 @@ class FakeDriver : Driver {
     }
 
     override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
-        return ViewHierarchy(TreeNode())
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
-        return true
+        return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, 0.005, this)
     }
 
     sealed class Event {
