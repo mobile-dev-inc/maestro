@@ -31,6 +31,7 @@ import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.UiElement
+import maestro.ViewHierarchy
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
@@ -277,10 +278,6 @@ class FakeDriver : Driver {
         return state != State.OPEN
     }
 
-    override fun isScreenStatic(): Boolean {
-        return false
-    }
-
     override fun isUnicodeInputSupported(): Boolean {
         return false
     }
@@ -339,6 +336,14 @@ class FakeDriver : Driver {
         if (state != State.OPEN) {
             throw IllegalStateException("Driver is not opened yet")
         }
+    }
+
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy {
+        return ViewHierarchy(TreeNode())
+    }
+
+    override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return true
     }
 
     sealed class Event {
