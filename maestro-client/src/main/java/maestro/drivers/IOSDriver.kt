@@ -499,7 +499,6 @@ class IOSDriver(
         const val NAME = "iOS Simulator"
 
         private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
-        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 2000
 
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40
@@ -511,6 +510,6 @@ class IOSDriver(
             ELEMENT_TYPE_TOGGLE,
         )
 
-        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 2000
+        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 3000
     }
 }
