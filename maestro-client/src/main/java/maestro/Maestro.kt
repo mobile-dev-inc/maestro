@@ -170,7 +170,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     ) {
         LOGGER.info("Tapping on element: $element")
 
-        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy)
+        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy) ?: initialHierarchy
 
         val center = (
             hierarchyBeforeTap
@@ -260,7 +260,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             }
             val hierarchyAfterTap = waitForAppToSettle()
 
-            if (hierarchyBeforeTap != hierarchyAfterTap) {
+            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
                 return
             }
@@ -381,7 +381,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return filter(viewHierarchy().aggregate())
     }
 
-    fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null): ViewHierarchy {
+    fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null): ViewHierarchy? {
         return driver.waitForAppToSettle(initialHierarchy)
     }
 
