@@ -397,6 +397,8 @@ class Maestro(private val driver: Driver,
     }
 
     fun inputText(text: String) {
+        LOGGER.info("Inputting text: $text")
+
         driver.inputText(text)
         waitForAppToSettle()
     }
