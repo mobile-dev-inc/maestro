@@ -38,6 +38,7 @@ import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
 import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
+import maestro.utils.TapUtils
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
@@ -434,6 +435,10 @@ class AndroidDriver(
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
+        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
     }
 
     private fun mapHierarchy(node: Node): TreeNode {

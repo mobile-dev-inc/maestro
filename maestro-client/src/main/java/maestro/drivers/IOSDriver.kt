@@ -41,6 +41,7 @@ import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import maestro.utils.FileUtils
 import maestro.utils.MaestroTimer
+import maestro.utils.TapUtils
 import okio.Sink
 import org.slf4j.LoggerFactory
 import util.XCRunnerSimctl
@@ -454,6 +455,31 @@ class IOSDriver(
         val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
 
         return if (didFinishOnTime) null else ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    }
+
+    override fun performTap(x: Int,
+                            y: Int,
+                            retryIfNoChange: Boolean,
+                            longPress: Boolean,
+                            initialHierarchy: ViewHierarchy?) {
+        LOGGER.info("Tapping at ($x, $y)")
+
+        val hierarchyBeforeTap = initialHierarchy ?: TapUtils.viewHierarchy(this)
+
+        val retries = TapUtils.getNumberOfRetries(retryIfNoChange)
+        repeat(retries) {
+            if (longPress) {
+                longPress(Point(x, y))
+            } else {
+                tap(Point(x, y))
+            }
+            val hierarchyAfterTap = waitForAppToSettle(initialHierarchy)
+
+            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
+                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
+                return
+            }
+        }
     }
 
     private fun isScreenStatic(): Boolean {

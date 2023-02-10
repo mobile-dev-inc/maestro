@@ -12,6 +12,7 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
+import maestro.utils.TapUtils
 import okio.Sink
 import okio.buffer
 import org.apache.commons.io.output.NullOutputStream
@@ -362,6 +363,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
+        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
     }
 
     companion object {

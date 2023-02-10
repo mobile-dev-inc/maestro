@@ -32,6 +32,7 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.drivers.screenshot.ScreenshotUtils
+import maestro.utils.TapUtils
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
@@ -344,6 +345,10 @@ class FakeDriver : Driver {
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, 0.005, this)
+    }
+
+    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
+        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
     }
 
     sealed class Event {

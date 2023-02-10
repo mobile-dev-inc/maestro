@@ -12,6 +12,7 @@ import javax.imageio.ImageIO
 class ScreenshotUtils {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(ScreenshotUtils::class.java)
+
         fun takeScreenshot(out: Sink, compressed: Boolean, driver: Driver) {
             LOGGER.info("Taking screenshot to output sink")
 
@@ -32,10 +33,6 @@ class ScreenshotUtils {
         } catch (e: Exception) {
             LOGGER.warn("Failed to take screenshot", e)
             null
-        }
-
-        fun viewHierarchy(driver: Driver): ViewHierarchy {
-            return ViewHierarchy.from(driver)
         }
 
         fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, driver: Driver): ViewHierarchy {
@@ -76,6 +73,10 @@ class ScreenshotUtils {
 
                 return@retryUntilTrue false
             }
+        }
+
+        private fun viewHierarchy(driver: Driver): ViewHierarchy {
+            return ViewHierarchy.from(driver)
         }
     }
 }

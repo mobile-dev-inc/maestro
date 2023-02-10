@@ -87,4 +87,12 @@ interface Driver {
     fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean
 
     fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy?
+
+    fun performTap(
+        x: Int,
+        y: Int,
+        retryIfNoChange: Boolean = true,
+        longPress: Boolean = false,
+        initialHierarchy: ViewHierarchy? = null,
+    )
 }
