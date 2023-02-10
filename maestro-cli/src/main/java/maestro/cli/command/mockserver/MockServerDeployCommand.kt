@@ -32,9 +32,9 @@ class MockServerDeployCommand : Callable<Int> {
 
     private fun getDefaultMockserverDir(): File {
         val currentDir = System.getProperty("user.dir")
-        val maestroDirPath = "$currentDir/.maestro/mockserver"
+        val defaultWorkspaceDirPath = "$currentDir/.maestro/mockserver"
 
-        return File(maestroDirPath)
+        return File(defaultWorkspaceDirPath)
     }
 
     override fun call(): Int {
