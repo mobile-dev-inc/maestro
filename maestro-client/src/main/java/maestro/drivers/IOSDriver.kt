@@ -470,7 +470,6 @@ class IOSDriver(
 
 
     companion object {
-
         const val NAME = "iOS Simulator"
 
         private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
@@ -486,5 +485,6 @@ class IOSDriver(
             ELEMENT_TYPE_TOGGLE,
         )
 
+        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 2000
     }
 }
