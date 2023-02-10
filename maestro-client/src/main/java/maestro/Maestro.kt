@@ -25,7 +25,7 @@ import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
-import maestro.drivers.screenshot.ScreenshotUtils
+import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
 import maestro.utils.SocketUtils
 import okio.Sink

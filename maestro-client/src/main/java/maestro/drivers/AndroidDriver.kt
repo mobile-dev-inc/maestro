@@ -36,7 +36,7 @@ import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
-import maestro.drivers.screenshot.ScreenshotUtils
+import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest

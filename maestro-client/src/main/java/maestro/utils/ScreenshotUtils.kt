@@ -1,9 +1,8 @@
-package maestro.drivers.screenshot
+package maestro.utils
 
 import com.github.romankh3.image.comparison.ImageComparison
 import maestro.Driver
 import maestro.ViewHierarchy
-import maestro.utils.MaestroTimer
 import okio.Buffer
 import okio.Sink
 import org.slf4j.LoggerFactory

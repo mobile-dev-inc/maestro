@@ -11,7 +11,7 @@ import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
-import maestro.drivers.screenshot.ScreenshotUtils
+import maestro.utils.ScreenshotUtils
 import okio.Sink
 import okio.buffer
 import org.apache.commons.io.output.NullOutputStream
