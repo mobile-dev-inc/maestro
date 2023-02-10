@@ -100,11 +100,11 @@ class LocalIOSDevice(
     }
 
     override fun stop(id: String): Result<Unit, Throwable> {
-        return idbIOSDevice.stop(id)
+        return simctlIOSDevice.stop(id)
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {
-        return idbIOSDevice.openLink(link)
+        return simctlIOSDevice.openLink(link)
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {

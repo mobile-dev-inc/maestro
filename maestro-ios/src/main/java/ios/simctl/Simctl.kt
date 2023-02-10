@@ -163,6 +163,7 @@ object Simctl {
         return String(process.inputStream.readBytes()).trimEnd()
     }
 
+
     fun launch(deviceId: String, bundleId: String) {
         CommandLineUtils.runCommand(
             listOf(
@@ -184,6 +185,18 @@ object Simctl {
                 deviceId,
                 "set",
                 "$latitude,$longitude",
+            )
+        )
+    }
+    
+    fun openURL(deviceId: String, url: String) {
+        CommandLineUtils.runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "openurl",
+                deviceId,
+                url,
             )
         )
     }
