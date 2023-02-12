@@ -145,7 +145,6 @@ const InteractableDevice = ({deviceScreen, onHint, inspectedElement, onInspectEl
         onElementSelected={onInspectElement}
         hoveredElement={hoveredElement}
         onHover={onHover}
-        onInspect={onInspectElement}
         annotationsEnabled={!metaKeyDown}
       />
     </GestureDiv>
