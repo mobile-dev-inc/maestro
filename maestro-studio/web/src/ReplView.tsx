@@ -261,7 +261,6 @@ const Instructions = () => {
         <p>• Type a command above, then hit ENTER to run</p>
         <p>• Tap on the device screen to explore available commands</p>
         <p>• Hold CMD (⌘) down to freely tap and swipe on the device screen</p>
-        <p>• Right click to inspect an element</p>
       </div>
     </div>
   )
