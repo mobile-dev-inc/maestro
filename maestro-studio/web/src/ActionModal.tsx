@@ -1,11 +1,10 @@
 import { UIElement } from './models';
 import { motion } from 'framer-motion';
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { CommandExample, getCommandExamples } from './commandExample';
 import { useHotkeys } from 'react-hotkeys-hook';
 import copy from 'copy-to-clipboard';
 import Fuse from 'fuse.js';
-import examples from './Examples';
 
 const KeyPill = ({text}: {
   text: string
