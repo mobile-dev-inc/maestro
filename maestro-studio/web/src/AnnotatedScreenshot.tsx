@@ -193,7 +193,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
   const focusedElement = selectedElement || hoveredElement
 
   const createCrosshairs = () => {
-    if (annotationsEnabled) {
+    if (annotationsEnabled || !mouse.isOver) {
       const bounds = focusedElement?.bounds
       if (!bounds) return null
       const {x, y, width, height} = bounds
@@ -202,7 +202,7 @@ export const AnnotatedScreenshot = ({deviceScreen, selectedElement, onElementSel
       const color = focusedElement === selectedElement ? 'bg-pink-400' : 'bg-blue-400'
       return <Crosshairs cx={cx} cy={cy} color={color} />
     } else {
-      if (mouse.isOver && mouse.x && mouse.y && mouse.elementWidth && mouse.elementHeight) {
+      if (mouse.x && mouse.y && mouse.elementWidth && mouse.elementHeight) {
         return <Crosshairs cx={mouse.x / mouse.elementWidth} cy={mouse.y / mouse.elementHeight} color="bg-blue-400" />
       } else {
         return null

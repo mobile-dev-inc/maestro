@@ -16,6 +16,7 @@
     "date-fns": "^2.29.3",
     "file-saver": "^2.0.5",
     "framer-motion": "^7.10.3",
+    "fuse.js": "^6.6.2",
     "react": "^18.2.0",
     "react-contenteditable": "^3.3.6",
     "react-copy-to-clipboard": "^5.1.0",

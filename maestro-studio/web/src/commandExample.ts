@@ -20,6 +20,19 @@ type Selector = {
   documentation?: string
 }
 
+const toPercent = (n: number, total: number) => `${Math.round((100 * n / total))}%`
+
+const getCoordinatesSelector = (deviceWidth: number, deviceHeight: number, uiElement: UIElement): Selector => {
+  const bounds = uiElement.bounds || { x: 0, y: 0, width: 0, height: 0 }
+  const cx = toPercent(bounds.x + bounds.width / 2, deviceWidth)
+  const cy = toPercent(bounds.y + bounds.height / 2, deviceHeight)
+  return {
+    status: 'available',
+    title: 'Coordinates',
+    definition: { point: `${cx},${cy}` }
+  }
+}
+
 const getSelectors = (uiElement: UIElement): Selector[] => {
   const selectors: Selector[] = []
   if (uiElement.resourceId) {
@@ -45,7 +58,7 @@ const getSelectors = (uiElement: UIElement): Selector[] => {
     selectors.push({
       title: 'Resource Id',
       status: 'unavailable',
-      message: 'This element has no resource id associated with it. Type ‘D’ to view platform-specific documentation on how to assign resource ids to ui elements.',
+      message: 'This element has no resource id associated with it. Type ‘\u2318 D’ to view platform-specific documentation on how to assign resource ids to ui elements.',
       documentation: 'https://maestro.mobile.dev/platform-support/supported-platforms',
     })
   }
@@ -97,10 +110,11 @@ const toConditionalExample = (selector: Selector): CommandExample => {
   }
 }
 
-export const getCommandExamples = (uiElement: UIElement): CommandExample[] => {
+export const getCommandExamples = (deviceWidth: number, deviceHeight: number, uiElement: UIElement): CommandExample[] => {
   const selectors = getSelectors(uiElement)
   const commands: CommandExample[] = [
     ...selectors.map(toTapExample),
+    toTapExample(getCoordinatesSelector(deviceWidth, deviceHeight, uiElement)),
     ...selectors.map(toAssertExample),
     ...selectors.map(toConditionalExample)
   ]

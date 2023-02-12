@@ -21,6 +21,8 @@ export const Main = () => {
   return (
     <div className="w-full h-full flex">
       <ActionModal
+        deviceWidth={1}
+        deviceHeight={1}
         uiElement={uiElement}
         onEdit={() => {}}
         onRun={() => {}}
