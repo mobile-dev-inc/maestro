@@ -149,6 +149,10 @@ class IdbIOSDevice(
         }
     }
 
+    override fun scroll(xStart: Double, yStart: Double, xEnd: Double, yEnd: Double, duration: Double): Result<Unit, Throwable> {
+        TODO("Not yet implemented")
+    }
+
     private fun press(
         x: Int,
         y: Int,
@@ -188,16 +192,6 @@ class IdbIOSDevice(
 
             responseObserver.awaitResult()
         }
-    }
-
-    override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?,
-    ): Result<Unit, Throwable> {
-        error("Not supported")
     }
 
     override fun input(

@@ -103,11 +103,11 @@ class XCTestIOSDevice(
     }
 
     override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?
+        xStart: Double,
+        yStart: Double,
+        xEnd: Double,
+        yEnd: Double,
+        duration: Double,
     ): Result<Unit, Throwable> {
         return runCatching {
             val appId = activeAppId() ?: return@runCatching
@@ -118,7 +118,7 @@ class XCTestIOSDevice(
                 startY = yStart,
                 endX = xEnd,
                 endY = yEnd,
-                velocity = velocity,
+                duration = duration
             ).use {}
         }
     }
