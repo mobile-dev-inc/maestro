@@ -171,7 +171,7 @@ export const ActionModal = ({ deviceWidth, deviceHeight, uiElement, onEdit, onRu
   onRun: (example: CommandExample) => void
   onClose: () => void
 }) => {
-  const unfilteredExamples = useMemo(() => getCommandExamples(deviceWidth, deviceHeight, uiElement), [uiElement])
+  const unfilteredExamples = useMemo(() => getCommandExamples(deviceWidth, deviceHeight, uiElement), [deviceWidth, deviceHeight, uiElement])
   const [query, setQuery] = useState('')
   const fuse = useMemo(() => new Fuse(unfilteredExamples, {keys: ['title', 'content']}), [unfilteredExamples])
   const examples = useMemo(() => query ? fuse.search(query).map(r => r.item): unfilteredExamples, [fuse, unfilteredExamples, query])
