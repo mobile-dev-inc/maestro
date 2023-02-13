@@ -180,32 +180,33 @@ export const ActionModal = ({ deviceWidth, deviceHeight, uiElement, onEdit, onRu
   const fuse = useMemo(() => new Fuse(unfilteredExamples, {keys: ['title', 'content']}), [unfilteredExamples])
   const examples = useMemo(() => query ? fuse.search(query).map(r => r.item): unfilteredExamples, [fuse, unfilteredExamples, query])
   const { focused, moveFocus, setFocus } = useFocused(examples);
+  const hotkeysOptions = {preventDefault: true, enableOnFormTags: true}
   useHotkeys('up, down', e => {
     if (e.code === 'ArrowUp') {
       moveFocus(-1)
     } else if (e.code === 'ArrowDown') {
       moveFocus(1)
     }
-  }, {preventDefault: true, enableOnFormTags: true})
+  }, hotkeysOptions)
   useHotkeys('meta+c', () => {
     const toCopy = focused?.content
     if (!toCopy) return
     copy(toCopy)
-  }, {preventDefault: true, enableOnFormTags: true})
+  }, hotkeysOptions)
   useHotkeys('meta+d', () => {
     const documentation = focused?.documentation
     if (!documentation) return
     window.open(documentation, '_blank', 'noreferrer');
-  }, {preventDefault: true, enableOnFormTags: true})
+  }, hotkeysOptions)
   useHotkeys('meta+enter', () => {
     focused && onEdit(focused)
-  }, {preventDefault: true, enableOnFormTags: true})
+  }, hotkeysOptions)
   useHotkeys('enter', e => {
     // For some reason we can get into a situation where this fires for every key. This only happens for this hook.
     if (e.code !== 'Enter') return
     focused && onRun(focused)
-  }, {preventDefault: true, enableOnFormTags: true})
-  useHotkeys('escape', onClose, {preventDefault: true, enableOnFormTags: true})
+  }, hotkeysOptions)
+  useHotkeys('escape', onClose, hotkeysOptions)
   return (
     <div className="absolute inset-0 bg-slate-900/60 z-50 p-10">
       <motion.div
