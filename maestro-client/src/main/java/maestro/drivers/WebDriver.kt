@@ -1,6 +1,7 @@
 package maestro.drivers
 
 import io.github.bonigarcia.wdm.WebDriverManager
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -12,7 +13,6 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
-import maestro.utils.TapUtils
 import okio.Sink
 import okio.buffer
 import org.apache.commons.io.output.NullOutputStream
@@ -363,6 +363,12 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
     }
 
     companion object {

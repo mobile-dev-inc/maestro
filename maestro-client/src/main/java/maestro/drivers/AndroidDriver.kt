@@ -23,6 +23,7 @@ import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -38,7 +39,6 @@ import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
 import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
-import maestro.utils.TapUtils
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
@@ -435,6 +435,12 @@ class AndroidDriver(
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
     }
 
     private fun mapHierarchy(node: Node): TreeNode {

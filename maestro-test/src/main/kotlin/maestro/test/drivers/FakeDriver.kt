@@ -21,6 +21,7 @@ package maestro.test.drivers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -32,7 +33,6 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
-import maestro.utils.TapUtils
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
@@ -345,6 +345,12 @@ class FakeDriver : Driver {
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, 0.005, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
     }
 
     sealed class Event {

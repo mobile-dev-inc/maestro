@@ -24,15 +24,16 @@ import dadb.Dadb
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
+import maestro.drivers.IOSDriver
 import maestro.drivers.WebDriver
 import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
 import maestro.utils.SocketUtils
-import maestro.utils.TapUtils
 import okio.Sink
 import okio.buffer
 import okio.sink
 import org.slf4j.LoggerFactory
+import java.awt.image.BufferedImage
 import java.io.File
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -180,8 +181,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 ?: element
             ).bounds
             .center()
-        TapUtils.performTap(
-            driver,
+        performTap(
             center.x,
             center.y,
             retryIfNoChange,
@@ -232,13 +232,98 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
     ) {
-        TapUtils.performTap(
-            driver,
-            x = x,
-            y = y,
-            retryIfNoChange = retryIfNoChange,
-            longPress = longPress,
-        )
+        performTap(x, y, retryIfNoChange, longPress)
+    }
+
+    private fun getNumberOfRetries(retryIfNoChange: Boolean): Int {
+        return if (retryIfNoChange) 2 else 1
+    }
+
+    private fun performTap(x: Int,
+                           y: Int,
+                           retryIfNoChange: Boolean = true,
+                           longPress: Boolean = false,
+                           initialHierarchy: ViewHierarchy? = null) {
+        val capabilities = driver.capabilities()
+
+        if (Capability.FAST_HIERARCHY in capabilities) {
+            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+        } else {
+            screenshotBaseTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+        }
+    }
+
+    private fun screenshotBaseTap(x: Int,
+                                  y: Int,
+                                  retryIfNoChange: Boolean = true,
+                                  longPress: Boolean = false,
+                                  initialHierarchy: ViewHierarchy? = null) {
+        LOGGER.info("Tapping at ($x, $y)")
+
+        val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
+
+        val retries = getNumberOfRetries(retryIfNoChange)
+        repeat(retries) {
+            if (longPress) {
+                driver.longPress(Point(x, y))
+            } else {
+                driver.tap(Point(x, y))
+            }
+            val hierarchyAfterTap = waitForAppToSettle(initialHierarchy)
+
+            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
+                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
+                return
+            }
+        }
+    }
+    private fun hierarchyBasedTap(x: Int,
+                                  y: Int,
+                                  retryIfNoChange: Boolean = true,
+                                  longPress: Boolean = false,
+                                  initialHierarchy: ViewHierarchy? = null) {
+        LOGGER.info("Tapping at ($x, $y)")
+
+        val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
+        val screenshotBeforeTap: BufferedImage? = ScreenshotUtils.tryTakingScreenshot(driver)
+
+        val retries = getNumberOfRetries(retryIfNoChange)
+        repeat(retries) {
+            if (longPress) {
+                driver.longPress(Point(x, y))
+            } else {
+                driver.tap(Point(x, y))
+            }
+            val hierarchyAfterTap = driver.waitForAppToSettle(initialHierarchy)
+
+            if (hierarchyBeforeTap != hierarchyAfterTap) {
+                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
+                return
+            }
+
+            val screenshotAfterTap: BufferedImage? = ScreenshotUtils.tryTakingScreenshot(driver)
+            if (screenshotBeforeTap != null &&
+                screenshotAfterTap != null &&
+                screenshotBeforeTap.width == screenshotAfterTap.width &&
+                screenshotBeforeTap.height == screenshotAfterTap.height
+            ) {
+                val imageDiff = ImageComparison(
+                    screenshotBeforeTap,
+                    screenshotAfterTap
+                ).compareImages().differencePercent
+
+                if (imageDiff > SCREENSHOT_DIFF_THRESHOLD) {
+                    LOGGER.info("Something have changed in the UI judging by screenshot (d=$imageDiff). Proceed.")
+                    return
+                } else {
+                    LOGGER.info("Screenshots are not different enough (d=$imageDiff)")
+                }
+            } else {
+                LOGGER.info("Skipping screenshot comparison")
+            }
+
+            LOGGER.info("Nothing changed in the UI.")
+        }
     }
 
     private fun waitUntilVisible(element: UiElement): ViewHierarchy {

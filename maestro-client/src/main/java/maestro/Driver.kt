@@ -87,4 +87,6 @@ interface Driver {
     fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean
 
     fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy?
+
+    fun capabilities(): List<Capability>
 }
