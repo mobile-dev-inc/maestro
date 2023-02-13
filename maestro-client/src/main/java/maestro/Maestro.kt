@@ -249,16 +249,16 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         if (Capability.FAST_HIERARCHY in capabilities) {
             hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
         } else {
-            screenshotBaseTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
         }
     }
 
-    private fun screenshotBaseTap(x: Int,
+    private fun screenshotBasedTap(x: Int,
                                   y: Int,
                                   retryIfNoChange: Boolean = true,
                                   longPress: Boolean = false,
                                   initialHierarchy: ViewHierarchy? = null) {
-        LOGGER.info("Tapping at ($x, $y)")
+        LOGGER.info("Tapping at ($x, $y) using screenshot based logic for wait")
 
         val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
 
@@ -282,7 +282,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                                   retryIfNoChange: Boolean = true,
                                   longPress: Boolean = false,
                                   initialHierarchy: ViewHierarchy? = null) {
-        LOGGER.info("Tapping at ($x, $y)")
+        LOGGER.info("Tapping at ($x, $y) using hierarchy based logic for wait")
 
         val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
         val screenshotBeforeTap: BufferedImage? = ScreenshotUtils.tryTakingScreenshot(driver)
