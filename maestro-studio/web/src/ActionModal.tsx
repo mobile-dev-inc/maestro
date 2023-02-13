@@ -60,10 +60,11 @@ const SearchBar = ({query, onQuery}: {
   )
 }
 
-const ActionRow = ({example, focused, onClick}: {
+const ActionRow = ({example, focused, onClick, onDoubleClick}: {
   example: CommandExample
   focused: boolean
   onClick: () => void
+  onDoubleClick: () => void
 }) => {
   const headerBg = focused ? 'bg-blue-900 group-hover:bg-blue-900 group-active:bg-slate-700' : 'bg-slate-50 group-hover:bg-slate-100 group-active:bg-slate-200'
   const headerTextColor = focused ? 'text-white' : 'text-slate-900'
@@ -74,6 +75,7 @@ const ActionRow = ({example, focused, onClick}: {
       className="group action-row flex flex-col py-2.5 cursor-default select-none"
       aria-selected={focused}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
     >
       <div className={`flex flex-col rounded border ${contentBg} ${borderColor}`}>
       <span className={`font-semibold px-4 py-3 border-b font-mono text-sm ${headerBg} ${headerTextColor} ${borderColor}`}>
@@ -87,10 +89,11 @@ const ActionRow = ({example, focused, onClick}: {
   )
 }
 
-const ActionList = ({examples, focused, onClick}: {
+const ActionList = ({examples, focused, onClick, onDoubleClick}: {
   examples: CommandExample[]
   focused: CommandExample | null
   onClick: (example: CommandExample) => void
+  onDoubleClick: (example: CommandExample) => void
 }) => {
   return (
     <div className="flex-1 flex flex-col px-5 py-2.5 overflow-y-scroll">
@@ -99,6 +102,7 @@ const ActionList = ({examples, focused, onClick}: {
           example={example}
           focused={example === focused}
           onClick={() => onClick(example)}
+          onDoubleClick={() => onDoubleClick(example)}
         />
       ))}
     </div>
@@ -212,7 +216,12 @@ export const ActionModal = ({ deviceWidth, deviceHeight, uiElement, onEdit, onRu
         onClick={e => e.stopPropagation()}
       >
         <SearchBar query={query} onQuery={setQuery}/>
-        <ActionList examples={examples} focused={focused} onClick={e => setFocus(e.title)}/>
+        <ActionList
+          examples={examples}
+          focused={focused}
+          onClick={e => setFocus(e.title)}
+          onDoubleClick={e => onRun(e)}
+        />
       </motion.div>
     </div>
   )
