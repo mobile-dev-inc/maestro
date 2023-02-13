@@ -457,30 +457,30 @@ class IOSDriver(
         return if (didFinishOnTime) null else ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
-    override fun performTap(x: Int,
-                            y: Int,
-                            retryIfNoChange: Boolean,
-                            longPress: Boolean,
-                            initialHierarchy: ViewHierarchy?) {
-        LOGGER.info("Tapping at ($x, $y)")
-
-        val hierarchyBeforeTap = initialHierarchy ?: TapUtils.viewHierarchy(this)
-
-        val retries = TapUtils.getNumberOfRetries(retryIfNoChange)
-        repeat(retries) {
-            if (longPress) {
-                longPress(Point(x, y))
-            } else {
-                tap(Point(x, y))
-            }
-            val hierarchyAfterTap = waitForAppToSettle(initialHierarchy)
-
-            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
-                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
-                return
-            }
-        }
-    }
+//    override fun performTap(x: Int,
+//                            y: Int,
+//                            retryIfNoChange: Boolean,
+//                            longPress: Boolean,
+//                            initialHierarchy: ViewHierarchy?) {
+//        LOGGER.info("Tapping at ($x, $y)")
+//
+//        val hierarchyBeforeTap = initialHierarchy ?: TapUtils.viewHierarchy(this)
+//
+//        val retries = TapUtils.getNumberOfRetries(retryIfNoChange)
+//        repeat(retries) {
+//            if (longPress) {
+//                longPress(Point(x, y))
+//            } else {
+//                tap(Point(x, y))
+//            }
+//            val hierarchyAfterTap = waitForAppToSettle(initialHierarchy)
+//
+//            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
+//                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
+//                return
+//            }
+//        }
+//    }
 
     private fun isScreenStatic(): Boolean {
         return iosDevice.isScreenStatic().expect {}

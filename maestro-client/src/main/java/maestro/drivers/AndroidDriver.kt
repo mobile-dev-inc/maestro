@@ -437,10 +437,6 @@ class AndroidDriver(
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
     }
 
-    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
-        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
-    }
-
     private fun mapHierarchy(node: Node): TreeNode {
         val attributes = if (node is Element) {
             val attributesBuilder = mutableMapOf<String, String>()

@@ -347,10 +347,6 @@ class FakeDriver : Driver {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, 0.005, this)
     }
 
-    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
-        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
-    }
-
     sealed class Event {
 
         data class Tap(

@@ -365,10 +365,6 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
     }
 
-    override fun performTap(x: Int, y: Int, retryIfNoChange: Boolean, longPress: Boolean, initialHierarchy: ViewHierarchy?) {
-        TapUtils.performTap(this, x, y, retryIfNoChange, longPress, initialHierarchy)
-    }
-
     companion object {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
     }
