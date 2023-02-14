@@ -267,11 +267,11 @@ class IOSDriver(
 
     override fun scrollVertical() {
         iosDevice.scroll(
-            xStart = 0.5,
-            yStart = 0.5,
-            xEnd = 0.5,
-            yEnd = 0.1,
-            duration = 0.2
+            xStart = widthPercentToPoint(0.5).toDouble(),
+            yStart = heightPercentToPoint(0.5).toDouble(),
+            xEnd = widthPercentToPoint(0.5).toDouble(),
+            yEnd = heightPercentToPoint(0.1).toDouble(),
+            duration = 2.0/3.0
         ).expect {}
     }
 
