@@ -20,14 +20,14 @@ struct EventRecord {
             .takeUnretainedValue() as! NSObject
     }
 
-    func addPointerTouchEvent(at point: CGPoint, touchUpAfter: TimeInterval = defaultTapDuration) {
+    mutating func addPointerTouchEvent(at point: CGPoint, touchUpAfter: TimeInterval = defaultTapDuration) {
         var path = PointerEventPath.pathForTouch(at: point)
         path.offset += touchUpAfter
         path.liftUp()
         add(path)
     }
 
-    func addSwipeEvent(start: CGPoint, end: CGPoint, duration: TimeInterval) {
+    mutating func addSwipeEvent(start: CGPoint, end: CGPoint, duration: TimeInterval) {
         var path = PointerEventPath.pathForTouch(at: start)
         path.offset += Self.defaultTapDuration
         path.moveTo(point: end)
@@ -36,7 +36,7 @@ struct EventRecord {
         add(path)
     }
 
-    func add(_ path: PointerEventPath) {
+    mutating func add(_ path: PointerEventPath) {
         let selector = NSSelectorFromString("addPointerEventPath:")
         let imp = eventRecord.method(for: selector)
         typealias Method = @convention(c) (NSObject, Selector, NSObject) -> ()
