@@ -304,8 +304,8 @@ class IOSDriver(
         iosDevice.scroll(
             xStart = start.x.toDouble(),
             yStart = start.y.toDouble(),
-            xEnd = start.x.toDouble(),
-            yEnd = start.y.toDouble(),
+            xEnd = end.x.toDouble(),
+            yEnd = end.y.toDouble(),
             duration = durationMs.toDouble() / 1000
         ).expect {}
     }
