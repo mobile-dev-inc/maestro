@@ -6,12 +6,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                             category: String(describing: SwipeRouteHandler.self))
 
 final class SwipeRouteHandler: HTTPHandler {
-    func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
-        guard let appId = request.query["appId"] else {
-            logger.error("Requested view hierarchy for an invalid appId")
-            return HTTPResponse(statusCode: HTTPStatusCode.badRequest)
-        }
-        
+    func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {        
         let decoder = JSONDecoder()
         
         guard let requestBody = try? decoder.decode(SwipeRequest.self, from: request.body) else {
