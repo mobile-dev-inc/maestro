@@ -269,7 +269,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             } else {
                 driver.tap(Point(x, y))
             }
-            val hierarchyAfterTap = waitForAppToSettle(initialHierarchy)
+            val hierarchyAfterTap = waitForAppToSettle()
 
             if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
@@ -294,7 +294,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             } else {
                 driver.tap(Point(x, y))
             }
-            val hierarchyAfterTap = driver.waitForAppToSettle(initialHierarchy)
+            val hierarchyAfterTap = waitForAppToSettle()
 
             if (hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
