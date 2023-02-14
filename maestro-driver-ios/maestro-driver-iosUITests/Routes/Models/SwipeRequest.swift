@@ -10,7 +10,7 @@ struct SwipeRequest: Decodable {
     let end: CGPoint
     let duration: TimeInterval
 
-    init(start: CGPoint, end: CGPoint,  duration: Double) {
+    init(start: CGPoint, end: CGPoint, duration: Double) {
         self.start = start
         self.end = end
         self.duration = duration

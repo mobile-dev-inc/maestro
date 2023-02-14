@@ -7,7 +7,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
 import hierarchy.XCUIElement
-import idb.Idb
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
