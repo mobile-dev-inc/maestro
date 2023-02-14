@@ -19,7 +19,6 @@ final class SwipeRouteHandler: HTTPHandler {
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
 
-
         try await swipePrivateAPI(
             start: requestBody.start,
             end: requestBody.end,
@@ -37,7 +36,6 @@ final class SwipeRouteHandler: HTTPHandler {
 
         try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
     }
-
 
     private func handleError(message: String) -> Data {
         logger.error("Failed to swipe - \(message)")
