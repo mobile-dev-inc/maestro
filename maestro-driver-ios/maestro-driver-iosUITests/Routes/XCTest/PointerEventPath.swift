@@ -14,7 +14,7 @@ struct PointerEventPath {
     let path: NSObject
     var offset: TimeInterval
 
-    func liftUp() {
+    mutating func liftUp() {
         let selector = NSSelectorFromString("liftUpAtOffset:")
         let imp = path.method(for: selector)
         typealias Method = @convention(c) (NSObject, Selector, TimeInterval) -> ()
@@ -22,7 +22,7 @@ struct PointerEventPath {
         method(path, selector, offset)
     }
 
-    func moveTo(point: CGPoint) {
+    mutating func moveTo(point: CGPoint) {
         let selector = NSSelectorFromString("moveToPoint:atOffset:")
         let imp = path.method(for: selector)
         typealias Method = @convention(c) (NSObject, Selector, CGPoint, TimeInterval) -> ()

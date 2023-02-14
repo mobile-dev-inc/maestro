@@ -31,7 +31,7 @@ final class SwipeRouteHandler: HTTPHandler {
 
         logger.info("Swiping from \(start.debugDescription) to \(end.debugDescription) with \(duration) duration")
 
-        let eventRecord = EventRecord(orientation: .portrait)
+        var eventRecord = EventRecord(orientation: .portrait)
         eventRecord.addSwipeEvent(start: start, end: end, duration: duration)
 
         try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
