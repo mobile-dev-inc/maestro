@@ -33,7 +33,7 @@ const InteractPage = () => {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="p-12 bg-slate-50">
+      <div className="p-12 bg-slate-50 dark:bg-slate-700">
         <InteractableDevice
           deviceScreen={deviceScreen}
           onHint={setFooterHint}
@@ -41,8 +41,8 @@ const InteractPage = () => {
           onInspectElement={e => setInspectedElementId(e?.id || null)}
         />
       </div>
-      <div className="flex flex-col flex-1 h-full overflow-hidden border-l shadow-xl relative">
-        <span className="px-6 py-4 font-bold font-mono border-b text-lg cursor-default">$ maestro studio</span>
+      <div className="flex flex-col flex-1 h-full overflow-hidden border-l dark:border-slate-600 shadow-xl relative dark:bg-slate-800">
+        <span className="px-6 py-4 font-bold font-mono border-b dark:border-slate-600 text-lg cursor-default dark:text-white">$ maestro studio</span>
         <div className="p-6 h-full overflow-hidden">
           <ReplView
             input={input}
@@ -51,7 +51,7 @@ const InteractPage = () => {
           />
         </div>
         <div
-          className="flex items-center gap-1 justify-center px-3 bg-slate-50 border-t h-auto text-slate-500 overflow-hidden data-[error]:bg-red-100 data-[error]:text-red-800 data-[error]:p-4"
+          className="flex items-center gap-1 justify-center px-3 bg-slate-50 dark:bg-slate-800 dark:text-white border-t dark:border-slate-600 h-auto text-slate-500 overflow-hidden data-[error]:bg-red-100 data-[error]:text-red-800 data-[error]:p-4"
           data-error={footerHint ? null : replError}
         >
           {footerHint || replError}

@@ -14,7 +14,7 @@ export const CodeSnippet = ({children}: {
   return (
     <CopyToClipboard text={children} onCopy={() => setCopied(true)}>
       <div
-        className="relative bg-slate-100 rounded border border-transparent hover:border-slate-500 active:bg-slate-200 cursor-context-menu"
+        className="relative bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-750 dark:active:bg-slate-850 rounded border border-transparent hover:border-slate-500 active:bg-slate-200 cursor-context-menu"
         onMouseOver={() => setHovered(true)}
         onMouseLeave={() => {
           setHovered(false)
