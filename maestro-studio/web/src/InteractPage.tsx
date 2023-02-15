@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { DeviceScreen } from './models';
 import { API, wait } from './api';
 import { ActionModal } from './ActionModal';
+import { ThemeToggle } from './theme';
 
 const InteractPage = () => {
   const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>()
@@ -41,8 +42,11 @@ const InteractPage = () => {
           onInspectElement={e => setInspectedElementId(e?.id || null)}
         />
       </div>
-      <div className="flex flex-col flex-1 h-full overflow-hidden border-l dark:border-slate-600 shadow-xl relative dark:bg-slate-800">
-        <span className="px-6 py-4 font-bold font-mono border-b dark:border-slate-600 text-lg cursor-default dark:text-white">$ maestro studio</span>
+      <div className="flex flex-col flex-1 h-full overflow-hidden border-l dark:border-slate-600 shadow-xl relative dark:bg-slate-800 dark:text-white">
+        <div className="flex flex-row items-center spacing-x-8 border-b dark:border-slate-600 pr-6">
+          <span className="px-6 py-4 grow font-bold font-mono text-lg cursor-default dark:text-white">$ maestro studio</span>
+          <ThemeToggle />
+        </div>
         <div className="p-6 h-full overflow-hidden">
           <ReplView
             input={input}

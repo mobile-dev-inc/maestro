@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import { ElementLabel } from './Banner';
+import { ThemeToggle } from './theme';
 
 const compare = (a: string | undefined, b: string | undefined) => {
   if (!a) return b ? 1 : 0
@@ -41,7 +42,10 @@ const ElementSearch = ({deviceScreen, onElementSelected, hoveredElement, onEleme
 
   return (
     <div className="flex flex-col h-full gap-3">
-      <div className="font-bold text-lg mb-4">UI Elements</div>
+      <div className="flex flex-row justify-between items-center mb-4">
+        <div className="font-bold text-lg">UI Elements</div>
+        <ThemeToggle />
+      </div>
       <div className="flex relative mb-4">
         <div className="flex items-center pl-5 absolute pointer-events-none inset-y-0">
           <SearchIcon className="w-6 text-slate-500 dark:text-slate-300"/>
