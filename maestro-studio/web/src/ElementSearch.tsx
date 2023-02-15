@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DeviceScreen, UIElement } from './models';
 import { ElementLabel } from './Banner';
-import { ThemeToggle } from './theme';
 
 const compare = (a: string | undefined, b: string | undefined) => {
   if (!a) return b ? 1 : 0
