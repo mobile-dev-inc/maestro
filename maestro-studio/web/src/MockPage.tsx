@@ -72,7 +72,7 @@ const MockPage = () => {
           </div>
           <div className="flex flex-row pt-2 max-h-full overflow-scroll">
             <div className="flex flex-col w-full basis-2/4 overflow-hidden">
-              <h1 className="text-lg font-bold">Events</h1>
+              <h1 className="text-lg font-bold select-none">Events</h1>
               <input
                 type="search"
                 placeholder="Filter events by session id, path, status code, response"
@@ -85,7 +85,7 @@ const MockPage = () => {
 
                 {(filteredEvents || []).map(event => (
                   <div
-                    className={`flex flex-col my-2 dark:bg-slate-600 px-4 rounded-md w-full py-2 cursor-pointer text-gray-600 ${selectedEvent !== event ? 'hover:bg-slate-700' : ''} active:bg-gray-300 dark:active:bg-slate-850 dark:text-white ${selectedEvent === event ? 'bg-gray-300 dark:bg-slate-850' : 'bg-gray-100 dark:bg-slate-600'}`}
+                    className={`flex flex-col my-2 px-4 rounded-md w-full py-2 cursor-pointer text-gray-600 ${selectedEvent !== event ? 'hover:bg-slate-200 dark:hover:bg-slate-700' : ''} active:bg-gray-300 dark:active:bg-slate-850 dark:text-white ${selectedEvent === event ? 'bg-gray-300 dark:bg-slate-850' : 'bg-gray-100 dark:bg-slate-600'}`}
                     onClick={() => setSelectedEvent(event)}
                   >
                     <span className="text-sm text-gray-500 dark:text-slate-400">Session id: {event.sessionId}</span>
