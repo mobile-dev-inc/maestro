@@ -1,18 +1,18 @@
 plugins {
     id 'maven-publish'
     id "kotlin"
-    id "com.google.protobuf" version "0.9.1"
-    id "com.vanniktech.maven.publish"
     id "idea"
+    id "com.vanniktech.maven.publish"
+    id "com.google.protobuf"
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.21.9"
+        artifact = "com.google.protobuf:protoc:${libs.versions.googleProtobuf.get()}"
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.50.2'
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
     generateProtoTasks {
