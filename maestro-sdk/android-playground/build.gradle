@@ -4,6 +4,8 @@ plugins {
 }
 
 android {
+    namespace 'dev.mobile.maestro.sdk.playground'
+
     compileSdkVersion 33
 
     defaultConfig {

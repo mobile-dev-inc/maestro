@@ -32,6 +32,8 @@ kotlin.sourceSets.all {
 }
 
 android {
+    namespace 'dev.mobile.maestro'
+
     compileSdk 31
 
     defaultConfig {
@@ -66,8 +68,9 @@ android {
         jvmTarget = '1.8'
     }
     packagingOptions {
-        exclude 'META-INF/INDEX.LIST'
-        exclude 'META-INF/io.netty.versions.properties'
+        resources {
+            excludes += ['META-INF/INDEX.LIST', 'META-INF/io.netty.versions.properties']
+        }
     }
 }
 
