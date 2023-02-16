@@ -129,20 +129,19 @@ sourceSets {
 dependencies {
     protobuf project(':maestro-proto')
 
-    implementation 'io.grpc:grpc-kotlin-stub:1.3.0'
-    implementation 'io.grpc:grpc-netty-shaded:1.50.2'
-    implementation 'io.grpc:grpc-stub:1.50.2'
-    implementation 'io.grpc:grpc-protobuf-lite:1.50.2'
-    implementation 'io.grpc:grpc-okhttp:1.50.2'
-    implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.8'
+    implementation(libs.grpc.kotlin.stub)
+    implementation(libs.grpc.netty.shaded)
+    implementation(libs.grpc.stub)
+    implementation(libs.grpc.protobuf.lite)
+    implementation(libs.grpc.okhttp)
+    implementation(libs.google.protobuf.kotlin.lite)
 
-    implementation 'io.ktor:ktor-server-core:2.2.2'
-    implementation 'io.ktor:ktor-server-cio:2.2.2'
-    implementation 'io.ktor:ktor-server-content-negotiation:2.2.2'
-    implementation 'io.ktor:ktor-serialization-gson:2.2.2'
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serial.gson)
 
-
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.uiautomator)
 }
