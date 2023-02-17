@@ -46,7 +46,6 @@ import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.RunScriptCommand
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.ScrollUntilVisibleCommand
-import maestro.orchestra.SetLocationCommand
 import maestro.orchestra.StopAppCommand
 import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
@@ -167,14 +166,6 @@ data class YamlFluentCommand(
                         commands = runFlow(flowPath, runFlow),
                         condition = runFlow.`when`?.toCondition(),
                         sourceDescription = runFlow.file,
-                    )
-                )
-            )
-            setLocation != null -> listOf(
-                MaestroCommand(
-                    SetLocationCommand(
-                        latitude = setLocation.latitude,
-                        longitude = setLocation.longitude,
                     )
                 )
             )

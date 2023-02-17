@@ -185,7 +185,6 @@ class Orchestra(
             is ClearStateCommand -> clearAppStateCommand(command)
             is ClearKeychainCommand -> clearKeychainCommand()
             is RunFlowCommand -> runFlowCommand(command)
-            is SetLocationCommand -> setLocationCommand(command)
             is RepeatCommand -> repeatCommand(command, maestroCommand)
             is DefineVariablesCommand -> defineVariablesCommand(command)
             is RunScriptCommand -> runScriptCommand(command)
@@ -254,12 +253,6 @@ class Orchestra(
         }
 
         return false
-    }
-
-    private fun setLocationCommand(command: SetLocationCommand): Boolean {
-        maestro.setLocation(command.latitude, command.longitude)
-
-        return true
     }
 
     private fun clearAppStateCommand(command: ClearStateCommand): Boolean {

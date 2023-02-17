@@ -567,20 +567,6 @@ data class RunFlowCommand(
 
 }
 
-data class SetLocationCommand(
-    val latitude: Double,
-    val longitude: Double,
-) : Command {
-
-    override fun description(): String {
-        return "Set location (${latitude}, ${longitude})"
-    }
-
-    override fun evaluateScripts(jsEngine: JsEngine): SetLocationCommand {
-        return this
-    }
-}
-
 data class RepeatCommand(
     val times: String? = null,
     val condition: Condition? = null,
