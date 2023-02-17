@@ -17,13 +17,7 @@ class maestro_driver_iosUITests: XCTestCase {
     }
 
     func testHttpServer() async throws {
-        let server = HTTPServer(address: .loopback(port: 22087))
-        
-        for route in Route.allCases {
-            let handler = RouteHandlerFactory.createRouteHandler(route: route)
-            await server.appendRoute(route.toHTTPRoute(), to: handler)
-        }
-        
+        let server = XCTestHTTPServer()
         try await server.start()
     }
 }
