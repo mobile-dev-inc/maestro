@@ -82,7 +82,6 @@ data class YamlFluentCommand(
     val stopApp: YamlStopApp? = null,
     val clearState: YamlClearState? = null,
     val runFlow: YamlRunFlow? = null,
-    val setLocation: YamlSetLocation? = null,
     val repeat: YamlRepeatCommand? = null,
     val copyTextFrom: YamlElementSelectorUnion? = null,
     val runScript: YamlRunScript? = null,
