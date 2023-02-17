@@ -1418,30 +1418,31 @@ class IntegrationTest {
         driver.assertEventCount(Event.Tap(Point(50, 50)), 1)
     }
 
-    @Test
-    fun `Case 051 - Set location`() {
-        // Given
-        val commands = readCommands("051_set_location")
+    // NOTE setLocation is removed until properly supported
+    // @Test
+    // fun `Case 051 - Set location`() {
+    //     // Given
+    //     val commands = readCommands("051_set_location")
 
-        val driver = driver {
-        }
+    //     val driver = driver {
+    //     }
 
-        driver.addInstalledApp("com.example.app")
+    //     driver.addInstalledApp("com.example.app")
 
-        // When
-        Maestro(driver).use {
-            orchestra(it).runFlow(commands)
-        }
+    //     // When
+    //     Maestro(driver).use {
+    //         orchestra(it).runFlow(commands)
+    //     }
 
-        // Then
-        // No test failure
-        driver.assertEvents(
-            listOf(
-                Event.LaunchApp("com.example.app"),
-                Event.SetLocation(12.5266, 78.2150),
-            )
-        )
-    }
+    //     // Then
+    //     // No test failure
+    //     driver.assertEvents(
+    //         listOf(
+    //             Event.LaunchApp("com.example.app"),
+    //             Event.SetLocation(12.5266, 78.2150),
+    //         )
+    //     )
+    // }
 
     @Test
     fun `Case 052 - Input random`() {
