@@ -4,7 +4,7 @@
 # "Select all in block" -> "Edit" -> "Sort lines"
 
 [versions]
-androidPlugin = "4.2.1"
+androidPlugin = "7.4.1"
 androidToolsApkParser = "30.3.0"
 androidToolsSdk = "30.3.0"
 androidxAppcompat = "1.5.1"
