@@ -44,7 +44,7 @@ object ApkDebuggable {
     }
 
     private fun getOriginalManifestBytes(apkFile: File): ByteArray {
-        FileSystems.newFileSystem(apkFile.toPath(), null).use { fs ->
+        FileSystems.newFileSystem(apkFile.toPath(), emptyMap<String, Any?>(), null).use { fs ->
             val manifestPath = fs.getPath("AndroidManifest.xml")
             return Files.readAllBytes(manifestPath)
         }
