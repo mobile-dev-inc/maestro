@@ -59,11 +59,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
     packagingOptions {
         exclude 'META-INF/INDEX.LIST'
@@ -80,10 +80,6 @@ tasks.register("copyMaestroAndroid", Copy) {
     into layout.buildDirectory.file(maestroAndroidApkDest)
 
     it.doLast {
-        if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-            throw new GradleException("This build must be run with java 8")
-        }
-
         if (!layout.buildDirectory.file(maestroAndroidApkDestPath).get().asFile.exists())
             throw new GradleException("Error: Input source for copyMaestroAndroid doesn't exist")
 
@@ -101,10 +97,6 @@ tasks.register("copyMaestroServer", Copy) {
     into layout.buildDirectory.file(maestroServerApkDest)
 
     it.doLast {
-        if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-            throw new GradleException("This build must be run with java 8")
-        }
-        
         if (!layout.buildDirectory.file(maestroServerApkDestPath).get().asFile.exists())
             throw new GradleException("Error: Input source for copyMaestroServer doesn't exist")
 
