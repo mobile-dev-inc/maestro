@@ -26,6 +26,8 @@ import io.grpc.ManagedChannelBuilder
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.Filters
+import maestro.Filters.asFilter
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.Platform
@@ -33,12 +35,15 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement
+import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
 import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
+import maestro.utils.StringUtils.toRegexSafe
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
@@ -46,6 +51,7 @@ import maestro_android.inputTextRequest
 import maestro_android.screenshotRequest
 import maestro_android.tapRequest
 import maestro_android.viewHierarchyRequest
+import net.dongliu.apk.parser.ApkFile
 import okio.Sink
 import okio.buffer
 import okio.sink
@@ -400,6 +406,47 @@ class AndroidDriver(
         dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
     }
 
+    fun autoVerifyApp(appId: String?) {
+        if (appId != null) {
+            autoVerifyWithAppName(appId)
+        }
+        autoVerifyChromeAgreement()
+    }
+
+    private fun autoVerifyWithAppName(appId: String) {
+        val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
+        val appName = ApkFile(apkFile).apkMeta.name
+        val appNameElement = filterByText(appName)
+        if (appNameElement != null) {
+            tap(appNameElement.bounds.center())
+        } else {
+            val openWithAppElement = filterByText(".*$appName.*")
+            if (openWithAppElement != null) {
+                filterById("android:id/button_once")?.let {
+                    tap(it.bounds.center())
+                }
+            }
+        }
+    }
+
+    private fun autoVerifyChromeAgreement() {
+        filterById("com.android.chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null)
+        filterById("com.android.chrome:id/negative_button")?.let { tap(it.bounds.center()) }
+    }
+
+    private fun filterByText(textRegex: String): UiElement? {
+        val textMatcher = Filters.textMatches(textRegex.toRegexSafe(REGEX_OPTIONS)).asFilter()
+        val filterFunc = Filters.deepestMatchingElement(textMatcher)
+        return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
+    }
+
+    private fun filterById(idRegex: String): UiElement? {
+        val idMatcher = Filters.idMatches(idRegex.toRegexSafe(REGEX_OPTIONS))
+        val filterFunc = Filters.deepestMatchingElement(idMatcher)
+        return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
+    }
+
     override fun openBrowser(link: String) {
         val installedPackages = installedPackages()
         when {
@@ -606,6 +653,7 @@ class AndroidDriver(
     companion object {
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 15000
+        private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
 

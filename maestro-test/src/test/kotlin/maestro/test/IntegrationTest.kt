@@ -2371,7 +2371,7 @@ class IntegrationTest {
     @Test
     fun `085 - Open link with auto verify`() {
         // Given
-        val commands = readCommands("083_open_link_auto_verify")
+        val commands = readCommands("085_open_link_auto_verify")
 
         val driver = driver {}
 

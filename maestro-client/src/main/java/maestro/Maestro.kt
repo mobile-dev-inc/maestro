@@ -24,7 +24,6 @@ import dadb.Dadb
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
-import maestro.drivers.IOSDriver
 import maestro.drivers.WebDriver
 import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
@@ -427,6 +426,20 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun openLink(link: String, autoVerify: Boolean) {
         driver.openLink(link, autoVerify)
         waitForAppToSettle()
+    }
+
+    fun autoVerifyApp(appId: String?) {
+        if (driver is AndroidDriver) {
+            driver.autoVerifyApp(appId)
+            waitForAppToSettle()
+        }
+    }
+
+    fun autoVerifyChromeAgreement(verifyGoogleChromeAgreement: () -> Unit) {
+        if (driver is AndroidDriver) {
+            verifyGoogleChromeAgreement()
+            waitForAppToSettle()
+        }
     }
 
     fun openBrowser(link: String) {

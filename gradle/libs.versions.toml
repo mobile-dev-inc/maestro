@@ -44,6 +44,7 @@ squareOkio = "3.2.0"
 squareRetrofit = "2.9.0"
 webdrivermanager = "5.3.1"
 wiremock = "2.35.0"
+apkParser =  "2.6.10"
 
 [libraries]
 android-tools-apkparser = { module = "com.android.tools.apkparser:apkanalyzer", version.ref = "androidToolsApkParser" }
@@ -104,6 +105,7 @@ square-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "s
 square-retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "squareRetrofit" }
 webdrivermanager = { module = "io.github.bonigarcia:webdrivermanager", version.ref = "webdrivermanager" }
 wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
+apk-parser = { module = "net.dongliu:apk-parser", version.ref = "apkParser" }
 
 [bundles]
 

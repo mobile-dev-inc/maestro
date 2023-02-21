@@ -26,6 +26,7 @@ import maestro.Filters.asFilter
 import maestro.FindElementResult
 import maestro.Maestro
 import maestro.MaestroException
+import maestro.UiElement
 import maestro.js.Js
 import maestro.js.JsEngine
 import maestro.networkproxy.NetworkProxy
@@ -89,7 +90,7 @@ class Orchestra(
         }
 
         onFlowStart(commands)
-        return executeCommands(commands)
+        return executeCommands(commands, config)
     }
 
     /**
@@ -122,6 +123,7 @@ class Orchestra(
 
     fun executeCommands(
         commands: List<MaestroCommand>,
+        config: MaestroConfig? = null
     ): Boolean {
         jsEngine.init()
 
@@ -137,7 +139,7 @@ class Orchestra(
                 updateMetadata(command, metadata)
 
                 try {
-                    executeCommand(evaluatedCommand)
+                    executeCommand(evaluatedCommand, config)
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
@@ -154,7 +156,7 @@ class Orchestra(
         return true
     }
 
-    private fun executeCommand(maestroCommand: MaestroCommand): Boolean {
+    private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val command = maestroCommand.asCommand()
 
         return when (command) {
@@ -179,7 +181,7 @@ class Orchestra(
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
-            is OpenLinkCommand -> openLinkCommand(command)
+            is OpenLinkCommand -> openLinkCommand(command, config)
             is OpenBrowserCommand -> openBrowserCommand(command)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
@@ -187,9 +189,9 @@ class Orchestra(
             is StopAppCommand -> stopAppCommand(command)
             is ClearStateCommand -> clearAppStateCommand(command)
             is ClearKeychainCommand -> clearKeychainCommand()
-            is RunFlowCommand -> runFlowCommand(command)
+            is RunFlowCommand -> runFlowCommand(command, config)
             is SetLocationCommand -> setLocationCommand(command)
-            is RepeatCommand -> repeatCommand(command, maestroCommand)
+            is RepeatCommand -> repeatCommand(command, maestroCommand, config)
             is DefineVariablesCommand -> defineVariablesCommand(command)
             is RunScriptCommand -> runScriptCommand(command)
             is EvalScriptCommand -> evalScriptCommand(command)
@@ -327,7 +329,7 @@ class Orchestra(
         return false
     }
 
-    private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand): Boolean {
+    private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val maxRuns = command.times?.toDoubleOrNull()?.toInt() ?: Int.MAX_VALUE
 
         var counter = 0
@@ -349,7 +351,7 @@ class Orchestra(
                 command.commands.forEach { resetCommand(it) }
             }
 
-            val mutated = runSubFlow(command.commands)
+            val mutated = runSubFlow(command.commands, config)
             mutatiing = mutatiing || mutated
             counter++
 
@@ -385,9 +387,9 @@ class Orchestra(
         }
     }
 
-    private fun runFlowCommand(command: RunFlowCommand): Boolean {
+    private fun runFlowCommand(command: RunFlowCommand, config: MaestroConfig?): Boolean {
         return if (evaluateCondition(command.condition)) {
-            runSubFlow(command.commands)
+            runSubFlow(command.commands, config)
         } else {
             throw CommandSkipped
         }
@@ -456,7 +458,7 @@ class Orchestra(
         return true
     }
 
-    private fun runSubFlow(commands: List<MaestroCommand>): Boolean {
+    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
         jsEngine.enterScope()
 
         return try {
@@ -472,7 +474,7 @@ class Orchestra(
                     updateMetadata(command, metadata)
 
                     return@mapIndexed try {
-                        executeCommand(evaluatedCommand)
+                        executeCommand(evaluatedCommand, config)
                             .also {
                                 onCommandComplete(index, command)
                             }
@@ -521,10 +523,21 @@ class Orchestra(
         return true
     }
 
-    private fun openLinkCommand(command: OpenLinkCommand): Boolean {
+    private fun openLinkCommand(command: OpenLinkCommand, config: MaestroConfig?): Boolean {
         maestro.openLink(command.link, command.autoVerify ?: false)
 
+        if (command.autoVerify == true) {
+            maestro.autoVerifyApp(config?.appId)
+        }
         return true
+    }
+
+    private fun findElementOrNull(elementSelector: ElementSelector): UiElement? {
+        return try {
+            findElement(elementSelector).element
+        } catch (elementNotFoundException: MaestroException.ElementNotFound) {
+            null
+        }
     }
 
     private fun openBrowserCommand(command: OpenBrowserCommand): Boolean {
