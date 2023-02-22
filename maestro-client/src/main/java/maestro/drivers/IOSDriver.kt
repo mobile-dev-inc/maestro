@@ -99,7 +99,6 @@ class IOSDriver(
             .getOrThrow {
                 MaestroException.UnableToLaunchApp("Unable to launch app $appId ${it.message}")
             }
-        waitForAppToSettle(null)
     }
 
     override fun stopApp(appId: String) {
@@ -266,13 +265,11 @@ class IOSDriver(
     }
 
     override fun scrollVertical() {
-        iosDevice.scroll(
-            xStart = widthPercentToPoint(0.5).toDouble(),
-            yStart = heightPercentToPoint(0.5).toDouble(),
-            xEnd = widthPercentToPoint(0.5).toDouble(),
-            yEnd = heightPercentToPoint(0.1).toDouble(),
-            duration = 2.0/3.0
-        ).expect {}
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.1)),
+            durationMs = 333,
+        )
     }
 
     private fun validate(start: Point, end: Point) {
@@ -301,6 +298,7 @@ class IOSDriver(
     ) {
         validate(start, end)
 
+        waitForAppToSettle(null)
         iosDevice.scroll(
             xStart = start.x.toDouble(),
             yStart = start.y.toDouble(),
@@ -356,38 +354,28 @@ class IOSDriver(
                 )
             }
         }
-        directionalSwipe(durationMs, startPoint, endPoint)
+        swipe(startPoint, endPoint, durationMs)
     }
 
     override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
         when (direction) {
             SwipeDirection.UP -> {
                 val end = Point(x = elementPoint.x, y = heightPercentToPoint(0.1))
-                directionalSwipe(durationMs, elementPoint, end)
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.DOWN -> {
                 val end = Point(x = elementPoint.x, y = heightPercentToPoint(0.9))
-                directionalSwipe(durationMs, elementPoint, end)
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.RIGHT -> {
                 val end = Point(x = widthPercentToPoint(0.9), y = elementPoint.y)
-                directionalSwipe(durationMs, elementPoint, end)
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.LEFT -> {
                 val end = Point(x = widthPercentToPoint(0.1), y = elementPoint.y)
-                directionalSwipe(durationMs, elementPoint, end)
+                swipe(elementPoint, end, durationMs)
             }
         }
-    }
-
-    private fun directionalSwipe(durationMs: Long, start: Point, end: Point) {
-        iosDevice.scroll(
-            xStart = start.x.toDouble(),
-            yStart = start.y.toDouble(),
-            xEnd = end.x.toDouble(),
-            yEnd = end.y.toDouble(),
-            duration = durationMs.toDouble() / 1000
-        ).expect {}
     }
 
     override fun backPress() {}
