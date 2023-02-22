@@ -33,7 +33,6 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
-import maestro.drivers.screenshot.ScreenshotUtils
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
