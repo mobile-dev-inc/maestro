@@ -5,6 +5,7 @@ import os
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                             category: String(describing: SwipeRouteHandler.self))
 
+@MainActor
 final class SwipeRouteHandler: HTTPHandler {
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {        
         let decoder = JSONDecoder()

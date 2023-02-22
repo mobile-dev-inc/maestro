@@ -5,6 +5,7 @@ import os
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                             category: String(describing: TouchRouteHandler.self))
 
+@MainActor
 final class TouchRouteHandler: HTTPHandler {
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
