@@ -90,7 +90,7 @@ const getSelectors = (uiElement: UIElement, deviceScreen: DeviceScreen): Selecto
         title: 'Text',
         status: 'available',
         definition: {
-          text: uiElement.text,
+          text: `"${uiElement.text}"`,
           index: uiElement.textIndex,
         }
       })
@@ -98,7 +98,7 @@ const getSelectors = (uiElement: UIElement, deviceScreen: DeviceScreen): Selecto
       selectors.push({
         title: 'Text',
         status: 'available',
-        definition: uiElement.text
+        definition: `"${uiElement.text}"`
       })
     }
   }
@@ -109,7 +109,7 @@ const toTapExample = (selector: Selector): CommandExample => {
   return {
     status: selector.status,
     title: `Tap > ${selector.title}`,
-    content: selector.status === 'available' ? YAML.stringify([{ tapOn: selector.definition }]) : selector.message,
+    content: selector.status === 'available' ? YAML.stringify([{ tapOn: selector.definition }]).replaceAll('\'', '') : selector.message,
     documentation: selector.documentation || 'https://maestro.mobile.dev/reference/tap-on-view',
   }
 }
@@ -118,7 +118,7 @@ const toAssertExample = (selector: Selector): CommandExample => {
   return {
     status: selector.status,
     title: `Assert > ${selector.title}`,
-    content: selector.status === 'available' ? YAML.stringify([{ assertVisible: selector.definition }]) : selector.message,
+    content: selector.status === 'available' ? YAML.stringify([{ assertVisible: selector.definition }]).replaceAll('\'', '') : selector.message,
     documentation: selector.documentation || 'https://maestro.mobile.dev/reference/assertions',
   }
 }
@@ -127,7 +127,7 @@ const toConditionalExample = (selector: Selector): CommandExample => {
   return {
     status: selector.status,
     title: `Conditional > ${selector.title}`,
-    content: selector.status === 'available' ? YAML.stringify([{ runFlow: { when: { visible: selector.definition }, file: 'Subflow.yaml' } }]) : selector.message,
+    content: selector.status === 'available' ? YAML.stringify([{ runFlow: { when: { visible: selector.definition }, file: 'Subflow.yaml' } }]).replaceAll('\'', '') : selector.message,
     documentation: selector.documentation || 'https://maestro.mobile.dev/advanced/conditions',
   }
 }
