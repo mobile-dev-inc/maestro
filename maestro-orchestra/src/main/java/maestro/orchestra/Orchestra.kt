@@ -26,7 +26,6 @@ import maestro.Filters.asFilter
 import maestro.FindElementResult
 import maestro.Maestro
 import maestro.MaestroException
-import maestro.UiElement
 import maestro.js.Js
 import maestro.js.JsEngine
 import maestro.networkproxy.NetworkProxy
@@ -524,20 +523,9 @@ class Orchestra(
     }
 
     private fun openLinkCommand(command: OpenLinkCommand, config: MaestroConfig?): Boolean {
-        maestro.openLink(command.link, command.autoVerify ?: false)
+        maestro.openLink(command.link, config?.appId, command.autoVerify ?: false)
 
-        if (command.autoVerify == true) {
-            maestro.autoVerifyApp(config?.appId)
-        }
         return true
-    }
-
-    private fun findElementOrNull(elementSelector: ElementSelector): UiElement? {
-        return try {
-            findElement(elementSelector).element
-        } catch (elementNotFoundException: MaestroException.ElementNotFound) {
-            null
-        }
     }
 
     private fun openBrowserCommand(command: OpenBrowserCommand): Boolean {

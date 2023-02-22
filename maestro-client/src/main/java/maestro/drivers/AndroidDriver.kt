@@ -402,11 +402,15 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
-    override fun openLink(link: String, autoVerify: Boolean) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean) {
         dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+
+        if (autoVerify) {
+            autoVerifyApp(appId)
+        }
     }
 
-    fun autoVerifyApp(appId: String?) {
+    private fun autoVerifyApp(appId: String?) {
         if (appId != null) {
             autoVerifyWithAppName(appId)
         }

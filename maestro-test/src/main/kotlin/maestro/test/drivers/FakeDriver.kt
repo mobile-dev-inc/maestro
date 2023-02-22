@@ -32,6 +32,7 @@ import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
+import maestro.orchestra.MaestroConfig
 import maestro.utils.ScreenshotUtils
 import okio.Sink
 import okio.buffer
@@ -257,7 +258,7 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
-    override fun openLink(link: String, autoVerify: Boolean) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean) {
         ensureOpen()
 
         events += Event.OpenLink(link, autoVerify)

@@ -25,8 +25,8 @@ import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
-import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
 import okio.Sink
 import okio.buffer
@@ -423,23 +423,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun openLink(link: String, autoVerify: Boolean) {
-        driver.openLink(link, autoVerify)
+    fun openLink(link: String, appId: String?, autoVerify: Boolean) {
+        LOGGER.info("Opening link $link for app: $appId with autoVerify config as $autoVerify")
+
+        driver.openLink(link, appId, autoVerify)
         waitForAppToSettle()
-    }
-
-    fun autoVerifyApp(appId: String?) {
-        if (driver is AndroidDriver) {
-            driver.autoVerifyApp(appId)
-            waitForAppToSettle()
-        }
-    }
-
-    fun autoVerifyChromeAgreement(verifyGoogleChromeAgreement: () -> Unit) {
-        if (driver is AndroidDriver) {
-            verifyGoogleChromeAgreement()
-            waitForAppToSettle()
-        }
     }
 
     fun openBrowser(link: String) {

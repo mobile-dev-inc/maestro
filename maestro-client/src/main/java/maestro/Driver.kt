@@ -64,8 +64,11 @@ interface Driver {
 
     fun inputText(text: String)
 
-    fun openLink(link: String, autoVerify: Boolean)
+    fun openLink(link: String, appId: String?, autoVerify: Boolean)
 
+    /**
+     * Similar to open link. On Android it explicitly mentions the app id of web browsers and iOS remains same.
+     */
     fun openBrowser(link: String)
 
     fun hideKeyboard()
