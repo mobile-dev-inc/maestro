@@ -42,7 +42,7 @@ private data class FormatCommandsRequest(
     val ids: List<UUID>,
 )
 
-private data class ReplEntry(
+data class ReplEntry(
     val id: UUID,
     val yaml: String,
     val commands: List<MaestroCommand>,
@@ -176,7 +176,7 @@ object ReplService {
         respondText(response)
     }
 
-    private fun createEntries(yaml: String): List<ReplEntry> {
+    fun createEntries(yaml: String): List<ReplEntry> {
         val newEntries = try {
             readNodes(yaml).map { node ->
                 val yamlCommand = YamlCommandReader.MAPPER.convertValue(node, YamlFluentCommand::class.java)
@@ -229,5 +229,9 @@ object ReplService {
             else -> listOf(tree)
         }
     }
+}
 
+fun main() {
+    val res = ReplService.createEntries("- tapOn: yes")
+    println(res)
 }
