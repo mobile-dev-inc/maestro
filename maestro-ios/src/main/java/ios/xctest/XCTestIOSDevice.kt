@@ -91,7 +91,9 @@ class XCTestIOSDevice(
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
-        error("Not supported")
+        return runCatching {
+            client.inputText("\n")
+        }
     }
 
     override fun pressButton(code: Int): Result<Unit, Throwable> {
