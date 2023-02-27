@@ -92,6 +92,7 @@ class XCTestIOSDevice(
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
         return runCatching {
+            if (code != 40) throw IllegalStateException("XCTest can only press the enter key (code 40)")
             client.inputText("\n")
         }
     }
