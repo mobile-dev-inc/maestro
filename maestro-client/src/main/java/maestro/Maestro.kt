@@ -423,15 +423,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun openLink(link: String, appId: String?, autoVerify: Boolean) {
+    fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         LOGGER.info("Opening link $link for app: $appId with autoVerify config as $autoVerify")
 
-        driver.openLink(link, appId, autoVerify)
-        waitForAppToSettle()
-    }
-
-    fun openBrowser(link: String) {
-        driver.openBrowser(link)
+        driver.openLink(link, appId, autoVerify, browser)
         waitForAppToSettle()
     }
 

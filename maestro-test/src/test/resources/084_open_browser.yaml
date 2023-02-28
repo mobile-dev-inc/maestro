@@ -1,3 +1,5 @@
 appId: com.example.app
 ---
-- openBrowser: https://example.com
+- openLink:
+    link: https://example.com
+    browser: true

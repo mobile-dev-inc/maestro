@@ -402,8 +402,12 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
-    override fun openLink(link: String, appId: String?, autoVerify: Boolean) {
-        dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
+        if (browser) {
+            openBrowser(link)
+        } else {
+            dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+        }
 
         if (autoVerify) {
             autoVerifyApp(appId)
@@ -451,7 +455,7 @@ class AndroidDriver(
         return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
     }
 
-    override fun openBrowser(link: String) {
+    private fun openBrowser(link: String) {
         val installedPackages = installedPackages()
         when {
             installedPackages.contains("com.android.chrome") -> {

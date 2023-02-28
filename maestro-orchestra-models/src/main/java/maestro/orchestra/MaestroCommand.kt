@@ -41,7 +41,6 @@ data class MaestroCommand(
     val launchAppCommand: LaunchAppCommand? = null,
     val applyConfigurationCommand: ApplyConfigurationCommand? = null,
     val openLinkCommand: OpenLinkCommand? = null,
-    val openBrowserCommand: OpenBrowserCommand? = null,
     val pressKeyCommand: PressKeyCommand? = null,
     val eraseTextCommand: EraseTextCommand? = null,
     val hideKeyboardCommand: HideKeyboardCommand? = null,
@@ -76,7 +75,6 @@ data class MaestroCommand(
         launchAppCommand = command as? LaunchAppCommand,
         applyConfigurationCommand = command as? ApplyConfigurationCommand,
         openLinkCommand = command as? OpenLinkCommand,
-        openBrowserCommand = command as? OpenBrowserCommand,
         pressKeyCommand = command as? PressKeyCommand,
         eraseTextCommand = command as? EraseTextCommand,
         hideKeyboardCommand = command as? HideKeyboardCommand,
@@ -111,7 +109,6 @@ data class MaestroCommand(
         launchAppCommand != null -> launchAppCommand
         applyConfigurationCommand != null -> applyConfigurationCommand
         openLinkCommand != null -> openLinkCommand
-        openBrowserCommand != null -> openBrowserCommand
         pressKeyCommand != null -> pressKeyCommand
         eraseTextCommand != null -> eraseTextCommand
         hideKeyboardCommand != null -> hideKeyboardCommand

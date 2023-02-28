@@ -402,12 +402,8 @@ class IOSDriver(
         )
     }
 
-    override fun openLink(link: String, appId: String?, autoVerify: Boolean) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         iosDevice.openLink(link).expect {}
-    }
-
-    override fun openBrowser(link: String) {
-        iosDevice.openBrowser(link).expect{}
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {

@@ -258,16 +258,14 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
-    override fun openLink(link: String, appId: String?, autoVerify: Boolean) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         ensureOpen()
 
-        events += Event.OpenLink(link, autoVerify)
-    }
-
-    override fun openBrowser(link: String) {
-        ensureOpen()
-
-        events += Event.OpenBrowser(link)
+        if (browser) {
+            events += Event.OpenBrowser(link)
+        } else {
+            events += Event.OpenLink(link, autoVerify)
+        }
     }
 
     override fun setProxy(host: String, port: Int) {

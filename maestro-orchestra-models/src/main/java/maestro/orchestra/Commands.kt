@@ -394,10 +394,15 @@ data class ApplyConfigurationCommand(
 data class OpenLinkCommand(
     val link: String,
     val autoVerify: Boolean? = null,
+    val browser: Boolean? = null
 ) : Command {
 
     override fun description(): String {
-        return if (autoVerify == true) "Open $link with auto verification" else "Open $link"
+        return if (browser == true) {
+            if (autoVerify == true) "Open $link with auto verification in browser" else "Open $link in browser"
+        } else {
+            if (autoVerify == true) "Open $link with auto verification" else "Open $link"
+        }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): OpenLinkCommand {
@@ -405,22 +410,6 @@ data class OpenLinkCommand(
             link = link.evaluateScripts(jsEngine),
         )
     }
-}
-
-data class OpenBrowserCommand(
-    val link: String
-): Command {
-
-    override fun description(): String {
-        return "Open $link in browser"
-    }
-
-    override fun evaluateScripts(jsEngine: JsEngine): Command {
-        return copy(
-            link = link.evaluateScripts(jsEngine)
-        )
-    }
-
 }
 
 data class PressKeyCommand(

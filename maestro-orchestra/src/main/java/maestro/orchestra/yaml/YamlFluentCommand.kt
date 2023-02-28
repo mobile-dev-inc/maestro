@@ -38,7 +38,6 @@ import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MockNetworkCommand
-import maestro.orchestra.OpenBrowserCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PasteTextCommand
 import maestro.orchestra.PressKeyCommand
@@ -134,8 +133,7 @@ data class YamlFluentCommand(
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS)))
             inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME)))
             swipe != null -> listOf(swipeCommand(swipe))
-            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink.link, openLink.autoVerify)))
-            openBrowser != null -> listOf(MaestroCommand(OpenBrowserCommand(openBrowser)))
+            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink.link, openLink.autoVerify, openLink.browser)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
             eraseText != null -> listOf(eraseCommand(eraseText))
             action != null -> listOf(

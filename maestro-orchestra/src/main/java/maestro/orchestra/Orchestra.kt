@@ -181,7 +181,6 @@ class Orchestra(
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
             is OpenLinkCommand -> openLinkCommand(command, config)
-            is OpenBrowserCommand -> openBrowserCommand(command)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
@@ -523,13 +522,7 @@ class Orchestra(
     }
 
     private fun openLinkCommand(command: OpenLinkCommand, config: MaestroConfig?): Boolean {
-        maestro.openLink(command.link, config?.appId, command.autoVerify ?: false)
-
-        return true
-    }
-
-    private fun openBrowserCommand(command: OpenBrowserCommand): Boolean {
-        maestro.openBrowser(command.link)
+        maestro.openLink(command.link, config?.appId, command.autoVerify ?: false, command.browser ?: false)
 
         return true
     }

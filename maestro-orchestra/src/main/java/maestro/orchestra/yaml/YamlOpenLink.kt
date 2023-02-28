@@ -2,7 +2,7 @@ package maestro.orchestra.yaml
 
 import com.fasterxml.jackson.annotation.JsonCreator
 
-data class YamlOpenLink(val link: String, val autoVerify: Boolean = false) {
+data class YamlOpenLink(val link: String, val browser: Boolean = false, val autoVerify: Boolean = false) {
     companion object {
 
         @JvmStatic
