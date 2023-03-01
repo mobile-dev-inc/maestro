@@ -267,6 +267,9 @@ class Orchestra(
 
     private fun clearAppStateCommand(command: ClearStateCommand): Boolean {
         maestro.clearAppState(command.appId)
+        command.permissions?.let {
+            maestro.setPermissions(command.appId, it)
+        }
 
         return true
     }
@@ -527,22 +530,25 @@ class Orchestra(
         return true
     }
 
-    private fun launchAppCommand(it: LaunchAppCommand): Boolean {
+    private fun launchAppCommand(command: LaunchAppCommand): Boolean {
         try {
-            if (it.clearKeychain == true) {
+            if (command.clearKeychain == true) {
                 maestro.clearKeychain()
             }
-            if (it.clearState == true) {
-                maestro.clearAppState(it.appId)
+            if (command.clearState == true) {
+                maestro.clearAppState(command.appId)
             }
+
+            maestro.setPermissions(command.appId, command.permissions ?: mapOf("all" to "allow"))
+
         } catch (e: Exception) {
-            throw MaestroException.UnableToClearState("Unable to clear state for app ${it.appId}")
+            throw MaestroException.UnableToClearState("Unable to clear state for app ${command.appId}")
         }
 
         try {
-            maestro.launchApp(it.appId, stopIfRunning = it.stopApp ?: true)
+            maestro.launchApp(command.appId, stopIfRunning = command.stopApp ?: true)
         } catch (e: Exception) {
-            throw MaestroException.UnableToLaunchApp("Unable to launch app ${it.appId}: ${e.message}")
+            throw MaestroException.UnableToLaunchApp("Unable to launch app ${command.appId}: ${e.message}")
         }
 
         return true

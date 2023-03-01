@@ -371,6 +371,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         )
     }
 
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
     }

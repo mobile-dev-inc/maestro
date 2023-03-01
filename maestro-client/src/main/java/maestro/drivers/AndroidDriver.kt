@@ -518,6 +518,38 @@ class AndroidDriver(
         )
     }
 
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        val mutable = permissions.toMutableMap()
+        mutable.remove("all")?.let { value ->
+            setAllPermissions(appId, value)
+        }
+
+        mutable.forEach { permission ->
+            setPermission(appId, permission.key, permission.value)
+        }
+    }
+
+    private fun setAllPermissions(appId: String, value: String) {
+        val argument = argumentForPermissionValue(value)
+        shell("pm $argument -g $appId")
+    }
+
+    private fun setPermission(appId: String, permission: String, value: String) {
+        val name = permission.replace("[^A-Za-z0-9._]+".toRegex(), "")
+        val argument = argumentForPermissionValue(value)
+
+        shell("pm $argument $appId $name")
+    }
+
+    private fun argumentForPermissionValue(value: String): String {
+        return when (value) {
+            "allow" -> "grant"
+            "deny" -> "revoke"
+            "unset" -> "revoke"
+            else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+        }
+    }
+
     private fun mapHierarchy(node: Node): TreeNode {
         val attributes = if (node is Element) {
             val attributesBuilder = mutableMapOf<String, String>()

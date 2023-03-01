@@ -347,6 +347,7 @@ data class LaunchAppCommand(
     val clearState: Boolean? = null,
     val clearKeychain: Boolean? = null,
     val stopApp: Boolean? = null,
+    var permissions: Map<String, String>? = null,
 ) : Command {
 
     override fun description(): String {
@@ -475,6 +476,7 @@ data class StopAppCommand(
 
 data class ClearStateCommand(
     val appId: String,
+    val permissions: Map<String, String>?,
 ) : Command {
 
     override fun description(): String {
