@@ -476,7 +476,6 @@ data class StopAppCommand(
 
 data class ClearStateCommand(
     val appId: String,
-    val permissions: Map<String, String>?,
 ) : Command {
 
     override fun description(): String {

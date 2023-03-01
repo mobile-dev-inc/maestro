@@ -267,9 +267,9 @@ class Orchestra(
 
     private fun clearAppStateCommand(command: ClearStateCommand): Boolean {
         maestro.clearAppState(command.appId)
-        command.permissions?.let {
-            maestro.setPermissions(command.appId, it)
-        }
+        // Android's clear command also resets permissions
+        // Reset all permissions to unset so both platforms behave the same
+        maestro.setPermissions(command.appId, mapOf("all" to "unset"))
 
         return true
     }
@@ -539,7 +539,9 @@ class Orchestra(
                 maestro.clearAppState(command.appId)
             }
 
-            maestro.setPermissions(command.appId, command.permissions ?: mapOf("all" to "allow"))
+            // For testing convenience, default to allow all on app launch
+            val permissions = command.permissions ?: mapOf("all" to "allow")
+            maestro.setPermissions(command.appId, permissions)
 
         } catch (e: Exception) {
             throw MaestroException.UnableToClearState("Unable to clear state for app ${command.appId}")

@@ -159,7 +159,6 @@ data class YamlFluentCommand(
                 MaestroCommand(
                     maestro.orchestra.ClearStateCommand(
                         appId = clearState.appId ?: appId,
-                        permissions = clearState.permissions,
                     )
                 )
             )
@@ -485,7 +484,6 @@ data class YamlFluentCommand(
                 "clearState" -> YamlFluentCommand(
                     clearState = YamlClearState(
                         appId = null,
-                        permissions = null,
                     )
                 )
 

@@ -372,7 +372,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        TODO("Not yet implemented")
+        // no-op for web
     }
 
     companion object {

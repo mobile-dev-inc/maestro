@@ -41,8 +41,8 @@ import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
-import maestro.utils.ScreenshotUtils
 import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
@@ -530,23 +530,23 @@ class AndroidDriver(
     }
 
     private fun setAllPermissions(appId: String, value: String) {
-        val argument = argumentForPermissionValue(value)
-        shell("pm $argument -g $appId")
+        val translated = translatePermissionValue(value)
+        shell("pm $translated -g $appId")
     }
 
     private fun setPermission(appId: String, permission: String, value: String) {
         val name = permission.replace("[^A-Za-z0-9._]+".toRegex(), "")
-        val argument = argumentForPermissionValue(value)
+        val translated = translatePermissionValue(value)
 
-        shell("pm $argument $appId $name")
+        shell("pm $translated $appId $name")
     }
 
-    private fun argumentForPermissionValue(value: String): String {
+    private fun translatePermissionValue(value: String): String {
         return when (value) {
             "allow" -> "grant"
             "deny" -> "revoke"
             "unset" -> "revoke"
-            else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+            else -> throw IllegalArgumentException("Permissions can be set to 'allow', 'deny' or 'unset' on Android, not '$value'")
         }
     }
 
