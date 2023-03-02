@@ -108,7 +108,7 @@ class CloudCommand : Callable<Int> {
     private var format: ReportFormat = ReportFormat.NOOP
 
     @Option(
-        names = ["--testsuite-name"],
+        names = ["--test-suite-name"],
         description = ["Test suite name"],
     )
     private var testSuiteName: String? = null
