@@ -229,12 +229,11 @@ class IOSDriver(
         val attributes = mutableMapOf<String, String>()
         val text = xcUiElement.title?.ifEmpty {
             xcUiElement.label.ifEmpty {
-                xcUiElement.value?.ifEmpty {
-                    xcUiElement.placeholderValue
-                }
+                xcUiElement.value
             }
         }
         attributes["text"] = text ?: ""
+        attributes["hintText"] = xcUiElement.placeholderValue ?: ""
         attributes["resource-id"] = xcUiElement.identifier
         val right = xcUiElement.frame.x + xcUiElement.frame.width
         val bottom = xcUiElement.frame.y + xcUiElement.frame.height

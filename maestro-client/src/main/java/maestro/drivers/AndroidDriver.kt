@@ -647,6 +647,10 @@ class AndroidDriver(
                 }
             }
 
+            if(node.hasAttribute("hintText")) {
+                attributesBuilder["hintText"] = node.getAttribute("hintText")
+            }
+
             if (node.hasAttribute("resource-id")) {
                 attributesBuilder["resource-id"] = node.getAttribute("resource-id")
             }
