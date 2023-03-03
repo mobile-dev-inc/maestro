@@ -2633,6 +2633,31 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 093 - Erase Text command in natural language`() {
+        // Given
+        val commands = readCommands("093_natural_language_eraseText")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.EraseAllText,
+                Event.EraseAllText,
+                Event.EraseAllText,
+                Event.EraseAllText,
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,

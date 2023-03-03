@@ -39,6 +39,10 @@ object CommandClassifier {
             return CommandType.SCROLL
         }
 
+        if (NlpEraseTextMapper.matches(command)) {
+            return CommandType.ERASE_TEXT
+        }
+
         return CommandType.UNKNOWN
     }
 
@@ -53,6 +57,7 @@ object CommandClassifier {
         WAIT_FOR_ANIMATION,
         SWIPE,
         SCROLL,
+        ERASE_TEXT,
         UNKNOWN
 
     }

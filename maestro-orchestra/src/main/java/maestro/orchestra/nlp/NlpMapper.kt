@@ -23,6 +23,7 @@ object NlpMapper {
             CommandClassifier.CommandType.WAIT_FOR_ANIMATION -> NlpWaitForAnimationToEndMapper.map(action)
             CommandClassifier.CommandType.SWIPE -> NlpSwipeMapper.map(action)
             CommandClassifier.CommandType.SCROLL -> NlpScrollMapper.map(action)
+            CommandClassifier.CommandType.ERASE_TEXT -> NlpEraseTextMapper.map(action)
             CommandClassifier.CommandType.UNKNOWN -> null
         }
     }
