@@ -2608,9 +2608,9 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 092 - Scroll command in natural language`() {
+    fun `Case 094 - Scroll command in natural language`() {
         // Given
-        val commands = readCommands("092_natural_language_scroll")
+        val commands = readCommands("094_natural_language_scroll")
 
         val driver = driver {
         }
@@ -2634,9 +2634,9 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 093 - Erase Text command in natural language`() {
+    fun `Case 095 - Erase Text command in natural language`() {
         // Given
-        val commands = readCommands("093_natural_language_eraseText")
+        val commands = readCommands("095_natural_language_eraseText")
 
         val driver = driver {
         }
@@ -2659,9 +2659,9 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 094 - Repeat-times command in natural language`() {
+    fun `Case 096 - Repeat-times command in natural language`() {
         // Given
-        val commands = readCommands("094_natural_language_repeat_times")
+        val commands = readCommands("096_natural_language_repeat_times")
 
         val driver = driver {
             var counter = 0
