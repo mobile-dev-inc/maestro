@@ -2607,6 +2607,32 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 092 - Scroll command in natural language`() {
+        // Given
+        val commands = readCommands("092_natural_language_scroll")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.Scroll,
+                Event.Scroll,
+                Event.SwipeWithDirection(SwipeDirection.DOWN, 400),
+                Event.SwipeWithDirection(SwipeDirection.RIGHT, 400),
+                Event.SwipeWithDirection(SwipeDirection.LEFT, 400),
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,

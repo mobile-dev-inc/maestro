@@ -35,6 +35,10 @@ object CommandClassifier {
             return CommandType.SWIPE
         }
 
+        if (NlpScrollMapper.matches(command)) {
+            return CommandType.SCROLL
+        }
+
         return CommandType.UNKNOWN
     }
 
@@ -48,6 +52,7 @@ object CommandClassifier {
         GO_BACK,
         WAIT_FOR_ANIMATION,
         SWIPE,
+        SCROLL,
         UNKNOWN
 
     }
