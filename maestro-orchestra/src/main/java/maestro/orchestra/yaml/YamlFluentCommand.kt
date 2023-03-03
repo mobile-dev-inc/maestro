@@ -38,7 +38,6 @@ import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MockNetworkCommand
-import maestro.orchestra.NaturalLanguageCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PasteTextCommand
 import maestro.orchestra.PressKeyCommand
@@ -56,6 +55,7 @@ import maestro.orchestra.TapOnPointV2Command
 import maestro.orchestra.WaitForAnimationToEndCommand
 import maestro.orchestra.error.InvalidFlowFile
 import maestro.orchestra.error.SyntaxError
+import maestro.orchestra.nlp.NlpMapper
 import maestro.orchestra.util.Env.withEnv
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -93,7 +93,7 @@ data class YamlFluentCommand(
     val evalScript: String? = null,
     val mockNetwork: String? = null,
     val scrollUntilVisible: YamlScrollUntilVisible? = null,
-    val naturalLanguageAction: String? = null,
+    val naturalLanguageCommand: String? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -217,12 +217,11 @@ data class YamlFluentCommand(
                 )
             )
             scrollUntilVisible != null -> listOf(scrollUntilVisibleCommand(scrollUntilVisible))
-            naturalLanguageAction != null -> listOf(
-                MaestroCommand(
-                    NaturalLanguageCommand(
-                        naturalLanguageAction,
-                    )
-                )
+            naturalLanguageCommand != null -> listOf(
+                NlpMapper.map(
+                    action = naturalLanguageCommand,
+                    appId = appId,
+                ) ?: throw SyntaxError("Invalid command: \"$naturalLanguageCommand\"")
             )
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
@@ -537,7 +536,7 @@ data class YamlFluentCommand(
                 )
 
                 else -> YamlFluentCommand(
-                    naturalLanguageAction = stringCommand
+                    naturalLanguageCommand = stringCommand,
                 )
             }
         }

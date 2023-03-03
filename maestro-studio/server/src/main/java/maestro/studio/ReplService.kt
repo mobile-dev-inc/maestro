@@ -219,7 +219,7 @@ object ReplService {
         val result = Orchestra(maestro, onCommandFailed = { _, _, throwable ->
             failure = throwable
             Orchestra.ErrorResolution.FAIL
-        }).executeCommands(commands)
+        }).executeCommands(commands, commands.find { it.applyConfigurationCommand != null }?.applyConfigurationCommand?.config) // TODO
         return if (result) null else (failure ?: RuntimeException("Command execution failed"))
     }
 

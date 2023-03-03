@@ -14,7 +14,7 @@ object NlpAssertionMapper {
 
     private val PATTERNS = listOf(
         "(?<target>.*) should (not )?be $PROPERTY".toRegexSafe(RegexOption.IGNORE_CASE),
-        "(Assert|Check|Verify|Expect) (that )?(?<target>.*) is (not )?$PROPERTY".toRegexSafe(RegexOption.IGNORE_CASE),
+        "(Assert|Check|Verify|Expect|Ensure) (that )?(?<target>.*) is (not )?$PROPERTY".toRegexSafe(RegexOption.IGNORE_CASE),
         "User should (not )?see (a )?(?<target>.*)".toRegexSafe(RegexOption.IGNORE_CASE),
     )
 
