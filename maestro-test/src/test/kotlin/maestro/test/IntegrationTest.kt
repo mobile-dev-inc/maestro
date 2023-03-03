@@ -2435,7 +2435,7 @@ class IntegrationTest {
             }
 
             val checkbox = element {
-                text = "Checkbox"   // TODO check that id works too
+                text = "Checkbox"
                 bounds = Bounds(0, 200, 100, 300)
                 checked = true
             }
@@ -2656,6 +2656,40 @@ class IntegrationTest {
                 Event.EraseAllText,
             )
         )
+    }
+
+    @Test
+    fun `Case 094 - Repeat-times command in natural language`() {
+        // Given
+        val commands = readCommands("094_natural_language_repeat_times")
+
+        val driver = driver {
+            var counter = 0
+
+            val counterView = element {
+                text = "Value 0"
+                bounds = Bounds(0, 100, 100, 100)
+            }
+
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    counter++
+                    counterView.text = "Value $counter"
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 3)
+        driver.assertEventCount(Event.PressKey(KeyCode.BACK), expectedCount = 1)
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(

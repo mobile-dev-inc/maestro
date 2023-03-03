@@ -23,7 +23,7 @@ object NlpTapMapper {
 
         val unquoted = target.replace("\"", "")
 
-        val regex = "$target|$unquoted"
+        val regex = if (unquoted != target) "$target|$unquoted" else target
 
         return MaestroCommand(
             command = TapOnElementCommand(

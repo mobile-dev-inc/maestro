@@ -3,6 +3,10 @@ package maestro.orchestra.nlp
 object CommandClassifier {
 
     fun classify(command: String): CommandType {
+        if (NlpRepeatMapper.matches(command)) {
+            return CommandType.REPEAT
+        }
+
         if (NlpPressKeyMapper.matches(command)) {
             return CommandType.PRESS_KEY
         }
@@ -58,6 +62,7 @@ object CommandClassifier {
         SWIPE,
         SCROLL,
         ERASE_TEXT,
+        REPEAT,
         UNKNOWN
 
     }

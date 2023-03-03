@@ -6,7 +6,7 @@ object NlpMapper {
 
     fun map(
         action: String,
-        appId: String?,
+        appId: String,
     ): MaestroCommand? {
         val type = CommandClassifier.classify(action)
 
@@ -24,6 +24,7 @@ object NlpMapper {
             CommandClassifier.CommandType.SWIPE -> NlpSwipeMapper.map(action)
             CommandClassifier.CommandType.SCROLL -> NlpScrollMapper.map(action)
             CommandClassifier.CommandType.ERASE_TEXT -> NlpEraseTextMapper.map(action)
+            CommandClassifier.CommandType.REPEAT -> NlpRepeatMapper.map(action, appId)
             CommandClassifier.CommandType.UNKNOWN -> null
         }
     }
