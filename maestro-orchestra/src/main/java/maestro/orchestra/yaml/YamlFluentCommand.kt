@@ -38,6 +38,7 @@ import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MockNetworkCommand
+import maestro.orchestra.NaturalLanguageCommand
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PasteTextCommand
 import maestro.orchestra.PressKeyCommand
@@ -91,7 +92,8 @@ data class YamlFluentCommand(
     val waitForAnimationToEnd: YamlWaitForAnimationToEndCommand? = null,
     val evalScript: String? = null,
     val mockNetwork: String? = null,
-    val scrollUntilVisible: YamlScrollUntilVisible? = null
+    val scrollUntilVisible: YamlScrollUntilVisible? = null,
+    val naturalLanguageAction: String? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -215,6 +217,13 @@ data class YamlFluentCommand(
                 )
             )
             scrollUntilVisible != null -> listOf(scrollUntilVisibleCommand(scrollUntilVisible))
+            naturalLanguageAction != null -> listOf(
+                MaestroCommand(
+                    NaturalLanguageCommand(
+                        naturalLanguageAction,
+                    )
+                )
+            )
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -527,7 +536,9 @@ data class YamlFluentCommand(
                     waitForAnimationToEnd = YamlWaitForAnimationToEndCommand(null)
                 )
 
-                else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
+                else -> YamlFluentCommand(
+                    naturalLanguageAction = stringCommand
+                )
             }
         }
     }

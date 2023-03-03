@@ -1,0 +1,5 @@
+appId: com.example.app
+---
+- Wait for animation to finish
+- Wait for animation to end
+- Wait for transition

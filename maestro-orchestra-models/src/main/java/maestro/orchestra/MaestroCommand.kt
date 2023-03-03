@@ -58,7 +58,8 @@ data class MaestroCommand(
     val waitForAnimationToEndCommand: WaitForAnimationToEndCommand? = null,
     val evalScriptCommand: EvalScriptCommand? = null,
     val mockNetworkCommand: MockNetworkCommand? = null,
-    val scrollUntilVisible: ScrollUntilVisibleCommand? = null
+    val scrollUntilVisible: ScrollUntilVisibleCommand? = null,
+    val naturalLanguageCommand: NaturalLanguageCommand? = null,
 ) {
 
     constructor(command: Command) : this(
@@ -92,7 +93,8 @@ data class MaestroCommand(
         waitForAnimationToEndCommand = command as? WaitForAnimationToEndCommand,
         evalScriptCommand = command as? EvalScriptCommand,
         mockNetworkCommand = command as? MockNetworkCommand,
-        scrollUntilVisible = command as? ScrollUntilVisibleCommand
+        scrollUntilVisible = command as? ScrollUntilVisibleCommand,
+        naturalLanguageCommand = command as? NaturalLanguageCommand,
     )
 
     fun asCommand(): Command? = when {
@@ -127,6 +129,7 @@ data class MaestroCommand(
         evalScriptCommand != null -> evalScriptCommand
         mockNetworkCommand != null -> mockNetworkCommand
         scrollUntilVisible != null -> scrollUntilVisible
+        naturalLanguageCommand != null -> naturalLanguageCommand
         else -> null
     }
 

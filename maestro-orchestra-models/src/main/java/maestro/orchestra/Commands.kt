@@ -102,7 +102,7 @@ data class ScrollUntilVisibleCommand(
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): ScrollUntilVisibleCommand {
-         return copy(
+        return copy(
             selector = selector.evaluateScripts(jsEngine),
         )
     }
@@ -700,4 +700,19 @@ data class MockNetworkCommand(
         )
     }
 
+}
+
+data class NaturalLanguageCommand(
+    val action: String,
+) : Command {
+
+    override fun description(): String {
+        return action
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            action = action.evaluateScripts(jsEngine),
+        )
+    }
 }

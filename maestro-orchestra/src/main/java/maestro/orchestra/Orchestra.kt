@@ -33,6 +33,15 @@ import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
+import maestro.orchestra.nlp.CommandClassifier
+import maestro.orchestra.nlp.NlpAssertionMapper
+import maestro.orchestra.nlp.NlpGoBackMapper
+import maestro.orchestra.nlp.NlpInputTextMapper
+import maestro.orchestra.nlp.NlpLaunchAppMapper
+import maestro.orchestra.nlp.NlpPressKeyMapper
+import maestro.orchestra.nlp.NlpSwipeMapper
+import maestro.orchestra.nlp.NlpTapMapper
+import maestro.orchestra.nlp.NlpWaitForAnimationToEndMapper
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
@@ -196,11 +205,58 @@ class Orchestra(
             is ApplyConfigurationCommand -> false
             is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
             is MockNetworkCommand -> mockNetworkCommand(command)
+            is NaturalLanguageCommand -> naturalLanguageCommand(command, config)
             else -> true
         }.also { mutating ->
             if (mutating) {
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
+        }
+    }
+
+    private fun naturalLanguageCommand(
+        command: NaturalLanguageCommand,
+        config: MaestroConfig?,
+    ): Boolean {
+        val type = CommandClassifier.classify(command.action)
+
+        return when (type) {
+            CommandClassifier.CommandType.TAP -> executeCommand(
+                NlpTapMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.ASSERTION -> executeCommand(
+                NlpAssertionMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.INPUT_TEXT -> executeCommand(
+                NlpInputTextMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.PRESS_KEY -> executeCommand(
+                NlpPressKeyMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.LAUNCH_APP -> executeCommand(
+                NlpLaunchAppMapper.map(
+                    config?.appId,
+                    command.action
+                ),
+                config,
+            )
+            CommandClassifier.CommandType.GO_BACK -> executeCommand(
+                NlpGoBackMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.WAIT_FOR_ANIMATION -> executeCommand(
+                NlpWaitForAnimationToEndMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.SWIPE -> executeCommand(
+                NlpSwipeMapper.map(command.action),
+                config,
+            )
+            CommandClassifier.CommandType.UNKNOWN -> throw MaestroException.InvalidCommand("Unknown command: ${command.action}")
         }
     }
 

@@ -33,6 +33,7 @@ data class FakeLayoutElement(
     var checked: Boolean? = false,
     var focused: Boolean? = false,
     var color: Color = Color.BLACK,
+    var visible: Boolean = true,
     var onClick: (FakeLayoutElement) -> Unit = {},
     val children: MutableList<FakeLayoutElement> = mutableListOf(),
 ) {
@@ -75,7 +76,9 @@ data class FakeLayoutElement(
             selected = selected,
             checked = checked,
             focused = focused,
-            children = children.map { it.toTreeNode() }
+            children = children
+                .filter { it.visible }
+                .map { it.toTreeNode() }
         )
     }
 

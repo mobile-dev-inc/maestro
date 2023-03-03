@@ -2389,6 +2389,224 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 086 - Tap commands in natural language`() {
+        // Given
+        val commands = readCommands("086_natural_language_tap")
+
+        val driver = driver {
+            var counter = 0
+
+            val counterView = element {
+                text = "Value 0"
+                bounds = Bounds(0, 100, 100, 100)
+            }
+
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    counter++
+                    counterView.text = "Value $counter"
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 7)
+    }
+
+    @Test
+    fun `Case 087 - Assert command in natural language`() {
+        // Given
+        val commands = readCommands("087_natural_language_assertions")
+
+        val driver = driver {
+            val labelView = element {
+                text = "Hello World"
+                bounds = Bounds(0, 100, 100, 200)
+                visible = false
+            }
+
+            val checkbox = element {
+                text = "Checkbox"   // TODO check that id works too
+                bounds = Bounds(0, 200, 100, 300)
+                checked = true
+            }
+
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    labelView.visible = true
+                    checkbox.checked = false
+                    visible = false
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 1)
+    }
+
+    @Test
+    fun `Case 088 - Input text command in natural language`() {
+        // Given
+        val commands = readCommands("088_natural_language_input_text")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.InputText("Hello World"),
+                Event.InputText("user@example.com"),
+                Event.InputText("123"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 089 - Press Key command in natural language`() {
+        // Given
+        val commands = readCommands("089_natural_language_press_key")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.PressKey(KeyCode.ENTER),
+                Event.PressKey(KeyCode.BACK),
+                Event.PressKey(KeyCode.VOLUME_UP),
+                Event.PressKey(KeyCode.VOLUME_DOWN),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 090 - Launch App command in natural language`() {
+        // Given
+        val commands = readCommands("090_natural_language_launch_app")
+
+        val driver = driver {
+        }
+        driver.addInstalledApp("com.example.app")
+        driver.addInstalledApp("com.example.anotherApp")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+                Event.LaunchApp("com.example.anotherApp"),
+                Event.LaunchApp("com.example.anotherApp"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 091 - Go Back command in natural language`() {
+        // Given
+        val commands = readCommands("091_natural_language_go_back")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.BackPress, expectedCount = 4)
+    }
+
+    @Test
+    fun `Case 092 - Wait for an animation to end command in natural language`() {
+        // Given
+        val commands = readCommands("092_natural_language_waitForAnimationToEnd")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.TakeScreenshot)
+    }
+
+    @Test
+    fun `Case 093 - Swipe command in natural language`() {
+        // Given
+        val commands = readCommands("093_natural_language_swipe")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.SwipeWithDirection(SwipeDirection.LEFT, 400),
+                Event.SwipeWithDirection(SwipeDirection.LEFT, 400),
+                Event.SwipeWithDirection(SwipeDirection.RIGHT, 400),
+                Event.SwipeWithDirection(SwipeDirection.UP, 400),
+                Event.SwipeWithDirection(SwipeDirection.DOWN, 400),
+                Event.SwipeWithDirection(SwipeDirection.RIGHT, 400),
+                Event.SwipeWithDirection(SwipeDirection.LEFT, 400),
+                Event.SwipeWithDirection(SwipeDirection.DOWN, 400),
+                Event.SwipeWithDirection(SwipeDirection.UP, 400),
+            )
+        )
+    }
+
     private fun orchestra(maestro: Maestro) = Orchestra(
         maestro,
         lookupTimeoutMs = 0L,
@@ -2417,4 +2635,5 @@ class IntegrationTest {
             ?: throw IllegalArgumentException("File $caseName.yaml not found")
         return YamlCommandReader.readCommands(Paths.get(resource.toURI()))
     }
+
 }

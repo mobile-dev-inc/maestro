@@ -1,0 +1,18 @@
+appId: com.example.app
+---
+# Before
+- Button should be visible
+- Assert that Button is visible
+- Assert Button is visible
+- Check that Button is visible
+- User should see a Button
+- Hello World should not be visible
+- Hello World should be hidden
+- Checkbox should be checked
+# Flip the state
+- Tap on Button
+# After
+- Hello World should be visible
+- Button should be hidden
+- Checkbox should not be checked
+- Checkbox should be unchecked

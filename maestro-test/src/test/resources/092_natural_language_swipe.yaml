@@ -1,0 +1,11 @@
+appId: com.example.app
+---
+- Swipe
+- Swipe left
+- Swipe right
+- Swipe up
+- Swipe down
+- Swipe from left to right
+- Swipe from right to left
+- Swipe from top to bottom
+- Swipe from bottom to top
