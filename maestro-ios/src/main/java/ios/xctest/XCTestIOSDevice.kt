@@ -7,7 +7,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
 import hierarchy.XCUIElement
-import idb.Idb
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
@@ -30,10 +29,10 @@ class XCTestIOSDevice(
 ) : IOSDevice {
 
     override fun open() {
-        ensureXCUITestChannel()
+        restartXCTestRunnerService()
     }
 
-    private fun ensureXCUITestChannel() {
+    fun restartXCTestRunnerService() {
         logger.info("[Start] Uninstalling xctest ui runner app on $deviceId")
         installer.killAndUninstall()
         logger.info("[Done] Uninstalling xctest ui runner app on $deviceId")
@@ -92,7 +91,10 @@ class XCTestIOSDevice(
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
-        error("Not supported")
+        return runCatching {
+            if (code != 40) throw IllegalStateException("XCTest can only press the enter key (code 40)")
+            client.inputText("\n")
+        }
     }
 
     override fun pressButton(code: Int): Result<Unit, Throwable> {
@@ -100,11 +102,11 @@ class XCTestIOSDevice(
     }
 
     override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?
+        xStart: Double,
+        yStart: Double,
+        xEnd: Double,
+        yEnd: Double,
+        duration: Double,
     ): Result<Unit, Throwable> {
         return runCatching {
             val appId = activeAppId() ?: return@runCatching
@@ -115,7 +117,7 @@ class XCTestIOSDevice(
                 startY = yStart,
                 endX = xEnd,
                 endY = yEnd,
-                velocity = velocity,
+                duration = duration
             ).use {}
         }
     }
