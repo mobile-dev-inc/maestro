@@ -526,13 +526,35 @@ class AndroidDriver(
 
         mutable.forEach { permission ->
             val permissionValue = translatePermissionValue(permission.value)
-            translatePermissionNames(permission.key).forEach { permissionName ->
+            translatePermissionName(permission.key).forEach { permissionName ->
                 setPermissionInternal(appId, permissionName, permissionValue)
             }
         }
     }
 
-    private fun translatePermissionNames(name: String): List<String> {
+    private fun setAllPermissions(appId: String, permissionValue: String) {
+        val permissionsResult = runCatching {
+            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
+            ApkFile(apkFile).apkMeta.usesPermissions
+        }
+        if (permissionsResult.isSuccess) {
+            permissionsResult.getOrNull()?.let {
+                it.forEach { permission ->
+                    setPermissionInternal(appId, permission, translatePermissionValue(permissionValue))
+                }
+            }
+        }
+    }
+
+    private fun setPermissionInternal(appId: String, permission: String, permissionValue: String) {
+        try {
+            dadb.shell("pm $permissionValue $appId $permission")
+        } catch (securityException: SecurityException) {
+            /* no-op */
+        }
+    }
+
+    private fun translatePermissionName(name: String): List<String> {
         return when (name) {
             "location" -> listOf(
                 "android.permission.ACCESS_FINE_LOCATION",
@@ -560,28 +582,6 @@ class AndroidDriver(
                 "android.permission.READ_CALENDAR"
             )
             else -> listOf(name.replace("[^A-Za-z0-9._]+".toRegex(), ""))
-        }
-    }
-
-    private fun setAllPermissions(appId: String, permissionValue: String) {
-        val permissionsResult = runCatching {
-            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
-            ApkFile(apkFile).apkMeta.usesPermissions
-        }
-        if (permissionsResult.isSuccess) {
-            permissionsResult.getOrNull()?.let {
-                it.forEach { permission ->
-                    setPermissionInternal(appId, permission, translatePermissionValue(permissionValue))
-                }
-            }
-        }
-    }
-
-    private fun setPermissionInternal(appId: String, permission: String, permissionValue: String) {
-        try {
-            dadb.shell("pm $permissionValue $appId $permission")
-        } catch (securityException: SecurityException) {
-            /* no-op */
         }
     }
 
