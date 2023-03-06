@@ -278,6 +278,7 @@ object Simctl {
         }
 
         val argument = mutable
+            .filter { allPermissions.contains(it.key) }
             .map { "${it.key}=${translatePermissionValue(it.value)}" }
             .joinToString(",")
 
