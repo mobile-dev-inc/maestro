@@ -571,7 +571,7 @@ class AndroidDriver(
         if (permissionsResult.isSuccess) {
             permissionsResult.getOrNull()?.let {
                 it.forEach { permission ->
-                    setPermissionInternal(appId, permission, permissionValue)
+                    setPermissionInternal(appId, permission, translatePermissionValue(permissionValue))
                 }
             }
         }
