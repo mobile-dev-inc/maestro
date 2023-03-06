@@ -215,8 +215,8 @@ class CloudInteractor(
         if (!workspace.exists()) throw CliError("Workspace does not exist: ${workspace.absolutePath}")
 
         val authToken = apiKey              // Check for API key
-            ?: EnvUtils.mdevApiKey()        // Resolve API key from shell if set
             ?: auth.getCachedAuthToken()    // Otherwise, if the user has already logged in, use the cached auth token
+            ?: EnvUtils.mdevApiKey()        // Resolve API key from shell if set
             ?: auth.triggerSignInFlow()     // Otherwise, trigger the sign-in flow
 
         PrintUtils.message("Deploying workspace to Maestro Mock Server...")
