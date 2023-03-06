@@ -590,7 +590,7 @@ class AndroidDriver(
             "allow" -> "grant"
             "deny" -> "revoke"
             "unset" -> "revoke"
-            else -> throw IllegalArgumentException("Permissions can be set to 'allow', 'deny' or 'unset' on Android, not '$value'")
+            else -> "revoke"
         }
     }
 
