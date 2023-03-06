@@ -519,26 +519,60 @@ class AndroidDriver(
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        val mutable = permissions.toMutableMap()
-        mutable.remove("all")?.let { value ->
-            setAllPermissions(appId, value)
-        }
-
-        mutable.forEach { permission ->
-            setPermission(appId, permission.key, permission.value)
+        permissions.forEach { (permission, permissionValue) ->
+            val translatedPermissionValue = translatePermissionValue(permissionValue)
+            when(permission.replace("[^A-Za-z0-9._]+".toRegex(), "")) {
+                "all" -> setAllPermissions(appId, translatedPermissionValue)
+                "location" -> {
+                    setPermissionSafely(appId, "android.permission.ACCESS_FINE_LOCATION", translatedPermissionValue)
+                    setPermissionSafely(appId,  "android.permission.ACCESS_COARSE_LOCATION", translatedPermissionValue)
+                }
+                "camera" -> setPermissionSafely(appId, "android.permission.CAMERA", translatedPermissionValue)
+                "contacts" -> {
+                    setPermissionSafely(appId, "android.permission.READ_CONTACTS", translatedPermissionValue)
+                    setPermissionSafely(appId, "android.permission.WRITE_CONTACTS", translatedPermissionValue)
+                }
+                "phone" -> {
+                    setPermissionSafely(appId, "android.permission.CALL_PHONE", translatedPermissionValue)
+                    setPermissionSafely(appId, "android.permission.ANSWER_PHONE_CALLS", translatedPermissionValue)
+                }
+                "bluetooth" -> {
+                    setPermissionSafely(appId, "android.permission.BLUETOOTH_CONNECT", translatedPermissionValue)
+                    setPermissionSafely(appId, "android.permission.BLUETOOTH_SCAN", translatedPermissionValue)
+                }
+                "storage" -> {
+                    setPermissionSafely(appId, "android.permission.WRITE_EXTERNAL_STORAGE", translatedPermissionValue)
+                    setPermissionSafely(appId, "android.permission.READ_EXTERNAL_STORAGE", translatedPermissionValue)
+                }
+                "calendar" -> {
+                    setPermissionSafely(appId, "android.permission.WRITE_CALENDAR", translatedPermissionValue)
+                    setPermissionSafely(appId, "android.permission.READ_CALENDAR", translatedPermissionValue)
+                }
+                else -> setPermissionSafely(appId, permission, translatedPermissionValue)
+            }
         }
     }
 
-    private fun setAllPermissions(appId: String, value: String) {
-        val translated = translatePermissionValue(value)
-        shell("pm $translated -g $appId")
+    private fun setAllPermissions(appId: String, permissionValue: String) {
+        val permissionsResult = runCatching {
+            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
+            ApkFile(apkFile).apkMeta.usesPermissions
+        }
+        if (permissionsResult.isSuccess) {
+            permissionsResult.getOrNull()?.let {
+                it.forEach { permission ->
+                    setPermissionSafely(appId, permission, permissionValue)
+                }
+            }
+        }
     }
 
-    private fun setPermission(appId: String, permission: String, value: String) {
-        val name = permission.replace("[^A-Za-z0-9._]+".toRegex(), "")
-        val translated = translatePermissionValue(value)
-
-        shell("pm $translated $appId $name")
+    private fun setPermissionSafely(appId: String, permission: String, permissionValue: String) {
+        try {
+            dadb.shell("pm $permissionValue $appId $permission")
+        } catch (securityException: SecurityException) {
+            /* no-op */
+        }
     }
 
     private fun translatePermissionValue(value: String): String {
