@@ -549,7 +549,7 @@ class AndroidDriver(
     private fun setPermissionInternal(appId: String, permission: String, permissionValue: String) {
         try {
             dadb.shell("pm $permissionValue $appId $permission")
-        } catch (securityException: SecurityException) {
+        } catch (exception: Exception) {
             /* no-op */
         }
     }
@@ -569,6 +569,9 @@ class AndroidDriver(
                 "android.permission.CALL_PHONE",
                 "android.permission.ANSWER_PHONE_CALLS",
             )
+            "microphone" -> listOf(
+                "android.permission.RECORD_AUDIO"
+            )
             "bluetooth" -> listOf(
                 "android.permission.BLUETOOTH_CONNECT",
                 "android.permission.BLUETOOTH_SCAN",
@@ -576,6 +579,16 @@ class AndroidDriver(
             "storage" -> listOf(
                 "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.READ_EXTERNAL_STORAGE"
+            )
+            "notifications" -> listOf(
+                "android.permission.POST_NOTIFICATIONS"
+            )
+            "medialibrary" -> listOf(
+                "android.permission.WRITE_EXTERNAL_STORAGE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.READ_MEDIA_AUDIO",
+                "android.permission.READ_MEDIA_IMAGES",
+                "android.permission.READ_MEDIA_VIDEO"
             )
             "calendar" -> listOf(
                 "android.permission.WRITE_CALENDAR",
