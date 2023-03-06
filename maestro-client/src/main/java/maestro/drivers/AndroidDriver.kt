@@ -559,7 +559,7 @@ class AndroidDriver(
                 "android.permission.WRITE_CALENDAR",
                 "android.permission.READ_CALENDAR"
             )
-            else -> listOf(name)
+            else -> listOf(name.replace("[^A-Za-z0-9._]+".toRegex(), ""))
         }
     }
 
