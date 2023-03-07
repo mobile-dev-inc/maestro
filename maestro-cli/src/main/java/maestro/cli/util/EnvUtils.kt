@@ -11,6 +11,6 @@ object EnvUtils {
     }
 
     fun mdevApiKey(): String? {
-        return System.getenv("MDEV_API_KEY")
+        return System.getenv("MAESTRO_CLOUD_API_KEY")
     }
 }
