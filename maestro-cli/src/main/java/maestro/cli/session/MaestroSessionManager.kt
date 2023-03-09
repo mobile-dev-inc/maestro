@@ -186,7 +186,6 @@ object MaestroSessionManager {
 
                         val simctlIOSDevice = SimctlIOSDevice(
                             deviceId = selectedDevice.device.instanceId,
-                            xcTestDevice = xcTestDevice,
                         )
 
                         Maestro.ios(
@@ -309,13 +308,18 @@ object MaestroSessionManager {
             logger = IOSDriverLogger(),
             deviceId = device.instanceId,
         )
-        val xcTestDriverClient = XCTestDriverClient(defaultHost, xcTestPort, isStudio) {
-            if (SessionStore.activeSessions().isNotEmpty()) {
-                IdbInstaller.setup(device)
-                return@XCTestDriverClient xcTestInstaller.setup()
+        val xcTestDriverClient = XCTestDriverClient(
+            host = defaultHost,
+            port = xcTestPort,
+            installNetworkInterceptor = isStudio,
+            restoreConnection = {
+                if (SessionStore.activeSessions().isNotEmpty()) {
+//                    IdbInstaller.setup(device)
+                    return@XCTestDriverClient xcTestInstaller.setup()
+                }
+                return@XCTestDriverClient false
             }
-            return@XCTestDriverClient false
-        }
+        )
         val xcTestDevice = XCTestIOSDevice(
             deviceId = device.instanceId,
             client = xcTestDriverClient,
@@ -325,7 +329,6 @@ object MaestroSessionManager {
         )
         val simctlIOSDevice = SimctlIOSDevice(
             deviceId = device.instanceId,
-            xcTestDevice = xcTestDevice,
         )
 
         val iosDriver = IOSDriver(

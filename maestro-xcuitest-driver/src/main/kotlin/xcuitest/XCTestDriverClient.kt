@@ -31,53 +31,11 @@ class XCTestDriverClient(
         })
     }
 
-    private val okHttpClient by lazy {
-        if (installNetworkInterceptor) {
-            OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(Interceptor {
-                    val request = it.request()
-                    try {
-                        it.proceed(request)
-                    } catch (connectException: IOException) {
-                        if (restoreConnection()) {
-                            it.proceed(request)
-                        } else {
-                            throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                        }
-                    }
-                }).addNetworkInterceptor(Interceptor {
-                    val request = it.request()
-                    try {
-                        it.proceed(request)
-                    } catch (connectException: IOException) {
-                        if (restoreConnection() || isShuttingDown) {
-                            Response.Builder()
-                                .request(it.request())
-                                .protocol(Protocol.HTTP_1_1)
-                                .code(200)
-                                .build()
-                        } else {
-                            throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                        }
-                    }
-                }).build()
-        } else {
-            OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(Interceptor {
-                    try {
-                        val request = it.request()
-                        it.proceed(request)
-                    } catch (exception: IOException) {
-                        throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                    }
-                })
-                .build()
-        }
-    }
+    private val okHttpClient = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptors()
+        .build()
 
     class XCTestDriverUnreachable(message: String) : IOException(message)
 
@@ -176,5 +134,41 @@ class XCTestDriverClient(
             .post(bodyData)
 
         return okHttpClient.newCall(requestBuilder.build()).execute()
+    }
+
+    private fun OkHttpClient.Builder.addInterceptors(): OkHttpClient.Builder {
+        val chain = addInterceptor(Interceptor {
+            val request = it.request()
+            try {
+                it.proceed(request)
+            } catch (connectException: IOException) {
+                if (restoreConnection()) {
+                    it.proceed(request)
+                } else {
+                    throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
+                }
+            }
+        })
+
+        if (installNetworkInterceptor) {
+            chain.addNetworkInterceptor(Interceptor {
+                val request = it.request()
+                try {
+                    it.proceed(request)
+                } catch (connectException: IOException) {
+                    if (restoreConnection() || isShuttingDown) {
+                        Response.Builder()
+                            .request(it.request())
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(200)
+                            .build()
+                    } else {
+                        throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
+                    }
+                }
+            })
+        }
+
+        return chain
     }
 }
