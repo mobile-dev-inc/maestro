@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install JDK 8
+      - name: Install JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
