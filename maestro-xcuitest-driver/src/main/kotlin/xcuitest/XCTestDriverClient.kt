@@ -156,7 +156,9 @@ class XCTestDriverClient(
                 try {
                     it.proceed(request)
                 } catch (connectException: IOException) {
-                    if (restoreConnection() || isShuttingDown) {
+                    // Fake an Ok response when shutting down and receiving an error
+                    // to prevent a stack trace in the cli.
+                    if (isShuttingDown) {
                         Response.Builder()
                             .request(it.request())
                             .protocol(Protocol.HTTP_1_1)
