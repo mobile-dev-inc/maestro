@@ -5,8 +5,8 @@
 
 [versions]
 androidPlugin = "4.2.1"
-androidToolsApkParser = "30.4.1"
-androidToolsSdk = "30.4.1"
+androidToolsApkParser = "30.3.0"
+androidToolsSdk = "30.3.0"
 androidxAppcompat = "1.6.1"
 androidxConstraintlayout = "2.1.4"
 androidxCore = "1.9.0"
