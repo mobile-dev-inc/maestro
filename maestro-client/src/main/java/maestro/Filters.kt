@@ -55,7 +55,18 @@ object Filters {
     }
 
     fun textMatches(regex: Regex): ElementLookupPredicate {
-        return { textAttributeMatches(it, regex) || hintTextMatches(regex, it) }
+        return { textAttributeMatches(it, regex) || hintTextMatches(it, regex) || accessibilityTextMatches(it, regex) }
+    }
+
+    private fun accessibilityTextMatches(treeNode: TreeNode, regex: Regex): Boolean {
+        return treeNode.attributes["accessibilityText"]?.let { value ->
+            val strippedValue = value.replace('\n', ' ')
+
+            regex.matches(value)
+                || regex.pattern == value
+                || regex.matches(strippedValue)
+                || regex.pattern == strippedValue
+        } ?: false
     }
 
     private fun textAttributeMatches(treeNode: TreeNode, regex: Regex): Boolean {
@@ -69,7 +80,7 @@ object Filters {
         } ?: false
     }
 
-    private fun hintTextMatches(regex: Regex, treeNode: TreeNode): Boolean {
+    private fun hintTextMatches(treeNode: TreeNode, regex: Regex): Boolean {
         return treeNode.attributes["hintText"]?.let { value ->
             val strippedValue = value.replace('\n', ' ')
 
