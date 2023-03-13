@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit
 class XCTestDriverClient(
     private val host: String = "localhost",
     private val port: Int = 22087,
-    private val installNetworkInterceptor: Boolean,
     private val restoreConnection: () -> Boolean = { false }
 ) {
 
@@ -34,7 +33,8 @@ class XCTestDriverClient(
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
-        .addInterceptors()
+        .addRetryOnErrorInterceptor()
+        .addReturnOkOnShutdownInterceptor()
         .build()
 
     class XCTestDriverUnreachable(message: String) : IOException(message)
@@ -136,41 +136,35 @@ class XCTestDriverClient(
         return okHttpClient.newCall(requestBuilder.build()).execute()
     }
 
-    private fun OkHttpClient.Builder.addInterceptors(): OkHttpClient.Builder {
-        val chain = addInterceptor(Interceptor {
-            val request = it.request()
-            try {
+    private fun OkHttpClient.Builder.addRetryOnErrorInterceptor() = addInterceptor(Interceptor {
+        val request = it.request()
+        try {
+            it.proceed(request)
+        } catch (connectException: IOException) {
+            if (restoreConnection()) {
                 it.proceed(request)
-            } catch (connectException: IOException) {
-                if (restoreConnection()) {
-                    it.proceed(request)
-                } else {
-                    throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                }
+            } else {
+                throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
             }
-        })
-
-        if (installNetworkInterceptor) {
-            chain.addNetworkInterceptor(Interceptor {
-                val request = it.request()
-                try {
-                    it.proceed(request)
-                } catch (connectException: IOException) {
-                    // Fake an Ok response when shutting down and receiving an error
-                    // to prevent a stack trace in the cli.
-                    if (isShuttingDown) {
-                        Response.Builder()
-                            .request(it.request())
-                            .protocol(Protocol.HTTP_1_1)
-                            .code(200)
-                            .build()
-                    } else {
-                        throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                    }
-                }
-            })
         }
+    })
 
-        return chain
-    }
+    private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
+        val request = it.request()
+        try {
+            it.proceed(request)
+        } catch (connectException: IOException) {
+            // Fake an Ok response when shutting down and receiving an error
+            // to prevent a stack trace in the cli when running maestro studio.
+            if (isShuttingDown) {
+                Response.Builder()
+                    .request(it.request())
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .build()
+            } else {
+                throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
+            }
+        }
+    })
 }

@@ -164,7 +164,6 @@ object MaestroSessionManager {
                         val xcTestDriverClient = XCTestDriverClient(
                             host = defaultHost,
                             port = defaultXcTestPort,
-                            installNetworkInterceptor = isStudio,
                             restoreConnection = {
                             if (SessionStore.activeSessions().isNotEmpty()) {
                                 IdbCompanion.setup(selectedDevice.device)
@@ -226,7 +225,6 @@ object MaestroSessionManager {
                     selectedDevice.port,
                     selectedDevice.deviceId,
                     !connectToExistingSession,
-                    isStudio
                 ),
                 device = null,
             )
@@ -302,7 +300,6 @@ object MaestroSessionManager {
         port: Int?,
         deviceId: String?,
         openDriver: Boolean,
-        installNetworkInterceptor: Boolean,
     ): Maestro {
         val device = PickDeviceInteractor.pickDevice(deviceId)
 
@@ -324,7 +321,6 @@ object MaestroSessionManager {
         val xcTestDriverClient = XCTestDriverClient(
             host = defaultHost,
             port = defaultXcTestPort,
-            installNetworkInterceptor = installNetworkInterceptor,
             restoreConnection = {
                 if (SessionStore.activeSessions().isNotEmpty()) {
                     return@XCTestDriverClient xcTestInstaller.setup()
