@@ -355,16 +355,6 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }
     }
 
-    fun findElementByText(text: String, timeoutMs: Long): UiElement {
-        LOGGER.info("Looking for element by text: $text (timeout $timeoutMs)")
-
-        return findElementWithTimeout(timeoutMs, Filters.textMatches(text).asFilter())?.element
-            ?: throw MaestroException.ElementNotFound(
-                "No element with text: $text",
-                viewHierarchy().root
-            )
-    }
-
     fun findElementByRegexp(regex: Regex, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by regex: ${regex.pattern} (timeout $timeoutMs)")
 

@@ -54,26 +54,30 @@ object Filters {
         nodes.filter { this(it) }
     }
 
-    fun textMatches(text: String): ElementLookupPredicate {
-        return {
-            it.attributes["text"]?.let { value ->
-                text == value
-                    || text == value.replace('\n', ' ')
-            } ?: false
-        }
+    fun textMatches(regex: Regex): ElementLookupPredicate {
+        return { textAttributeMatches(it, regex) || hintTextMatches(regex, it) }
     }
 
-    fun textMatches(regex: Regex): ElementLookupPredicate {
-        return {
-            it.attributes["text"]?.let { value ->
-                val strippedValue = value.replace('\n', ' ')
+    private fun textAttributeMatches(treeNode: TreeNode, regex: Regex): Boolean {
+        return treeNode.attributes["text"]?.let { value ->
+            val strippedValue = value.replace('\n', ' ')
 
-                regex.matches(value)
-                    || regex.pattern == value
-                    || regex.matches(strippedValue)
-                    || regex.pattern == strippedValue
-            } ?: false
-        }
+            regex.matches(value)
+                || regex.pattern == value
+                || regex.matches(strippedValue)
+                || regex.pattern == strippedValue
+        } ?: false
+    }
+
+    private fun hintTextMatches(regex: Regex, treeNode: TreeNode): Boolean {
+        return treeNode.attributes["hintText"]?.let { value ->
+            val strippedValue = value.replace('\n', ' ')
+
+            regex.matches(value)
+                || regex.pattern == value
+                || regex.matches(strippedValue)
+                || regex.pattern == strippedValue
+        } ?: false
     }
 
     fun idMatches(regex: Regex): ElementFilter {
