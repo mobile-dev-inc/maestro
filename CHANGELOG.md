@@ -3,7 +3,7 @@
 ## 1.25.0 - 2023-03-13
 * Fix: Shell environment variables can no longer crash the javascript runtime
 * Fix: XCTestRunner and IDB are restarted on connection error
-* Feature: Add Android support for `- setLocation: <lat>,<lon>`
+* Feature: Add support for setLocation
 
 ## 1.24.0 - 2023-03-07
 * Change: LaunchApp command sets all app permissions to allow ([documentation](https://maestro.mobile.dev/reference/app-lifecycle))
