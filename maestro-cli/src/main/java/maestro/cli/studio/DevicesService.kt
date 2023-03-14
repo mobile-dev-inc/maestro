@@ -72,9 +72,3 @@ object DevicesService {
         }
     }
 }
-
-fun main() {
-    val connected = DeviceService.listConnectedDevices()
-    val availableForLaunch = DeviceService.listAvailableForLaunchDevices()
-    println(connected.size)
-}
