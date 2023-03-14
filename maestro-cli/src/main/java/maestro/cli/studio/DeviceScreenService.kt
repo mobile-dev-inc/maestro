@@ -1,4 +1,4 @@
-package maestro.studio
+package maestro.cli.studio
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

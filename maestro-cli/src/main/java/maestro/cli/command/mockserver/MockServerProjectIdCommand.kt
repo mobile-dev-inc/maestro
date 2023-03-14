@@ -1,8 +1,8 @@
 package maestro.cli.command.mockserver
 
+import maestro.cli.studio.MockInteractor
 import maestro.cli.util.PrintUtils
 import maestro.cli.util.PrintUtils.err
-import maestro.studio.MockInteractor
 import picocli.CommandLine.Command
 import picocli.CommandLine.ParentCommand
 import java.util.concurrent.Callable

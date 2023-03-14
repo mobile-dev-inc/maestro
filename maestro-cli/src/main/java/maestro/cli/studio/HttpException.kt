@@ -1,4 +1,4 @@
-package maestro.studio
+package maestro.cli.studio
 
 import io.ktor.http.HttpStatusCode
 
