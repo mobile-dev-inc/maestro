@@ -34,7 +34,11 @@ object DeviceScreenService {
 
     private val savedScreenshots = mutableListOf<File>()
 
-    var maestro: Maestro? = null
+    private var maestro: Maestro? = null
+
+    fun setMaestroInstance(maestroInstance: Maestro) {
+        maestro = maestroInstance
+    }
 
     fun routes(routing: Routing) {
         routing.get("/api/device-screen") {

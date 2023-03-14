@@ -114,8 +114,11 @@ object ReplService {
 
     private val executionLock = Object()
     private val state = ReplState()
+    private var maestro: Maestro? = null
 
-    var maestro: Maestro? = null
+    fun setMaestroInstance(maestroInstance: Maestro) {
+        maestro = maestroInstance
+    }
 
     fun routes(routing: Routing) {
         routing.get("/api/repl") {

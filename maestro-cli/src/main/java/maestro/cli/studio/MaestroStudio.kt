@@ -19,8 +19,8 @@ import maestro.Maestro
 object MaestroStudio {
 
     fun setMaestroInstance(maestro: Maestro) {
-        DeviceScreenService.maestro = maestro
-        ReplService.maestro = maestro
+        DeviceScreenService.setMaestroInstance(maestro)
+        ReplService.setMaestroInstance(maestro)
     }
 
     fun start(port: Int) {
