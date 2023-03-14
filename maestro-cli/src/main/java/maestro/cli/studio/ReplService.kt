@@ -1,4 +1,4 @@
-package maestro.studio
+package maestro.cli.studio
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -6,21 +6,17 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
-import io.ktor.server.request.receiveStream
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import maestro.Maestro
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.orchestra.yaml.YamlFluentCommand
-import java.io.IOException
 import java.nio.file.Paths
 import java.util.UUID
 import kotlin.concurrent.thread
