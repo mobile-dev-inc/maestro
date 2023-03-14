@@ -102,6 +102,13 @@ const getSelectors = (uiElement: UIElement, deviceScreen: DeviceScreen): Selecto
       })
     }
   }
+  if (uiElement.hintText) {
+    selectors.push({
+      title: 'Hint Text',
+      status: 'available',
+      definition: uiElement.hintText
+    })
+  }
   return selectors
 }
 

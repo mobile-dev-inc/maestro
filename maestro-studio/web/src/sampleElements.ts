@@ -24,7 +24,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "d7b6f5c9-b562-47d0-b9c2-2ab85a93b390"
   }, {
@@ -38,7 +39,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/back",
-    "text": "Back"
+    "text": "Back",
+    "hintText": "Back Hint Text"
   }, {
     "id": "70c8ebdf-1894-4ca0-b81a-91edef3e78a9"
   }, {
@@ -50,7 +52,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "5c117a17-e09b-4b2e-8615-6e3e32f96b31"
   }, {
@@ -64,7 +67,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/recent_apps",
-    "text": "Overview"
+    "text": "Overview",
+    "hintText": "Overview Hint text"
   }, {
     "id": "6979f0c5-8c61-428b-905e-8e645ccc6b5d"
   }, {
@@ -76,7 +80,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "7573065c-3673-4482-805c-43311609c8e5"
   }, {
@@ -88,7 +93,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "2fb39c32-1c2a-404d-bf9b-ffd7a3e12b45"
   }, {
@@ -100,7 +106,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/ends_group",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "199fcdbe-0477-476a-aa81-aa72e8887dcf"
   }, {
@@ -128,7 +135,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "56c4051a-f968-47cc-a9e2-ad42359b9bb6"
   }, {
@@ -140,7 +148,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/white_cutout",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "7d83b5ee-4f42-41b5-ba03-7450d0258908"
   }, {
@@ -152,7 +161,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/white",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "de1db1d2-4750-48db-8e56-d39f0f561ea2"
   }, {
@@ -164,7 +174,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/home",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "e1ffed17-36bd-42eb-9f4a-98b1bf7fa6ea"
   }, {
@@ -176,7 +187,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/center_group",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "6d708e02-266d-4bf3-b3d9-253482949a9c"
   }, {
@@ -188,7 +200,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/nav_buttons",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "c8a1350c-fa4b-4426-aae7-ba4f735093aa"
   }, {
@@ -200,7 +213,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/horizontal",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "c8a35a99-adb6-464c-8535-2897f7ecca98"
   }, {
@@ -212,7 +226,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/navigation_inflater",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "7f0ae60f-c700-43bb-843c-d4267cccbe07"
   }, {
@@ -224,7 +239,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "4b2fb989-4460-49f4-8e9d-4867725d7391"
   }, {
@@ -236,7 +252,8 @@ export const sampleElements: UIElement[] = [
       "height": 0
     },
     "resourceId": "com.android.systemui:id/navigation_bar_frame",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "c997da95-0071-427b-bf2e-d7da8ec6e16b"
   }, {
@@ -260,7 +277,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/clock",
-    "text": "3:22"
+    "text": "3:22",
+    "hintText": ""
   }, {
     "id": "e4d6868c-1c97-42c6-9e9e-93d0980c1ea0"
   }, {
@@ -278,7 +296,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "",
-    "text": "Android System notification: Wi‑Fi will turn on automatically"
+    "text": "Android System notification: Wi‑Fi will turn on automatically",
+    "hintText": "Android System notification: Wi‑Fi will turn on automatically hint text"
   }, {
     "id": "75c08fe2-3575-4c6d-9ed8-e990b1baf30d"
   }, {
@@ -290,7 +309,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/notificationIcons",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "0b398670-d05b-4cfd-a953-a4e168d3041e"
   }, {
@@ -302,7 +322,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/notification_icon_area_inner",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "704aad99-5559-4294-9ec7-087a3739cb8d"
   }, {
@@ -314,7 +335,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/notification_icon_area",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "72e832b1-5aad-4316-ad36-c04fd8b54641"
   }, {
@@ -326,7 +348,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/status_bar_left_side",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "531b2b70-2647-4499-a59b-625a4e8afac4"
   }, {
@@ -338,7 +361,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "ee1d4399-1429-45e7-998a-d6eef712eaed"
   }, {
@@ -360,7 +384,8 @@ export const sampleElements: UIElement[] = [
       "height": 41
     },
     "resourceId": "com.android.systemui:id/mobile_type",
-    "text": "No internet"
+    "text": "No internet",
+    "hintText": ""
   }, {
     "id": "f507541c-1244-4263-af13-7862d3a8aa46"
   }, {
@@ -374,7 +399,8 @@ export const sampleElements: UIElement[] = [
       "height": 41
     },
     "resourceId": "com.android.systemui:id/mobile_signal",
-    "text": ""
+    "text": "",
+    "hintText": "Mobile signal hint Text"
   }, {
     "id": "9196a67c-61d2-455c-9fe0-44dcdd3924dd"
   }, {
@@ -386,7 +412,8 @@ export const sampleElements: UIElement[] = [
       "height": 41
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "c22eb9a1-15e1-4349-81cc-ab3af47b7f87"
   }, {
@@ -398,7 +425,8 @@ export const sampleElements: UIElement[] = [
       "height": 61
     },
     "resourceId": "com.android.systemui:id/mobile_group",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "f5b65f25-44cc-4096-9ae8-2374e0c37176"
   }, {
@@ -410,7 +438,8 @@ export const sampleElements: UIElement[] = [
       "height": 61
     },
     "resourceId": "com.android.systemui:id/mobile_combo",
-    "text": "Phone three bars."
+    "text": "Phone three bars.",
+    "hintText": ""
   }, {
     "id": "1e817479-fcde-4bd9-8d8a-1cbe8d6d3271"
   }, {
@@ -422,7 +451,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/statusIcons",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "4ef0f688-838d-4fc7-bdb7-8259da32477f"
   }, {
@@ -436,7 +466,8 @@ export const sampleElements: UIElement[] = [
       "height": 36
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "7627db15-076c-407d-980c-4c378256504c"
   }, {
@@ -448,7 +479,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/battery",
-    "text": "Battery 100 percent."
+    "text": "Battery 100 percent.",
+    "hintText": ""
   }, {
     "id": "2bab18a1-d348-4eb5-8550-7a91bd2dabb3"
   }, {
@@ -460,7 +492,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/system_icons",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "2f53ad8b-ff5e-4db1-b00c-6b29a39a10ae"
   }, {
@@ -472,7 +505,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/system_icon_area",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "41ccab08-3809-45cc-af26-2bcda765bbaa"
   }, {
@@ -484,7 +518,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/status_bar_contents",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "478e44a9-8b32-4307-96a6-8eb30848ebef"
   }, {
@@ -496,7 +531,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/status_bar",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "aac4db52-8567-438c-8142-3a054af610e6"
   }, {
@@ -508,7 +544,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "com.android.systemui:id/status_bar_container",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "3290aa97-1d6f-43fe-addd-f5d6a32cd01e"
   }, {
@@ -520,7 +557,8 @@ export const sampleElements: UIElement[] = [
       "height": 66
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "27035d5e-6f22-4051-8440-3f15028b8b56"
   }, {
@@ -554,7 +592,8 @@ export const sampleElements: UIElement[] = [
       "height": 143
     },
     "resourceId": "",
-    "text": "Alarm"
+    "text": "Alarm",
+    "hintText": ""
   }, {
     "id": "3ee3cf6d-0341-48ad-947c-0ac47eff32bf"
   }, {
@@ -566,7 +605,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "",
-    "text": "Alarm"
+    "text": "Alarm",
+    "hintText": ""
   }, {
     "id": "e83b075d-f655-4178-bac2-d843ea094265"
   }, {
@@ -580,7 +620,8 @@ export const sampleElements: UIElement[] = [
       "height": 143
     },
     "resourceId": "",
-    "text": "Clock"
+    "text": "Clock",
+    "hintText": ""
   }, {
     "id": "9f0bfe72-e5d9-41e5-8389-1522134a4a0c"
   }, {
@@ -592,7 +633,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "",
-    "text": "Clock"
+    "text": "Clock",
+    "hintText": ""
   }, {
     "id": "4ffae82a-5dce-43e2-b6ee-ccb514f7803a"
   }, {
@@ -606,7 +648,8 @@ export const sampleElements: UIElement[] = [
       "height": 143
     },
     "resourceId": "",
-    "text": "Timer"
+    "text": "Timer",
+    "hintText": ""
   }, {
     "id": "9dc8aee8-539d-48cb-b4a6-80ae77c194f9"
   }, {
@@ -618,7 +661,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "",
-    "text": "Timer"
+    "text": "Timer",
+    "hintText": ""
   }, {
     "id": "f0376d4f-0405-4f76-b4b0-384dc3a2e4dd"
   }, {
@@ -632,7 +676,8 @@ export const sampleElements: UIElement[] = [
       "height": 143
     },
     "resourceId": "",
-    "text": "Stopwatch"
+    "text": "Stopwatch",
+    "hintText": ""
   }, {
     "id": "342d3368-9adb-4fa4-9c9e-e5cb5c3f4210"
   }, {
@@ -644,7 +689,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "",
-    "text": "Stopwatch"
+    "text": "Stopwatch",
+    "hintText": ""
   }, {
     "id": "f6623dc5-c4fe-483f-9bf9-34ebf1b4698f"
   }, {
@@ -656,7 +702,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "1e466bc8-186a-44e8-8657-62bace159473"
   }, {
@@ -668,7 +715,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "com.google.android.deskclock:id/tabs",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "803841ef-498d-488b-bf9d-d77e0b82d68a"
   }, {
@@ -682,7 +730,8 @@ export const sampleElements: UIElement[] = [
       "height": 132
     },
     "resourceId": "",
-    "text": "More options"
+    "text": "More options",
+    "hintText": ""
   }, {
     "id": "ca232272-4ba9-4583-b995-361f028faff8"
   }, {
@@ -694,7 +743,8 @@ export const sampleElements: UIElement[] = [
       "height": 154
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "fcb6cb42-b129-4be2-8d99-cc297f7b6de4"
   }, {
@@ -706,7 +756,8 @@ export const sampleElements: UIElement[] = [
       "height": 198
     },
     "resourceId": "com.google.android.deskclock:id/toolbar",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "71f8dd1f-85a4-4e0f-a2c9-c6901f98d7aa"
   }, {
@@ -718,7 +769,8 @@ export const sampleElements: UIElement[] = [
       "height": 264
     },
     "resourceId": "com.google.android.deskclock:id/app_bar_layout",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "ff2510e8-d080-416c-8e4b-8cb8cc927ea9"
   }, {
@@ -744,7 +796,8 @@ export const sampleElements: UIElement[] = [
       "height": 190
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_time",
-    "text": "25h 22m 22s"
+    "text": "25h 22m 22s",
+    "hintText": ""
   }, {
     "id": "ecd4c297-d796-4c37-af7c-8f07d6946f57"
   }, {
@@ -756,7 +809,8 @@ export const sampleElements: UIElement[] = [
       "height": 132
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_delete",
-    "text": "Delete 2"
+    "text": "Delete 2",
+    "hintText": ""
   }, {
     "id": "3fb4b208-4d5e-4ca0-898d-01312e4ee189"
   }, {
@@ -768,7 +822,8 @@ export const sampleElements: UIElement[] = [
       "height": 446
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "d2fb27ad-c3da-4bf1-9ba0-be547c624859"
   }, {
@@ -780,7 +835,8 @@ export const sampleElements: UIElement[] = [
       "height": 3
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "4afe9470-9440-4799-b31d-076153fb4052"
   }, {
@@ -794,7 +850,7 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_1",
-    "text": "1"
+    "text": "1",
   }, {
     "id": "c01388fe-0900-4d4d-86d1-d70d1d543d84"
   }, {
@@ -806,7 +862,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_2",
-    "text": "2"
+    "text": "2",
+    "hintText": ""
   }, {
     "id": "d1991ae4-ef7e-499a-ba8f-5ec734af61d6"
   }, {
@@ -818,7 +875,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_3",
-    "text": "3"
+    "text": "3",
+    "hintText": ""
   }, {
     "id": "c497c02b-4cf6-4383-a48a-cb948c84483a"
   }, {
@@ -830,7 +888,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_4",
-    "text": "4"
+    "text": "4",
+    "hintText": ""
   }, {
     "id": "894da1b9-099e-4e8c-8def-a26a6585b428"
   }, {
@@ -842,7 +901,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_5",
-    "text": "5"
+    "text": "5",
+    "hintText": ""
   }, {
     "id": "4e27654d-a0d5-4048-bf35-655d1619d7fc"
   }, {
@@ -854,7 +914,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_6",
-    "text": "6"
+    "text": "6",
+    "hintText": ""
   }, {
     "id": "ac7c3c31-052d-4794-b066-a2eaf04808b4"
   }, {
@@ -866,7 +927,8 @@ export const sampleElements: UIElement[] = [
       "height": 307
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_7",
-    "text": "7"
+    "text": "7",
+    "hintText": ""
   }, {
     "id": "0bfcb2ef-db65-445f-8f5e-d7a73798a3b1"
   }, {
@@ -878,7 +940,8 @@ export const sampleElements: UIElement[] = [
       "height": 307
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_8",
-    "text": "8"
+    "text": "8",
+    "hintText": "Numerical hint text 8"
   }, {
     "id": "6e37aff4-b89f-4505-8d04-7feec9edddea"
   }, {
@@ -890,7 +953,8 @@ export const sampleElements: UIElement[] = [
       "height": 307
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_9",
-    "text": "9"
+    "text": "9",
+    "hintText": ""
   }, {
     "id": "102f262f-dfab-4240-a9c6-0b5f52f28dfd"
   }, {
@@ -902,7 +966,8 @@ export const sampleElements: UIElement[] = [
       "height": 308
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup_digit_0",
-    "text": "0"
+    "text": "0",
+    "hintText": ""
   }, {
     "id": "7e4597fd-112f-49d5-8c49-3a368806519c"
   }, {
@@ -914,7 +979,8 @@ export const sampleElements: UIElement[] = [
       "height": 1231
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "9c30e1e1-b331-48db-acc0-9c3313452f5a"
   }, {
@@ -926,7 +992,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "d9e9d761-36dc-41c1-ac87-7a556d32df14"
   }, {
@@ -938,7 +1005,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "0ced2c28-eeba-4d63-8f7b-b744d9c6ed96"
   }, {
@@ -950,7 +1018,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "com.google.android.deskclock:id/timer_setup",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "ff91f3b3-e008-4f00-8a37-98677f3c3d9b"
   }, {
@@ -962,7 +1031,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "b7741874-d42e-41e2-84ae-011a91685d49"
   }, {
@@ -974,7 +1044,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "com.google.android.deskclock:id/desk_clock_pager",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "33172deb-413c-40fe-8a4a-12ff6a5d6b54"
   }, {
@@ -986,7 +1057,8 @@ export const sampleElements: UIElement[] = [
       "height": 1944
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "1e5b1ee4-df8e-4776-b42a-1d55ab987427"
   }, {
@@ -1000,7 +1072,8 @@ export const sampleElements: UIElement[] = [
       "height": 242
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "dc37b3cd-ba86-4447-8808-508c046d4fea"
   }, {
@@ -1012,7 +1085,8 @@ export const sampleElements: UIElement[] = [
       "height": 154
     },
     "resourceId": "com.google.android.deskclock:id/fab",
-    "text": "Start"
+    "text": "Start",
+    "hintText": "Start hint text"
   }, {
     "id": "5e508682-22cb-4615-aeb2-94dfaa5ec7d6"
   }, {
@@ -1024,7 +1098,8 @@ export const sampleElements: UIElement[] = [
       "height": 242
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "2d794c80-8814-42fe-ba76-f6b57adac072"
   }, {
@@ -1036,7 +1111,8 @@ export const sampleElements: UIElement[] = [
       "height": 242
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "2c0a840a-bd10-43e6-b1b7-f14e8a143867"
   }, {
@@ -1048,7 +1124,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "com.google.android.deskclock:id/content",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "cf4be9b4-d555-4099-a579-225b86af1c79"
   }, {
@@ -1060,7 +1137,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "android:id/content",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "95f5a1cf-97ff-421f-bc5c-f6c181723597"
   }, {
@@ -1072,7 +1150,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "com.google.android.deskclock:id/action_bar_root",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "bb52ec3e-c714-4233-8163-9d9c9e243203"
   }, {
@@ -1084,7 +1163,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "a98007c7-5eb2-4e54-9d00-6fdf5803ff7b"
   }, {
@@ -1096,7 +1176,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "13e0f21e-7c6f-40f6-a728-357bcc802786"
   }, {
@@ -1108,7 +1189,8 @@ export const sampleElements: UIElement[] = [
       "height": 2208
     },
     "resourceId": "",
-    "text": ""
+    "text": "",
+    "hintText": ""
   }, {
     "id": "04c415fb-649d-47a4-833d-c0380c852b7b"
   }, {
