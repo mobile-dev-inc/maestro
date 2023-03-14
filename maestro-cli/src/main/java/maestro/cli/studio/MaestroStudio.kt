@@ -18,7 +18,12 @@ import maestro.Maestro
 
 object MaestroStudio {
 
-    fun start(port: Int, maestro: Maestro?) {
+    fun setMaestroInstance(maestro: Maestro) {
+        DeviceScreenService.maestro = maestro
+        ReplService.maestro = maestro
+    }
+
+    fun start(port: Int) {
         embeddedServer(Netty, port = port) {
             install(CORS) {
                 allowHost("localhost:3000")
@@ -39,11 +44,10 @@ object MaestroStudio {
                 }
             }
             routing {
-                if (maestro != null) {
-                    DeviceScreenService.routes(this, maestro)
-                    ReplService.routes(this, maestro)
-                }
+                DeviceScreenService.routes(this)
+                ReplService.routes(this)
                 MockService.routes(this, MockInteractor())
+                DevicesService.routes(this)
                 this.get("/") {
                     call.respondText("running")
                 }

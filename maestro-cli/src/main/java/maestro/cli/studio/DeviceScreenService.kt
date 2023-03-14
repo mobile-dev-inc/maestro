@@ -2,6 +2,7 @@ package maestro.cli.studio
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.http.content.files
 import io.ktor.server.http.content.static
@@ -33,20 +34,26 @@ object DeviceScreenService {
 
     private val savedScreenshots = mutableListOf<File>()
 
-    fun routes(routing: Routing, maestro: Maestro) {
+    var maestro: Maestro? = null
+
+    fun routes(routing: Routing) {
         routing.get("/api/device-screen") {
+            if (maestro == null) {
+                throw HttpException(HttpStatusCode.BadRequest, "No device selected")
+            }
+
             val tree: TreeNode
             val screenshotFile: File
             synchronized(DeviceScreenService) {
-                tree = maestro.viewHierarchy().root
-                screenshotFile = takeScreenshot(maestro)
+                tree = maestro!!.viewHierarchy().root
+                screenshotFile = takeScreenshot(maestro!!)
                 savedScreenshots.add(screenshotFile)
                 while (savedScreenshots.size > MAX_SCREENSHOTS) {
                     savedScreenshots.removeFirst().delete()
                 }
             }
 
-            val deviceInfo = maestro.deviceInfo()
+            val deviceInfo = maestro!!.deviceInfo()
 
             val deviceWidth = deviceInfo.widthGrid
             val deviceHeight = deviceInfo.heightGrid
