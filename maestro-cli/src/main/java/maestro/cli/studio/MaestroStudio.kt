@@ -15,6 +15,7 @@ import io.ktor.server.routing.routing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import maestro.Maestro
+import maestro.cli.studio.DevicesService.devicesRoutes
 
 object MaestroStudio {
 
@@ -47,7 +48,8 @@ object MaestroStudio {
                 DeviceScreenService.routes(this)
                 ReplService.routes(this)
                 MockService.routes(this, MockInteractor())
-                DevicesService.routes(this)
+                this.devicesRoutes()
+
                 this.get("/") {
                     call.respondText("running")
                 }
