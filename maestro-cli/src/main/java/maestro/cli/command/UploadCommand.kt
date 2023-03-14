@@ -22,6 +22,7 @@ package maestro.cli.command
 import maestro.cli.DisableAnsiMixin
 import maestro.cli.api.ApiClient
 import maestro.cli.cloud.CloudInteractor
+import maestro.orchestra.util.Env.withInjectedShellEnvVars
 import org.fusesource.jansi.Ansi.ansi
 import picocli.CommandLine
 import picocli.CommandLine.Option
@@ -68,7 +69,7 @@ class UploadCommand : Callable<Int> {
     private var pullRequestId: String? = null
 
     @Option(order = 7, names = ["-e", "--env"], description = ["Environment variables to inject into your Flows"])
-    private var env: Map<String, String> = emptyMap()
+    private var env: MutableMap<String, String> = mutableMapOf()
 
     @Option(order = 8, names = ["--name"], description = ["Name of the upload"])
     private var uploadName: String? = null
@@ -91,7 +92,7 @@ class UploadCommand : Callable<Int> {
             flowFile = flowFile,
             appFile = appFile,
             mapping = mapping,
-            env = env,
+            env = env.withInjectedShellEnvVars(),
             uploadName = uploadName,
             repoOwner = repoOwner,
             repoName = repoName,

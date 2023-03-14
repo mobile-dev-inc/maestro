@@ -34,7 +34,7 @@ object Env {
 
     fun MutableMap<String, String>.withInjectedShellEnvVars(): MutableMap<String, String> {
         val sysEnv = System.getenv()
-        for (sysEnvKey in sysEnv.keys) {
+        for (sysEnvKey in sysEnv.keys.filter { it.startsWith("MAESTRO_") }) {
             val sysEnvValue = sysEnv[sysEnvKey]
             if (this[sysEnvKey] == null && sysEnvValue != null) {
                 this[sysEnvKey] = sysEnvValue
