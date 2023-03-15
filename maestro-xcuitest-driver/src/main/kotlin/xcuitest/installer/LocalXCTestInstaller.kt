@@ -33,16 +33,23 @@ class LocalXCTestInstaller(
 
         stop()
 
-        logger.info("[Start] Uninstalling the XCUITest runner app")
+        logger.info("[Start] Uninstall XCUITest runner")
         XCRunnerSimctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
-        logger.info("[Done] Uninstalling the XCUITest runner app")
+        logger.info("[Done] Uninstall XCUITest runner")
     }
 
     private fun stop() {
         if (xcTestProcess?.isAlive == true) {
-            logger.info("[Start] Killing the started XCUITest")
+            logger.info("[Start] Stop XCUITest runner")
             xcTestProcess?.destroy()
-            logger.info("[Done] Killing the started XCUITest")
+            logger.info("[Done] Stop XCUITest runner")
+        }
+
+        val pid = XCRunnerSimctl.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        if (pid != null) {
+            ProcessBuilder(listOf("kill", pid.toString()))
+                .start()
+                .waitFor()
         }
     }
 
@@ -54,16 +61,16 @@ class LocalXCTestInstaller(
         stop()
 
         repeat(3) { i ->
-            logger.info("[Start] Installing xctest ui runner on $deviceId")
+            logger.info("[Start] Install XCUITest runner on $deviceId")
             startXCTestRunner()
-            logger.info("[Done] Installing xctest ui runner on $deviceId")
+            logger.info("[Done] Install XCUITest runner on $deviceId")
 
-            logger.info("[Start] Ensuring ui test runner app is launched on $deviceId")
+            logger.info("[Start] Ensure XCUITest runner is running on $deviceId")
             if (ensureOpen()) {
-                logger.info("[Done] Ensuring ui test runner app is launched on $deviceId")
+                logger.info("[Done] Ensure XCUITest runner is running on $deviceId")
                 return true
             } else {
-                logger.info("[Failed] Ensuring ui test runner app is launched on $deviceId")
+                logger.info("[Failed] Ensure XCUITest runner is running on $deviceId")
                 logger.info("[Retry] Retrying setup() ${i}th time")
             }
         }
