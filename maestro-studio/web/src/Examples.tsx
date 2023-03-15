@@ -49,8 +49,10 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
     if (codeSnippet.includes('[id]') && !element.resourceId) return null
     // If the snippet references a resource id index but the element doesn't have one, skip it
     if (codeSnippet.includes('[resource-id-index]') && !elementHasResourceIdIndex) return null
-    // If the snippet references a resource id index but the element doesn't have one, skip it
+    // If the snippet references a hintText but the element doesn't have one, skip it
     if (codeSnippet.includes('[hintText]') && !element.hintText) return null
+    // If the snippet references a accessibilityText but the element doesn't have one, skip it
+    if (codeSnippet.includes('[accessibilityText]') && !element.accessibilityText) return null
     // If the snippet references text index but the element doesn't have any, skip it
     if (codeSnippet.includes('[text]') && !element.text) return null
     // If the snippet references a text id index but the element doesn't have one, skip it
@@ -67,6 +69,7 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
     const id = element.resourceId || ''
     const text = element.text || ''
     const hintText = element.hintText || ''
+    const accessibilityText = element.accessibilityText || ''
     const resourceIdIndex = `${element.resourceIdIndex}`
     const textIndex = `${element.textIndex}`
     const bounds = element.bounds || { x: 0, y: 0, width: 0, height: 0 }
@@ -83,6 +86,7 @@ const Section = ({ deviceScreen, element, title, documentationUrl, codeSnippets 
             .replace('[resource-id-index]', resourceIdIndex)
             .replace('[text-index]', textIndex)
             .replace('[hintText]', hintText.replace("\n", " "))
+            .replace('[accessibilityText]', accessibilityText.replace("\n", " "))
         }
       </CodeSnippet>
     )
@@ -177,6 +181,8 @@ Tap,https://maestro.mobile.dev/reference/tap-on-view
 ---
 - tapOn: "[hintText]"
 ---
+- tapOn: "[accessibilityText]"
+---
 - tapOn:
     text: "[text]"
     index: [text-index]
@@ -208,6 +214,9 @@ Assertion,https://maestro.mobile.dev/reference/assertions
 ---
 - assertVisible:
     text: "[hintText]"
+---
+- assertVisible:
+    text: "[accessibilityText]"
 ===
 Conditional,https://maestro.mobile.dev/advanced/conditions
 ---

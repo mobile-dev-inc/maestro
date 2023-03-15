@@ -109,6 +109,13 @@ const getSelectors = (uiElement: UIElement, deviceScreen: DeviceScreen): Selecto
       definition: uiElement.hintText
     })
   }
+  if (uiElement.accessibilityText) {
+    selectors.push({
+      title: 'Accessibility Text',
+      status: 'available',
+      definition: uiElement.accessibilityText
+    })
+  }
   return selectors
 }
 
