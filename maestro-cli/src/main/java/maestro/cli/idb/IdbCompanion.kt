@@ -1,14 +1,11 @@
 package maestro.cli.idb
 
 import maestro.cli.device.Device
-import maestro.debuglog.DebugLogStore
 import maestro.utils.MaestroTimer
 import java.net.Socket
 
 object IdbCompanion {
-    private val logger = DebugLogStore.loggerFor(IdbCompanion::class.java)
-
-    // TODO: Understand why this is a separate method from strartIdbCompanion
+    // TODO: Understand why this is a separate method from idbRunner.start()
     fun setup(device: Device.Connected) {
         val idbProcessBuilder = ProcessBuilder("idb_companion", "--udid", device.instanceId)
         idbProcessBuilder.start()

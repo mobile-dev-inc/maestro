@@ -24,10 +24,6 @@ class LocalIdbRunner(
     val port: Int,
     val deviceId: String,
 ): IdbRunner {
-    companion object {
-        val logger = DebugLogStore.loggerFor(LocalIdbRunner::class.java)
-    }
-
     override fun stop(channel: ManagedChannel) {
         channel.shutdownNow()
 
@@ -129,12 +125,15 @@ class LocalIdbRunner(
         }
     }
 
-
     private fun isSocketAvailable(host: String, port: Int): Boolean {
         return try {
             Socket(host, port).use { true }
         } catch (_: Exception) {
             false
         }
+    }
+
+    companion object {
+        val logger = DebugLogStore.loggerFor(LocalIdbRunner::class.java)
     }
 }
