@@ -26,29 +26,36 @@ class LocalXCTestInstaller(
 
     private var xcTestProcess: Process? = null
 
-    override fun killAndUninstall() {
+    override fun uninstall() {
         if (useXcodeTestRunner) {
             return
         }
 
-        if (xcTestProcess?.isAlive == true) {
-            logger.info("[Start] Killing the started XCUITest")
-            xcTestProcess?.destroy()
-            logger.info("[Done] Killing the started XCUITest")
-        }
+        stop()
+
         logger.info("[Start] Uninstalling the XCUITest runner app")
         XCRunnerSimctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
         logger.info("[Done] Uninstalling the XCUITest runner app")
     }
 
-    override fun setup(): Boolean {
+    private fun stop() {
+        if (xcTestProcess?.isAlive == true) {
+            logger.info("[Start] Killing the started XCUITest")
+            xcTestProcess?.destroy()
+            logger.info("[Done] Killing the started XCUITest")
+        }
+    }
+
+    override fun start(): Boolean {
         if (useXcodeTestRunner) {
             return ensureOpen()
         }
 
+        stop()
+
         repeat(3) { i ->
             logger.info("[Start] Installing xctest ui runner on $deviceId")
-            runXCTest()
+            startXCTestRunner()
             logger.info("[Done] Installing xctest ui runner on $deviceId")
 
             logger.info("[Start] Ensuring ui test runner app is launched on $deviceId")
@@ -62,7 +69,6 @@ class LocalXCTestInstaller(
         }
         return false
     }
-
 
     override fun isChannelAlive(): Boolean {
         return XCRunnerSimctl.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID) &&
@@ -104,12 +110,11 @@ class LocalXCTestInstaller(
         return okHttpClient.newCall(request).execute()
     }
 
-    private fun runXCTest() {
-        val processOutput = ProcessBuilder(
-            "bash",
-            "-c",
-            "xcrun simctl spawn booted launchctl list | grep $UI_TEST_RUNNER_APP_BUNDLE_ID | awk '/$UI_TEST_RUNNER_APP_BUNDLE_ID/ {print \$3}'"
-        ).start().inputStream.source().buffer().readUtf8().trim()
+    private fun startXCTestRunner() {
+        val processOutput = ProcessBuilder(listOf("xcrun", "simctl", "spawn", "booted", "launchctl", "list"))
+            .start()
+            .inputStream.source().buffer().readUtf8()
+            .trim()
 
         if (!processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
             logger.info("Not able to find ui test runner app, going to install now")
@@ -151,7 +156,7 @@ class LocalXCTestInstaller(
         File(xctestConfig).delete()
         File(uiTestRunnerApp).deleteRecursively()
         File(hostApp).deleteRecursively()
-        killAndUninstall()
+        uninstall()
         logger.info("[Done] Cleaning up the ui test runner files")
     }
 
