@@ -87,7 +87,13 @@ class XCTestIOSDevice(
     }
 
     override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
-        error("Not supported")
+        return runCatching {
+            client.tap(
+                x = x.toFloat(),
+                y = y.toFloat(),
+                durationInMs = 1000
+            ).use {}
+        }
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
