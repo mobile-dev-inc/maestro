@@ -51,3 +51,8 @@ data class Repl(
     val version: Int,
     val commands: List<ReplCommand>,
 )
+
+data class Devices(
+    val connected: List<Device.Connected>,
+    val availableForLaunch: List<Device.AvailableForLaunch>,
+)

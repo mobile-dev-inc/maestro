@@ -36,7 +36,10 @@ class StudioCommand : Callable<Int> {
 
     private fun launchStudio(session: MaestroSessionManager.MaestroSession? = null) {
         val port = getFreePort()
-        MaestroStudio.start(port, session?.maestro)
+        MaestroStudio.start(port)
+        if (session?.maestro != null) {
+            MaestroStudio.setMaestroInstance(session.maestro)
+        }
 
         val studioUrl = "https://studio.mobile.dev"
         val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()

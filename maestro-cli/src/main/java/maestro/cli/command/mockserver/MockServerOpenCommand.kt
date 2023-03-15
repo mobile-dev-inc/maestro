@@ -32,7 +32,7 @@ class MockServerOpenCommand : Callable<Int> {
         }
 
         val port = getFreePort()
-        MaestroStudio.start(port, null)
+        MaestroStudio.start(port)
 
         val studioUrl = "http://localhost:${port}/mock"
         val message = ("Maestro Studio".bold() + " Mock Server is running at " + studioUrl.blue()).box()

@@ -114,8 +114,13 @@ object ReplService {
 
     private val executionLock = Object()
     private val state = ReplState()
+    private var maestro: Maestro? = null
 
-    fun routes(routing: Routing, maestro: Maestro) {
+    fun setMaestroInstance(maestroInstance: Maestro) {
+        maestro = maestroInstance
+    }
+
+    fun routes(routing: Routing) {
         routing.get("/api/repl") {
             call.respondRepl()
         }
@@ -126,17 +131,19 @@ object ReplService {
             call.respondRepl()
         }
         routing.post("/api/repl/command") {
+            if (maestro == null) throw HttpException(HttpStatusCode.BadRequest, "No device selected")
+
             val request = call.parseBody<RunCommandRequest>()
             when {
                 request.ids != null -> {
                     thread {
-                        runEntries(maestro, request.ids)
+                        runEntries(maestro!!, request.ids)
                     }
                 }
                 request.yaml != null -> {
                     val newEntries = createEntries(request.yaml)
                     thread {
-                        runEntries(maestro, newEntries.map { it.id })
+                        runEntries(maestro!!, newEntries.map { it.id })
                     }
                 }
                 else -> {

@@ -15,10 +15,16 @@ import io.ktor.server.routing.routing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import maestro.Maestro
+import maestro.cli.studio.DevicesService.devicesRoutes
 
 object MaestroStudio {
 
-    fun start(port: Int, maestro: Maestro?) {
+    fun setMaestroInstance(maestro: Maestro) {
+        DeviceScreenService.setMaestroInstance(maestro)
+        ReplService.setMaestroInstance(maestro)
+    }
+
+    fun start(port: Int) {
         embeddedServer(Netty, port = port) {
             install(CORS) {
                 allowHost("localhost:3000")
@@ -39,11 +45,11 @@ object MaestroStudio {
                 }
             }
             routing {
-                if (maestro != null) {
-                    DeviceScreenService.routes(this, maestro)
-                    ReplService.routes(this, maestro)
-                }
+                DeviceScreenService.routes(this)
+                ReplService.routes(this)
                 MockService.routes(this, MockInteractor())
+                this.devicesRoutes()
+
                 this.get("/") {
                     call.respondText("running")
                 }
