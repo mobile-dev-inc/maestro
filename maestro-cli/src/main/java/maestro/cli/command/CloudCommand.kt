@@ -73,7 +73,7 @@ class CloudCommand : Callable<Int> {
     private var pullRequestId: String? = null
 
     @Option(order = 8, names = ["-e", "--env"], description = ["Environment variables to inject into your Flows"])
-    private var env: MutableMap<String, String> = mutableMapOf()
+    private var env: Map<String, String> = emptyMap()
 
     @Option(order = 9, names = ["--name"], description = ["Name of the upload"])
     private var uploadName: String? = null
