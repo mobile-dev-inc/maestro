@@ -199,18 +199,22 @@ object LocalSimulatorUtils {
         launchArguments: List<String> = emptyList(),
         language: String?
     ) {
-        println("lang $language")
+        var command = mutableListOf(
+                "xcrun",
+                "simctl",
+                "launch",
+                deviceId,
+                bundleId,
+            ) + launchArguments
+
         language?.let {
             if (supportedLanguages.contains(it)) {
-                println("test1")
                 command += listOf(
                     "-AppleLanguages",
                     "($language)"
                 )
             }
         }
-
-        println("command $command")
 
         runCommand(
             command
