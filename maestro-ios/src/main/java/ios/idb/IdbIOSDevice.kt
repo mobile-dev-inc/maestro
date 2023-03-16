@@ -382,6 +382,7 @@ class IdbIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
+        language: String?
     ): Result<Unit, Throwable> {
         return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.LaunchResponse>()

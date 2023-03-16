@@ -202,6 +202,7 @@ class XCTestIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
+        language: String?
     ): Result<Unit, Throwable> {
         error("Not supported")
     }

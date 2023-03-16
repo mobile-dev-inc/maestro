@@ -349,6 +349,7 @@ data class LaunchAppCommand(
     val stopApp: Boolean? = null,
     var permissions: Map<String, String>? = null,
     val launchArguments: List<String>? = null,
+    var language: String? = null,
 ) : Command {
 
     override fun description(): String {

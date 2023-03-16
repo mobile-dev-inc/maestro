@@ -95,12 +95,13 @@ class IOSDriver(
             heightGrid = deviceInfo.heightPoints,
         )
     }
-
+    
     override fun launchApp(
         appId: String,
         launchArguments: List<String>,
+        language: String?
     ) {
-        iosDevice.launch(appId, launchArguments)
+        iosDevice.launch(appId, launchArguments, language)
             .onSuccess { this.appId = appId }
             .getOrThrow {
                 MaestroException.UnableToLaunchApp("Unable to launch app $appId ${it.message}")

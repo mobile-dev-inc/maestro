@@ -99,12 +99,14 @@ class SimctlIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
+        language: String?
     ): Result<Unit, Throwable> {
         return runCatching {
             LocalSimulatorUtils.launch(
                 deviceId = deviceId,
                 bundleId = id,
                 launchArguments = launchArguments,
+                language = language,
             )
         }
     }

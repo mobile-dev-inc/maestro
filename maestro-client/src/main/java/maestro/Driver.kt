@@ -35,8 +35,9 @@ interface Driver {
     fun launchApp(
         appId: String,
         launchArguments: List<String>,
+        language: String?
     )
-
+    
     fun stopApp(appId: String)
 
     fun clearAppState(appId: String)

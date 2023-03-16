@@ -91,6 +91,7 @@ class FakeDriver : Driver {
     override fun launchApp(
         appId: String,
         launchArguments: List<String>,
+        language: String?
     ) {
         ensureOpen()
 
@@ -101,6 +102,7 @@ class FakeDriver : Driver {
         events.add(Event.LaunchApp(
             appId = appId,
             launchArguments = launchArguments,
+            language = language
         ))
     }
 
@@ -417,7 +419,8 @@ class FakeDriver : Driver {
 
         data class LaunchApp(
             val appId: String,
-            val launchArguments: List<String> = emptyList()
+            val launchArguments: List<String> = emptyList(),
+            val language: String?,
         ) : Event(), UserInteraction
 
         data class StopApp(

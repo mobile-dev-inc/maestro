@@ -170,6 +170,7 @@ class AndroidDriver(
     override fun launchApp(
         appId: String,
         launchArguments: List<String>,
+        language: String?
     ) {
         if (!isPackageInstalled(appId)) {
             throw IllegalArgumentException("Package $appId is not installed")

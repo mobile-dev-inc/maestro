@@ -146,6 +146,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
     override fun launchApp(
         appId: String,
         launchArguments: List<String>,
+        language: String?
     ) {
         open()
         val driver = ensureOpen()

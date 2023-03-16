@@ -28,6 +28,7 @@ data class YamlLaunchApp(
     val stopApp: Boolean?,
     val permissions: Map<String, String>?,
     val arguments: List<String>?,
+    val language: String? = null,
 ) {
 
     companion object {
@@ -42,6 +43,7 @@ data class YamlLaunchApp(
                 stopApp = null,
                 permissions = null,
                 arguments = null,
+                language = null,
             )
         }
     }
