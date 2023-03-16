@@ -2591,6 +2591,22 @@ class IntegrationTest {
     fun `095 - Launch arguments`() {
         // Given
         val commands = readCommands("095_launch_arguments")
+        
+        driver.assertHasEvent(Event.LaunchApp(
+            appId = "com.example.app",
+            launchArguments = listOf(
+                "argumentA",
+                "argumentB",
+                "argumentC",
+            )
+        ))
+    }
+    
+    @Test
+    fun `Case 096 - Launch app with language set`() {
+        // Given
+        val commands = readCommands("091_launch_app_with_language")
+
         val driver = driver {
         }
         driver.addInstalledApp("com.example.app")
@@ -2601,14 +2617,13 @@ class IntegrationTest {
         }
 
         // Then
-        driver.assertHasEvent(Event.LaunchApp(
-            appId = "com.example.app",
-            launchArguments = listOf(
-                "argumentA",
-                "argumentB",
-                "argumentC",
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.StopApp("com.example.app"),
+                Event.LaunchApp("com.example.app", "de")
             )
-        ))
+        )
     }
 
     private fun orchestra(
