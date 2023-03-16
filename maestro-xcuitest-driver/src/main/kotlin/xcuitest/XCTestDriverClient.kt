@@ -108,12 +108,12 @@ class XCTestDriverClient(
     fun tap(
         x: Float,
         y: Float,
-        durationInMs: Int? = null
+        duration: Double? = null
     ): Response {
         return executeJsonRequest("touch", TouchRequest(
             x = x,
             y = y,
-            durationInMs = durationInMs
+            duration = duration
         ))
     }
 

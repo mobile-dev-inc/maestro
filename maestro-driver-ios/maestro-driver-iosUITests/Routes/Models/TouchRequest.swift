@@ -1,5 +1,7 @@
+import Foundation
+
 struct TouchRequest : Codable {
     let x: Float
     let y: Float
-    let durationInMs: Int?
+    let duration: TimeInterval?
 }

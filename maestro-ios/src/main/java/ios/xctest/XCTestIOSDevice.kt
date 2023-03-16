@@ -86,12 +86,12 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
+    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
         return runCatching {
             client.tap(
                 x = x.toFloat(),
                 y = y.toFloat(),
-                durationInMs = 1000
+                duration = durationMs.toDouble() / 1000
             ).use {}
         }
     }

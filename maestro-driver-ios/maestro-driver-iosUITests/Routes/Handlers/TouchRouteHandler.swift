@@ -15,9 +15,8 @@ final class TouchRouteHandler: HTTPHandler {
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
         
-        let duration = handleDuration(duration: requestBody.durationInMs)
-        if duration != nil {
-            logger.info("Tapping \(requestBody.x), \(requestBody.y) for \(duration!)s")
+        if requestBody.duration != nil {
+            logger.info("Long pressing \(requestBody.x), \(requestBody.y) for \(requestBody.duration!)s")
         } else {
             logger.info("Tapping \(requestBody.x), \(requestBody.y)")
         }
@@ -25,7 +24,7 @@ final class TouchRouteHandler: HTTPHandler {
         var eventRecord = EventRecord(orientation: .portrait)
         eventRecord.addPointerTouchEvent(
             at: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y)),
-            touchUpAfter: duration
+            touchUpAfter: requestBody.duration
         )
 
         do {
@@ -38,13 +37,6 @@ final class TouchRouteHandler: HTTPHandler {
             logger.error("Error tapping: \(error)")
             return HTTPResponse(statusCode: .internalServerError)
         }
-    }
-    
-    private func handleDuration(duration: Int?) -> TimeInterval? {
-        guard let duration else {
-            return nil
-        }
-        return TimeInterval(Double(duration) / 1000)
     }
     
     private func handleError(message: String) -> Data {

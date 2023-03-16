@@ -22,7 +22,7 @@ struct EventRecord {
 
     mutating func addPointerTouchEvent(at point: CGPoint, touchUpAfter: TimeInterval?) {
         var path = PointerEventPath.pathForTouch(at: point)
-        path.offset +=  touchUpAfter ?? EventRecord.defaultTapDuration
+        path.offset += touchUpAfter ?? EventRecord.defaultTapDuration
         path.liftUp()
         add(path)
     }
