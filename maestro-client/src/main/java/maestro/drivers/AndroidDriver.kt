@@ -348,8 +348,8 @@ class AndroidDriver(
     }
 
     override fun hideKeyboard() {
-        dadb.shell("input keyevent 66")
-        dadb.shell("input keyevent 111")
+        dadb.shell("input keyevent 4") // 'Back', which dismisses the keyboard before handing over to navigation
+        dadb.shell("input keyevent 111") // 'Escape'
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
