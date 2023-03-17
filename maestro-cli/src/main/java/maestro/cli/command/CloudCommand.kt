@@ -23,6 +23,7 @@ import maestro.cli.DisableAnsiMixin
 import maestro.cli.api.ApiClient
 import maestro.cli.cloud.CloudInteractor
 import maestro.cli.report.ReportFormat
+import maestro.orchestra.util.Env.withInjectedShellEnvVars
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
@@ -108,6 +109,12 @@ class CloudCommand : Callable<Int> {
     private var format: ReportFormat = ReportFormat.NOOP
 
     @Option(
+        names = ["--test-suite-name"],
+        description = ["Test suite name"],
+    )
+    private var testSuiteName: String? = null
+
+    @Option(
         order = 15,
         names = ["--output"],
         description = ["File to write report into (default=report.xml)"],
@@ -125,7 +132,7 @@ class CloudCommand : Callable<Int> {
             flowFile = flowFile,
             appFile = appFile,
             mapping = mapping,
-            env = env,
+            env = env.withInjectedShellEnvVars(),
             uploadName = uploadName,
             repoOwner = repoOwner,
             repoName = repoName,
@@ -139,6 +146,7 @@ class CloudCommand : Callable<Int> {
             reportFormat = format,
             reportOutput = output,
             failOnCancellation = failOnCancellation,
+            testSuiteName = testSuiteName
         )
     }
 

@@ -30,6 +30,7 @@ import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.runner.resultview.PlainTextResultView
 import maestro.cli.session.MaestroSessionManager
 import maestro.cli.util.PrintUtils
+import maestro.orchestra.util.Env.withInjectedShellEnvVars
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.buffer
 import okio.sink
@@ -66,6 +67,12 @@ class TestCommand : Callable<Int> {
         description = ["Test report format (default=\${DEFAULT-VALUE}): \${COMPLETION-CANDIDATES}"],
     )
     private var format: ReportFormat = ReportFormat.NOOP
+
+    @Option(
+        names = ["--test-suite-name"],
+        description = ["Test suite name"],
+    )
+    private var testSuiteName: String? = null
 
     @Option(names = ["--output"])
     private var output: File? = null
@@ -111,6 +118,8 @@ class TestCommand : Callable<Int> {
         val deviceId =
             if (isWebFlow()) "chromium".also { PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n") }
             else parent?.deviceId
+
+        env = env.withInjectedShellEnvVars()
         
         return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->
             val maestro = session.maestro
@@ -127,7 +136,7 @@ class TestCommand : Callable<Int> {
                 val suiteResult = TestSuiteInteractor(
                     maestro = maestro,
                     device = device,
-                    reporter = ReporterFactory.buildReporter(format),
+                    reporter = ReporterFactory.buildReporter(format, testSuiteName),
                     includeTags = includeTags,
                     excludeTags = excludeTags,
                 ).runTestSuite(

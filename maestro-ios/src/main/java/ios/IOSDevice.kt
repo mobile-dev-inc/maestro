@@ -38,18 +38,18 @@ interface IOSDevice : AutoCloseable {
 
     fun tap(x: Int, y: Int): Result<Unit, Throwable>
 
-    fun longPress(x: Int, y: Int): Result<Unit, Throwable>
+    fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable>
 
     fun pressKey(code: Int): Result<Unit, Throwable>
 
     fun pressButton(code: Int): Result<Unit, Throwable>
 
     fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?,
+        xStart: Double,
+        yStart: Double,
+        xEnd: Double,
+        yEnd: Double,
+        duration: Double,
     ): Result<Unit, Throwable>
 
     /**
@@ -156,6 +156,8 @@ interface IOSDevice : AutoCloseable {
      * @return false if 2 consequent screenshots are equal, true if screen is static
      */
     fun isScreenStatic(): Result<Boolean, Throwable>
+
+    fun setPermissions(id: String, permissions: Map<String, String>)
 }
 
 interface IOSScreenRecording : AutoCloseable

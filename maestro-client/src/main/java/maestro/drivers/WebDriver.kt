@@ -1,6 +1,7 @@
 package maestro.drivers
 
 import io.github.bonigarcia.wdm.WebDriverManager
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -10,6 +11,8 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.ViewHierarchy
+import maestro.utils.ScreenshotUtils
 import okio.Sink
 import okio.buffer
 import org.apache.commons.io.output.NullOutputStream
@@ -66,6 +69,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
             driverService,
             ChromeOptions().apply {
                 logLevel = ChromeDriverLogLevel.OFF
+                addArguments("--remote-allow-origins=*")
                 if (isStudio) {
                     setHeadless(true)
                     addArguments("--window-size=1024,768")
@@ -298,7 +302,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         }
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         val driver = ensureOpen()
 
         driver.get(link)
@@ -354,7 +358,25 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return true
     }
 
-    override fun isScreenStatic(): Boolean {
-        TODO("Not yet implemented")
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    }
+
+    override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
+    }
+
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        // no-op for web
+    }
+
+    companion object {
+        private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
     }
 }

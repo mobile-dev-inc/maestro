@@ -28,18 +28,22 @@ import hierarchy.IdbElementNode
 import hierarchy.XCUIElement
 import hierarchy.XCUIElementNode
 import ios.IOSDevice
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Platform
 import maestro.Point
-import maestro.PointF
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.ViewHierarchy
 import maestro.utils.FileUtils
+import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
 import okio.Sink
+import org.slf4j.LoggerFactory
 import util.XCRunnerSimctl
 import java.io.File
 import java.nio.file.Files
@@ -137,7 +141,7 @@ class IOSDriver(
     }
 
     override fun longPress(point: Point) {
-        iosDevice.longPress(point.x, point.y).expect {}
+        iosDevice.longPress(point.x, point.y, 3000).expect {}
     }
 
     override fun pressKey(code: KeyCode) {
@@ -239,6 +243,9 @@ class IOSDriver(
         attributes["focused"] = xcUiElement.hasFocus.toString()
         attributes["selected"] = xcUiElement.selected.toString()
 
+        val checked = xcUiElement.elementType in CHECKABLE_ELEMENTS && xcUiElement.value == "1"
+        attributes["checked"] = checked.toString()
+
         val children = mutableListOf<TreeNode>()
         val childNodes = xcUiElement.children
         if (childNodes != null) {
@@ -252,18 +259,17 @@ class IOSDriver(
             children = children,
             enabled = xcUiElement.enabled,
             focused = xcUiElement.hasFocus,
-            selected = xcUiElement.selected
+            selected = xcUiElement.selected,
+            checked = checked,
         )
     }
 
     override fun scrollVertical() {
-        iosDevice.scroll(
-            xStart = 0.5f,
-            yStart = 0.5f,
-            xEnd = 0.5f,
-            yEnd = 0.1f,
-            velocity = null
-        ).expect {}
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.1)),
+            durationMs = 333,
+        )
     }
 
     private fun validate(start: Point, end: Point) {
@@ -292,126 +298,84 @@ class IOSDriver(
     ) {
         validate(start, end)
 
-        val width = widthPoints
-        val height = heightPoints
-
-        val normalisedStart = start.normalise(
-            width,
-            height,
-        )
-        val normalisedEnd = end.normalise(
-            width,
-            height,
-        )
-
+        waitForAppToSettle(null)
         iosDevice.scroll(
-            xStart = normalisedStart.x,
-            yStart = normalisedStart.y,
-            xEnd = normalisedEnd.x,
-            yEnd = normalisedEnd.y,
-            velocity = if (durationMs > 0) {
-                start.distance(end) / toSeconds(durationMs)
-            } else {
-                Float.MAX_VALUE
-            }
+            xStart = start.x.toDouble(),
+            yStart = start.y.toDouble(),
+            xEnd = end.x.toDouble(),
+            yEnd = end.y.toDouble(),
+            duration = durationMs.toDouble() / 1000
         ).expect {}
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
-        val startPoint: PointF
-        val endPoint: PointF
+        val startPoint: Point
+        val endPoint: Point
 
         when (swipeDirection) {
             SwipeDirection.UP -> {
-                startPoint = PointF(
-                    x = 0.5f,
-                    y = 0.9f,
+                startPoint = Point(
+                    x = widthPercentToPoint(0.5),
+                    y = heightPercentToPoint(0.9),
                 )
-                endPoint = PointF(
-                    x = 0.5F,
-                    y = 0.1f,
+                endPoint = Point(
+                    x = widthPercentToPoint(0.5),
+                    y = heightPercentToPoint(0.1),
                 )
             }
             SwipeDirection.DOWN -> {
-                startPoint = PointF(
-                    x = 0.5f,
-                    y = 0.2f,
+                startPoint = Point(
+                    x = widthPercentToPoint(0.5),
+                    y = heightPercentToPoint(0.2),
                 )
-                endPoint = PointF(
-                    x = 0.5F,
-                    y = 0.9f,
+                endPoint = Point(
+                    x = widthPercentToPoint(0.5),
+                    y = heightPercentToPoint(0.9),
                 )
             }
             SwipeDirection.RIGHT -> {
-                startPoint = PointF(
-                    x = 0.1f,
-                    y = 0.5f,
+                startPoint = Point(
+                    x = widthPercentToPoint(0.1),
+                    y = heightPercentToPoint(0.5),
                 )
-                endPoint = PointF(
-                    x = 0.9F,
-                    y = 0.5f,
+                endPoint = Point(
+                    x = widthPercentToPoint(0.9),
+                    y = heightPercentToPoint(0.5),
                 )
             }
             SwipeDirection.LEFT -> {
-                startPoint = PointF(
-                    x = 0.9f,
-                    y = 0.5f,
+                startPoint = Point(
+                    x = widthPercentToPoint(0.9),
+                    y = heightPercentToPoint(0.5),
                 )
-                endPoint = PointF(
-                    x = 0.1F,
-                    y = 0.5f,
+                endPoint = Point(
+                    x = widthPercentToPoint(0.1),
+                    y = heightPercentToPoint(0.5),
                 )
             }
         }
-        directionalSwipe(durationMs, startPoint, endPoint)
+        swipe(startPoint, endPoint, durationMs)
     }
 
     override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
-        val width = widthPoints
-        val height = heightPoints
-
         when (direction) {
             SwipeDirection.UP -> {
-                val start = elementPoint.normalise(width, height)
-                val end = PointF(x = start.x, y = 0.1f)
-                directionalSwipe(durationMs, start, end)
+                val end = Point(x = elementPoint.x, y = heightPercentToPoint(0.1))
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.DOWN -> {
-                val start = elementPoint.normalise(width, height)
-                val end = PointF(x = start.x, y = 0.9f)
-                directionalSwipe(durationMs, start, end)
+                val end = Point(x = elementPoint.x, y = heightPercentToPoint(0.9))
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.RIGHT -> {
-                val start = elementPoint.normalise(width, height)
-                val end = PointF(x = 0.9f, y = start.y)
-                directionalSwipe(durationMs, start, end)
+                val end = Point(x = widthPercentToPoint(0.9), y = elementPoint.y)
+                swipe(elementPoint, end, durationMs)
             }
             SwipeDirection.LEFT -> {
-                val start = elementPoint.normalise(width, height)
-                val end = PointF(x = 0.1f, y = start.y)
-                directionalSwipe(durationMs, start, end)
+                val end = Point(x = widthPercentToPoint(0.1), y = elementPoint.y)
+                swipe(elementPoint, end, durationMs)
             }
         }
-    }
-
-    private fun directionalSwipe(durationMs: Long, start: PointF, end: PointF) {
-        val width = widthPoints
-        val height = heightPoints
-
-        val denormalizedDistance = PointF(start.x * width, start.y * height)
-            .distance(PointF(end.x * width, end.y * height))
-
-        iosDevice.scroll(
-            xStart = start.x,
-            yStart = start.y,
-            xEnd = end.x,
-            yEnd = end.y,
-            velocity = if (durationMs > 0) {
-                denormalizedDistance / toSeconds(durationMs)
-            } else {
-                Float.MAX_VALUE
-            }
-        ).expect {}
     }
 
     override fun backPress() {}
@@ -438,7 +402,7 @@ class IOSDriver(
         )
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         iosDevice.openLink(link).expect {}
     }
 
@@ -465,15 +429,57 @@ class IOSDriver(
         return iosDevice.isShutdown()
     }
 
-    override fun isScreenStatic(): Boolean {
+    override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return MaestroTimer.retryUntilTrue(timeoutMs) {
+            val isScreenStatic = isScreenStatic()
+
+            LOGGER.info("screen static = $isScreenStatic")
+            return@retryUntilTrue isScreenStatic
+        }
+    }
+
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+        LOGGER.info("Waiting for animation to end with timeout $SCREEN_SETTLE_TIMEOUT_MS")
+        val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
+
+        return if (didFinishOnTime) null else ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return emptyList()
+    }
+
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        iosDevice.setPermissions(appId, permissions)
+    }
+
+    private fun isScreenStatic(): Boolean {
         return iosDevice.isScreenStatic().expect {}
     }
 
-    private fun toSeconds(ms: Long): Float {
-        return ms / 1000f
+    private fun heightPercentToPoint(percent: Double): Int {
+        return (percent * heightPoints).toInt()
+    }
+
+    private fun widthPercentToPoint(percent: Double): Int {
+        return (percent * widthPoints).toInt()
     }
 
     companion object {
         const val NAME = "iOS Simulator"
+
+        private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
+
+        private const val ELEMENT_TYPE_CHECKBOX = 12
+        private const val ELEMENT_TYPE_SWITCH = 40
+        private const val ELEMENT_TYPE_TOGGLE = 41
+
+        private val CHECKABLE_ELEMENTS = setOf(
+            ELEMENT_TYPE_CHECKBOX,
+            ELEMENT_TYPE_SWITCH,
+            ELEMENT_TYPE_TOGGLE,
+        )
+
+        private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 3000
     }
 }

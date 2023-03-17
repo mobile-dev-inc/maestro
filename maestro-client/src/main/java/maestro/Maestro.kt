@@ -22,32 +22,21 @@ package maestro
 import com.github.romankh3.image.comparison.ImageComparison
 import dadb.Dadb
 import maestro.Filters.asFilter
-import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
-import maestro.drivers.IOSDriver
 import maestro.drivers.WebDriver
-import maestro.drivers.screenshot.GenericScreenshotDriver
-import maestro.drivers.screenshot.IOSScreenshotDriver
-import maestro.drivers.screenshot.ScreenshotDriver
-import maestro.drivers.screenshot.genericWaitUntilScreenIsStatic
-import maestro.drivers.screenshot.takeScreenshot
-import maestro.drivers.screenshot.tryTakingScreenshot
 import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
-import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.sink
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
-import javax.imageio.ImageIO
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class Maestro(private val driver: Driver,
-              private val screenshotDriver: ScreenshotDriver
-) : AutoCloseable {
+class Maestro(private val driver: Driver) : AutoCloseable {
 
     private val cachedDeviceInfo by lazy {
         fetchDeviceInfo()
@@ -86,6 +75,10 @@ class Maestro(private val driver: Driver,
         LOGGER.info("Clearing app state $appId")
 
         driver.clearAppState(appId)
+    }
+
+    fun setPermissions(appId: String, permissions: Map<String, String>) {
+        driver.setPermissions(appId, permissions)
     }
 
     fun clearKeychain() {
@@ -181,7 +174,7 @@ class Maestro(private val driver: Driver,
     ) {
         LOGGER.info("Tapping on element: $element")
 
-        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy)
+        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy) ?: initialHierarchy
 
         val center = (
             hierarchyBeforeTap
@@ -192,11 +185,11 @@ class Maestro(private val driver: Driver,
             ).bounds
             .center()
         performTap(
-            x = center.x,
-            y = center.y,
-            retryIfNoChange = retryIfNoChange,
-            longPress = longPress,
-            initialHierarchy = hierarchyBeforeTap,
+            center.x,
+            center.y,
+            retryIfNoChange,
+            longPress,
+            hierarchyBeforeTap,
         )
 
         if (waitUntilVisible) {
@@ -242,25 +235,60 @@ class Maestro(private val driver: Driver,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
     ) {
-        performTap(
-            x = x,
-            y = y,
-            retryIfNoChange = retryIfNoChange,
-            longPress = longPress,
-        )
+        performTap(x, y, retryIfNoChange, longPress)
     }
 
-    private fun performTap(
-        x: Int,
-        y: Int,
-        retryIfNoChange: Boolean = true,
-        longPress: Boolean = false,
-        initialHierarchy: ViewHierarchy? = null,
-    ) {
-        LOGGER.info("Tapping at ($x, $y)")
+    private fun getNumberOfRetries(retryIfNoChange: Boolean): Int {
+        return if (retryIfNoChange) 2 else 1
+    }
+
+    private fun performTap(x: Int,
+                           y: Int,
+                           retryIfNoChange: Boolean = true,
+                           longPress: Boolean = false,
+                           initialHierarchy: ViewHierarchy? = null) {
+        val capabilities = driver.capabilities()
+
+        if (Capability.FAST_HIERARCHY in capabilities) {
+            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+        } else {
+            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+        }
+    }
+
+    private fun screenshotBasedTap(x: Int,
+                                  y: Int,
+                                  retryIfNoChange: Boolean = true,
+                                  longPress: Boolean = false,
+                                  initialHierarchy: ViewHierarchy? = null) {
+        LOGGER.info("Tapping at ($x, $y) using screenshot based logic for wait")
 
         val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
-        val screenshotBeforeTap: BufferedImage? = screenshotDriver.tryTakingScreenshot()
+
+        val retries = getNumberOfRetries(retryIfNoChange)
+        repeat(retries) {
+            if (longPress) {
+                driver.longPress(Point(x, y))
+            } else {
+                driver.tap(Point(x, y))
+            }
+            val hierarchyAfterTap = waitForAppToSettle()
+
+            if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
+                LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
+                return
+            }
+        }
+    }
+    private fun hierarchyBasedTap(x: Int,
+                                  y: Int,
+                                  retryIfNoChange: Boolean = true,
+                                  longPress: Boolean = false,
+                                  initialHierarchy: ViewHierarchy? = null) {
+        LOGGER.info("Tapping at ($x, $y) using hierarchy based logic for wait")
+
+        val hierarchyBeforeTap = initialHierarchy ?: viewHierarchy()
+        val screenshotBeforeTap: BufferedImage? = ScreenshotUtils.tryTakingScreenshot(driver)
 
         val retries = getNumberOfRetries(retryIfNoChange)
         repeat(retries) {
@@ -276,7 +304,7 @@ class Maestro(private val driver: Driver,
                 return
             }
 
-            val screenshotAfterTap: BufferedImage? = screenshotDriver.tryTakingScreenshot()
+            val screenshotAfterTap: BufferedImage? = ScreenshotUtils.tryTakingScreenshot(driver)
             if (screenshotBeforeTap != null &&
                 screenshotAfterTap != null &&
                 screenshotBeforeTap.width == screenshotAfterTap.width &&
@@ -315,10 +343,6 @@ class Maestro(private val driver: Driver,
         }
 
         return hierarchy
-    }
-
-    private fun getNumberOfRetries(retryIfNoChange: Boolean): Int {
-        return if (retryIfNoChange) 2 else 1
     }
 
     fun pressKey(code: KeyCode, waitForAppToSettle: Boolean = true) {
@@ -392,17 +416,21 @@ class Maestro(private val driver: Driver,
         return filter(viewHierarchy().aggregate())
     }
 
-    fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null): ViewHierarchy {
-        return screenshotDriver.waitForAppToSettle(initialHierarchy)
+    fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null): ViewHierarchy? {
+        return driver.waitForAppToSettle(initialHierarchy)
     }
 
     fun inputText(text: String) {
+        LOGGER.info("Inputting text: $text")
+
         driver.inputText(text)
         waitForAppToSettle()
     }
 
-    fun openLink(link: String) {
-        driver.openLink(link)
+    fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
+        LOGGER.info("Opening link $link for app: $appId with autoVerify config as $autoVerify")
+
+        driver.openLink(link, appId, autoVerify, browser)
         waitForAppToSettle()
     }
 
@@ -420,7 +448,7 @@ class Maestro(private val driver: Driver,
                 .sink()
                 .buffer()
                 .use {
-                    screenshotDriver.takeScreenshot(it, false)
+                    ScreenshotUtils.takeScreenshot(it, false, driver)
                 }
         } else {
             throw MaestroException.DestinationIsNotWritable(
@@ -463,7 +491,7 @@ class Maestro(private val driver: Driver,
         val timeout = timeout ?: ANIMATION_TIMEOUT_MS
         LOGGER.info("Waiting for animation to end with timeout $timeout")
 
-        screenshotDriver.genericWaitUntilScreenIsStatic(timeout, SCREENSHOT_DIFF_THRESHOLD)
+        ScreenshotUtils.waitUntilScreenIsStatic(timeout, SCREENSHOT_DIFF_THRESHOLD, driver)
     }
 
     fun setProxy(
@@ -502,7 +530,7 @@ class Maestro(private val driver: Driver,
             if (openDriver) {
                 driver.open()
             }
-            return Maestro(driver, IOSScreenshotDriver(driver))
+            return Maestro(driver)
         }
 
         fun android(
@@ -514,13 +542,13 @@ class Maestro(private val driver: Driver,
             if (openDriver) {
                 driver.open()
             }
-            return Maestro(driver, GenericScreenshotDriver(driver))
+            return Maestro(driver)
         }
 
         fun web(isStudio: Boolean): Maestro {
             val driver = WebDriver(isStudio)
             driver.open()
-            return Maestro(driver, GenericScreenshotDriver(driver))
+            return Maestro(driver)
         }
     }
 }

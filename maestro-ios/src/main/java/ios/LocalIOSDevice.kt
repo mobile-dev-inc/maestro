@@ -2,10 +2,8 @@ package ios
 
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.map
 import com.github.michaelbull.result.recoverIf
 import hierarchy.XCUIElement
-import idb.Idb
 import ios.device.DeviceInfo
 import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
@@ -42,15 +40,19 @@ class LocalIOSDevice(
     }
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
-        return idbIOSDevice.tap(x, y)
+        return xcTestDevice.tap(x, y)
     }
 
-    override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
-        return idbIOSDevice.longPress(x, y)
+    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
+        return xcTestDevice.longPress(x, y, durationMs)
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
-        return idbIOSDevice.pressKey(code)
+        return if (code == 40) {
+            xcTestDevice.pressKey(code)
+        } else {
+            idbIOSDevice.pressKey(code)
+        }
     }
 
     override fun pressButton(code: Int): Result<Unit, Throwable> {
@@ -58,13 +60,13 @@ class LocalIOSDevice(
     }
 
     override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?
+        xStart: Double,
+        yStart: Double,
+        xEnd: Double,
+        yEnd: Double,
+        duration: Double
     ): Result<Unit, Throwable> {
-        return xcTestDevice.scroll(xStart, yStart, xEnd, yEnd, velocity)
+        return xcTestDevice.scroll(xStart, yStart, xEnd, yEnd, duration)
     }
 
     override fun input(text: String): Result<Unit, Throwable> {
@@ -76,7 +78,7 @@ class LocalIOSDevice(
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
-        return idbIOSDevice.uninstall(id)
+        return simctlIOSDevice.uninstall(id)
     }
 
     override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
@@ -92,7 +94,7 @@ class LocalIOSDevice(
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
-        return idbIOSDevice.clearKeychain()
+        return simctlIOSDevice.clearKeychain()
     }
 
     override fun launch(id: String): Result<Unit, Throwable> {
@@ -130,5 +132,9 @@ class LocalIOSDevice(
 
     override fun isScreenStatic(): Result<Boolean, Throwable> {
         return xcTestDevice.isScreenStatic()
+    }
+
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        simctlIOSDevice.setPermissions(id, permissions)
     }
 }

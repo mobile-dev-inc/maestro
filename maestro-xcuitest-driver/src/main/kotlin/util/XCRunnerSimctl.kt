@@ -3,8 +3,6 @@ package util
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.utils.MaestroTimer
 import net.harawata.appdirs.AppDirsFactory
-import okio.buffer
-import okio.source
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -70,7 +68,15 @@ object XCRunnerSimctl {
     }
 
     fun uninstall(bundleId: String) {
-        CommandLineUtils.runCommand("xcrun simctl uninstall booted $bundleId")
+        CommandLineUtils.runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "uninstall",
+                "booted",
+                bundleId
+            )
+        )
     }
 
     fun ensureAppAlive(bundleId: String) {
@@ -79,23 +85,50 @@ object XCRunnerSimctl {
         }
     }
 
-    fun isAppAlive(bundleId: String): Boolean {
+    private fun runningApps(): Map<String, Int?> {
         val process = ProcessBuilder(
-            "bash",
-            "-c",
-            "xcrun simctl spawn booted launchctl list | grep $bundleId | awk '/$bundleId/ {print \$3}'"
+            "xcrun",
+            "simctl",
+            "spawn",
+            "booted",
+            "launchctl",
+            "list"
         ).start()
 
-        val processOutput = process.inputStream.source().buffer().readUtf8().trim()
+        val processOutput = process.inputStream
+            .bufferedReader()
+            .readLines()
+
         process.waitFor(3000, TimeUnit.MILLISECONDS)
 
-        return processOutput.contains(bundleId)
+        return processOutput
+            .asSequence()
+            .drop(1)
+            .toList()
+            .map { line -> line.split("\\s+".toRegex()) }
+            .filter { parts -> parts.count() < 3 }
+            .associate { parts -> parts[2] to parts[0].toIntOrNull() }
+    }
+
+    fun isAppAlive(bundleId: String): Boolean {
+        return runningApps().containsKey(bundleId)
+    }
+
+    fun pidForApp(bundleId: String): Int? {
+        return runningApps()[bundleId]
     }
 
     fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String): Process {
         val date = dateFormatter.format(LocalDateTime.now())
         return CommandLineUtils.runCommand(
-            "xcodebuild test-without-building -xctestrun $xcTestRunFilePath -destination id=$deviceId",
+            listOf(
+                "xcodebuild",
+                "test-without-building",
+                "-xctestrun",
+                xcTestRunFilePath,
+                "-destination",
+                "id=$deviceId",
+            ),
             waitForCompletion = false,
             outputFile = File(logDirectory, "xctest_runner_$date.log")
         )

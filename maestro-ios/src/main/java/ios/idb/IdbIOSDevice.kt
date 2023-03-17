@@ -23,7 +23,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.runCatching
 import com.google.protobuf.ByteString
@@ -67,17 +66,27 @@ import okio.source
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.zip.GZIPInputStream
 
 class IdbIOSDevice(
-    private val channel: ManagedChannel,
     override val deviceId: String?,
-) : IOSDevice {
+    private val idbRunner: IdbRunner,
+) : IOSDevice, AutoCloseable {
 
-    private val blockingStub = CompanionServiceGrpc.newBlockingStub(channel)
-    private val asyncStub = CompanionServiceGrpc.newStub(channel)
+    private var channel: ManagedChannel? = null
+    private lateinit var blockingStub: CompanionServiceGrpc.CompanionServiceBlockingStub
+    private lateinit var asyncStub: CompanionServiceGrpc.CompanionServiceStub
+
+    init {
+        restartCompanion()
+    }
+
+    private fun restartCompanion() {
+        channel?.let { idbRunner.stop(it) }
+        channel = idbRunner.start()
+        blockingStub = CompanionServiceGrpc.newBlockingStub(channel)
+        asyncStub = CompanionServiceGrpc.newStub(channel)
+    }
 
     override fun open() {
         ensureGrpcChannel()
@@ -89,7 +98,7 @@ class IdbIOSDevice(
     }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val response = blockingStub.describe(targetDescriptionRequest {})
             val screenDimensions = response.targetDescription.screenDimensions
 
@@ -103,7 +112,7 @@ class IdbIOSDevice(
     }
 
     override fun contentDescriptor(): Result<XCUIElement, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val accessibilityResponse = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
             val accessibilityNode: XCUIElement = mapper.readValue(accessibilityResponse.json)
             accessibilityNode
@@ -114,12 +123,12 @@ class IdbIOSDevice(
         return press(x, y, holdDelay = 50)
     }
 
-    override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
-        return press(x, y, holdDelay = 3000)
+    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
+        return press(x, y, holdDelay = durationMs)
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
 
@@ -133,7 +142,7 @@ class IdbIOSDevice(
     }
 
     override fun pressButton(code: Int): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
 
@@ -149,12 +158,16 @@ class IdbIOSDevice(
         }
     }
 
+    override fun scroll(xStart: Double, yStart: Double, xEnd: Double, yEnd: Double, duration: Double): Result<Unit, Throwable> {
+        TODO("Not yet implemented")
+    }
+
     private fun press(
         x: Int,
         y: Int,
         holdDelay: Long
     ): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
 
@@ -190,20 +203,10 @@ class IdbIOSDevice(
         }
     }
 
-    override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?,
-    ): Result<Unit, Throwable> {
-        error("Not supported")
-    }
-
     override fun input(
         text: String,
     ): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.HIDResponse>()
             val stream = asyncStub.hid(responseObserver)
 
@@ -217,7 +220,7 @@ class IdbIOSDevice(
     }
 
     override fun install(stream: InputStream): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.InstallResponse>()
             val requestStream = asyncStub.install(responseObserver)
 
@@ -250,7 +253,7 @@ class IdbIOSDevice(
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             try {
                 blockingStub.uninstall(
                     uninstallRequest {
@@ -266,7 +269,7 @@ class IdbIOSDevice(
     }
 
     override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val observer = BlockingStreamObserver<Idb.PullResponse>()
             asyncStub.pull(pullRequest {
                 container = fileContainer {
@@ -281,7 +284,7 @@ class IdbIOSDevice(
     }
 
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val observer = BlockingStreamObserver<Idb.PushResponse>()
             val stream = asyncStub.push(observer)
 
@@ -327,7 +330,7 @@ class IdbIOSDevice(
         Thread.sleep(1500)
 
         // deletes app data, including container folder
-        val result = runCatching {
+        val result = runWithRestartRecovery {
             blockingStub.rm(rmRequest {
                 container = fileContainer {
                     kind = Idb.FileContainer.Kind.APPLICATION
@@ -347,7 +350,7 @@ class IdbIOSDevice(
             "tmp"
         )
 
-        runCatching {
+        runWithRestartRecovery {
             paths.forEach { path ->
                 blockingStub.mkdir(mkdirRequest {
                     container = fileContainer {
@@ -363,13 +366,13 @@ class IdbIOSDevice(
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             blockingStub.clearKeychain(clearKeychainRequest { })
         }
     }
 
     override fun launch(id: String): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.LaunchResponse>()
             val stream = asyncStub.launch(responseObserver)
             stream.onNext(
@@ -386,7 +389,7 @@ class IdbIOSDevice(
     }
 
     override fun stop(id: String): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.TerminateResponse>()
             asyncStub.terminate(
                 terminateRequest {
@@ -400,7 +403,7 @@ class IdbIOSDevice(
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             blockingStub.openUrl(openUrlRequest {
                 url = link
             })
@@ -416,7 +419,7 @@ class IdbIOSDevice(
         val future = CompletableFuture<Void>()
         val bufferedOut = out.buffer()
         val compressedData = Buffer()
-        return runCatching {
+        return runWithRestartRecovery {
             val request = asyncStub.record(object : StreamObserver<RecordResponse> {
                 override fun onNext(value: RecordResponse) {
                     if (value.payload.compression == Idb.Payload.Compression.GZIP) {
@@ -470,7 +473,7 @@ class IdbIOSDevice(
     }
 
     override fun setLocation(latitude: Double, longitude: Double): Result<Unit, Throwable> {
-        return runCatching {
+        return runWithRestartRecovery {
             blockingStub.setLocation(setLocationRequest {
                 location = location { this.latitude = latitude; this.longitude = longitude }
             })
@@ -478,19 +481,30 @@ class IdbIOSDevice(
     }
 
     override fun isShutdown(): Boolean {
-        return channel.isShutdown
+        return channel?.isShutdown ?: true
     }
 
     override fun close() {
-        channel.shutdownNow()
-
-        if (!channel.awaitTermination(10, TimeUnit.SECONDS)) {
-            throw TimeoutException("Couldn't close Maestro iOS driver due to gRPC timeout")
-        }
+        channel?.let { idbRunner.stop(it) }
     }
 
     override fun isScreenStatic(): Result<Boolean, Throwable> {
         TODO("Not yet implemented")
+    }
+
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        TODO("Not yet implemented")
+    }
+
+    private infix fun <T, V> T.runWithRestartRecovery(block: T.() -> V): Result<V, Throwable> {
+        return runCatching {
+            try {
+                block()
+            } catch (e: StatusRuntimeException) {
+                restartCompanion()
+                block()
+            }
+        }
     }
 
     companion object {

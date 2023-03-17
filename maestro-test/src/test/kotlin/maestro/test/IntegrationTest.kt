@@ -6,7 +6,6 @@ import maestro.Maestro
 import maestro.MaestroException
 import maestro.Point
 import maestro.SwipeDirection
-import maestro.drivers.screenshot.GenericScreenshotDriver
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
@@ -22,7 +21,6 @@ import maestro.test.drivers.FakeLayoutElement
 import maestro.test.drivers.FakeLayoutElement.Bounds
 import maestro.test.drivers.FakeTimer
 import maestro.utils.MaestroTimer
-import maestro_android.deviceInfo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -58,7 +56,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -80,7 +78,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -102,7 +100,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -125,7 +123,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -145,7 +143,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -165,7 +163,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -184,7 +182,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -206,7 +204,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -232,7 +230,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -258,7 +256,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -280,7 +278,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -297,7 +295,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -315,7 +313,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -333,7 +331,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -354,7 +352,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -377,7 +375,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -431,7 +429,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -464,7 +462,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -482,7 +480,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -508,7 +506,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -533,7 +531,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -587,7 +585,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -607,7 +605,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<MaestroException.UnableToLaunchApp> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -636,11 +634,11 @@ class IntegrationTest {
         otherDriver.addInstalledApp("com.example.app")
 
         // When
-        val state = Maestro(driver, GenericScreenshotDriver(driver)).use {
+        val state = Maestro(driver).use {
             orchestra(it).runInitFlow(initFlow)
         }!!
 
-        Maestro(otherDriver, GenericScreenshotDriver(otherDriver)).use {
+        Maestro(otherDriver).use {
             orchestra(it).runFlow(commands, state)
         }
 
@@ -668,7 +666,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -727,7 +725,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -760,7 +758,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -782,7 +780,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -796,7 +794,7 @@ class IntegrationTest {
         val driver = driver {}
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -837,7 +835,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -867,7 +865,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -885,7 +883,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -915,7 +913,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -947,7 +945,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -974,7 +972,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -992,7 +990,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1042,7 +1040,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1059,7 +1057,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1077,7 +1075,7 @@ class IntegrationTest {
 
         // When & Then
         assertThrows<UnicodeNotSupportedError> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -1101,7 +1099,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1123,7 +1121,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1150,7 +1148,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1167,7 +1165,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1193,7 +1191,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1212,7 +1210,7 @@ class IntegrationTest {
 
         // When running flow - throw an exception
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -1227,7 +1225,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1249,7 +1247,7 @@ class IntegrationTest {
         driver.addInstalledApp("another.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1270,7 +1268,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1301,7 +1299,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.other.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1335,7 +1333,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.other.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1372,7 +1370,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1411,7 +1409,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1431,7 +1429,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1454,7 +1452,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1508,7 +1506,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1516,6 +1514,9 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
+                Event.Tap(Point(50, 50)),
+                Event.Tap(Point(50, 50)),
+                Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
@@ -1541,7 +1542,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1566,7 +1567,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1588,7 +1589,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(
                 maestro = it,
                 onCommandFailed = { _, command, _ ->
@@ -1620,7 +1621,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1640,7 +1641,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1657,7 +1658,7 @@ class IntegrationTest {
         val driver = driver { }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1677,7 +1678,7 @@ class IntegrationTest {
         val driver = driver { }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1693,7 +1694,7 @@ class IntegrationTest {
         driver.addInstalledApp("com.example.app")
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1722,7 +1723,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1738,7 +1739,7 @@ class IntegrationTest {
         val driver = driver { }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1761,7 +1762,7 @@ class IntegrationTest {
         val driver = driver { }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1786,7 +1787,7 @@ class IntegrationTest {
         val driver = driver { }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1818,7 +1819,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1840,7 +1841,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1858,7 +1859,7 @@ class IntegrationTest {
 
         // Then
         assertThrows<MaestroException.AssertionFailure> {
-            Maestro(driver, GenericScreenshotDriver(driver)).use {
+            Maestro(driver).use {
                 orchestra(it).runFlow(commands)
             }
         }
@@ -1872,7 +1873,7 @@ class IntegrationTest {
         }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1887,7 +1888,7 @@ class IntegrationTest {
         }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1910,7 +1911,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1935,7 +1936,7 @@ class IntegrationTest {
         val deviceInfo = driver.deviceInfo()
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -1975,7 +1976,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2006,7 +2007,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2028,7 +2029,7 @@ class IntegrationTest {
         }
 
         // when
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2065,7 +2066,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2088,7 +2089,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2111,7 +2112,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2133,7 +2134,7 @@ class IntegrationTest {
         val deviceInfo = driver.deviceInfo()
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2142,7 +2143,7 @@ class IntegrationTest {
         val expectedStart = Point(deviceInfo.widthGrid / 2, deviceInfo.heightGrid * 30 / 100)
         val expectedEnd = Point(deviceInfo.widthGrid / 2, deviceInfo.heightGrid * 60 / 100)
         driver.assertHasEvent(
-            Event.Swipe(start = expectedStart, End = expectedEnd, durationMs = 400)
+            Event.Swipe(start = expectedStart, End = expectedEnd, durationMs = 3000)
         )
     }
 
@@ -2151,7 +2152,7 @@ class IntegrationTest {
         // Given
         val commands = readCommands("079_scroll_until_visible")
 
-        val info = driver {  }.deviceInfo()
+        val info = driver { }.deviceInfo()
 
         // Without view
         val driver1 = driver {
@@ -2160,14 +2161,13 @@ class IntegrationTest {
 
         // Then fail
         assertThrows<MaestroException.ElementNotFound> {
-            Maestro(driver1, GenericScreenshotDriver(driver1)).use {
+            Maestro(driver1).use {
                 assertThat(orchestra(it).runFlow(commands))
             }
         }
 
-
         // With view
-        val elementBounds = Bounds(0, info.heightGrid, 100, info.heightGrid+ 100)
+        val elementBounds = Bounds(0, info.heightGrid, 100, info.heightGrid + 100)
         val driver2 = driver {
             element {
                 text = "Test"
@@ -2176,7 +2176,7 @@ class IntegrationTest {
         }
 
         // When
-        Maestro(driver2, GenericScreenshotDriver(driver2)).use {
+        Maestro(driver2).use {
             assertThat(orchestra(it).runFlow(commands)).isTrue()
         }
 
@@ -2193,7 +2193,7 @@ class IntegrationTest {
         // Given
         val commands = readCommands("080_hierarchy_pruning_assert_visible")
 
-        val info = driver{}.deviceInfo()
+        val info = driver {}.deviceInfo()
 
         val driver = driver {
             element {
@@ -2207,23 +2207,23 @@ class IntegrationTest {
 
                 element {
                     id = "visible_2"
-                    bounds = Bounds(info.widthGrid - 50, 0, info.widthGrid + 100 , 100)
+                    bounds = Bounds(info.widthGrid - 50, 0, info.widthGrid + 100, 100)
                 }
 
                 element {
                     id = "visible_3"
-                    bounds = Bounds(0, info.heightGrid - 50, 100 , info.heightGrid + 100)
+                    bounds = Bounds(0, info.heightGrid - 50, 100, info.heightGrid + 100)
                 }
 
                 element {
                     id = "visible_4"
-                    bounds = Bounds(-100, -100, info.widthGrid + 200 , info.heightGrid + 200)
+                    bounds = Bounds(-100, -100, info.widthGrid + 200, info.heightGrid + 200)
                 }
             }
         }
 
         // When
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
@@ -2237,7 +2237,7 @@ class IntegrationTest {
         // Given
         val commands = readCommands("081_hierarchy_pruning_assert_not_visible")
 
-        val info = driver{}.deviceInfo()
+        val info = driver {}.deviceInfo()
 
         val driver = driver {
             element {
@@ -2261,19 +2261,239 @@ class IntegrationTest {
 
                 element {
                     id = "not_visible_4"
-                    bounds = Bounds(0, info.heightGrid - 10 , 100, info.heightGrid + 100)
+                    bounds = Bounds(0, info.heightGrid - 10, 100, info.heightGrid + 100)
                 }
             }
         }
 
         // When & Then
-        Maestro(driver, GenericScreenshotDriver(driver)).use {
+        Maestro(driver).use {
             orchestra(it).runFlow(commands)
         }
 
         // Then
         // No test failure
         driver.assertNoInteraction()
+    }
+
+    @Test
+    fun `Case 082 - Repeat while true`() {
+        // Given
+        val commands = readCommands("082_repeat_while_true")
+        val driver = driver {
+            var counter = 0
+
+            val counterView = element {
+                text = "Value 0"
+                bounds = Bounds(0, 100, 100, 100)
+            }
+
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+                onClick = {
+                    counter++
+                    counterView.text = "Value $counter"
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failures
+        driver.assertEventCount(
+            Event.Tap(Point(50, 50)),
+            expectedCount = 3
+        )
+    }
+
+    @Test
+    fun `Case 083 - Assert on properties`() {
+        // Given
+        val commands = readCommands("083_assert_properties")
+
+        val driver = driver {
+            val field = element {
+                text = "Field"
+                checked = true
+                selected = true
+                focused = true
+                bounds = Bounds.ofSize(width = 100, height = 100)
+            }
+
+            element {
+                text = "Flip"
+                bounds = Bounds.ofSize(width = 100, height = 100)
+                    .translate(y = 100)
+                onClick = {
+                    field.checked = field.checked?.not()
+                    field.selected = field.selected?.not()
+                    field.enabled = field.enabled?.not()
+                    field.focused = field.focused?.not()
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.Tap(Point(50, 150)))
+    }
+
+    @Test
+    fun `Case 084 - Open Browser`() {
+        // given
+        val commands = readCommands("084_open_browser")
+
+        val driver = driver {}
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.OpenBrowser("https://example.com")
+            )
+        )
+    }
+
+    @Test
+    fun `085 - Open link with auto verify`() {
+        // Given
+        val commands = readCommands("085_open_link_auto_verify")
+
+        val driver = driver {}
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.OpenLink("https://example.com", autoLink = true)
+            )
+        )
+    }
+
+    @Test
+    fun `086 - launchApp sets all permissions to allow`() {
+        // Given
+        val commands = readCommands("086_launchApp_sets_all_permissions_to_allow")
+        val driver = driver {}
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SetPermissions("com.example.app", mapOf("all" to "allow")),
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
+    @Test
+    fun `087 - launchApp with all permissions to deny`() {
+        // Given
+        val commands = readCommands("087_launchApp_with_all_permissions_to_deny")
+        val driver = driver {}
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SetPermissions("com.example.app", mapOf("all" to "deny")),
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
+    @Test
+    fun `088 - launchApp with all permissions to deny and notification to allow`() {
+        // Given
+        val commands = readCommands("088_launchApp_with_all_permissions_to_deny_and_notification_to_allow")
+        val driver = driver {}
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SetPermissions("com.example.app", mapOf("all" to "deny", "notifications" to "allow")),
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
+    @Test
+    fun `089 - launchApp with SMS permissions`() {
+        // Given
+        val commands = readCommands("089_launchApp_with_sms_permission_group_to_allow")
+        val driver = driver {}
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SetPermissions("com.example.app", mapOf("sms" to "allow")),
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
+    @Test
+    fun `090 - Travel`() {
+        // Given
+        val commands = readCommands("090_travel")
+        val driver = driver {}
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SetLocation(0.0, 0.0),
+                Event.SetLocation(0.1, 0.0),
+                Event.SetLocation(0.1, 0.1),
+                Event.SetLocation(0.0, 0.1),
+            )
+        )
     }
 
     private fun orchestra(maestro: Maestro) = Orchestra(

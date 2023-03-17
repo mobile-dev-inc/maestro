@@ -2,11 +2,12 @@ import FlyingFox
 import XCTest
 import os
 
-class TouchRouteHandler : RouteHandler {
-    
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "TapRouteHandler")
-    
-    func handle(request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
+                            category: String(describing: TouchRouteHandler.self))
+
+@MainActor
+final class TouchRouteHandler: HTTPHandler {
+    func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
         
         guard let requestBody = try? decoder.decode(TouchRequest.self, from: request.body) else {
@@ -14,10 +15,17 @@ class TouchRouteHandler : RouteHandler {
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
         
-        logger.info("Tapping \(requestBody.x), \(requestBody.y)")
-
-        let eventRecord = EventRecord(orientation: .portrait)
-        eventRecord.addPointerTouchEvent(at: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y)))
+        if requestBody.duration != nil {
+            logger.info("Long pressing \(requestBody.x), \(requestBody.y) for \(requestBody.duration!)s")
+        } else {
+            logger.info("Tapping \(requestBody.x), \(requestBody.y)")
+        }
+        
+        var eventRecord = EventRecord(orientation: .portrait)
+        eventRecord.addPointerTouchEvent(
+            at: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y)),
+            touchUpAfter: requestBody.duration
+        )
 
         do {
             let start = Date()

@@ -23,8 +23,11 @@ import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.Filters
+import maestro.Filters.asFilter
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.Platform
@@ -32,17 +35,24 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement
+import maestro.UiElement.Companion.toUiElementOrNull
+import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.asManifest
 import maestro.android.resolveLauncherActivity
 import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
+import maestro.utils.StringUtils.toRegexSafe
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
 import maestro_android.inputTextRequest
 import maestro_android.screenshotRequest
+import maestro_android.setLocationRequest
 import maestro_android.tapRequest
 import maestro_android.viewHierarchyRequest
+import net.dongliu.apk.parser.ApkFile
 import okio.Sink
 import okio.buffer
 import okio.sink
@@ -239,6 +249,7 @@ class AndroidDriver(
         }
 
         dadb.shell("input keyevent $intCode")
+        Thread.sleep(300)
     }
 
     override fun contentDescriptor(): TreeNode {
@@ -269,7 +280,7 @@ class AndroidDriver(
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
         val deviceInfo = deviceInfo()
-        when(swipeDirection) {
+        when (swipeDirection) {
             SwipeDirection.UP -> {
                 val startX = (deviceInfo.widthGrid * 0.5f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
@@ -319,7 +330,7 @@ class AndroidDriver(
 
     override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
         val deviceInfo = deviceInfo()
-        when(direction) {
+        when (direction) {
             SwipeDirection.UP -> {
                 val endY = (deviceInfo.heightGrid * 0.1f).toInt()
                 directionalSwipe(durationMs, elementPoint, Point(elementPoint.x, endY))
@@ -345,11 +356,13 @@ class AndroidDriver(
 
     override fun backPress() {
         dadb.shell("input keyevent 4")
+        Thread.sleep(300)
     }
 
     override fun hideKeyboard() {
         dadb.shell("input keyevent 4") // 'Back', which dismisses the keyboard before handing over to navigation
         dadb.shell("input keyevent 111") // 'Escape'
+        Thread.sleep(300)
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
@@ -390,12 +403,98 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
-    override fun openLink(link: String) {
-        dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
+        if (browser) {
+            openBrowser(link)
+        } else {
+            dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+        }
+
+        if (autoVerify) {
+            autoVerifyApp(appId)
+        }
     }
 
+    private fun autoVerifyApp(appId: String?) {
+        if (appId != null) {
+            autoVerifyWithAppName(appId)
+        }
+        autoVerifyChromeAgreement()
+    }
+
+    private fun autoVerifyWithAppName(appId: String) {
+        val appNameResult = runCatching {
+            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
+            val appName = ApkFile(apkFile).apkMeta.name
+            appName
+        }
+        if (appNameResult.isSuccess) {
+            val appName = appNameResult.getOrThrow()
+            waitUntilScreenIsStatic(3000)
+            val appNameElement = filterByText(appName)
+            if (appNameElement != null) {
+                tap(appNameElement.bounds.center())
+                filterById("android:id/button_once")?.let {
+                    tap(it.bounds.center())
+                }
+            } else {
+                val openWithAppElement = filterByText(".*$appName.*")
+                if (openWithAppElement != null) {
+                    filterById("android:id/button_once")?.let {
+                        tap(it.bounds.center())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun autoVerifyChromeAgreement() {
+        filterById("com.android.chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null)
+        filterById("com.android.chrome:id/negative_button")?.let { tap(it.bounds.center()) }
+    }
+
+    private fun filterByText(textRegex: String): UiElement? {
+        val textMatcher = Filters.textMatches(textRegex.toRegexSafe(REGEX_OPTIONS)).asFilter()
+        val filterFunc = Filters.deepestMatchingElement(textMatcher)
+        return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
+    }
+
+    private fun filterById(idRegex: String): UiElement? {
+        val idMatcher = Filters.idMatches(idRegex.toRegexSafe(REGEX_OPTIONS))
+        val filterFunc = Filters.deepestMatchingElement(idMatcher)
+        return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
+    }
+
+    private fun openBrowser(link: String) {
+        val installedPackages = installedPackages()
+        when {
+            installedPackages.contains("com.android.chrome") -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" com.android.chrome")
+            }
+            installedPackages.contains("org.mozilla.firefox") -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" org.mozilla.firefox")
+            }
+            else -> {
+                dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+            }
+        }
+    }
+
+    private fun installedPackages() = shell("pm list packages").split("\n")
+        .map { line: String -> line.split(":".toRegex()).toTypedArray() }
+        .filter { parts: Array<String> -> parts.size == 2 }
+        .map { parts: Array<String> -> parts[1] }
+
     override fun setLocation(latitude: Double, longitude: Double) {
-        TODO("Not yet implemented")
+        shell("appops set dev.mobile.maestro android:mock_location allow")
+
+        blockingStub.setLocation(
+            setLocationRequest {
+                this.latitude = latitude
+                this.longitude = longitude
+            }
+        ) ?: error("Set Location Response can't be null")
     }
 
     override fun eraseText(charactersToErase: Int) {
@@ -423,8 +522,112 @@ class AndroidDriver(
         return false
     }
 
-    override fun isScreenStatic(): Boolean {
-        TODO("Not yet implemented")
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    }
+
+    override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
+    }
+
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        val mutable = permissions.toMutableMap()
+        mutable.remove("all")?.let { value ->
+            setAllPermissions(appId, value)
+        }
+
+        mutable.forEach { permission ->
+            val permissionValue = translatePermissionValue(permission.value)
+            translatePermissionName(permission.key).forEach { permissionName ->
+                setPermissionInternal(appId, permissionName, permissionValue)
+            }
+        }
+    }
+
+    private fun setAllPermissions(appId: String, permissionValue: String) {
+        val permissionsResult = runCatching {
+            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
+            ApkFile(apkFile).apkMeta.usesPermissions
+        }
+        if (permissionsResult.isSuccess) {
+            permissionsResult.getOrNull()?.let {
+                it.forEach { permission ->
+                    setPermissionInternal(appId, permission, translatePermissionValue(permissionValue))
+                }
+            }
+        }
+    }
+
+    private fun setPermissionInternal(appId: String, permission: String, permissionValue: String) {
+        try {
+            dadb.shell("pm $permissionValue $appId $permission")
+        } catch (exception: Exception) {
+            /* no-op */
+        }
+    }
+
+    private fun translatePermissionName(name: String): List<String> {
+        return when (name) {
+            "location" -> listOf(
+                "android.permission.ACCESS_FINE_LOCATION",
+                "android.permission.ACCESS_COARSE_LOCATION",
+            )
+            "camera" -> listOf("android.permission.CAMERA")
+            "contacts" -> listOf(
+                "android.permission.READ_CONTACTS",
+                "android.permission.WRITE_CONTACTS"
+            )
+            "phone" -> listOf(
+                "android.permission.CALL_PHONE",
+                "android.permission.ANSWER_PHONE_CALLS",
+            )
+            "microphone" -> listOf(
+                "android.permission.RECORD_AUDIO"
+            )
+            "bluetooth" -> listOf(
+                "android.permission.BLUETOOTH_CONNECT",
+                "android.permission.BLUETOOTH_SCAN",
+            )
+            "storage" -> listOf(
+                "android.permission.WRITE_EXTERNAL_STORAGE",
+                "android.permission.READ_EXTERNAL_STORAGE"
+            )
+            "notifications" -> listOf(
+                "android.permission.POST_NOTIFICATIONS"
+            )
+            "medialibrary" -> listOf(
+                "android.permission.WRITE_EXTERNAL_STORAGE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.READ_MEDIA_AUDIO",
+                "android.permission.READ_MEDIA_IMAGES",
+                "android.permission.READ_MEDIA_VIDEO"
+            )
+            "calendar" -> listOf(
+                "android.permission.WRITE_CALENDAR",
+                "android.permission.READ_CALENDAR"
+            )
+            "sms" -> listOf(
+                "android.permission.READ_SMS",
+                "android.permission.RECEIVE_SMS",
+                "android.permission.SEND_SMS"
+            )
+            else -> listOf(name.replace("[^A-Za-z0-9._]+".toRegex(), ""))
+        }
+    }
+
+    private fun translatePermissionValue(value: String): String {
+        return when (value) {
+            "allow" -> "grant"
+            "deny" -> "revoke"
+            "unset" -> "revoke"
+            else -> "revoke"
+        }
     }
 
     private fun mapHierarchy(node: Node): TreeNode {
@@ -570,11 +773,12 @@ class AndroidDriver(
     companion object {
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 15000
+        private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
 
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()
         private val PORT_TO_ALLOCATION_POINT = mutableMapOf<Int, String>()
-
+        private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
     }
 }

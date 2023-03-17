@@ -1,7 +1,8 @@
 import Foundation
+import FlyingFox
 
 class RouteHandlerFactory {
-    class func createRouteHandler(route: Route) -> RouteHandler {
+    @MainActor class func createRouteHandler(route: Route) -> HTTPHandler {
         switch route {
         case .subTree:
             return SubTreeRouteHandler()

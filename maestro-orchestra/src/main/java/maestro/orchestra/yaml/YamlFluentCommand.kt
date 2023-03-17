@@ -52,6 +52,7 @@ import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
 import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointV2Command
+import maestro.orchestra.TravelCommand
 import maestro.orchestra.WaitForAnimationToEndCommand
 import maestro.orchestra.error.InvalidFlowFile
 import maestro.orchestra.error.SyntaxError
@@ -75,7 +76,8 @@ data class YamlFluentCommand(
     val inputRandomPersonName: YamlInputRandomPersonName? = null,
     val launchApp: YamlLaunchApp? = null,
     val swipe: YamlSwipe? = null,
-    val openLink: String? = null,
+    val openLink: YamlOpenLink? = null,
+    val openBrowser: String? = null,
     val pressKey: String? = null,
     val eraseText: YamlEraseText? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
@@ -90,7 +92,8 @@ data class YamlFluentCommand(
     val waitForAnimationToEnd: YamlWaitForAnimationToEndCommand? = null,
     val evalScript: String? = null,
     val mockNetwork: String? = null,
-    val scrollUntilVisible: YamlScrollUntilVisible? = null
+    val scrollUntilVisible: YamlScrollUntilVisible? = null,
+    val travel: YamlTravelCommand? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -132,7 +135,7 @@ data class YamlFluentCommand(
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS)))
             inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME)))
             swipe != null -> listOf(swipeCommand(swipe))
-            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink)))
+            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink.link, openLink.autoVerify, openLink.browser)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
             eraseText != null -> listOf(eraseCommand(eraseText))
             action != null -> listOf(
@@ -214,8 +217,33 @@ data class YamlFluentCommand(
                 )
             )
             scrollUntilVisible != null -> listOf(scrollUntilVisibleCommand(scrollUntilVisible))
+            travel != null -> listOf(travelCommand(travel))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
+    }
+
+    private fun travelCommand(command: YamlTravelCommand): MaestroCommand {
+        return MaestroCommand(
+            TravelCommand(
+                points = command.points
+                    .map { point ->
+                        val spitPoint = point.split(",")
+
+                        if (spitPoint.size != 2) {
+                            throw SyntaxError("Invalid travel point: $point")
+                        }
+
+                        val latitude = spitPoint[0].toDoubleOrNull() ?: throw SyntaxError("Invalid travel point latitude: $point")
+                        val longitude = spitPoint[1].toDoubleOrNull() ?: throw SyntaxError("Invalid travel point longitude: $point")
+
+                        TravelCommand.GeoPoint(
+                            latitude = latitude,
+                            longitude = longitude,
+                        )
+                    },
+                speedMPS = command.speed,
+            )
+        )
     }
 
     private fun repeatCommand(repeat: YamlRepeatCommand, flowPath: Path, appId: String) = MaestroCommand(
@@ -298,6 +326,7 @@ data class YamlFluentCommand(
                 clearState = command.clearState,
                 clearKeychain = command.clearKeychain,
                 stopApp = command.stopApp,
+                permissions = command.permissions,
             )
         )
     }
@@ -355,7 +384,7 @@ data class YamlFluentCommand(
             }
             is YamlRelativeCoordinateSwipe -> {
                 return MaestroCommand(
-                    SwipeCommand(startRelative = swipe.start, endRelative = swipe.end)
+                    SwipeCommand(startRelative = swipe.start, endRelative = swipe.end, duration = swipe.duration)
                 )
             }
             is YamlSwipeElement -> return swipeElementCommand(swipe)
@@ -415,6 +444,9 @@ data class YamlFluentCommand(
                 ?.map { ElementTrait.valueOf(it.replace('-', '_').uppercase()) },
             index = selector.index,
             enabled = selector.enabled,
+            selected = selector.selected,
+            checked = selector.checked,
+            focused = selector.focused,
             optional = selector.optional ?: false,
         )
     }
@@ -468,6 +500,7 @@ data class YamlFluentCommand(
                         clearState = null,
                         clearKeychain = null,
                         stopApp = null,
+                        permissions = null,
                     )
                 )
 
@@ -476,7 +509,9 @@ data class YamlFluentCommand(
                 )
 
                 "clearState" -> YamlFluentCommand(
-                    clearState = YamlClearState()
+                    clearState = YamlClearState(
+                        appId = null,
+                    )
                 )
 
                 "clearKeychain" -> YamlFluentCommand(

@@ -7,7 +7,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
 import hierarchy.XCUIElement
-import idb.Idb
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
@@ -30,14 +29,14 @@ class XCTestIOSDevice(
 ) : IOSDevice {
 
     override fun open() {
-        ensureXCUITestChannel()
+        restartXCTestRunnerService()
     }
 
-    private fun ensureXCUITestChannel() {
+    private fun restartXCTestRunnerService() {
         logger.info("[Start] Uninstalling xctest ui runner app on $deviceId")
-        installer.killAndUninstall()
+        installer.uninstall()
         logger.info("[Done] Uninstalling xctest ui runner app on $deviceId")
-        installer.setup()
+        installer.start()
     }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
@@ -80,22 +79,28 @@ class XCTestIOSDevice(
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
         return runCatching {
-            val appId = activeAppId() ?: return@runCatching
-
             client.tap(
-                appId = appId,
                 x = x.toFloat(),
                 y = y.toFloat(),
             ).use {}
         }
     }
 
-    override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
-        error("Not supported")
+    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
+        return runCatching {
+            client.tap(
+                x = x.toFloat(),
+                y = y.toFloat(),
+                duration = durationMs.toDouble() / 1000
+            ).use {}
+        }
     }
 
     override fun pressKey(code: Int): Result<Unit, Throwable> {
-        error("Not supported")
+        return runCatching {
+            if (code != 40) throw IllegalStateException("XCTest can only press the enter key (code 40)")
+            client.inputText("\n")
+        }
     }
 
     override fun pressButton(code: Int): Result<Unit, Throwable> {
@@ -103,32 +108,26 @@ class XCTestIOSDevice(
     }
 
     override fun scroll(
-        xStart: Float,
-        yStart: Float,
-        xEnd: Float,
-        yEnd: Float,
-        velocity: Float?
+        xStart: Double,
+        yStart: Double,
+        xEnd: Double,
+        yEnd: Double,
+        duration: Double,
     ): Result<Unit, Throwable> {
         return runCatching {
-            val appId = activeAppId() ?: return@runCatching
-
             client.swipe(
-                appId = appId,
                 startX = xStart,
                 startY = yStart,
                 endX = xEnd,
                 endY = yEnd,
-                velocity = velocity,
+                duration = duration
             ).use {}
         }
     }
 
     override fun input(text: String): Result<Unit, Throwable> {
         return runCatching {
-            val appId = activeAppId() ?: return@runCatching
-
             client.inputText(
-                appId = appId,
                 text = text,
             ).use {
                 if (!it.isSuccessful) {
@@ -229,6 +228,10 @@ class XCTestIOSDevice(
                 } ?: throw UnknownFailure("Error - body for isScreenStatic request not available")
             }
         }
+    }
+
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        error("Not supported")
     }
 
     private fun activeAppId(): String? {

@@ -33,6 +33,7 @@ import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
+import maestro.orchestra.geo.Traveller
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
@@ -89,7 +90,7 @@ class Orchestra(
         }
 
         onFlowStart(commands)
-        return executeCommands(commands)
+        return executeCommands(commands, config)
     }
 
     /**
@@ -122,7 +123,10 @@ class Orchestra(
 
     fun executeCommands(
         commands: List<MaestroCommand>,
+        config: MaestroConfig? = null
     ): Boolean {
+        jsEngine.init()
+
         commands
             .forEachIndexed { index, command ->
                 onCommandStart(index, command)
@@ -135,7 +139,7 @@ class Orchestra(
                 updateMetadata(command, metadata)
 
                 try {
-                    executeCommand(evaluatedCommand)
+                    executeCommand(evaluatedCommand, config)
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
@@ -152,7 +156,7 @@ class Orchestra(
         return true
     }
 
-    private fun executeCommand(maestroCommand: MaestroCommand): Boolean {
+    private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val command = maestroCommand.asCommand()
 
         return when (command) {
@@ -177,28 +181,39 @@ class Orchestra(
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
-            is OpenLinkCommand -> openLinkCommand(command)
+            is OpenLinkCommand -> openLinkCommand(command, config)
             is PressKeyCommand -> pressKeyCommand(command)
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
             is StopAppCommand -> stopAppCommand(command)
             is ClearStateCommand -> clearAppStateCommand(command)
             is ClearKeychainCommand -> clearKeychainCommand()
-            is RunFlowCommand -> runFlowCommand(command)
+            is RunFlowCommand -> runFlowCommand(command, config)
             is SetLocationCommand -> setLocationCommand(command)
-            is RepeatCommand -> repeatCommand(command, maestroCommand)
+            is RepeatCommand -> repeatCommand(command, maestroCommand, config)
             is DefineVariablesCommand -> defineVariablesCommand(command)
             is RunScriptCommand -> runScriptCommand(command)
             is EvalScriptCommand -> evalScriptCommand(command)
             is ApplyConfigurationCommand -> false
             is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
             is MockNetworkCommand -> mockNetworkCommand(command)
+            is TravelCommand -> travelCommand(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
         }
+    }
+
+    private fun travelCommand(command: TravelCommand): Boolean {
+        Traveller.travel(
+            maestro = maestro,
+            points = command.points,
+            speedMPS = command.speedMPS ?: 4.0,
+        )
+
+        return true
     }
 
     private fun assertConditionCommand(command: AssertConditionCommand): Boolean {
@@ -234,7 +249,7 @@ class Orchestra(
             script = command.script,
             env = command.env,
             sourceName = command.sourceDescription,
-            runInSubSope = true,
+            runInSubScope = true,
         )
 
         // We do not actually know if there were any mutations, but we assume there were
@@ -264,6 +279,9 @@ class Orchestra(
 
     private fun clearAppStateCommand(command: ClearStateCommand): Boolean {
         maestro.clearAppState(command.appId)
+        // Android's clear command also resets permissions
+        // Reset all permissions to unset so both platforms behave the same
+        maestro.setPermissions(command.appId, mapOf("all" to "unset"))
 
         return true
     }
@@ -324,8 +342,8 @@ class Orchestra(
         return false
     }
 
-    private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand): Boolean {
-        val maxRuns = command.times?.toIntOrNull() ?: Int.MAX_VALUE
+    private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
+        val maxRuns = command.times?.toDoubleOrNull()?.toInt() ?: Int.MAX_VALUE
 
         var counter = 0
         var metadata = getMetadata(maestroCommand)
@@ -334,12 +352,19 @@ class Orchestra(
         )
 
         var mutatiing = false
-        while ((command.condition?.let { evaluateCondition(it) } != false) && counter < maxRuns) {
+
+        val checkCondition: () -> Boolean = {
+            command.condition
+                ?.evaluateScripts(jsEngine)
+                ?.let { evaluateCondition(it) } != false
+        }
+
+        while (checkCondition() && counter < maxRuns) {
             if (counter > 0) {
                 command.commands.forEach { resetCommand(it) }
             }
 
-            val mutated = runSubFlow(command.commands)
+            val mutated = runSubFlow(command.commands, config)
             mutatiing = mutatiing || mutated
             counter++
 
@@ -375,9 +400,9 @@ class Orchestra(
         }
     }
 
-    private fun runFlowCommand(command: RunFlowCommand): Boolean {
+    private fun runFlowCommand(command: RunFlowCommand, config: MaestroConfig?): Boolean {
         return if (evaluateCondition(command.condition)) {
-            runSubFlow(command.commands)
+            runSubFlow(command.commands, config)
         } else {
             throw CommandSkipped
         }
@@ -446,7 +471,7 @@ class Orchestra(
         return true
     }
 
-    private fun runSubFlow(commands: List<MaestroCommand>): Boolean {
+    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
         jsEngine.enterScope()
 
         return try {
@@ -462,7 +487,7 @@ class Orchestra(
                     updateMetadata(command, metadata)
 
                     return@mapIndexed try {
-                        executeCommand(evaluatedCommand)
+                        executeCommand(evaluatedCommand, config)
                             .also {
                                 onCommandComplete(index, command)
                             }
@@ -511,28 +536,33 @@ class Orchestra(
         return true
     }
 
-    private fun openLinkCommand(command: OpenLinkCommand): Boolean {
-        maestro.openLink(command.link)
+    private fun openLinkCommand(command: OpenLinkCommand, config: MaestroConfig?): Boolean {
+        maestro.openLink(command.link, config?.appId, command.autoVerify ?: false, command.browser ?: false)
 
         return true
     }
 
-    private fun launchAppCommand(it: LaunchAppCommand): Boolean {
+    private fun launchAppCommand(command: LaunchAppCommand): Boolean {
         try {
-            if (it.clearKeychain == true) {
+            if (command.clearKeychain == true) {
                 maestro.clearKeychain()
             }
-            if (it.clearState == true) {
-                maestro.clearAppState(it.appId)
+            if (command.clearState == true) {
+                maestro.clearAppState(command.appId)
             }
+
+            // For testing convenience, default to allow all on app launch
+            val permissions = command.permissions ?: mapOf("all" to "allow")
+            maestro.setPermissions(command.appId, permissions)
+
         } catch (e: Exception) {
-            throw MaestroException.UnableToClearState("Unable to clear state for app ${it.appId}")
+            throw MaestroException.UnableToClearState("Unable to clear state for app ${command.appId}")
         }
 
         try {
-            maestro.launchApp(it.appId, stopIfRunning = it.stopApp ?: true)
+            maestro.launchApp(command.appId, stopIfRunning = command.stopApp ?: true)
         } catch (e: Exception) {
-            throw MaestroException.UnableToLaunchApp("Unable to launch app ${it.appId}: ${e.message}")
+            throw MaestroException.UnableToLaunchApp("Unable to launch app ${command.appId}: ${e.message}")
         }
 
         return true
@@ -758,6 +788,36 @@ class Orchestra(
                     "Disabled"
                 }
                 filters += Filters.enabled(it)
+            }
+
+        selector.selected
+            ?.let {
+                descriptions += if (it) {
+                    "Selected"
+                } else {
+                    "Not selected"
+                }
+                filters += Filters.selected(it)
+            }
+
+        selector.checked
+            ?.let {
+                descriptions += if (it) {
+                    "Checked"
+                } else {
+                    "Not checked"
+                }
+                filters += Filters.checked(it)
+            }
+
+        selector.focused
+            ?.let {
+                descriptions += if (it) {
+                    "Focused"
+                } else {
+                    "Not focused"
+                }
+                filters += Filters.focused(it)
             }
 
         var resultFilter = Filters.intersect(filters)

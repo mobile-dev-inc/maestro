@@ -8,6 +8,7 @@ import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.FileUtils.isZip
 import maestro.cli.util.PrintUtils
 import maestro.cli.util.WorkspaceUtils
@@ -53,6 +54,7 @@ class CloudInteractor(
         excludeTags: List<String> = emptyList(),
         reportFormat: ReportFormat = ReportFormat.NOOP,
         reportOutput: File? = null,
+        testSuiteName: String? = null
     ): Int {
         if (!flowFile.exists()) throw CliError("File does not exist: ${flowFile.absolutePath}")
         if (mapping?.exists() == false) throw CliError("File does not exist: ${mapping.absolutePath}")
@@ -60,13 +62,14 @@ class CloudInteractor(
 
         val authToken = apiKey              // Check for API key
             ?: auth.getCachedAuthToken()    // Otherwise, if the user has already logged in, use the cached auth token
+            ?: EnvUtils.maestroCloudApiKey()        // Resolve API key from shell if set
             ?: auth.triggerSignInFlow()     // Otherwise, trigger the sign-in flow
 
         PrintUtils.message("Uploading Flow(s)...")
 
         TemporaryDirectory.use { tmpDir ->
             val workspaceZip = tmpDir.resolve("workspace.zip")
-            WorkspaceUtils.createWorkspaceZip(flowFile.toPath().absolute(), workspaceZip, includeTags, excludeTags)
+            WorkspaceUtils.createWorkspaceZip(flowFile.toPath().absolute(), workspaceZip)
             println()
             val progressBar = ProgressBar(20)
 
@@ -120,6 +123,7 @@ class CloudInteractor(
                     failOnCancellation = failOnCancellation,
                     reportFormat = reportFormat,
                     reportOutput = reportOutput,
+                    testSuiteName = testSuiteName,
                 )
             }
         }
@@ -133,6 +137,7 @@ class CloudInteractor(
         failOnCancellation: Boolean,
         reportFormat: ReportFormat,
         reportOutput: File?,
+        testSuiteName: String?
     ): Int {
         val startTime = System.currentTimeMillis()
 
@@ -182,6 +187,7 @@ class CloudInteractor(
                     failOnCancellation = failOnCancellation,
                     reportFormat = reportFormat,
                     reportOutput = reportOutput,
+                    testSuiteName = testSuiteName,
                 )
             }
 
@@ -210,6 +216,7 @@ class CloudInteractor(
 
         val authToken = apiKey              // Check for API key
             ?: auth.getCachedAuthToken()    // Otherwise, if the user has already logged in, use the cached auth token
+            ?: EnvUtils.maestroCloudApiKey()        // Resolve API key from shell if set
             ?: auth.triggerSignInFlow()     // Otherwise, trigger the sign-in flow
 
         PrintUtils.message("Deploying workspace to Maestro Mock Server...")
@@ -239,6 +246,7 @@ class CloudInteractor(
         failOnCancellation: Boolean,
         reportFormat: ReportFormat,
         reportOutput: File?,
+        testSuiteName: String?
     ): Int {
         TestSuiteStatusView.showSuiteResult(
             upload.toViewModel(
@@ -262,7 +270,7 @@ class CloudInteractor(
             }
 
         if (reportOutputSink != null) {
-            saveReport(reportFormat, passed, upload, reportOutputSink)
+            saveReport(reportFormat, passed, upload, reportOutputSink, testSuiteName)
         }
 
         return if (!passed) {
@@ -276,9 +284,10 @@ class CloudInteractor(
         reportFormat: ReportFormat,
         passed: Boolean,
         upload: UploadStatus,
-        reportOutputSink: BufferedSink
+        reportOutputSink: BufferedSink,
+        testSuiteName: String?
     ) {
-        ReporterFactory.buildReporter(reportFormat)
+        ReporterFactory.buildReporter(reportFormat, testSuiteName)
             .report(
                 TestExecutionSummary(
                     passed = passed,

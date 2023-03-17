@@ -19,38 +19,70 @@ class LocalXCTestInstaller(
     private val logger: Logger,
     private val deviceId: String,
 ) : XCTestInstaller {
+    // Set this flag to allow using a test runner started from Xcode
+    // When this flag is set, maestro will not install, run, stop or remove the xctest runner.
+    // Make sure to launch the test runner from Xcode whenever maestro needs it.
+    private val useXcodeTestRunner = !System.getenv("USE_XCODE_TEST_RUNNER").isNullOrEmpty()
 
     private var xcTestProcess: Process? = null
 
-    override fun killAndUninstall() {
-        if (xcTestProcess?.isAlive == true) {
-            logger.info("[Start] Killing the started XCUITest")
-            xcTestProcess?.destroy()
-            logger.info("[Done] Killing the started XCUITest")
+    override fun uninstall() {
+        if (useXcodeTestRunner) {
+            return
         }
-        logger.info("[Start] Uninstalling the XCUITest runner app")
+
+        stop()
+
+        logger.info("[Start] Uninstall XCUITest runner")
         XCRunnerSimctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
-        logger.info("[Done] Uninstalling the XCUITest runner app")
+        logger.info("[Done] Uninstall XCUITest runner")
     }
 
-    override fun setup(): Boolean {
-        repeat(3) { i ->
-            logger.info("[Start] Installing xctest ui runner on $deviceId")
-            runXCTest()
-            logger.info("[Done] Installing xctest ui runner on $deviceId")
+    private fun stop() {
+        if (xcTestProcess?.isAlive == true) {
+            logger.info("[Start] Stop XCUITest runner")
+            xcTestProcess?.destroy()
+            logger.info("[Done] Stop XCUITest runner")
+        }
 
-            logger.info("[Start] Ensuring ui test runner app is launched on $deviceId")
+        val pid = XCRunnerSimctl.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        if (pid != null) {
+            ProcessBuilder(listOf("kill", pid.toString()))
+                .start()
+                .waitFor()
+        }
+    }
+
+    override fun start(): Boolean {
+        if (useXcodeTestRunner) {
+            repeat(20) {
+                if (ensureOpen()) {
+                    return true
+                }
+                logger.info("==> Start XCTest runner to continue flow")
+                Thread.sleep(500)
+            }
+            throw IllegalStateException("XCTest was not started manually")
+        }
+
+        stop()
+
+        repeat(3) { i ->
+            logger.info("[Start] Install XCUITest runner on $deviceId")
+            startXCTestRunner()
+            logger.info("[Done] Install XCUITest runner on $deviceId")
+
+            logger.info("[Start] Ensure XCUITest runner is running on $deviceId")
             if (ensureOpen()) {
-                logger.info("[Done] Ensuring ui test runner app is launched on $deviceId")
+                logger.info("[Done] Ensure XCUITest runner is running on $deviceId")
                 return true
             } else {
-                logger.info("[Failed] Ensuring ui test runner app is launched on $deviceId")
+                logger.info("[Failed] Ensure XCUITest runner is running on $deviceId")
                 logger.info("[Retry] Retrying setup() ${i}th time")
             }
         }
         return false
     }
-
 
     override fun isChannelAlive(): Boolean {
         return XCRunnerSimctl.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID) &&
@@ -92,12 +124,11 @@ class LocalXCTestInstaller(
         return okHttpClient.newCall(request).execute()
     }
 
-    private fun runXCTest() {
-        val processOutput = ProcessBuilder(
-            "bash",
-            "-c",
-            "xcrun simctl spawn booted launchctl list | grep $UI_TEST_RUNNER_APP_BUNDLE_ID | awk '/$UI_TEST_RUNNER_APP_BUNDLE_ID/ {print \$3}'"
-        ).start().inputStream.source().buffer().readUtf8().trim()
+    private fun startXCTestRunner() {
+        val processOutput = ProcessBuilder(listOf("xcrun", "simctl", "spawn", "booted", "launchctl", "list"))
+            .start()
+            .inputStream.source().buffer().readUtf8()
+            .trim()
 
         if (!processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
             logger.info("Not able to find ui test runner app, going to install now")
@@ -128,6 +159,10 @@ class LocalXCTestInstaller(
     }
 
     override fun close() {
+        if (useXcodeTestRunner) {
+            return
+        }
+
         logger.info("[Start] Cleaning up the ui test runner files")
         val xctestConfig = "${System.getenv("TMP_DIR")}/$XCTEST_RUN_PATH"
         val hostApp = "${System.getenv("TMPDIR")}/Debug-iphonesimulator/maestro-driver-ios.app"
@@ -135,7 +170,7 @@ class LocalXCTestInstaller(
         File(xctestConfig).delete()
         File(uiTestRunnerApp).deleteRecursively()
         File(hostApp).deleteRecursively()
-        killAndUninstall()
+        uninstall()
         logger.info("[Done] Cleaning up the ui test runner files")
     }
 

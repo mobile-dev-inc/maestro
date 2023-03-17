@@ -2,19 +2,17 @@ package ios.simctl
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.runCatching
 import hierarchy.XCUIElement
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
-import maestro.logger.Logger
 import okio.Sink
 import java.io.File
 import java.io.InputStream
-import com.github.michaelbull.result.runCatching
 
 class SimctlIOSDevice(
     override val deviceId: String,
-    private val logger: Logger,
 ) : IOSDevice {
     override fun open() {
         TODO("Not yet implemented")
@@ -32,7 +30,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun longPress(x: Int, y: Int): Result<Unit, Throwable> {
+    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
         TODO("Not yet implemented")
     }
 
@@ -44,7 +42,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun scroll(xStart: Float, yStart: Float, xEnd: Float, yEnd: Float, velocity: Float?): Result<Unit, Throwable> {
+    override fun scroll(xStart: Double, yStart: Double, xEnd: Double, yEnd: Double, duration: Double): Result<Unit, Throwable> {
         TODO("Not yet implemented")
     }
 
@@ -57,7 +55,9 @@ class SimctlIOSDevice(
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
-        TODO("Not yet implemented")
+        return runCatching {
+            Simctl.uninstall(deviceId, id)
+        }
     }
 
     override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
@@ -74,7 +74,9 @@ class SimctlIOSDevice(
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
-        TODO("Not yet implemented")
+        return runCatching {
+            Simctl.clearKeychain(deviceId)
+        }
     }
 
     override fun launch(id: String): Result<Unit, Throwable> {
@@ -115,6 +117,10 @@ class SimctlIOSDevice(
 
     override fun isScreenStatic(): Result<Boolean, Throwable> {
         TODO("Not yet implemented")
+    }
+
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        Simctl.setPermissions(deviceId, id, permissions)
     }
 
     override fun close() {

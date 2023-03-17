@@ -21,6 +21,7 @@ package maestro.test.drivers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
+import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.KeyCode
@@ -30,7 +31,8 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
-import maestro.UiElement
+import maestro.ViewHierarchy
+import maestro.utils.ScreenshotUtils
 import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
@@ -255,10 +257,14 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
-    override fun openLink(link: String) {
+    override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         ensureOpen()
 
-        events += Event.OpenLink(link)
+        if (browser) {
+            events += Event.OpenBrowser(link)
+        } else {
+            events += Event.OpenLink(link, autoVerify)
+        }
     }
 
     override fun setProxy(host: String, port: Int) {
@@ -275,10 +281,6 @@ class FakeDriver : Driver {
 
     override fun isShutdown(): Boolean {
         return state != State.OPEN
-    }
-
-    override fun isScreenStatic(): Boolean {
-        return false
     }
 
     override fun isUnicodeInputSupported(): Boolean {
@@ -341,6 +343,26 @@ class FakeDriver : Driver {
         }
     }
 
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    }
+
+    override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
+        return ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, 0.005, this)
+    }
+
+    override fun capabilities(): List<Capability> {
+        return listOf(
+            Capability.FAST_HIERARCHY
+        )
+    }
+
+    override fun setPermissions(appId: String, permissions: Map<String, String>) {
+        ensureOpen()
+
+        events.add(Event.SetPermissions(appId, permissions))
+    }
+
     sealed class Event {
 
         data class Tap(
@@ -368,12 +390,6 @@ class FakeDriver : Driver {
         ) : Event(), UserInteraction
 
         data class SwipeWithDirection(val swipeDirection: SwipeDirection, val durationMs: Long) : Event(), UserInteraction
-
-        data class SwipeRelative(
-            val startRelativeValue: Int,
-            val endRelativeValue: Int,
-            val durationMs: Long
-        ): Event(), UserInteraction
 
         data class SwipeElementWithDirection(
             val point: Point,
@@ -405,6 +421,11 @@ class FakeDriver : Driver {
 
         data class OpenLink(
             val link: String,
+            val autoLink: Boolean = false
+        ) : Event()
+
+        data class OpenBrowser(
+            val link: String,
         ) : Event()
 
         data class PressKey(
@@ -429,6 +450,10 @@ class FakeDriver : Driver {
 
         object ResetProxy : Event()
 
+        data class SetPermissions(
+            val appId: String,
+            val permissions: Map<String, String>,
+        ) : Event()
     }
 
     interface UserInteraction

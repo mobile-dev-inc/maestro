@@ -64,7 +64,7 @@ interface Driver {
 
     fun inputText(text: String)
 
-    fun openLink(link: String)
+    fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean)
 
     fun hideKeyboard()
 
@@ -84,5 +84,11 @@ interface Driver {
 
     fun isUnicodeInputSupported(): Boolean
 
-    fun isScreenStatic(): Boolean
+    fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean
+
+    fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy?
+
+    fun capabilities(): List<Capability>
+
+    fun setPermissions(appId: String, permissions: Map<String, String>)
 }

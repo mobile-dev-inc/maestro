@@ -3,12 +3,13 @@ package ios.simctl
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.utils.MaestroTimer
-import util.CommandLineUtils
+import util.CommandLineUtils.runCommand
 import java.io.File
 
 object Simctl {
 
     data class SimctlError(override val message: String): Throwable(message)
+    private val homedir = System.getProperty("user.home")
 
     fun list(): SimctlList {
         val command = listOf("xcrun", "simctl", "list", "-j")
@@ -44,14 +45,30 @@ object Simctl {
     }
 
     fun launchSimulator(deviceId: String) {
-        CommandLineUtils.runCommand("xcrun simctl boot $deviceId")
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "boot",
+                deviceId
+            )
+        )
 
         var exceptionToThrow: Exception? = null
 
         // Up to 10 iterations => max wait time of 1 second
         repeat(10) {
             try {
-                CommandLineUtils.runCommand("open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID $deviceId")
+                runCommand(
+                    listOf(
+                        "open",
+                        "-a",
+                        "/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app",
+                        "--args",
+                        "-CurrentDeviceUDID",
+                        deviceId
+                    )
+                )
                 return
             } catch (e: Exception) {
                 exceptionToThrow = e
@@ -65,7 +82,7 @@ object Simctl {
     fun reboot(
         deviceId: String,
     ) {
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -76,7 +93,7 @@ object Simctl {
         )
         awaitShutdown(deviceId)
 
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -92,7 +109,7 @@ object Simctl {
         deviceId: String,
         certificate: File,
     ) {
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -165,7 +182,7 @@ object Simctl {
 
 
     fun launch(deviceId: String, bundleId: String) {
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -177,7 +194,7 @@ object Simctl {
     }
 
     fun setLocation(deviceId: String, latitude: Double, longitude: Double) {
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -188,9 +205,9 @@ object Simctl {
             )
         )
     }
-    
+
     fun openURL(deviceId: String, url: String) {
-        CommandLineUtils.runCommand(
+        runCommand(
             listOf(
                 "xcrun",
                 "simctl",
@@ -199,5 +216,123 @@ object Simctl {
                 url,
             )
         )
+    }
+
+    fun uninstall(deviceId: String, bundleId: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "uninstall",
+                deviceId,
+                bundleId
+            )
+        )
+    }
+
+    fun clearKeychain(deviceId: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "launchctl",
+                "stop",
+                "com.apple.securityd",
+            )
+        )
+
+        runCommand(
+            listOf(
+                "rm", "-rf",
+                "$homedir/Library/Developer/CoreSimulator/Devices/$deviceId/data/Library/Keychains"
+            )
+        )
+
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "launchctl",
+                "start",
+                "com.apple.securityd",
+            )
+        )
+    }
+
+    fun setPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
+        val mutable = permissions.toMutableMap()
+        if (mutable.containsKey("all")) {
+            val value = mutable.remove("all")
+            allPermissions.forEach {
+                when (value) {
+                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
+                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
+                    "unset" -> mutable.putIfAbsent(it, "unset")
+                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+                }
+            }
+        }
+
+        val argument = mutable
+            .filter { allPermissions.contains(it.key) }
+            .map { "${it.key}=${translatePermissionValue(it.value)}" }
+            .joinToString(",")
+
+        runCommand(
+            listOf(
+                "$homedir/.maestro/deps/applesimutils",
+                "--byId",
+                deviceId,
+                "--bundle",
+                bundleId,
+                "--setPermissions",
+                argument
+            )
+        )
+    }
+
+    private val allPermissions = listOf(
+        "calendar",
+        "camera",
+        "contacts",
+        "faceid",
+        "health",
+        "homekit",
+        "location",
+        "medialibrary",
+        "microphone",
+        "motion",
+        "notifications",
+        "photos",
+        "reminders",
+        "siri",
+        "speech",
+        "usertracking",
+    )
+
+    private fun translatePermissionValue(value: String): String {
+        return when (value) {
+            "allow" -> "YES"
+            "deny" -> "NO"
+            else -> value
+        }
+    }
+
+    private fun allowValueForPermission(permission: String): String {
+        return when (permission) {
+            "location" -> "always"
+            else -> "YES"
+        }
+    }
+
+    private fun denyValueForPermission(permission: String): String {
+        return when (permission) {
+            "location" -> "never"
+            else -> "NO"
+        }
     }
 }

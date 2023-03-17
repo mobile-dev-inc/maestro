@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit
 class XCTestDriverClient(
     private val host: String = "localhost",
     private val port: Int = 22087,
-    private val installNetworkInterceptor: Boolean,
     private val restoreConnection: () -> Boolean = { false }
 ) {
 
@@ -31,53 +30,12 @@ class XCTestDriverClient(
         })
     }
 
-    private val okHttpClient by lazy {
-        if (installNetworkInterceptor) {
-            OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(Interceptor {
-                    val request = it.request()
-                    try {
-                        it.proceed(request)
-                    } catch (connectException: IOException) {
-                        if (restoreConnection()) {
-                            it.proceed(request)
-                        } else {
-                            throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                        }
-                    }
-                }).addNetworkInterceptor(Interceptor {
-                    val request = it.request()
-                    try {
-                        it.proceed(request)
-                    } catch (connectException: IOException) {
-                        if (restoreConnection() || isShuttingDown) {
-                            Response.Builder()
-                                .request(it.request())
-                                .protocol(Protocol.HTTP_1_1)
-                                .code(200)
-                                .build()
-                        } else {
-                            throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                        }
-                    }
-                }).build()
-        } else {
-            OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(Interceptor {
-                    try {
-                        val request = it.request()
-                        it.proceed(request)
-                    } catch (exception: IOException) {
-                        throw XCTestDriverUnreachable("Failed to reach out XCUITest Server")
-                    }
-                })
-                .build()
-        }
-    }
+    private val okHttpClient = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addRetryOnErrorInterceptor()
+        .addReturnOkOnShutdownInterceptor()
+        .build()
 
     class XCTestDriverUnreachable(message: String) : IOException(message)
 
@@ -122,98 +80,41 @@ class XCTestDriverClient(
     }
 
     fun runningAppId(appIds: Set<String>): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val appIdsRequest = GetRunningAppRequest(appIds)
-        val body = mapper.writeValueAsString(appIdsRequest).toRequestBody(mediaType)
-
-        val url = xctestAPIBuilder("runningApp")
-            .build()
-        val request = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(url)
-            .post(body)
-            .build()
-
-        return okHttpClient.newCall(request).execute()
+        return executeJsonRequest("runningApp", GetRunningAppRequest(appIds))
     }
 
     fun swipe(
-        appId: String,
-        startX: Float,
-        startY: Float,
-        endX: Float,
-        endY: Float,
-        velocity: Float? = null
+        startX: Double,
+        startY: Double,
+        endX: Double,
+        endY: Double,
+        duration: Double
     ): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val request = SwipeRequest(
+        return executeJsonRequest("swipe", SwipeRequest(
             startX = startX,
             startY = startY,
             endX = endX,
             endY = endY,
-            velocity = velocity
-        )
-        val body = mapper.writeValueAsString(request).toRequestBody(mediaType)
-
-        val url = xctestAPIBuilder("swipe")
-            .addQueryParameter("appId", appId)
-            .build()
-
-        val httpRequest = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(url)
-            .post(body)
-            .build()
-
-        return okHttpClient.newCall(httpRequest).execute()
+            duration = duration
+        ))
     }
 
     fun inputText(
-        appId: String,
         text: String,
     ): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val request = InputTextRequest(
-            text = text,
-        )
-        val body = mapper.writeValueAsString(request).toRequestBody(mediaType)
-
-        val url = xctestAPIBuilder("inputText")
-            .addQueryParameter("appId", appId)
-            .build()
-
-        val httpRequest = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(url)
-            .post(body)
-            .build()
-
-        return okHttpClient.newCall(httpRequest).execute()
+        return executeJsonRequest("inputText", InputTextRequest(text))
     }
 
     fun tap(
-        appId: String,
         x: Float,
-        y: Float
+        y: Float,
+        duration: Double? = null
     ): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val request = TouchRequest(
+        return executeJsonRequest("touch", TouchRequest(
             x = x,
             y = y,
-        )
-        val body = mapper.writeValueAsString(request).toRequestBody(mediaType)
-
-        val url = xctestAPIBuilder("touch")
-            .addQueryParameter("appId", appId)
-            .build()
-
-        val httpRequest = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(url)
-            .post(body)
-            .build()
-
-        return okHttpClient.newCall(httpRequest).execute()
+            duration = duration
+        ))
     }
 
     private fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
@@ -223,4 +124,48 @@ class XCTestDriverClient(
             .addPathSegment(pathSegment)
             .port(port)
     }
+
+    private fun executeJsonRequest(url: String, body: Any): Response {
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
+
+        val requestBuilder = Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .url(xctestAPIBuilder(url).build())
+            .post(bodyData)
+
+        return okHttpClient.newCall(requestBuilder.build()).execute()
+    }
+
+    private fun OkHttpClient.Builder.addRetryOnErrorInterceptor() = addInterceptor(Interceptor {
+        val request = it.request()
+        try {
+            it.proceed(request)
+        } catch (connectException: IOException) {
+            if (restoreConnection()) {
+                it.proceed(request)
+            } else {
+                throw XCTestDriverUnreachable("Failed to reach out XCUITest Server in RetryOnError")
+            }
+        }
+    })
+
+    private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
+        val request = it.request()
+        try {
+            it.proceed(request)
+        } catch (connectException: IOException) {
+            // Fake an Ok response when shutting down and receiving an error
+            // to prevent a stack trace in the cli when running maestro studio.
+            if (isShuttingDown) {
+                Response.Builder()
+                    .request(it.request())
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .build()
+            } else {
+                throw XCTestDriverUnreachable("Failed to reach out XCUITest Server in ReturnOkOnShutdown")
+            }
+        }
+    })
 }
