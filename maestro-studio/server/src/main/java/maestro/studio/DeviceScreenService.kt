@@ -102,7 +102,7 @@ object DeviceScreenService {
             val textIndex = if (text == null) {
                 null
             } else {
-                getIndex(Filters.textMatches(text.toRegexSafe(Orchestra.REGEX_OPTIONS)).asFilter(), element)
+                getIndex(Filters.textMatches(text.toRegexSafe(Orchestra.REGEX_OPTIONS)), element)
             }
             val resourceIdIndex = if (resourceId == null) {
                 null

@@ -455,7 +455,7 @@ class AndroidDriver(
     }
 
     private fun filterByText(textRegex: String): UiElement? {
-        val textMatcher = Filters.textMatches(textRegex.toRegexSafe(REGEX_OPTIONS)).asFilter()
+        val textMatcher = Filters.textMatches(textRegex.toRegexSafe(REGEX_OPTIONS))
         val filterFunc = Filters.deepestMatchingElement(textMatcher)
         return filterFunc(contentDescriptor().aggregate()).firstOrNull()?.toUiElementOrNull()
     }

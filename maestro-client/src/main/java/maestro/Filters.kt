@@ -54,41 +54,43 @@ object Filters {
         nodes.filter { this(it) }
     }
 
-    fun textMatches(regex: Regex): ElementLookupPredicate {
-        return { textAttributeMatches(it, regex) || hintTextMatches(it, regex) || accessibilityTextMatches(it, regex) }
-    }
+    fun textMatches(regex: Regex): ElementFilter {
+        return { nodes ->
+            val textMatches = nodes.filter {
+                it.attributes["text"]?.let { value ->
+                    val strippedValue = value.replace('\n', ' ')
 
-    private fun accessibilityTextMatches(treeNode: TreeNode, regex: Regex): Boolean {
-        return treeNode.attributes["accessibilityText"]?.let { value ->
-            val strippedValue = value.replace('\n', ' ')
+                    regex.matches(value)
+                        || regex.pattern == value
+                        || regex.matches(strippedValue)
+                        || regex.pattern == strippedValue
+                } ?: false
+            }.toSet()
 
-            regex.matches(value)
-                || regex.pattern == value
-                || regex.matches(strippedValue)
-                || regex.pattern == strippedValue
-        } ?: false
-    }
+            val hintTextMatches = nodes.filter {
+                it.attributes["hintText"]?.let { value ->
+                    val strippedValue = value.replace('\n', ' ')
 
-    private fun textAttributeMatches(treeNode: TreeNode, regex: Regex): Boolean {
-        return treeNode.attributes["text"]?.let { value ->
-            val strippedValue = value.replace('\n', ' ')
+                    regex.matches(value)
+                        || regex.pattern == value
+                        || regex.matches(strippedValue)
+                        || regex.pattern == strippedValue
+                } ?: false
+            }
 
-            regex.matches(value)
-                || regex.pattern == value
-                || regex.matches(strippedValue)
-                || regex.pattern == strippedValue
-        } ?: false
-    }
+            val accessibilityTextMatches = nodes.filter {
+                it.attributes["accessibilityText"]?.let { value ->
+                    val strippedValue = value.replace('\n', ' ')
 
-    private fun hintTextMatches(treeNode: TreeNode, regex: Regex): Boolean {
-        return treeNode.attributes["hintText"]?.let { value ->
-            val strippedValue = value.replace('\n', ' ')
+                    regex.matches(value)
+                        || regex.pattern == value
+                        || regex.matches(strippedValue)
+                        || regex.pattern == strippedValue
+                } ?: false
+            }.toSet()
 
-            regex.matches(value)
-                || regex.pattern == value
-                || regex.matches(strippedValue)
-                || regex.pattern == strippedValue
-        } ?: false
+            textMatches.union(hintTextMatches).union(accessibilityTextMatches).toList()
+        }
     }
 
     fun idMatches(regex: Regex): ElementFilter {
