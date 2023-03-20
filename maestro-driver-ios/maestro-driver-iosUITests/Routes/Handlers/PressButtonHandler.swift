@@ -14,7 +14,14 @@ struct PressButtonHandler: HTTPHandler {
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         let requestBody = try JSONDecoder().decode(PressButtonRequest.self, from: request.body)
-        XCUIDevice.shared.press(requestBody.xctestButton)
+        
+        switch requestBody.button {
+        case .home:
+            XCUIDevice.shared.press(.home)
+        case .lock:
+            XCUIDevice.shared.perform(NSSelectorFromString("pressLockButton"))
+        }
+
         return HTTPResponse(statusCode: .ok)
     }
 }
