@@ -12,15 +12,6 @@ struct PressKeyHandler: HTTPHandler {
         category: String(describing: Self.self)
     )
 
-    let keyNameMap: [String: XCUIKeyboardKey] = [
-        "delete": .delete,
-        "return": .`return`,
-        "enter": .enter,
-        "tab": .tab,
-        "space": .space,
-        "escape": .escape,
-    ]
-
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         guard let requestBody = try? JSONDecoder().decode(PressKeyRequest.self, from: request.body) else {
             let errorData = handleError(message: "incorrect request body provided")
