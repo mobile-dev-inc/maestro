@@ -13,8 +13,11 @@ struct PressButtonHandler: HTTPHandler {
     )
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
-        let requestBody = try JSONDecoder().decode(PressButtonRequest.self, from: request.body)
-        
+        guard let requestBody = try? JSONDecoder().decode(PressButtonRequest.self, from: request.body) else {
+            let errorData = handleError(message: "incorrect request body provided")
+            return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
+        }
+
         switch requestBody.button {
         case .home:
             XCUIDevice.shared.press(.home)
@@ -23,5 +26,13 @@ struct PressButtonHandler: HTTPHandler {
         }
 
         return HTTPResponse(statusCode: .ok)
+    }
+
+    private func handleError(message: String) -> Data {
+        logger.error("Failed - \(message)")
+        let jsonString = """
+         { "errorMessage" : \(message) }
+        """
+        return Data(jsonString.utf8)
     }
 }

@@ -14,7 +14,11 @@ struct EraseTextHandler: HTTPHandler {
     )
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
-        let requestBody = try JSONDecoder().decode(EraseTextRequest.self, from: request.body)
+        guard let requestBody = try? JSONDecoder().decode(EraseTextRequest.self, from: request.body) else {
+            let errorData = handleError(message: "incorrect request body provided")
+            return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
+        }
+
         let deleteText = String(repeating: XCUIKeyboardKey.delete.rawValue, count: requestBody.charactersToErase)
         var eventPath = PointerEventPath.pathForTextInput()
         eventPath.type(text: deleteText, typingSpeed: typingFrequency)
@@ -23,5 +27,13 @@ struct EraseTextHandler: HTTPHandler {
         try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
 
         return HTTPResponse(statusCode: .ok)
+    }
+
+    private func handleError(message: String) -> Data {
+        logger.error("Failed - \(message)")
+        let jsonString = """
+         { "errorMessage" : \(message) }
+        """
+        return Data(jsonString.utf8)
     }
 }

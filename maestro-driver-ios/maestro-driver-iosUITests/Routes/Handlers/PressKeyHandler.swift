@@ -16,7 +16,6 @@ struct PressKeyHandler: HTTPHandler {
         guard let requestBody = try? JSONDecoder().decode(PressKeyRequest.self, from: request.body) else {
             let errorData = handleError(message: "incorrect request body provided")
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
-
         }
 
         var eventPath = PointerEventPath.pathForTextInput()
