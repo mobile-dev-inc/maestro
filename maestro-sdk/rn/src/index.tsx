@@ -17,10 +17,6 @@ const MaestroRnSdk = NativeModules.MaestroRnSdk
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return MaestroRnSdk.multiply(a, b);
-}
-
 export function setup(projectId: string): Promise<boolean> {
   return MaestroRnSdk.setup(projectId);
 }

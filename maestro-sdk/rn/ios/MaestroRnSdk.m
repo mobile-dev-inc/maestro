@@ -2,10 +2,6 @@
 
 @interface RCT_EXTERN_MODULE(MaestroRnSdk, NSObject)
 
-RCT_EXTERN_METHOD(multiply:(float)a withB:(float)b
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
 RCT_EXTERN_METHOD(setup:(NSString)projectId
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
