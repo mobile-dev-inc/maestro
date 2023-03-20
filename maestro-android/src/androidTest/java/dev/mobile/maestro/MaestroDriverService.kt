@@ -95,7 +95,6 @@ class MaestroDriverService {
         while (!Thread.interrupted()) {
             Thread.sleep(100)
         }
-        ToastAccessibilityListener.stop()
     }
 
 }

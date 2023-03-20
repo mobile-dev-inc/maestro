@@ -22,13 +22,8 @@ object ToastAccessibilityListener : UiAutomation.OnAccessibilityEventListener {
             accessibilityEvent.className.toString().contains(Toast::class.jvmName)
         ) {
             recentToastTimeMillis = System.currentTimeMillis()
-            Log.d("Maestro", "Toast received")
             toastNode = AccessibilityNodeInfo().apply {
-                text = if (accessibilityEvent.text.size == 1) {
-                    accessibilityEvent.text.first().toString()
-                } else {
-                    accessibilityEvent.text.joinToString { ", " }
-                }
+                text = accessibilityEvent.text.first().toString()
                 className = Toast::class.jvmName
                 isVisibleToUser = true
                 viewIdResourceName = ""
@@ -37,6 +32,7 @@ object ToastAccessibilityListener : UiAutomation.OnAccessibilityEventListener {
                 isChecked = accessibilityEvent.isChecked
                 isClickable = false
                 isEnabled = accessibilityEvent.isEnabled
+                Log.d("Maestro", "Toast received with $text")
             }
         }
     }

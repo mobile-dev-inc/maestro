@@ -648,7 +648,9 @@ class AndroidDriver(
             }
 
             if (node.hasAttribute("class") && node.getAttribute("class") == TOAST_CLASS_NAME) {
-                attributesBuilder["class"] = node.getAttribute("class")
+                attributesBuilder["ignoreBoundsFiltering"] = true.toString()
+            } else {
+                attributesBuilder["ignoreBoundsFiltering"] = false.toString()
             }
 
             if (node.hasAttribute("resource-id")) {
@@ -781,7 +783,7 @@ class AndroidDriver(
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
 
-        const val TOAST_CLASS_NAME = "android.widget.Toast"
+        private const val TOAST_CLASS_NAME = "android.widget.Toast"
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()
         private val PORT_TO_ALLOCATION_POINT = mutableMapOf<Int, String>()
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005

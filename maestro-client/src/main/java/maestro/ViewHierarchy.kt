@@ -20,7 +20,6 @@
 package maestro
 
 import maestro.UiElement.Companion.toUiElement
-import maestro.drivers.AndroidDriver.Companion.TOAST_CLASS_NAME
 
 @JvmInline
 value class ViewHierarchy(val root: TreeNode) {
@@ -101,8 +100,7 @@ value class ViewHierarchy(val root: TreeNode) {
 }
 
 fun TreeNode.filterOutOfBounds(width: Int, height: Int): TreeNode? {
-    if (attributes.containsKey("class") && attributes["class"] == TOAST_CLASS_NAME) {
-        attributes.remove("class")
+    if (attributes.containsKey("ignoreBoundsFiltering") && attributes["ignoreBoundsFiltering"] == "true") {
         return this
     }
 
