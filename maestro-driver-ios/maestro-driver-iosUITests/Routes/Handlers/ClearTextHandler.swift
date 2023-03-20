@@ -23,12 +23,4 @@ struct ClearTextHandler: HTTPHandler {
 
         return HTTPResponse(statusCode: .ok)
     }
-
-    private func handleError(message: String) -> Data {
-        logger.error("Failed - \(message)")
-        let jsonString = """
-         { "errorMessage" : \(message) }
-        """
-        return Data(jsonString.utf8)
-    }
 }
