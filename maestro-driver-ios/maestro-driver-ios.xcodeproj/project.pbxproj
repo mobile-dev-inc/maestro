@@ -30,7 +30,8 @@
 		61C0AFE729C7AB0C005D1FC5 /* PressKeyHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFE629C7AB0C005D1FC5 /* PressKeyHandler.swift */; };
 		61C0AFE929C86378005D1FC5 /* PressButtonRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFE829C86378005D1FC5 /* PressButtonRequest.swift */; };
 		61C0AFEB29C863BB005D1FC5 /* PressButtonHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFEA29C863BB005D1FC5 /* PressButtonHandler.swift */; };
-		61C0AFED29C88926005D1FC5 /* ClearTextHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFEC29C88926005D1FC5 /* ClearTextHandler.swift */; };
+		61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFEC29C88926005D1FC5 /* EraseTextHandler.swift */; };
+		61C0AFEF29C8961F005D1FC5 /* EraseTextRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C0AFEE29C8961F005D1FC5 /* EraseTextRequest.swift */; };
 		9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9407362D2940CA1600A72E99 /* GetRunningAppRequest.swift */; };
 		94256BAD298D39DE00CDB55D /* ScreenDiffHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94256BAC298D39DE00CDB55D /* ScreenDiffHandler.swift */; };
 		943A9081293F5C2500C85136 /* RouteHandlerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943A9080293F5C2500C85136 /* RouteHandlerFactory.swift */; };
@@ -77,7 +78,8 @@
 		61C0AFE629C7AB0C005D1FC5 /* PressKeyHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressKeyHandler.swift; sourceTree = "<group>"; };
 		61C0AFE829C86378005D1FC5 /* PressButtonRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PressButtonRequest.swift; sourceTree = "<group>"; };
 		61C0AFEA29C863BB005D1FC5 /* PressButtonHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PressButtonHandler.swift; sourceTree = "<group>"; };
-		61C0AFEC29C88926005D1FC5 /* ClearTextHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClearTextHandler.swift; sourceTree = "<group>"; };
+		61C0AFEC29C88926005D1FC5 /* EraseTextHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EraseTextHandler.swift; sourceTree = "<group>"; };
+		61C0AFEE29C8961F005D1FC5 /* EraseTextRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EraseTextRequest.swift; sourceTree = "<group>"; };
 		9407362D2940CA1600A72E99 /* GetRunningAppRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRunningAppRequest.swift; sourceTree = "<group>"; };
 		94256BAC298D39DE00CDB55D /* ScreenDiffHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDiffHandler.swift; sourceTree = "<group>"; };
 		943A9080293F5C2500C85136 /* RouteHandlerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteHandlerFactory.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				32ECCB252980449200A1A0A0 /* TouchRequest.swift */,
 				61C0AFE429C7AAB3005D1FC5 /* PressKeyRequest.swift */,
 				61C0AFE829C86378005D1FC5 /* PressButtonRequest.swift */,
+				61C0AFEE29C8961F005D1FC5 /* EraseTextRequest.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -207,7 +210,7 @@
 				94256BAC298D39DE00CDB55D /* ScreenDiffHandler.swift */,
 				61C0AFE629C7AB0C005D1FC5 /* PressKeyHandler.swift */,
 				61C0AFEA29C863BB005D1FC5 /* PressButtonHandler.swift */,
-				61C0AFEC29C88926005D1FC5 /* ClearTextHandler.swift */,
+				61C0AFEC29C88926005D1FC5 /* EraseTextHandler.swift */,
 			);
 			path = Handlers;
 			sourceTree = "<group>";
@@ -343,8 +346,9 @@
 				612DE4122984114B003C2BE0 /* RunnerDaemonProxy.swift in Sources */,
 				61C0AFEB29C863BB005D1FC5 /* PressButtonHandler.swift in Sources */,
 				9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */,
-				61C0AFED29C88926005D1FC5 /* ClearTextHandler.swift in Sources */,
+				61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */,
 				32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */,
+				61C0AFEF29C8961F005D1FC5 /* EraseTextRequest.swift in Sources */,
 				943A9084293F5CC400C85136 /* SubTreeRouteHandler.swift in Sources */,
 				613E87DF299BE78400FF8551 /* KeyModifierFlags.swift in Sources */,
 				94A90DDE298AE72A006EB769 /* XCUIElement+Extensions.swift in Sources */,
