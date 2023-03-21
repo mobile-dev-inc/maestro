@@ -14,7 +14,6 @@ import maestro.logger.Logger
 import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
-import xcuitest.api.DeviceInfoResponse
 import xcuitest.api.GetRunningAppIdResponse
 import xcuitest.api.IsScreenStaticResponse
 import xcuitest.installer.XCTestInstaller
@@ -53,17 +52,10 @@ class XCTestIOSDevice(
 
                 body ?: throw UnknownFailure("Error: response body missing")
 
-                val responseBody = mapper.readValue(body, DeviceInfoResponse::class.java)
-                logger.info("Device info $responseBody")
+                val deviceInfo = mapper.readValue(body, DeviceInfo::class.java)
+                logger.info("Device info $deviceInfo")
 
-                // Warning: assuming pixels == points
-                // pixel values are not used in the iOS driver
-                DeviceInfo(
-                    widthPixels = responseBody.widthPoints,
-                    heightPixels = responseBody.heightPoints,
-                    widthPoints = responseBody.widthPoints,
-                    heightPoints = responseBody.heightPoints,
-                )
+                deviceInfo
             }
         }
     }
