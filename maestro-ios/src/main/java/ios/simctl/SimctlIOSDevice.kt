@@ -133,6 +133,7 @@ class SimctlIOSDevice(
 
                     byteChannel.close()
                     buffer.close()
+                    file.delete()
                 }
             }
         }

@@ -364,7 +364,11 @@ object Simctl {
         )
     }
 
-    data class ScreenRecording(val process: Process, val file: File)
+    data class ScreenRecording(
+        val process: Process,
+        val file: File
+    )
+
     fun startScreenRecording(deviceId: String): ScreenRecording {
         val tempDir = createTempDirectory()
         val script = Simctl::class.java.getResource("/screenrecord.sh")!!.file
