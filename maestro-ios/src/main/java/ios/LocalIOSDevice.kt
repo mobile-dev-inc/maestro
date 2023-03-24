@@ -1,11 +1,8 @@
 package ios
 
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.recoverIf
-import hierarchy.XCUIElement
+import hierarchy.ElementNode
 import ios.device.DeviceInfo
-import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
 import ios.xctest.XCTestIOSDevice
 import okio.Sink
@@ -14,13 +11,11 @@ import java.io.InputStream
 
 class LocalIOSDevice(
     override val deviceId: String?,
-    private val idbIOSDevice: IdbIOSDevice,
     private val xcTestDevice: XCTestIOSDevice,
     private val simctlIOSDevice: SimctlIOSDevice,
 ) : IOSDevice {
 
     override fun open() {
-        idbIOSDevice.open()
         xcTestDevice.open()
     }
 
@@ -28,15 +23,8 @@ class LocalIOSDevice(
         return xcTestDevice.deviceInfo()
     }
 
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
+    override fun contentDescriptor(): Result<ElementNode, Throwable> {
         return xcTestDevice.contentDescriptor()
-            .recoverIf(
-                { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
-                {
-                    idbIOSDevice.contentDescriptor()
-                        .getOrThrow()
-                }
-            )
     }
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
@@ -47,20 +35,8 @@ class LocalIOSDevice(
         return xcTestDevice.longPress(x, y, durationMs)
     }
 
-    override fun pressKey(code: Int): Result<Unit, Throwable> {
-        return if (code == 40) {
-            xcTestDevice.pressKey(code)
-        } else {
-            idbIOSDevice.pressKey(code)
-        }
-    }
-
     override fun pressKey(name: String) {
         xcTestDevice.pressKey(name)
-    }
-
-    override fun pressButton(code: Int): Result<Unit, Throwable> {
-        return idbIOSDevice.pressButton(code)
     }
 
     override fun pressButton(name: String) {
@@ -90,11 +66,11 @@ class LocalIOSDevice(
     }
 
     override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pullAppState(id, file)
+        TODO("Not yet implemented")
     }
 
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pushAppState(id, file)
+        TODO("Not yet implemented")
     }
 
     override fun clearAppState(id: String): Result<Unit, Throwable> {
@@ -130,11 +106,10 @@ class LocalIOSDevice(
     }
 
     override fun isShutdown(): Boolean {
-        return idbIOSDevice.isShutdown() && xcTestDevice.isShutdown()
+        return xcTestDevice.isShutdown()
     }
 
     override fun close() {
-        idbIOSDevice.close()
         xcTestDevice.close()
         simctlIOSDevice.close()
     }

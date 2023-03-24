@@ -3,7 +3,7 @@ package ios.simctl
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
-import hierarchy.XCUIElement
+import hierarchy.ElementNode
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
@@ -28,7 +28,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
+    override fun contentDescriptor(): Result<ElementNode, Throwable> {
         TODO("Not yet implemented")
     }
 
@@ -40,15 +40,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun pressKey(code: Int): Result<Unit, Throwable> {
-        TODO("Not yet implemented")
-    }
-
     override fun pressKey(name: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun pressButton(code: Int): Result<Unit, Throwable> {
         TODO("Not yet implemented")
     }
 

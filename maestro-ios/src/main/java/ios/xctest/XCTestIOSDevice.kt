@@ -6,7 +6,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
-import hierarchy.XCUIElement
+import hierarchy.ElementNode
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
@@ -51,7 +51,7 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
+    override fun contentDescriptor(): Result<ElementNode, Throwable> {
         val appId = activeAppId() ?: error("Unable to obtain active app id")
 
         return when (val result = getViewHierarchy(appId)) {
@@ -60,14 +60,14 @@ class XCTestIOSDevice(
         }
     }
 
-    private fun getViewHierarchy(appId: String): Result<XCUIElement, Throwable> {
+    private fun getViewHierarchy(appId: String): Result<ElementNode, Throwable> {
         return try {
             client.subTree(appId).use {
                 if (it.isSuccessful) {
-                    val xcUiElement = it.body?.let { response ->
-                        mapper.readValue(String(response.bytes()), XCUIElement::class.java)
+                    val xcUiElementNode = it.body?.let { response ->
+                        mapper.readValue(String(response.bytes()), ElementNode::class.java)
                     } ?: error("View Hierarchy not available, response body is null")
-                    Ok(xcUiElement)
+                    Ok(xcUiElementNode)
                 } else {
                     val err = it.body?.let { response ->
                         val errorResponse = String(response.bytes()).trim()
@@ -104,19 +104,8 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun pressKey(code: Int): Result<Unit, Throwable> {
-        return runCatching {
-            if (code != 40) throw IllegalStateException("XCTest can only press the enter key (code 40)")
-            client.inputText("\n")
-        }
-    }
-
     override fun pressKey(name: String) {
         client.pressKey(name).use {}
-    }
-
-    override fun pressButton(code: Int): Result<Unit, Throwable> {
-        error("Not supported")
     }
 
     override fun pressButton(name: String) {

@@ -21,12 +21,9 @@ package maestro.cli.session
 
 import dadb.Dadb
 import dadb.adbserver.AdbServer
-import io.grpc.ManagedChannelBuilder
 import ios.LocalIOSDevice
-import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
 import ios.xctest.XCTestIOSDevice
-import maestro.LocalIdbRunner
 import maestro.Maestro
 import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
@@ -44,7 +41,6 @@ import kotlin.concurrent.thread
 
 object MaestroSessionManager {
     private const val defaultHost = "localhost"
-    private const val defaultIdbPort = 10882
     private const val defaultXcTestPort = 22087
 
     private val executor = Executors.newScheduledThreadPool(1)
@@ -122,18 +118,14 @@ object MaestroSessionManager {
                 port = port,
                 deviceId = deviceId,
             )
-        }
-
-        if (isIOS(host, port)) {
+        } else {
             return SelectedDevice(
                 platform = Platform.IOS,
-                host = host,
-                port = port,
+                host = null,
+                port = null,
                 deviceId = deviceId,
             )
         }
-
-        error("No devices found.")
     }
 
     private fun createMaestro(
@@ -156,8 +148,6 @@ object MaestroSessionManager {
                     }
 
                     Platform.IOS -> createIOS(
-                        selectedDevice.host,
-                        selectedDevice.port,
                         selectedDevice.device.instanceId,
                         !connectToExistingSession
                     )
@@ -176,8 +166,6 @@ object MaestroSessionManager {
             )
             selectedDevice.platform == Platform.IOS -> MaestroSession(
                 maestro = pickIOSDevice(
-                    selectedDevice.host,
-                    selectedDevice.port,
                     selectedDevice.deviceId,
                     !connectToExistingSession,
                 ),
@@ -202,20 +190,6 @@ object MaestroSessionManager {
             }
 
             dadb.close()
-
-            true
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    private fun isIOS(host: String?, port: Int?): Boolean {
-        return try {
-            val channel = ManagedChannelBuilder.forAddress(host ?: defaultHost, port ?: defaultIdbPort)
-                .usePlaintext()
-                .build()
-
-            channel.shutdownNow()
 
             true
         } catch (_: Exception) {
@@ -251,30 +225,17 @@ object MaestroSessionManager {
     }
 
     private fun pickIOSDevice(
-        host: String?,
-        port: Int?,
         deviceId: String?,
         openDriver: Boolean,
     ): Maestro {
         val device = PickDeviceInteractor.pickDevice(deviceId)
-        return createIOS(host, port, device.instanceId, openDriver)
+        return createIOS(device.instanceId, openDriver)
     }
 
     private fun createIOS(
-        host: String?,
-        port: Int?,
         deviceId: String,
         openDriver: Boolean,
     ): Maestro {
-        val idbIOSDevice = IdbIOSDevice(
-            deviceId = deviceId,
-            idbRunner = LocalIdbRunner(
-                host ?: defaultHost,
-                port ?: defaultIdbPort,
-                deviceId,
-            )
-        )
-
         val xcTestInstaller = LocalXCTestInstaller(
             logger = IOSDriverLogger(LocalXCTestInstaller::class.java),
             deviceId = deviceId,
@@ -301,7 +262,6 @@ object MaestroSessionManager {
         val iosDriver = IOSDriver(
             LocalIOSDevice(
                 deviceId = deviceId,
-                idbIOSDevice = idbIOSDevice,
                 xcTestDevice = xcTestDevice,
                 simctlIOSDevice = simctlIOSDevice,
             )

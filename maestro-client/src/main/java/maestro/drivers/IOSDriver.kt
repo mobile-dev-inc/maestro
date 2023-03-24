@@ -24,9 +24,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
-import hierarchy.IdbElementNode
-import hierarchy.XCUIElement
-import hierarchy.XCUIElementNode
+import hierarchy.ElementNode
 import ios.IOSDevice
 import maestro.Capability
 import maestro.DeviceInfo
@@ -180,66 +178,27 @@ class IOSDriver(
         return true
     }
 
-    private fun mapHierarchy(xcUiElement: XCUIElement): TreeNode {
-        return when (xcUiElement) {
-            is XCUIElementNode -> parseXCUIElementNode(xcUiElement)
-            is IdbElementNode -> parseIdbElementNode(xcUiElement)
-            else -> error("Illegal instance for parsing hierarchy")
-        }
-    }
-
-    private fun parseIdbElementNode(xcUiElement: IdbElementNode) = TreeNode(
-        children = xcUiElement.children.map {
-            val attributes = mutableMapOf<String, String>()
-
-            (it.title
-                ?: it.axLabel
-                ?: it.axValue
-                )?.let { title ->
-                    attributes["text"] = title
-                }
-
-            (it.axUniqueId)?.let { resourceId ->
-                attributes["resource-id"] = resourceId
-            }
-
-            it.frame.let { frame ->
-                val left = frame.x.toInt()
-                val top = frame.y.toInt()
-                val right = left + frame.width.toInt()
-                val bottom = top + frame.height.toInt()
-
-                attributes["bounds"] = "[$left,$top][$right,$bottom]"
-            }
-
-            TreeNode(
-                attributes = attributes,
-                enabled = it.enabled,
-            )
-        }
-    )
-
-    private fun parseXCUIElementNode(xcUiElement: XCUIElementNode): TreeNode {
+    private fun mapHierarchy(xcUiElementNode: ElementNode): TreeNode {
         val attributes = mutableMapOf<String, String>()
-        val text = xcUiElement.title?.ifEmpty {
-            xcUiElement.value
+        val text = xcUiElementNode.title?.ifEmpty {
+            xcUiElementNode.value
         }
-        attributes["accessibilityText"] = xcUiElement.label
+        attributes["accessibilityText"] = xcUiElementNode.label
         attributes["text"] = text ?: ""
-        attributes["hintText"] = xcUiElement.placeholderValue ?: ""
-        attributes["resource-id"] = xcUiElement.identifier
-        val right = xcUiElement.frame.x + xcUiElement.frame.width
-        val bottom = xcUiElement.frame.y + xcUiElement.frame.height
-        attributes["bounds"] = "[${xcUiElement.frame.x.toInt()},${xcUiElement.frame.y.toInt()}][${right.toInt()},${bottom.toInt()}]"
-        attributes["enabled"] = xcUiElement.enabled.toString()
-        attributes["focused"] = xcUiElement.hasFocus.toString()
-        attributes["selected"] = xcUiElement.selected.toString()
+        attributes["hintText"] = xcUiElementNode.placeholderValue ?: ""
+        attributes["resource-id"] = xcUiElementNode.identifier
+        val right = xcUiElementNode.frame.x + xcUiElementNode.frame.width
+        val bottom = xcUiElementNode.frame.y + xcUiElementNode.frame.height
+        attributes["bounds"] = "[${xcUiElementNode.frame.x.toInt()},${xcUiElementNode.frame.y.toInt()}][${right.toInt()},${bottom.toInt()}]"
+        attributes["enabled"] = xcUiElementNode.enabled.toString()
+        attributes["focused"] = xcUiElementNode.hasFocus.toString()
+        attributes["selected"] = xcUiElementNode.selected.toString()
 
-        val checked = xcUiElement.elementType in CHECKABLE_ELEMENTS && xcUiElement.value == "1"
+        val checked = xcUiElementNode.elementType in CHECKABLE_ELEMENTS && xcUiElementNode.value == "1"
         attributes["checked"] = checked.toString()
 
         val children = mutableListOf<TreeNode>()
-        val childNodes = xcUiElement.children
+        val childNodes = xcUiElementNode.children
         if (childNodes != null) {
             (0 until childNodes.size).forEach { i ->
                 children += mapHierarchy(childNodes[i])
@@ -249,9 +208,9 @@ class IOSDriver(
         return TreeNode(
             attributes = attributes,
             children = children,
-            enabled = xcUiElement.enabled,
-            focused = xcUiElement.hasFocus,
-            selected = xcUiElement.selected,
+            enabled = xcUiElementNode.enabled,
+            focused = xcUiElementNode.hasFocus,
+            selected = xcUiElementNode.selected,
             checked = checked,
         )
     }
@@ -388,7 +347,7 @@ class IOSDriver(
     }
 
     override fun inputText(text: String) {
-        // silently fail if no XCUIElement has focus
+        // silently fail if no ElementNode has focus
         iosDevice.input(
             text = text,
         )

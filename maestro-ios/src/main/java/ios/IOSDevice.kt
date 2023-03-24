@@ -20,7 +20,7 @@
 package ios
 
 import com.github.michaelbull.result.Result
-import hierarchy.XCUIElement
+import hierarchy.ElementNode
 import ios.device.DeviceInfo
 import okio.Sink
 import java.io.File
@@ -34,17 +34,11 @@ interface IOSDevice : AutoCloseable {
 
     fun deviceInfo(): Result<DeviceInfo, Throwable>
 
-    fun contentDescriptor(): Result<XCUIElement, Throwable>
+    fun contentDescriptor(): Result<ElementNode, Throwable>
 
     fun tap(x: Int, y: Int): Result<Unit, Throwable>
 
     fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable>
-
-    @Deprecated("Use pressKey(name) instead")
-    fun pressKey(code: Int): Result<Unit, Throwable>
-
-    @Deprecated("Use pressButton(name) instead")
-    fun pressButton(code: Int): Result<Unit, Throwable>
 
     fun scroll(
         xStart: Double,
