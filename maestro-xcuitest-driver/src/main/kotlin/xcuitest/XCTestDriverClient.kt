@@ -178,15 +178,15 @@ class XCTestDriverClient(
             try {
                 return it.proceed(request)
             } catch (connectException: IOException) {
-                if (retryAttempt < retryCount) {
-                    retryAttempt += 1
-                    if (!installer.start()) {
-                        throw XCTestDriverUnreachable("Failed to start XCUITest Server in RetryOnError")
-                    }
-                    continue
-                } else {
+                if (retryAttempt >= retryCount) {
                     throw XCTestDriverUnreachable("Failed to reach out XCUITest Server in RetryOnError")
                 }
+
+                if (!installer.start()) {
+                    throw XCTestDriverUnreachable("Failed to start XCUITest Server in RetryOnError")
+                }
+
+                retryAttempt += 1
             }
         }
     }
