@@ -167,17 +167,29 @@ class XCTestDriverClient(
     }
 
     private fun OkHttpClient.Builder.addRetryOnErrorInterceptor() = addInterceptor(Interceptor {
+        // Kotlin lambda's can't contain while (true) loops..
+        retryOnError(it)
+    })
+
+    private fun retryOnError(it: Interceptor.Chain): Response {
+        var retryAttempt = 0
         val request = it.request()
-        try {
-            it.proceed(request)
-        } catch (connectException: IOException) {
-            if (installer.start()) {
-                it.proceed(request)
-            } else {
-                throw XCTestDriverUnreachable("Failed to reach out XCUITest Server in RetryOnError")
+        while (true) {
+            try {
+                return it.proceed(request)
+            } catch (connectException: IOException) {
+                if (retryAttempt < retryCount) {
+                    retryAttempt += 1
+                    if (!installer.start()) {
+                        throw XCTestDriverUnreachable("Failed to start XCUITest Server in RetryOnError")
+                    }
+                    continue
+                } else {
+                    throw XCTestDriverUnreachable("Failed to reach out XCUITest Server in RetryOnError")
+                }
             }
         }
-    })
+    }
 
     private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
         val request = it.request()
@@ -204,5 +216,9 @@ class XCTestDriverClient(
 
     fun close() {
         installer.close()
+    }
+
+    companion object {
+        private const val retryCount = 3
     }
 }
