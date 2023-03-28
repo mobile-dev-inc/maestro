@@ -1,6 +1,7 @@
 package maestro.cli.studio
 
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
@@ -30,6 +31,7 @@ object MaestroStudio {
                 allowHost("localhost:3000")
                 allowHost("studio.mobile.dev", listOf("https"))
                 allowHeader(HttpHeaders.ContentType)
+                allowMethod(HttpMethod.Delete)
             }
             install(StatusPages) {
                 exception<HttpException> { call, cause ->

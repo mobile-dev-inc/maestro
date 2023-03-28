@@ -17,9 +17,9 @@ import java.net.URI
 import java.util.concurrent.Callable
 
 @CommandLine.Command(
-    name = "studio",
+    name = "studio-api",
     hidden = true,
-    description = ["Launch Maestro Studio"],
+    description = ["Launch Maestro Studio API"],
 )
 class StudioCommand : Callable<Int> {
 
@@ -41,18 +41,18 @@ class StudioCommand : Callable<Int> {
             MaestroStudio.setMaestroInstance(session.maestro)
         }
 
-        val studioUrl = "https://studio.mobile.dev"
-        val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
-        println()
-        println(message)
-        tryOpenUrl(studioUrl)
+//        val studioUrl = "https://studio.mobile.dev"
+//        val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
+//        println()
+//        println(message)
+//        tryOpenUrl(studioUrl)
+
+//        println()
+//        println("Tip: Maestro Studio can now run simultaneously alongside other Maestro CLI commands!")
 
         println()
-        println("Tip: Maestro Studio can now run simultaneously alongside other Maestro CLI commands!")
-
-        println()
-        println("Navigate to $studioUrl in your browser to open Maestro Studio. Ctrl-C to exit.".faint())
-
+//        println("Navigate to $studioUrl in your browser to open Maestro Studio. Ctrl-C to exit.".faint())
+        println("Maestro Studio API running on port $port")
         Thread.currentThread().join()
     }
 
