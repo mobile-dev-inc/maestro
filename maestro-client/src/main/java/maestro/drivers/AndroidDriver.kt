@@ -44,6 +44,7 @@ import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
 import maestro_android.MaestroDriverGrpc
+import maestro_android.checkWindowUpdatingRequest
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
 import maestro_android.inputTextRequest
@@ -457,7 +458,7 @@ class AndroidDriver(
 
     private fun autoVerifyChromeAgreement() {
         filterById("com.android.chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
-        waitForAppToSettle(null)
+        waitForAppToSettle(null, null, null)
         filterById("com.android.chrome:id/negative_button")?.let { tap(it.bounds.center()) }
     }
 
@@ -529,7 +530,25 @@ class AndroidDriver(
         return false
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, uiElement: UiElement?, appId: String?): ViewHierarchy? {
+        return if (appId != null) {
+            waitForWindowToSettle(appId, initialHierarchy)
+        } else {
+            ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+        }
+    }
+
+    private fun waitForWindowToSettle(appId: String, initialHierarchy: ViewHierarchy?): ViewHierarchy {
+        val endTime = System.currentTimeMillis() + WINDOW_UPDATE_TIMEOUT_MS
+
+        do {
+            if (blockingStub.isWindowUpdating(checkWindowUpdatingRequest { this.appId = appId }).isWindowUpdating) {
+                ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+            } else {
+                return ViewHierarchy.from(this)
+            }
+        } while (System.currentTimeMillis() < endTime)
+
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
@@ -650,7 +669,7 @@ class AndroidDriver(
                 attributesBuilder["accessibilityText"] = node.getAttribute("content-desc")
             }
 
-            if(node.hasAttribute("hintText")) {
+            if (node.hasAttribute("hintText")) {
                 attributesBuilder["hintText"] = node.getAttribute("hintText")
             }
 
@@ -786,6 +805,7 @@ class AndroidDriver(
     companion object {
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 15000
+        private const val WINDOW_UPDATE_TIMEOUT_MS = 1000
         private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)

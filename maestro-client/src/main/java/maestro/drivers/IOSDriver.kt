@@ -302,7 +302,7 @@ class IOSDriver(
     ) {
         validate(start, end)
 
-        waitForAppToSettle(null)
+        waitForAppToSettle(null, null, appId)
         iosDevice.scroll(
             xStart = start.x.toDouble(),
             yStart = start.y.toDouble(),
@@ -494,7 +494,7 @@ class IOSDriver(
         }
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, uiElement: UiElement?, appId: String?): ViewHierarchy? {
         LOGGER.info("Waiting for animation to end with timeout $SCREEN_SETTLE_TIMEOUT_MS")
         val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
 

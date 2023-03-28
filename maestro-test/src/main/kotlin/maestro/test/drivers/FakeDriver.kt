@@ -31,6 +31,7 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import okio.Sink
@@ -363,7 +364,7 @@ class FakeDriver : Driver {
         }
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, uiElement: UiElement?, appId: String?): ViewHierarchy? {
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
