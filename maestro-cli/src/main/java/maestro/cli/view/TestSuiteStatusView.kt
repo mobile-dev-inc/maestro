@@ -112,8 +112,9 @@ object TestSuiteStatusView {
     fun uploadUrl(
         uploadId: String,
         teamId: String,
-        appId: String
-    ) = "https://console.mobile.dev/uploads/$uploadId?teamId=$teamId&appId=$appId"
+        appId: String,
+        domain: String = "mobile.dev",
+    ) = "https://console.$domain/uploads/$uploadId?teamId=$teamId&appId=$appId"
 
     private fun flowWord(count: Int) = if (count == 1) "Flow" else "Flows"
 
