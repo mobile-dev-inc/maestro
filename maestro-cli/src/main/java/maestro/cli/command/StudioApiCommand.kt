@@ -6,10 +6,6 @@ import maestro.cli.DisableAnsiMixin
 import maestro.cli.device.DeviceService
 import maestro.cli.session.MaestroSessionManager
 import maestro.cli.studio.MaestroStudio
-import maestro.cli.view.blue
-import maestro.cli.view.bold
-import maestro.cli.view.box
-import maestro.cli.view.faint
 import picocli.CommandLine
 import java.awt.Desktop
 import java.net.ServerSocket
@@ -21,7 +17,7 @@ import java.util.concurrent.Callable
     hidden = true,
     description = ["Launch Maestro Studio API"],
 )
-class StudioCommand : Callable<Int> {
+class StudioApiCommand : Callable<Int> {
 
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
@@ -34,24 +30,14 @@ class StudioCommand : Callable<Int> {
         return connectedDevices.isEmpty() || connectedDevices.size > 1
     }
 
-    private fun launchStudio(session: MaestroSessionManager.MaestroSession? = null) {
+    private fun launchApi(session: MaestroSessionManager.MaestroSession? = null) {
         val port = getFreePort()
         MaestroStudio.start(port)
         if (session?.maestro != null) {
             MaestroStudio.setMaestroInstance(session.maestro)
         }
 
-//        val studioUrl = "https://studio.mobile.dev"
-//        val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()
-//        println()
-//        println(message)
-//        tryOpenUrl(studioUrl)
-
-//        println()
-//        println("Tip: Maestro Studio can now run simultaneously alongside other Maestro CLI commands!")
-
         println()
-//        println("Navigate to $studioUrl in your browser to open Maestro Studio. Ctrl-C to exit.".faint())
         println("Maestro Studio API running on port $port")
         Thread.currentThread().join()
     }
@@ -62,26 +48,16 @@ class StudioCommand : Callable<Int> {
         }
 
         if (deferPickDevice()) {
-            // launch Studio without a running session
-            launchStudio()
+            // launch API  without a running session
+            launchApi()
         } else {
-            // create a session normally and launch studio
+            // create a session normally and launch API
             MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, true) { session ->
-                launchStudio(session)
+                launchApi(session)
             }
         }
 
         return 0
-    }
-
-    private fun tryOpenUrl(studioUrl: String) {
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(URI(studioUrl))
-            }
-        } catch (ignore: Exception) {
-            // Do nothing
-        }
     }
 
     private fun getFreePort(): Int {

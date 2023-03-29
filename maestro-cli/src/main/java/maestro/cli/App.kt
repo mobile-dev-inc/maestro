@@ -27,7 +27,7 @@ import maestro.cli.command.LogoutCommand
 import maestro.cli.command.PrintHierarchyCommand
 import maestro.cli.command.QueryCommand
 import maestro.cli.command.RecordCommand
-import maestro.cli.command.StudioCommand
+import maestro.cli.command.StudioApiCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
 import maestro.cli.command.mockserver.MockServerCommand
@@ -56,7 +56,7 @@ import kotlin.system.exitProcess
         LogoutCommand::class,
         NetworkCommand::class,
         BugReportCommand::class,
-        StudioCommand::class,
+        StudioApiCommand::class,
         MockServerCommand::class
     ]
 )
