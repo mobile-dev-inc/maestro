@@ -1,4 +1,4 @@
-package ios.simctl
+package util
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

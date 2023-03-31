@@ -47,7 +47,7 @@ import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import okio.Sink
 import org.slf4j.LoggerFactory
-import util.XCRunnerSimctl
+import util.XCRunnerCLIUtils
 import java.io.File
 import java.nio.file.Files
 import kotlin.collections.set
@@ -438,12 +438,12 @@ class IOSDriver(
     }
 
     override fun setProxy(host: String, port: Int) {
-        XCRunnerSimctl.setProxy(host, port)
+        XCRunnerCLIUtils.setProxy(host, port)
         proxySet = true
     }
 
     override fun resetProxy() {
-        XCRunnerSimctl.resetProxy()
+        XCRunnerCLIUtils.resetProxy()
     }
 
     override fun isShutdown(): Boolean {

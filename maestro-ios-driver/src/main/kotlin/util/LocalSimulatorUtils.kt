@@ -1,4 +1,4 @@
-package ios.simctl
+package util
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -11,7 +11,7 @@ import java.io.InputStream
 import java.lang.ProcessBuilder.Redirect.PIPE
 import kotlin.io.path.createTempDirectory
 
-object Simctl {
+object LocalSimulatorUtils {
 
     data class SimctlError(override val message: String): Throwable(message)
     private val homedir = System.getProperty("user.home")
@@ -373,7 +373,7 @@ object Simctl {
 
     fun startScreenRecording(deviceId: String): ScreenRecording {
         val tempDir = createTempDirectory()
-        val script = Simctl::class.java.getResource("/screenrecord.sh")!!.file
+        val script = LocalSimulatorUtils::class.java.getResource("/screenrecord.sh")!!.file
         val recording = File(tempDir.toFile(), "screenrecording.mov")
 
         val recordingProcess = ProcessBuilder(

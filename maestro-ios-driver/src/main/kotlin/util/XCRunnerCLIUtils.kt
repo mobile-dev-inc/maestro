@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
-object XCRunnerSimctl {
+object XCRunnerCLIUtils {
 
     private const val APP_NAME = "maestro"
     private const val APP_AUTHOR = "mobile_dev"

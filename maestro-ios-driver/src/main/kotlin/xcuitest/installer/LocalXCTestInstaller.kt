@@ -10,7 +10,7 @@ import okio.buffer
 import okio.sink
 import okio.source
 import org.rauschig.jarchivelib.ArchiverFactory
-import util.XCRunnerSimctl
+import util.XCRunnerCLIUtils
 import java.io.File
 import java.net.ConnectException
 import java.util.concurrent.TimeUnit
@@ -34,7 +34,7 @@ class LocalXCTestInstaller(
         stop()
 
         logger.info("[Start] Uninstall XCUITest runner")
-        XCRunnerSimctl.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        XCRunnerCLIUtils.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID)
         logger.info("[Done] Uninstall XCUITest runner")
     }
 
@@ -45,7 +45,7 @@ class LocalXCTestInstaller(
             logger.info("[Done] Stop XCUITest runner")
         }
 
-        val pid = XCRunnerSimctl.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID)
         if (pid != null) {
             ProcessBuilder(listOf("kill", pid.toString()))
                 .start()
@@ -85,12 +85,12 @@ class LocalXCTestInstaller(
     }
 
     override fun isChannelAlive(): Boolean {
-        return XCRunnerSimctl.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID) &&
+        return XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID) &&
             subTreeOfRunnerApp().use { it.isSuccessful }
     }
 
     private fun ensureOpen(): Boolean {
-        XCRunnerSimctl.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID)
+        XCRunnerCLIUtils.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID)
         return MaestroTimer.retryUntilTrue(10_000, 100) {
             try {
                 subTreeOfRunnerApp().use { it.isSuccessful }
@@ -148,7 +148,7 @@ class LocalXCTestInstaller(
             logger.info("[Done] Writing maestro-driver-ios app")
 
             logger.info("[Start] Running XcUITest with xcode build command")
-            xcTestProcess = XCRunnerSimctl.runXcTestWithoutBuild(
+            xcTestProcess = XCRunnerCLIUtils.runXcTestWithoutBuild(
                 deviceId,
                 xctestRunFile.absolutePath
             )
