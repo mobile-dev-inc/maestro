@@ -148,6 +148,18 @@ class XCTestDriverClient(
         return executeJsonRequest("deviceInfo", Unit)
     }
 
+    fun isChannelAlive(): Boolean {
+        return installer.isChannelAlive()
+    }
+
+    fun close() {
+        installer.close()
+    }
+
+    fun setPermissions() {
+
+    }
+
     private fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
         return HttpUrl.Builder()
             .scheme("http")
@@ -199,12 +211,4 @@ class XCTestDriverClient(
             }
         }
     })
-
-    fun isChannelAlive(): Boolean {
-        return installer.isChannelAlive()
-    }
-
-    fun close() {
-        installer.close()
-    }
 }

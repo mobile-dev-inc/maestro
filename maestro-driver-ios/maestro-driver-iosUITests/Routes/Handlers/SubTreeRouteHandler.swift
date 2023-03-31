@@ -12,7 +12,7 @@ final class SubTreeRouteHandler: HTTPHandler {
             logger.error("Requested view hierarchy for an invalid appId")
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest)
         }
-
+        
         do {
             let springboardBundleId = "com.apple.springboard"
             logger.info("Trying to capture hierarchy snapshot for \(appId)")
@@ -22,20 +22,20 @@ final class SubTreeRouteHandler: HTTPHandler {
             
             tapOnSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication,
                                                appName: xcuiApplication.label)
-
+            
             logger.info("[Start] Now trying hierarchy for: \(appId)")
             var viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
             logger.info("[Done] Now trying hierarchy for: \(appId)")
             logger.info("[Start] Now trying hierarchy for: \(springboardBundleId)")
             let springboardHierarchyDictionary = try springboardApplication.snapshot().dictionaryRepresentation
             logger.info("[Done] Now trying hierarchy for: \(springboardBundleId)")
-
+            
             let children = viewHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as? Array<[XCUIElement.AttributeName: Any]>
             let springChildren = springboardHierarchyDictionary[XCUIElement.AttributeName(rawValue: "children")] as? Array<[XCUIElement.AttributeName: Any]>
             let unifiedChildren = (children ?? [[XCUIElement.AttributeName: Any]]()) + (springChildren ?? [[XCUIElement.AttributeName: Any]]())
             viewHierarchyDictionary.updateValue(unifiedChildren as Any, forKey: XCUIElement.AttributeName.children)
-
-
+            
+            
             let end = NSDate().timeIntervalSince1970 * 1000
             logger.info("Successfully got view hierarchy for \(appId) in \(end - start)")
             let hierarchyJsonData = try JSONSerialization.data(
@@ -56,20 +56,36 @@ final class SubTreeRouteHandler: HTTPHandler {
     
     private func getErrorCode(message: String) -> String {
         if message.contains("Error kAXErrorIllegalArgument getting snapshot for element") {
-           return "illegal-argument-snapshot-failure"
+            return "illegal-argument-snapshot-failure"
         } else {
-           return "unknown-snapshot-failure"
+            return "unknown-snapshot-failure"
         }
     }
     
     private func tapOnSystemPermissionAlertIfNeeded(springboardApplication: XCUIApplication, appName: String) {
         let predicate = NSPredicate(format: "label CONTAINS[c] %@", appName)
         
+        guard let permissions = UserDefaults.standard.object(forKey: "permissions") as? [Permission],
+        let notificationsPermission = permissions.first(where: { $0.type == "notifications" }) else {
+            return
+        }
+        
         let alert = springboardApplication.alerts.matching(predicate).element
         if alert.exists {
-            let allowButton = alert.buttons.element(boundBy: 1)
-            if allowButton.exists {
-                allowButton.tap()
+            switch notificationsPermission.value {
+            case .allow:
+                let allowButton = alert.buttons.element(boundBy: 1)
+                if allowButton.exists {
+                    allowButton.tap()
+                }
+            case .deny:
+                let dontAllowButton = alert.buttons.element(boundBy: 0)
+                if dontAllowButton.exists {
+                    dontAllowButton.tap()
+                }
+            case .unset:
+                // do nothing
+                return
             }
         }
     }

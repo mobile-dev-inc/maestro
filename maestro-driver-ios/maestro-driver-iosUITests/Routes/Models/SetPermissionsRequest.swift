@@ -1,8 +1,16 @@
-//
-//  SetPermissionsRequest.swift
-//  maestro-driver-iosUITests
-//
-//  Created by Artem Sidorenko on 31/3/23.
-//
-
 import Foundation
+
+enum PermissionValue: String, Codable {
+    case allow
+    case deny
+    case unset
+}
+
+struct Permission: Codable {
+    let type: String
+    let value: PermissionValue
+}
+
+struct SetPermissionsRequest: Codable {
+    let permissions: [Permission]
+}
