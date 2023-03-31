@@ -19,6 +19,9 @@ final class SubTreeRouteHandler: HTTPHandler {
             let start = NSDate().timeIntervalSince1970 * 1000
             let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
             let springboardApplication = XCUIApplication(bundleIdentifier: springboardBundleId)
+            
+            tapOnSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication,
+                                               appName: xcuiApplication.label)
 
             logger.info("[Start] Now trying hierarchy for: \(appId)")
             var viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
@@ -56,6 +59,18 @@ final class SubTreeRouteHandler: HTTPHandler {
            return "illegal-argument-snapshot-failure"
         } else {
            return "unknown-snapshot-failure"
+        }
+    }
+    
+    private func tapOnSystemPermissionAlertIfNeeded(springboardApplication: XCUIApplication, appName: String) {
+        let predicate = NSPredicate(format: "label CONTAINS[c] %@", appName)
+        
+        let alert = springboardApplication.alerts.matching(predicate).element
+        if alert.exists {
+            let allowButton = alert.buttons.element(boundBy: 1)
+            if allowButton.exists {
+                allowButton.tap()
+            }
         }
     }
 }
