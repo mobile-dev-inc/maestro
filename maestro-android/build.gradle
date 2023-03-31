@@ -132,6 +132,10 @@ sourceSets {
 dependencies {
     protobuf project(':maestro-proto')
 
+    implementation(libs.square.okhttp)
+    implementation(libs.jackson.core.databind)
+    implementation(libs.jackson.module.kotlin)
+
     implementation(libs.grpc.kotlin.stub)
     implementation(libs.grpc.netty.shaded)
     implementation(libs.grpc.stub)

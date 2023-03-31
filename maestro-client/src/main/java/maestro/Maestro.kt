@@ -25,6 +25,7 @@ import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
+import maestro.mockserver.MockInteractor
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
@@ -509,6 +510,19 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun isUnicodeInputSupported(): Boolean {
         return driver.isUnicodeInputSupported()
+    }
+
+    fun assertOutgoingRequest(
+        url: String,
+    ): Boolean {
+        println("url $url")
+        val sessionId = driver.fetchSessionId()
+        println("session $sessionId")
+        val events = MockInteractor().getMockEvents().filter { it.sessionId == sessionId }
+        println("events $events")
+        val rules = OutgoingRequestRules(url=url)
+        val matched = AssertOutgoingRequestService.assert(events, rules)
+        return matched.isNotEmpty()
     }
 
     companion object {
