@@ -158,7 +158,6 @@ class XCTestDriverClient(
     }
 
     fun setPermissions(permissions: Map<String, String>) {
-        println("set permissions $permissions")
         executeJsonRequest("setPermissions", SetPermissionsRequest(permissions))
     }
 
