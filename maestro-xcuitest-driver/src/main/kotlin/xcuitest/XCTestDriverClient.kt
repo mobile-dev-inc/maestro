@@ -15,6 +15,7 @@ import xcuitest.api.EraseTextRequest
 import xcuitest.api.InputTextRequest
 import xcuitest.api.PressButtonRequest
 import xcuitest.api.PressKeyRequest
+import xcuitest.api.SetPermissionsRequest
 import xcuitest.api.SwipeRequest
 import xcuitest.api.TouchRequest
 import xcuitest.installer.XCTestInstaller
@@ -156,8 +157,9 @@ class XCTestDriverClient(
         installer.close()
     }
 
-    fun setPermissions() {
-
+    fun setPermissions(permissions: Map<String, String>) {
+        println("set permissions $permissions")
+        executeJsonRequest("setPermissions", SetPermissionsRequest(permissions))
     }
 
     private fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
