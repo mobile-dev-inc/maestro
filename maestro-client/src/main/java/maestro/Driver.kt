@@ -21,6 +21,7 @@ package maestro
 
 import okio.Sink
 import java.io.File
+import java.util.UUID
 
 interface Driver {
 
@@ -94,4 +95,6 @@ interface Driver {
     fun capabilities(): List<Capability>
 
     fun setPermissions(appId: String, permissions: Map<String, String>)
+
+    fun fetchSessionId(): UUID
 }

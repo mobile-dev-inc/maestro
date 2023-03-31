@@ -37,6 +37,7 @@ import okio.Sink
 import okio.buffer
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.UUID
 import javax.imageio.ImageIO
 
 class FakeDriver : Driver {
@@ -379,6 +380,10 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events.add(Event.SetPermissions(appId, permissions))
+    }
+
+    override fun fetchSessionId(): UUID {
+        TODO("Not yet implemented")
     }
 
     sealed class Event {

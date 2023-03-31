@@ -32,6 +32,7 @@ import org.openqa.selenium.support.ui.WebDriverWait
 import java.io.File
 import java.time.Duration
 import java.util.Random
+import java.util.UUID
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -377,6 +378,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         // no-op for web
+    }
+
+    override fun fetchSessionId(): UUID {
+        TODO("Not yet implemented")
     }
 
     companion object {

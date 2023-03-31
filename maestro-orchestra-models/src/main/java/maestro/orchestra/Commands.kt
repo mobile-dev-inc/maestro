@@ -748,6 +748,18 @@ data class TravelCommand(
 
 }
 
+data class AssertOutgoingRequestsCommand(
+    val url: String
+) : Command {
+    override fun description(): String {
+        return "Assert outgoing requests to $url"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return this
+    }
+}
+
 internal fun tapOrLong(isLongPress: Boolean?): String = if (isLongPress == true) "Long press" else "Tap"
 
 

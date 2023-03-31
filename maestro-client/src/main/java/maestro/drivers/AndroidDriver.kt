@@ -27,7 +27,6 @@ import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
 import maestro.Filters
-import maestro.Filters.asFilter
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.Platform
@@ -49,6 +48,7 @@ import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
 import maestro_android.inputTextRequest
 import maestro_android.screenshotRequest
+import maestro_android.sessionRequest
 import maestro_android.setLocationRequest
 import maestro_android.tapRequest
 import maestro_android.viewHierarchyRequest
@@ -63,6 +63,7 @@ import org.w3c.dom.Node
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -551,6 +552,11 @@ class AndroidDriver(
                 setPermissionInternal(appId, permissionName, permissionValue)
             }
         }
+    }
+
+    override fun fetchSessionId(): UUID {
+        val response = blockingStub.fetchSession(sessionRequest{})
+        return UUID.fromString(response.id)
     }
 
     private fun setAllPermissions(appId: String, permissionValue: String) {

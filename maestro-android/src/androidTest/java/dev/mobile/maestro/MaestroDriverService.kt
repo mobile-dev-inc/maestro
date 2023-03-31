@@ -44,24 +44,30 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiDeviceExt.clickExt
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.ByteString
 import dev.mobile.maestro.sdk.SdkService
+import dev.mobile.maestro.sdk.model.SessionInfo
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
 import maestro_android.MaestroAndroid
 import maestro_android.MaestroDriverGrpc
 import maestro_android.deviceInfo
+import maestro_android.sessionResponse
 import maestro_android.eraseAllTextResponse
 import maestro_android.inputTextResponse
 import maestro_android.screenshotResponse
 import maestro_android.setLocationResponse
 import maestro_android.tapResponse
 import maestro_android.viewHierarchyResponse
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
 import java.util.UUID
-import kotlin.concurrent.thread
+import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 
 /**
@@ -103,6 +109,14 @@ class Service(
     private val uiDevice: UiDevice,
     private val uiAutomation: UiAutomation,
 ) : MaestroDriverGrpc.MaestroDriverImplBase() {
+
+    private val httpClient by lazy {
+        OkHttpClient.Builder()
+            .readTimeout(5, TimeUnit.MINUTES)
+            .writeTimeout(5, TimeUnit.MINUTES)
+            .protocols(listOf(Protocol.HTTP_1_1))
+            .build()
+    }
 
     private val geoHandler = Handler(Looper.getMainLooper())
     private var locationCounter = 0
@@ -284,6 +298,29 @@ class Service(
         postLocation()
 
         responseObserver.onNext(setLocationResponse { })
+        responseObserver.onCompleted()
+    }
+
+    override fun fetchSession(
+        request: MaestroAndroid.SessionRequest,
+        responseObserver: StreamObserver<MaestroAndroid.SessionResponse>
+    ) {
+        val sessionReq = Request.Builder()
+            .get()
+            .url("http://localhost:7008/session")
+            .build()
+
+        val sessionInfo = httpClient
+            .newCall(sessionReq)
+            .execute()
+            .use {
+                jacksonObjectMapper().readValue(
+                    it.body?.bytes(),
+                    SessionInfo::class.java
+                )
+            }
+
+        responseObserver.onNext(sessionResponse { id = sessionInfo.sessionId })
         responseObserver.onCompleted()
     }
 

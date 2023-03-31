@@ -206,12 +206,17 @@ class Orchestra(
             is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
             is MockNetworkCommand -> mockNetworkCommand(command)
             is TravelCommand -> travelCommand(command)
+            is AssertOutgoingRequestsCommand -> assertOutgoingRequestsCommand(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
         }
+    }
+
+    private fun assertOutgoingRequestsCommand(command: AssertOutgoingRequestsCommand): Boolean {
+        return maestro.assertOutgoingRequest(command.url)
     }
 
     private fun travelCommand(command: TravelCommand): Boolean {

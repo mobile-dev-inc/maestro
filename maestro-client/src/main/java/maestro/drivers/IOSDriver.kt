@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
 import java.nio.file.Files
+import java.util.UUID
 import kotlin.collections.set
 
 class IOSDriver(
@@ -492,6 +493,10 @@ class IOSDriver(
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         iosDevice.setPermissions(appId, permissions)
+    }
+
+    override fun fetchSessionId(): UUID {
+        TODO("Not yet implemented")
     }
 
     private fun isScreenStatic(): Boolean {
