@@ -31,6 +31,7 @@ import ios.IOSDevice
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.Filters
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Platform
@@ -38,6 +39,8 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
+import maestro.UiElement.Companion.toUiElement
+import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.utils.FileUtils
 import maestro.utils.MaestroTimer
@@ -224,6 +227,7 @@ class IOSDriver(
         val text = xcUiElement.title?.ifEmpty {
             xcUiElement.value
         }
+        val clickable = if (xcUiElement.elementType == ELEMENT_TYPE_STATIC_TEXT) false else null
         attributes["accessibilityText"] = xcUiElement.label
         attributes["text"] = text ?: ""
         attributes["hintText"] = xcUiElement.placeholderValue ?: ""
@@ -248,6 +252,7 @@ class IOSDriver(
 
         return TreeNode(
             attributes = attributes,
+            clickable = clickable,
             children = children,
             enabled = xcUiElement.enabled,
             focused = xcUiElement.hasFocus,
@@ -373,7 +378,28 @@ class IOSDriver(
     override fun backPress() {}
 
     override fun hideKeyboard() {
-        pressKey(KeyCode.ENTER)
+        tapOnNonClickableText()
+    }
+
+    private fun tapOnNonClickableText() {
+        val filter = Filters.nonClickable()
+        MaestroTimer.retryUntilTrue(10000) {
+            val result = filter(contentDescriptor().aggregate()).map { it.toUiElement() }
+                .any {
+                    tap(it.bounds.center())
+                    isKeyboardHidden()
+                }
+            return@retryUntilTrue result
+        }
+    }
+
+    private fun isKeyboardHidden(): Boolean {
+        val filter = Filters.textMatches("[rR]".toRegex())
+        val element = MaestroTimer.withTimeout(2000) {
+            filter(contentDescriptor().aggregate()).firstOrNull()
+        }?.toUiElementOrNull()
+
+        return element == null
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
@@ -463,6 +489,7 @@ class IOSDriver(
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40
         private const val ELEMENT_TYPE_TOGGLE = 41
+        private const val ELEMENT_TYPE_STATIC_TEXT = 48
 
         private val CHECKABLE_ELEMENTS = setOf(
             ELEMENT_TYPE_CHECKBOX,
