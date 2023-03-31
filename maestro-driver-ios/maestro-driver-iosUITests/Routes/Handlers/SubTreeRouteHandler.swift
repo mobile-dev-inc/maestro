@@ -65,8 +65,9 @@ final class SubTreeRouteHandler: HTTPHandler {
     private func tapOnSystemPermissionAlertIfNeeded(springboardApplication: XCUIApplication, appName: String) {
         let predicate = NSPredicate(format: "label CONTAINS[c] %@", appName)
         
-        guard let permissions = UserDefaults.standard.object(forKey: "permissions") as? [Permission],
-        let notificationsPermission = permissions.first(where: { $0.type == "notifications" }) else {
+        guard let data = UserDefaults.standard.object(forKey: "permissions") as? Data,
+              let permissions = try? JSONDecoder().decode([String : PermissionValue].self, from: data),
+              let notificationsPermission = permissions.first(where: { $0.key == "notifications" }) else {
             return
         }
         

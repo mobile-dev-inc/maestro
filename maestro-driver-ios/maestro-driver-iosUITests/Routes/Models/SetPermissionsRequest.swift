@@ -6,11 +6,6 @@ enum PermissionValue: String, Codable {
     case unset
 }
 
-struct Permission: Codable {
-    let type: String
-    let value: PermissionValue
-}
-
 struct SetPermissionsRequest: Codable {
-    let permissions: [Permission]
+    let permissions: [String : PermissionValue]
 }

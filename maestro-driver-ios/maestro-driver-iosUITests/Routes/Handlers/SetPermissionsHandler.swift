@@ -17,9 +17,13 @@ struct SetPermissionsHandler: HTTPHandler {
             return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
         }
         
-        UserDefaults.standard.set(requestBody.permissions, forKey: "permissions")
-        
-        return HTTPResponse(statusCode: .ok)
+        if let encoded = try? JSONEncoder().encode(requestBody.permissions) {
+            UserDefaults.standard.set(encoded, forKey: "permissions")
+            return HTTPResponse(statusCode: .ok)
+        } else {
+            let errorData = handleError(message: "failed to save permissions data")
+            return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
+        }
     }
     
     private func handleError(message: String) -> Data {
