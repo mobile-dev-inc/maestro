@@ -250,21 +250,23 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun setPermissions(id: String, permissions: Map<String, String>) {
-        val mutable = permissions.toMutableMap()
-        if (mutable.containsKey("all")) {
-            val value = mutable.remove("all")
-            allPermissions.forEach {
-                when (value) {
-                    "allow" -> mutable.putIfAbsent(it, "allow")
-                    "deny" -> mutable.putIfAbsent(it, "deny")
-                    "unset" -> mutable.putIfAbsent(it, "unset")
-                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+    override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
+        return runCatching {
+            val mutable = permissions.toMutableMap()
+            if (mutable.containsKey("all")) {
+                val value = mutable.remove("all")
+                allPermissions.forEach {
+                    when (value) {
+                        "allow" -> mutable.putIfAbsent(it, "allow")
+                        "deny" -> mutable.putIfAbsent(it, "deny")
+                        "unset" -> mutable.putIfAbsent(it, "unset")
+                        else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+                    }
                 }
             }
-        }
 
-        client.setPermissions(mutable)
+            client.setPermissions(mutable)
+        }
     }
 
     override fun eraseText(charactersToErase: Int) {

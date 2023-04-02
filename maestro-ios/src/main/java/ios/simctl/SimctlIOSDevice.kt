@@ -167,8 +167,10 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun setPermissions(id: String, permissions: Map<String, String>) {
-        LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
+    override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
+        return runCatching {
+            LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
+        }
     }
 
     override fun eraseText(charactersToErase: Int) {
