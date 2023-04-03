@@ -378,10 +378,30 @@ class IOSDriver(
     override fun backPress() {}
 
     override fun hideKeyboard() {
-        tapOnNonClickableText()
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.47)),
+            durationMs = 50,
+        )
+
+        if (isKeyboardHidden()) {
+            return
+        }
+
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.47), heightPercentToPoint(0.5)),
+            durationMs = 50,
+        )
+
+        if (isKeyboardHidden()) {
+            return
+        }
+
+        tapOnStaticTexts()
     }
 
-    private fun tapOnNonClickableText() {
+    private fun tapOnStaticTexts() {
         val filter = Filters.nonClickable()
         MaestroTimer.retryUntilTrue(10000) {
             val result = filter(contentDescriptor().aggregate()).map { it.toUiElement() }
@@ -394,7 +414,7 @@ class IOSDriver(
     }
 
     private fun isKeyboardHidden(): Boolean {
-        val filter = Filters.textMatches("[rR]".toRegex())
+        val filter = Filters.idMatches("delete".toRegex())
         val element = MaestroTimer.withTimeout(2000) {
             filter(contentDescriptor().aggregate()).firstOrNull()
         }?.toUiElementOrNull()
