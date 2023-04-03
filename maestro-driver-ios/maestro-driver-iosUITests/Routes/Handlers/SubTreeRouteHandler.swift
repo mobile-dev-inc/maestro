@@ -20,8 +20,8 @@ final class SubTreeRouteHandler: HTTPHandler {
             let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
             let springboardApplication = XCUIApplication(bundleIdentifier: springboardBundleId)
             
-            tapOnSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication,
-                                               appName: xcuiApplication.label)
+            SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication,
+                                                                       appName: xcuiApplication.label)
             
             logger.info("[Start] Now trying hierarchy for: \(appId)")
             var viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
@@ -59,35 +59,6 @@ final class SubTreeRouteHandler: HTTPHandler {
             return "illegal-argument-snapshot-failure"
         } else {
             return "unknown-snapshot-failure"
-        }
-    }
-    
-    private func tapOnSystemPermissionAlertIfNeeded(springboardApplication: XCUIApplication, appName: String) {
-        let predicate = NSPredicate(format: "label CONTAINS[c] %@", appName)
-        
-        guard let data = UserDefaults.standard.object(forKey: "permissions") as? Data,
-              let permissions = try? JSONDecoder().decode([String : PermissionValue].self, from: data),
-              let notificationsPermission = permissions.first(where: { $0.key == "notifications" }) else {
-            return
-        }
-        
-        let alert = springboardApplication.alerts.matching(predicate).element
-        if alert.exists {
-            switch notificationsPermission.value {
-            case .allow:
-                let allowButton = alert.buttons.element(boundBy: 1)
-                if allowButton.exists {
-                    allowButton.tap()
-                }
-            case .deny:
-                let dontAllowButton = alert.buttons.element(boundBy: 0)
-                if dontAllowButton.exists {
-                    dontAllowButton.tap()
-                }
-            case .unset:
-                // do nothing
-                return
-            }
         }
     }
 }
