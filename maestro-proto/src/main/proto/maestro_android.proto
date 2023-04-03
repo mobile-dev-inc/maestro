@@ -17,7 +17,17 @@ service MaestroDriver {
   rpc eraseAllText(EraseAllTextRequest) returns (EraseAllTextResponse) {}
 
   rpc setLocation(SetLocationRequest) returns (SetLocationResponse) {}
+
+  rpc launchApp(LaunchAppRequest) returns (LaunchAppResponse) {}
 }
+
+message LaunchAppRequest {
+
+  string packageName = 1;
+  repeated string arguments = 2;
+
+}
+message LaunchAppResponse {}
 
 // Device info
 message DeviceInfoRequest {}
