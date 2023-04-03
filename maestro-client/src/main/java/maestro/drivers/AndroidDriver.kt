@@ -38,8 +38,6 @@ import maestro.UiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
-import maestro.android.asManifest
-import maestro.android.resolveLauncherActivity
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
@@ -48,6 +46,7 @@ import maestro_android.checkWindowUpdatingRequest
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
 import maestro_android.inputTextRequest
+import maestro_android.launchAppRequest
 import maestro_android.screenshotRequest
 import maestro_android.setLocationRequest
 import maestro_android.tapRequest
@@ -60,7 +59,6 @@ import okio.source
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.util.UUID
@@ -178,21 +176,14 @@ class AndroidDriver(
             throw IllegalArgumentException("Package $appId is not installed")
         }
 
-        try {
-            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
-            val manifest = apkFile.asManifest()
-            runCatching {
-                val sessionUUID = sessionId ?: UUID.randomUUID()
-                dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
-                val launcherActivity = manifest.resolveLauncherActivity(appId)
-                val shellResponse = dadb.shell("am start-activity -n $appId/${launcherActivity}")
-                if (shellResponse.errorOutput.isNotEmpty()) shell("monkey --pct-syskeys 0 -p $appId 1")
-            }.onFailure { shell("monkey --pct-syskeys 0 -p $appId 1") }
-        } catch (ioException: IOException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
-        } catch (saxException: SAXException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
-        }
+        val sessionUUID = sessionId ?: UUID.randomUUID()
+        dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
+        blockingStub.launchApp(
+            launchAppRequest {
+                this.packageName = appId
+                this.arguments.addAll(launchArguments)
+            }
+        ) ?: throw IllegalStateException("Maestro driver failed to launch app")
     }
 
     override fun stopApp(appId: String) {
