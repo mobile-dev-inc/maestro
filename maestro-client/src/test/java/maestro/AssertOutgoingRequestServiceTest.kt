@@ -26,7 +26,7 @@ class AssertOutgoingRequestServiceTest {
     fun `test assert with http method rule`() {
         val events = events()
 
-        val rules = OutgoingRequestRules(assertHttpMethod = "GET")
+        val rules = OutgoingRequestRules(httpMethodIs = "GET")
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(2)
 
@@ -38,7 +38,7 @@ class AssertOutgoingRequestServiceTest {
     fun `test assert with header is present rule`() {
         val events = events()
 
-        val rules = OutgoingRequestRules(assertHeaderIsPresent = "cOnTent-tyPE")
+        val rules = OutgoingRequestRules(headersPresent = listOf("cOnTent-tyPE", "cache-control"))
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(1)
 
@@ -50,7 +50,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(
-            assertHeadersAndValues = mapOf(
+            headersAndValues = mapOf(
                 "content-type" to "application-json",
                 "cache-control" to "no"
             )
@@ -66,7 +66,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(
-            assertRequestBodyContains = "\"name\":\"felipe\""
+            requestBodyContains = "\"name\":\"felipe\""
         )
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(1)
@@ -80,9 +80,9 @@ class AssertOutgoingRequestServiceTest {
 
         val rules = OutgoingRequestRules(
             url = ".*api.company.com\\/[^\\/]+\\/endpoint",
-            assertHttpMethod = "GET",
-            assertHeaderIsPresent = "cOnTent-tyPE",
-            assertHeadersAndValues = mapOf(
+            httpMethodIs = "GET",
+            headersPresent = listOf("cOnTent-tyPE"),
+            headersAndValues = mapOf(
                 "content-type" to "application-json",
                 "cache-control" to "no"
             )

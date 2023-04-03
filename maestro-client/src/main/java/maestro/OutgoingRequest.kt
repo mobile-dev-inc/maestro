@@ -5,10 +5,10 @@ import maestro.utils.StringUtils.toRegexSafe
 
 data class OutgoingRequestRules(
     val url: String? = null,
-    val assertHeaderIsPresent: String? = null,
-    val assertHeadersAndValues: Map<String, String> = emptyMap(),
-    val assertHttpMethod: String? = null,
-    val assertRequestBodyContains: String? = null,
+    val headersPresent: List<String> = emptyList(),
+    val headersAndValues: Map<String, String> = emptyMap(),
+    val httpMethodIs: String? = null,
+    val requestBodyContains: String? = null,
 )
 
 object AssertOutgoingRequestService {
@@ -20,19 +20,19 @@ object AssertOutgoingRequestService {
             events.filter { e -> e.path == url || e.path.matches(url.toRegexSafe(REGEX_OPTIONS)) }
         } ?: events
 
-        val eventsFilteredByHttpMethod = rules.assertHttpMethod?.let { httpMethod ->
+        val eventsFilteredByHttpMethod = rules.httpMethodIs?.let { httpMethod ->
             eventsFilteredByUrl.filter { e -> e.method == httpMethod }
         } ?: eventsFilteredByUrl
 
-        val eventsFilteredByHeader = rules.assertHeaderIsPresent?.let { header ->
-            eventsFilteredByHttpMethod.filter { e -> e.headers?.containsKey(header.lowercase()) == true }
-        } ?: eventsFilteredByHttpMethod
+        val eventsFilteredByHeader = rules.headersPresent.fold(eventsFilteredByHttpMethod) { eventsList, header ->
+            eventsList.filter { e -> e.headers?.containsKey(header.lowercase()) == true }
+        }
 
-        val eventsFilteredByHeadersAndValues = rules.assertHeadersAndValues.entries.fold(eventsFilteredByHeader) { eventsList, (header, value) ->
+        val eventsFilteredByHeadersAndValues = rules.headersAndValues.entries.fold(eventsFilteredByHeader) { eventsList, (header, value) ->
             eventsList.filter { e -> e.headers?.get(header.lowercase()) == value }
         }
 
-        val eventsMatching = rules.assertRequestBodyContains?.let { requestBody ->
+        val eventsMatching = rules.requestBodyContains?.let { requestBody ->
             eventsFilteredByHeadersAndValues.filter { e -> e.bodyAsString?.contains(requestBody) == true }
         } ?: eventsFilteredByHeadersAndValues
 

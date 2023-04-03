@@ -514,7 +514,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun assertOutgoingRequest(
         url: String? = null,
-        assertHeaderIsPresent: String? = null,
+        assertHeaderIsPresent: List<String> = emptyList(),
         assertHeadersAndValues: Map<String, String> = emptyMap(),
         assertHttpMethod: String? = null,
         assertRequestBodyContains: String? = null,
@@ -524,10 +524,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         val rules = OutgoingRequestRules(
             url = url,
-            assertHeaderIsPresent = assertHeaderIsPresent,
-            assertHeadersAndValues = assertHeadersAndValues,
-            assertHttpMethod = assertHttpMethod,
-            assertRequestBodyContains = assertRequestBodyContains,
+            headersPresent = assertHeaderIsPresent,
+            headersAndValues = assertHeadersAndValues,
+            httpMethodIs = assertHttpMethod,
+            requestBodyContains = assertRequestBodyContains,
         )
         val matched = AssertOutgoingRequestService.assert(events, rules)
         return matched.isNotEmpty()

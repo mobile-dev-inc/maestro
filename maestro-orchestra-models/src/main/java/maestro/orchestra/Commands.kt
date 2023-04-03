@@ -750,10 +750,10 @@ data class TravelCommand(
 
 data class AssertOutgoingRequestsCommand(
     val url: String? = null,
-    val assertHeaderIsPresent: String? = null,
-    val assertHeadersAndValues: Map<String, String> = emptyMap(),
-    val assertHttpMethod: String? = null,
-    val assertRequestBodyContains: String? = null,
+    val assertHeaderIsPresent: List<String> = emptyList(),
+    val headersAndValues: Map<String, String> = emptyMap(),
+    val httpMethodIs: String? = null,
+    val requestBodyContains: String? = null,
 ) : Command {
     override fun description(): String {
         return "Assert outgoing requests to $url"
