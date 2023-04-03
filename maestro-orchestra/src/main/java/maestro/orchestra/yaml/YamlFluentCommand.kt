@@ -250,7 +250,7 @@ data class YamlFluentCommand(
         return MaestroCommand(
             AssertOutgoingRequestsCommand(
                 url = command.url,
-                assertHeaderIsPresent = command.headersPresent,
+                headersPresent = command.headersPresent,
                 headersAndValues = command.headersAndValues,
                 httpMethodIs = command.httpMethodIs,
                 requestBodyContains = command.requestBodyContains,

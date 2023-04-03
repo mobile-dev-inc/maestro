@@ -750,7 +750,7 @@ data class TravelCommand(
 
 data class AssertOutgoingRequestsCommand(
     val url: String? = null,
-    val assertHeaderIsPresent: List<String> = emptyList(),
+    val headersPresent: List<String> = emptyList(),
     val headersAndValues: Map<String, String> = emptyMap(),
     val httpMethodIs: String? = null,
     val requestBodyContains: String? = null,
