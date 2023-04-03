@@ -50,9 +50,9 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(
-            assertHeadersAndValues = listOf(
-                HeadersAndValueMatches("content-type", "application-json"),
-                HeadersAndValueMatches("cache-control", "no")
+            assertHeadersAndValues = mapOf(
+                "content-type" to "application-json",
+                "cache-control" to "no"
             )
         )
         val result = AssertOutgoingRequestService.assert(events, rules)
@@ -82,9 +82,9 @@ class AssertOutgoingRequestServiceTest {
             url = ".*api.company.com\\/[^\\/]+\\/endpoint",
             assertHttpMethod = "GET",
             assertHeaderIsPresent = "cOnTent-tyPE",
-            assertHeadersAndValues = listOf(
-                HeadersAndValueMatches("content-type", "application-json"),
-                HeadersAndValueMatches("cache-control", "no")
+            assertHeadersAndValues = mapOf(
+                "content-type" to "application-json",
+                "cache-control" to "no"
             )
         )
         val result = AssertOutgoingRequestService.assert(events, rules)

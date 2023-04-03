@@ -3,15 +3,10 @@ package maestro
 import maestro.mockserver.MockEvent
 import maestro.utils.StringUtils.toRegexSafe
 
-data class HeadersAndValueMatches(
-    val headerName: String,
-    val headerValue: String,
-)
-
 data class OutgoingRequestRules(
     val url: String? = null,
     val assertHeaderIsPresent: String? = null,
-    val assertHeadersAndValues: List<HeadersAndValueMatches>? = null,
+    val assertHeadersAndValues: Map<String, String> = emptyMap(),
     val assertHttpMethod: String? = null,
     val assertRequestBodyContains: String? = null,
 )
@@ -33,14 +28,9 @@ object AssertOutgoingRequestService {
             eventsFilteredByHttpMethod.filter { e -> e.headers?.containsKey(header.lowercase()) == true }
         } ?: eventsFilteredByHttpMethod
 
-        val eventsFilteredByHeadersAndValues = rules.assertHeadersAndValues?.let { headersAndValues ->
-            eventsFilteredByHeader.filter { e ->
-                headersAndValues.all { h ->
-                    e.headers?.get(h.headerName)?.lowercase() == h.headerValue.lowercase() || e.headers?.get(h.headerName)?.matches(h.headerValue.toRegexSafe(REGEX_OPTIONS)) ==
-                        true
-                }
-            }
-        } ?: eventsFilteredByHeader
+        val eventsFilteredByHeadersAndValues = rules.assertHeadersAndValues.entries.fold(eventsFilteredByHeader) { eventsList, (header, value) ->
+            eventsList.filter { e -> e.headers?.get(header.lowercase()) == value }
+        }
 
         val eventsMatching = rules.assertRequestBodyContains?.let { requestBody ->
             eventsFilteredByHeadersAndValues.filter { e -> e.bodyAsString?.contains(requestBody) == true }

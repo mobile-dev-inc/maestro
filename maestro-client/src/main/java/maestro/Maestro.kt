@@ -515,7 +515,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun assertOutgoingRequest(
         url: String? = null,
         assertHeaderIsPresent: String? = null,
-        assertHeadersAndValues: List<HeadersAndValueMatches>? = null,
+        assertHeadersAndValues: Map<String, String> = emptyMap(),
         assertHttpMethod: String? = null,
         assertRequestBodyContains: String? = null,
     ): Boolean {
