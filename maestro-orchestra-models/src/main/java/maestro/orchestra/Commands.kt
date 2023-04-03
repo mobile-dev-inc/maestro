@@ -19,6 +19,7 @@
 
 package maestro.orchestra
 
+import maestro.HeadersAndValueMatches
 import maestro.KeyCode
 import maestro.Point
 import maestro.ScrollDirection
@@ -749,7 +750,11 @@ data class TravelCommand(
 }
 
 data class AssertOutgoingRequestsCommand(
-    val url: String
+    val url: String? = null,
+    val assertHeaderIsPresent: String? = null,
+    val assertHeadersAndValues: List<HeadersAndValueMatches>? = null,
+    val assertHttpMethod: String? = null,
+    val assertRequestBodyContains: String? = null,
 ) : Command {
     override fun description(): String {
         return "Assert outgoing requests to $url"

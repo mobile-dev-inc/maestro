@@ -247,10 +247,13 @@ data class YamlFluentCommand(
     }
 
     private fun assertOutgoingRequestsCommand(command: YamlAssertOutgoingRequestsCommand): MaestroCommand {
-        // TODO validate url
         return MaestroCommand(
             AssertOutgoingRequestsCommand(
                 url = command.url,
+                assertHeaderIsPresent = command.assertHeaderIsPresent,
+                assertHeadersAndValues = command.assertHeadersAndValues,
+                assertHttpMethod = command.assertHttpMethod,
+                assertRequestBodyContains = command.assertRequestBodyContains,
             )
         )
     }

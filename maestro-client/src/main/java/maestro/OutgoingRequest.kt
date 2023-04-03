@@ -1,6 +1,7 @@
 package maestro
 
 import maestro.mockserver.MockEvent
+import maestro.utils.StringUtils.toRegexSafe
 
 data class HeadersAndValueMatches(
     val headerName: String,
@@ -8,13 +9,43 @@ data class HeadersAndValueMatches(
 )
 
 data class OutgoingRequestRules(
-    val url: String,
+    val url: String? = null,
+    val assertHeaderIsPresent: String? = null,
+    val assertHeadersAndValues: List<HeadersAndValueMatches>? = null,
+    val assertHttpMethod: String? = null,
+    val assertRequestBodyContains: String? = null,
 )
 
 object AssertOutgoingRequestService {
 
+    private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
+
     fun assert(events: List<MockEvent>, rules: OutgoingRequestRules): List<MockEvent> {
-        val eventsMatching = events.filter { it.path == rules.url }
+        val eventsFilteredByUrl = rules.url?.let { url ->
+            events.filter { e -> e.path == url || e.path.matches(url.toRegexSafe(REGEX_OPTIONS)) }
+        } ?: events
+
+        val eventsFilteredByHttpMethod = rules.assertHttpMethod?.let { httpMethod ->
+            eventsFilteredByUrl.filter { e -> e.method == httpMethod }
+        } ?: eventsFilteredByUrl
+
+        val eventsFilteredByHeader = rules.assertHeaderIsPresent?.let { header ->
+            eventsFilteredByHttpMethod.filter { e -> e.headers?.containsKey(header.lowercase()) == true }
+        } ?: eventsFilteredByHttpMethod
+
+        val eventsFilteredByHeadersAndValues = rules.assertHeadersAndValues?.let { headersAndValues ->
+            eventsFilteredByHeader.filter { e ->
+                headersAndValues.all { h ->
+                    e.headers?.get(h.headerName)?.lowercase() == h.headerValue.lowercase() || e.headers?.get(h.headerName)?.matches(h.headerValue.toRegexSafe(REGEX_OPTIONS)) ==
+                        true
+                }
+            }
+        } ?: eventsFilteredByHeader
+
+        val eventsMatching = rules.assertRequestBodyContains?.let { requestBody ->
+            eventsFilteredByHeadersAndValues.filter { e -> e.bodyAsString?.contains(requestBody) == true }
+        } ?: eventsFilteredByHeadersAndValues
+
         println("from ${events.size} events, ${eventsMatching.size} match the url ${rules.url}")
         return eventsMatching
     }
