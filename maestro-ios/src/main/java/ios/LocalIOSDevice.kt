@@ -1,8 +1,10 @@
 package ios
 
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.recoverIf
+import com.github.michaelbull.result.runCatching
 import hierarchy.XCUIElement
 import ios.device.DeviceInfo
 import ios.idb.IdbIOSDevice
@@ -147,7 +149,10 @@ class LocalIOSDevice(
     }
 
     override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
-        return simctlIOSDevice.setPermissions(id, permissions)
+        return runCatching {
+            simctlIOSDevice.setPermissions(id, permissions).expect {  }
+            xcTestDevice.setPermissions(id, permissions).expect {  }
+        }
     }
 
     override fun eraseText(charactersToErase: Int) {
