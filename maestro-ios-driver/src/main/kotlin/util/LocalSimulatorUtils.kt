@@ -291,17 +291,31 @@ object LocalSimulatorUtils {
             .map { "${it.key}=${translatePermissionValue(it.value)}" }
             .joinToString(",")
 
-        runCommand(
-            listOf(
-                "$homedir/.maestro/deps/applesimutils",
-                "--byId",
-                deviceId,
-                "--bundle",
-                bundleId,
-                "--setPermissions",
-                argument
+        try {
+            runCommand(
+                listOf(
+                    "$homedir/.maestro/deps/applesimutils",
+                    "--byId",
+                    deviceId,
+                    "--bundle",
+                    bundleId,
+                    "--setPermissions",
+                    argument
+                )
             )
-        )
+        } catch(e: Exception) {
+            runCommand(
+                listOf(
+                    "applesimutils",
+                    "--byId",
+                    deviceId,
+                    "--bundle",
+                    bundleId,
+                    "--setPermissions",
+                    argument
+                )
+            )
+        }
     }
 
     private val allPermissions = listOf(
