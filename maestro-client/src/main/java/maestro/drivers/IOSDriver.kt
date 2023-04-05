@@ -496,7 +496,7 @@ class IOSDriver(
     }
 
     override fun fetchSessionId(): UUID {
-        TODO("Not yet implemented")
+        return iosDevice.fetchSessionInfo().expect {  }
     }
 
     private fun isScreenStatic(): Boolean {

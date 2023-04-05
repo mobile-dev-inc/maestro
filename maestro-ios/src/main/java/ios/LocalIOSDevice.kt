@@ -13,6 +13,7 @@ import ios.xctest.XCTestIOSDevice
 import okio.Sink
 import java.io.File
 import java.io.InputStream
+import java.util.UUID
 
 class LocalIOSDevice(
     override val deviceId: String?,
@@ -157,5 +158,9 @@ class LocalIOSDevice(
 
     override fun eraseText(charactersToErase: Int) {
         xcTestDevice.eraseText(charactersToErase)
+    }
+
+    override fun fetchSessionInfo(): Result<UUID, Throwable> {
+        return simctlIOSDevice.fetchSessionInfo()
     }
 }

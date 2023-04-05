@@ -10,6 +10,7 @@ import hierarchy.XCUIElement
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
+import ios.device.SessionInfo
 import maestro.logger.Logger
 import okio.Sink
 import okio.buffer
@@ -18,6 +19,7 @@ import xcuitest.api.GetRunningAppIdResponse
 import xcuitest.api.IsScreenStaticResponse
 import java.io.File
 import java.io.InputStream
+import java.util.UUID
 
 class XCTestIOSDevice(
     override val deviceId: String?,
@@ -290,6 +292,27 @@ class XCTestIOSDevice(
 
     override fun eraseText(charactersToErase: Int) {
         client.eraseText(charactersToErase).use {}
+    }
+
+    override fun fetchSessionInfo(): Result<UUID, Throwable> {
+        return runCatching {
+            client.fetchSession().use { response ->
+                val body = response.body?.bytes()?.let { String(it) }
+
+                if (!response.isSuccessful) {
+                    val message = "${response.code} ${response.message} - $body"
+                    logger.info("Fetch session info failed: $message")
+                    throw UnknownFailure(message)
+                }
+
+                body ?: throw UnknownFailure("Error: response body missing")
+
+                val deviceInfo = mapper.readValue(body, SessionInfo::class.java)
+                logger.info("Session info $deviceInfo")
+
+                deviceInfo.sessionId
+            }
+        }
     }
 
     private fun activeAppId(): String? {

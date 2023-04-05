@@ -65,6 +65,7 @@ import okio.buffer
 import okio.source
 import java.io.File
 import java.io.InputStream
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.zip.GZIPInputStream
 
@@ -512,6 +513,10 @@ class IdbIOSDevice(
     }
 
     override fun eraseText(charactersToErase: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun fetchSessionInfo(): Result<UUID, Throwable> {
         TODO("Not yet implemented")
     }
 

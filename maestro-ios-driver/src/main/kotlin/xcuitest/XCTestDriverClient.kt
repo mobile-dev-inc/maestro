@@ -179,6 +179,10 @@ class XCTestDriverClient(
         executeJsonRequest("setPermissions", SetPermissionsRequest(permissions))
     }
 
+    fun fetchSession(): Response {
+        return executeJsonRequest("fetchSession", Unit)
+    }
+
     private fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
         return HttpUrl.Builder()
             .scheme("http")

@@ -15,6 +15,7 @@ import java.io.File
 import java.io.InputStream
 import java.nio.channels.Channels
 import java.nio.file.Files
+import java.util.UUID
 
 class SimctlIOSDevice(
     override val deviceId: String,
@@ -174,6 +175,10 @@ class SimctlIOSDevice(
     }
 
     override fun eraseText(charactersToErase: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun fetchSessionInfo(): Result<UUID, Throwable> {
         TODO("Not yet implemented")
     }
 

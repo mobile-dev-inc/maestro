@@ -25,6 +25,7 @@ import ios.device.DeviceInfo
 import okio.Sink
 import java.io.File
 import java.io.InputStream
+import java.util.UUID
 
 interface IOSDevice : AutoCloseable {
 
@@ -169,6 +170,8 @@ interface IOSDevice : AutoCloseable {
     fun pressButton(name: String)
 
     fun eraseText(charactersToErase: Int)
+
+    fun fetchSessionInfo(): Result<UUID, Throwable>
 }
 
 interface IOSScreenRecording : AutoCloseable
