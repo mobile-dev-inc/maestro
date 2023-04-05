@@ -332,7 +332,7 @@ object LocalSimulatorUtils {
         "reminders",
         "siri",
         "speech",
-        "usertracking",
+        "userTracking",
     )
 
     private fun translatePermissionValue(value: String): String {
