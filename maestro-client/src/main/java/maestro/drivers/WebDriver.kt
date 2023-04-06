@@ -364,7 +364,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return true
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, uiElement: UiElement?, appId: String?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
