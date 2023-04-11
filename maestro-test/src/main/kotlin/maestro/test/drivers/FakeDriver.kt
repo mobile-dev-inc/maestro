@@ -383,7 +383,8 @@ class FakeDriver : Driver {
     }
 
     override fun fetchSessionId(): UUID {
-        TODO("Not yet implemented")
+        events.add(Event.SessionInfo(sessionId))
+        return sessionId
     }
 
     sealed class Event {
@@ -474,10 +475,9 @@ class FakeDriver : Driver {
 
         object ResetProxy : Event()
 
-        data class SetPermissions(
-            val appId: String,
-            val permissions: Map<String, String>,
-        ) : Event()
+        data class SessionInfo(
+            val sessionId: UUID,
+        ): Event()
     }
 
     interface UserInteraction
@@ -489,6 +489,7 @@ class FakeDriver : Driver {
     }
 
     companion object {
+        val sessionId = UUID.randomUUID()
 
         private val MAPPER = jacksonObjectMapper()
         private const val MAX_ERASE_CHARACTERS = 50
