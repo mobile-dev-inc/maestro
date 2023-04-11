@@ -15,11 +15,20 @@ class AssertOutgoingRequestServiceTest {
     fun `test assert with url rule`() {
         val events = events()
 
-        val rules = OutgoingRequestRules(url = ".*api.company.com\\/[^\\/]+\\/endpoint")
+        val rules = OutgoingRequestRules(path = "/endpoint")
         val result = AssertOutgoingRequestService.assert(events, rules)
-        assertThat(result.size).isEqualTo(2)
-        assertThat(result.first().path).isEqualTo("http://api.company.com/bla/endpoint")
-        assertThat(result[1].path).isEqualTo("https://api.company.com/foo/endpoint")
+        assertThat(result.size).isEqualTo(1)
+        assertThat(result.first().path).isEqualTo("/endpoint")
+    }
+
+    @Test
+    fun `test assert with url rule using regex`() {
+        val events = events()
+
+        val rules = OutgoingRequestRules(path = "/api\\/.*\\/user")
+        val result = AssertOutgoingRequestService.assert(events, rules)
+        assertThat(result.size).isEqualTo(1)
+        assertThat(result.first().path).isEqualTo("/api/v1/user")
     }
 
     @Test
@@ -30,8 +39,8 @@ class AssertOutgoingRequestServiceTest {
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(2)
 
-        assertThat(result.first().path).isEqualTo("https://api.company.com/foo/endpoint")
-        assertThat(result[1].path).isEqualTo("another-path")
+        assertThat(result.first().path).isEqualTo("/foo")
+        assertThat(result[1].path).isEqualTo("/api/v1/user")
     }
 
     @Test
@@ -42,7 +51,7 @@ class AssertOutgoingRequestServiceTest {
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(1)
 
-        assertThat(result.first().path).isEqualTo("https://api.company.com/foo/endpoint")
+        assertThat(result.first().path).isEqualTo("/foo")
     }
 
     @Test
@@ -58,7 +67,7 @@ class AssertOutgoingRequestServiceTest {
         val result = AssertOutgoingRequestService.assert(events, rules)
         assertThat(result.size).isEqualTo(1)
 
-        assertThat(result.first().path).isEqualTo("https://api.company.com/foo/endpoint")
+        assertThat(result.first().path).isEqualTo("/foo")
     }
 
     @Test
@@ -79,7 +88,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(
-            url = ".*api.company.com\\/[^\\/]+\\/endpoint",
+            path = "/foo",
             httpMethodIs = "GET",
             headersPresent = listOf("cOnTent-tyPE"),
             headersAndValues = mapOf(
@@ -95,13 +104,13 @@ class AssertOutgoingRequestServiceTest {
         return listOf(
             MockEvent(
                 timestamp = "2021-05-18T12:00:00.000Z",
-                path = "http://api.company.com/bla/endpoint",
+                path = "/endpoint",
                 matched = true,
                 response = "",
                 statusCode = 201,
                 sessionId = sessionId,
                 projectId = UUID.randomUUID(),
-                method = "POTS",
+                method = "POST",
                 headers = mapOf(
                     "cache-control" to "no",
                 )
@@ -109,7 +118,7 @@ class AssertOutgoingRequestServiceTest {
 
             MockEvent(
                 timestamp = "2021-05-18T12:00:00.000Z",
-                path = "https://api.company.com/foo/endpoint",
+                path = "/foo",
                 matched = true,
                 response = "",
                 statusCode = 200,
@@ -124,7 +133,7 @@ class AssertOutgoingRequestServiceTest {
 
             MockEvent(
                 timestamp = "2021-05-18T12:00:00.000Z",
-                path = "another-path",
+                path = "/api/v1/user",
                 matched = true,
                 response = "",
                 statusCode = 400,

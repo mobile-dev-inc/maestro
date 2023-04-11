@@ -513,7 +513,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     fun assertOutgoingRequest(
-        url: String? = null,
+        path: String? = null,
         assertHeaderIsPresent: List<String> = emptyList(),
         assertHeadersAndValues: Map<String, String> = emptyMap(),
         assertHttpMethod: String? = null,
@@ -521,15 +521,16 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     ): Boolean {
         val sessionId = driver.fetchSessionId()
         val events = MockInteractor().getMockEvents().filter { it.sessionId == sessionId }
+        if (events.isEmpty()) return false
 
         val rules = OutgoingRequestRules(
-            url = url,
+            path = path,
             headersPresent = assertHeaderIsPresent,
             headersAndValues = assertHeadersAndValues,
             httpMethodIs = assertHttpMethod,
             requestBodyContains = assertRequestBodyContains,
         )
-        val matched = AssertOutgoingRequestService.assert(events, rules)
+        val matched = AssertOutgoingRequestService.assert(events, rules, LOGGER)
         return matched.isNotEmpty()
     }
 

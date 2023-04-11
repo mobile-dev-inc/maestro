@@ -2,9 +2,10 @@ package maestro
 
 import maestro.mockserver.MockEvent
 import maestro.utils.StringUtils.toRegexSafe
+import org.slf4j.Logger
 
 data class OutgoingRequestRules(
-    val url: String? = null,
+    val path: String? = null,
     val headersPresent: List<String> = emptyList(),
     val headersAndValues: Map<String, String> = emptyMap(),
     val httpMethodIs: String? = null,
@@ -15,9 +16,9 @@ object AssertOutgoingRequestService {
 
     private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
-    fun assert(events: List<MockEvent>, rules: OutgoingRequestRules): List<MockEvent> {
-        val eventsFilteredByUrl = rules.url?.let { url ->
-            events.filter { e -> e.path == url || e.path.matches(url.toRegexSafe(REGEX_OPTIONS)) }
+    fun assert(events: List<MockEvent>, rules: OutgoingRequestRules, logger: Logger? = null): List<MockEvent> {
+        val eventsFilteredByUrl = rules.path?.let { path ->
+            events.filter { e -> e.path == path || e.path.matches(path.toRegexSafe(REGEX_OPTIONS)) }
         } ?: events
 
         val eventsFilteredByHttpMethod = rules.httpMethodIs?.let { httpMethod ->
@@ -36,7 +37,7 @@ object AssertOutgoingRequestService {
             eventsFilteredByHeadersAndValues.filter { e -> e.bodyAsString?.contains(requestBody) == true }
         } ?: eventsFilteredByHeadersAndValues
 
-        println("from ${events.size} events, ${eventsMatching.size} match the url ${rules.url}")
+        logger?.info("From ${events.size} events, ${eventsMatching.size} match the url ${rules.path}")
         return eventsMatching
     }
 

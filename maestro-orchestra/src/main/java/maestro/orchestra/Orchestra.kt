@@ -217,7 +217,7 @@ class Orchestra(
 
     private fun assertOutgoingRequestsCommand(command: AssertOutgoingRequestsCommand): Boolean {
         return maestro.assertOutgoingRequest(
-            url = command.url,
+            path = command.path,
             assertHeaderIsPresent = command.headersPresent,
             assertHttpMethod = command.httpMethodIs,
             assertRequestBodyContains = command.requestBodyContains,

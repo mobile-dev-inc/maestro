@@ -249,7 +249,7 @@ data class YamlFluentCommand(
     private fun assertOutgoingRequestsCommand(command: YamlAssertOutgoingRequestsCommand): MaestroCommand {
         return MaestroCommand(
             AssertOutgoingRequestsCommand(
-                url = command.url,
+                path = command.path,
                 headersPresent = command.headersPresent,
                 headersAndValues = command.headersAndValues,
                 httpMethodIs = command.httpMethodIs,
