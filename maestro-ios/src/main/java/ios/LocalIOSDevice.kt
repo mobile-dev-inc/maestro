@@ -161,6 +161,6 @@ class LocalIOSDevice(
     }
 
     override fun fetchSessionInfo(): Result<UUID, Throwable> {
-        return simctlIOSDevice.fetchSessionInfo()
+        return xcTestDevice.fetchSessionInfo()
     }
 }
