@@ -475,6 +475,11 @@ class FakeDriver : Driver {
 
         object ResetProxy : Event()
 
+        data class SetPermissions(
+            val appId: String,
+            val permissions: Map<String, String>,
+        ) : Event()
+
         data class SessionInfo(
             val sessionId: UUID,
         ): Event()

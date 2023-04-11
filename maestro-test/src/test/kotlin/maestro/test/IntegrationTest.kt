@@ -2614,7 +2614,7 @@ class IntegrationTest {
     @Test
     fun `096 - Test assertOutgoingRequests command`() {
         // Given
-        val commands = readCommands("096_assert_outgoing_requests")
+        val commands = readCommands("096_assert_outgoing_request")
         val driver = driver {}
 
         // When
