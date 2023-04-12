@@ -182,7 +182,7 @@ class AndroidDriver(
             val manifest = apkFile.asManifest()
             runCatching {
                 val sessionUUID = sessionId ?: UUID.randomUUID()
-                dadb.shell("setprop maestro.sessionId $sessionUUID")
+                dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
                 val launcherActivity = manifest.resolveLauncherActivity(appId)
                 val shellResponse = dadb.shell("am start-activity -n $appId/${launcherActivity}")
                 if (shellResponse.errorOutput.isNotEmpty()) shell("monkey --pct-syskeys 0 -p $appId 1")
