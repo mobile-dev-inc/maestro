@@ -1,5 +1,6 @@
-package maestro.studio
+package maestro.mockserver
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -17,6 +18,19 @@ data class Auth(
     val id: UUID?,
     val isMachine: Boolean,
     val role: String?
+)
+
+data class MockEvent(
+    val timestamp: String,
+    val path: String,
+    val matched: Boolean,
+    val response: Any,
+    val statusCode: Int,
+    val sessionId: UUID,
+    val projectId: UUID,
+    val method: String,
+    val bodyAsString: String? = null,
+    val headers: Map<String, String>? = null,
 )
 
 data class GetEventsResponse(
@@ -104,7 +118,7 @@ class MockInteractor(
             )
         }
 
-        private val JSON = jacksonObjectMapper()
+        private val JSON = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     }
 }
