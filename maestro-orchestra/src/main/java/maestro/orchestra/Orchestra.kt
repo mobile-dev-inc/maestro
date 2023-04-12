@@ -175,6 +175,7 @@ class Orchestra(
                     command.waitUntilVisible ?: false
                 )
             }
+
             is TapOnPointCommand -> tapOnPoint(command, command.retryIfNoChange ?: true)
             is TapOnPointV2Command -> tapOnPointV2Command(command)
             is BackPressCommand -> backPressCommand()
@@ -216,13 +217,16 @@ class Orchestra(
     }
 
     private fun assertOutgoingRequestsCommand(command: AssertOutgoingRequestsCommand): Boolean {
-        return maestro.assertOutgoingRequest(
+        val matched = maestro.assertOutgoingRequest(
             path = command.path,
             assertHeaderIsPresent = command.headersPresent,
             assertHttpMethod = command.httpMethodIs,
             assertRequestBodyContains = command.requestBodyContains,
             assertHeadersAndValues = command.headersAndValues,
         )
+
+        if (!matched) throw MaestroException.OutgoingRequestAssertionFailure("Outgoing request assertion failed: ${command.description()}")
+        return true
     }
 
     private fun travelCommand(command: TravelCommand): Boolean {
@@ -875,9 +879,11 @@ class Orchestra(
                 val uiElement = findElement(elementSelector)
                 maestro.swipe(direction, uiElement.element, command.duration)
             }
+
             startRelative != null && endRelative != null -> {
                 maestro.swipe(startRelative = startRelative, endRelative = endRelative, duration = command.duration)
             }
+
             direction != null -> maestro.swipe(swipeDirection = direction, duration = command.duration)
             start != null && end != null -> maestro.swipe(startPoint = start, endPoint = end, duration = command.duration)
             else -> error("Illegal arguments for swiping")
