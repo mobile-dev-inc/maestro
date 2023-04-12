@@ -419,8 +419,8 @@ class FakeDriver : Driver {
 
         data class LaunchApp(
             val appId: String,
+            val language: String? = null,
             val launchArguments: List<String> = emptyList(),
-            val language: String?,
         ) : Event(), UserInteraction
 
         data class StopApp(

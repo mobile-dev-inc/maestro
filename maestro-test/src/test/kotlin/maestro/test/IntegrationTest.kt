@@ -361,7 +361,9 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.StopApp("com.example.app"),
-                Event.LaunchApp("com.example.app", null)
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                )
             )
         )
     }
@@ -592,7 +594,11 @@ class IntegrationTest {
         // Then
         // No test failure
         driver.assertHasEvent(Event.ClearState("com.example.app"))
-        driver.assertHasEvent(Event.LaunchApp("com.example.app", null))
+        driver.assertHasEvent(
+            Event.LaunchApp(
+                appId = "com.example.app",
+            )
+        )
     }
 
     @Test
@@ -646,7 +652,9 @@ class IntegrationTest {
         // No test failure
         otherDriver.assertPushedAppState(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
         otherDriver.assertHasEvent(Event.Tap(Point(50, 50)))
@@ -674,7 +682,9 @@ class IntegrationTest {
         // No test failure
         driver.assertPushedAppState(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
         driver.assertHasEvent(Event.Tap(Point(50, 50)))
@@ -843,7 +853,9 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.LaunchApp(appId = "com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
                 Event.InputText("\${PASSWORD} is testPassword"),
@@ -1278,7 +1290,9 @@ class IntegrationTest {
             listOf(
                 Event.ClearKeychain,
                 Event.ClearKeychain,
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -1307,7 +1321,9 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
                 Event.Tap(Point(50, 50)),
             )
         )
@@ -1341,7 +1357,9 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(100, 100)),
             )
@@ -1437,7 +1455,9 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
                 Event.SetLocation(12.5266, 78.2150),
             )
         )
@@ -1701,7 +1721,9 @@ class IntegrationTest {
         // then
         driver.assertEvents(
             listOf(
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -2409,7 +2431,9 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.SetPermissions("com.example.app", mapOf("all" to "allow")),
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -2430,7 +2454,9 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.SetPermissions("com.example.app", mapOf("all" to "deny")),
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -2451,7 +2477,9 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.SetPermissions("com.example.app", mapOf("all" to "deny", "notifications" to "allow")),
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -2472,7 +2500,9 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.SetPermissions("com.example.app", mapOf("sms" to "allow")),
-                Event.LaunchApp("com.example.app", null),
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                ),
             )
         )
     }
@@ -2568,7 +2598,11 @@ class IntegrationTest {
         }
 
         // Then
-        driver.assertHasEvent(Event.LaunchApp("com.example.default"))
+        driver.assertHasEvent(
+            Event.LaunchApp(
+                appId = "com.example.default"
+            )
+        )
     }
 
     @Test
@@ -2591,7 +2625,16 @@ class IntegrationTest {
     fun `095 - Launch arguments`() {
         // Given
         val commands = readCommands("095_launch_arguments")
-        
+        val driver = driver {
+        }
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
         driver.assertHasEvent(Event.LaunchApp(
             appId = "com.example.app",
             launchArguments = listOf(
@@ -2621,7 +2664,10 @@ class IntegrationTest {
         driver.assertEvents(
             listOf(
                 Event.StopApp("com.example.app"),
-                Event.LaunchApp("com.example.app", "de")
+                Event.LaunchApp(
+                    appId = "com.example.app",
+                    language = "de",
+                ),
             )
         )
     }
