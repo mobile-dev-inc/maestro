@@ -174,6 +174,8 @@ class TestCommand : Callable<Int> {
     }
 
     private fun printExitDebugMessage() {
-        PrintUtils.message("Debug output (logs & screenshots): ${TestDebugReporter.path.absolutePathString()}")
+        println()
+        println("==== Debug output (logs & screenshots) ====")
+        PrintUtils.message(TestDebugReporter.path.absolutePathString())
     }
 }
