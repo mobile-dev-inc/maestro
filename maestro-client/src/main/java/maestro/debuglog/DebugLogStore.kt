@@ -65,6 +65,11 @@ object DebugLogStore {
         logSystemInfo()
     }
 
+    fun copyTo(file: File) {
+        val local = logFile("maestro")
+        local.copyTo(file)
+    }
+
     fun loggerFor(clazz: Class<*>): Logger {
         val logger = Logger.getLogger(clazz.name)
         logger.useParentHandlers = false

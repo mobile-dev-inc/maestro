@@ -1,10 +1,15 @@
 package maestro.cli.runner
 
 import maestro.Maestro
+import maestro.MaestroException
 import maestro.cli.CliError
 import maestro.cli.device.Device
 import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
+import maestro.cli.report.CommandDebugMetadata
+import maestro.cli.report.FlowDebugMetadata
+import maestro.cli.report.ScreenshotDebugMetadata
+import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
@@ -124,6 +129,36 @@ class TestSuiteInteractor(
         var flowStatus: FlowStatus
         var errorMessage: String? = null
 
+        // debug
+        val debug = FlowDebugMetadata()
+        val debugCommands = debug.commands
+        val debugScreenshots = debug.screenshots
+
+        fun takeDebugScreenshot(status: CommandStatus): File? {
+            val containsFailed = debugScreenshots.any { it.status == CommandStatus.FAILED }
+
+            // Avoids duplicate failed images from parent commands
+            if (containsFailed && status == CommandStatus.FAILED) {
+                return null
+            }
+
+            val result = kotlin.runCatching {
+                val out = File.createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
+                    .also { it.deleteOnExit() } // save to another dir before exiting
+                maestro.takeScreenshot(out)
+                debugScreenshots.add(
+                    ScreenshotDebugMetadata(
+                        screenshot = out,
+                        timestamp = System.currentTimeMillis(),
+                        status = status
+                    )
+                )
+                out
+            }
+
+            return result.getOrNull()
+        }
+
         try {
             val commands = YamlCommandReader.readCommands(flowFile.toPath())
                 .withEnv(env)
@@ -131,7 +166,40 @@ class TestSuiteInteractor(
             val config = YamlCommandReader.getConfig(commands)
 
             val orchestra = Orchestra(
-                maestro = maestro
+                maestro = maestro,
+                onCommandStart = { _, command ->
+                    debugCommands[command] = CommandDebugMetadata(
+                        timestamp = System.currentTimeMillis(),
+                        status = CommandStatus.RUNNING
+                    )
+                },
+                onCommandComplete = { _, command ->
+                    debugCommands[command]?.let {
+                        it.status = CommandStatus.COMPLETED
+                        it.calculateDuration()
+                    }
+                },
+                onCommandFailed = { _, command, e ->
+                    if (e is MaestroException) debug.exception = e
+                    debugCommands[command]?.let {
+                        it.status = CommandStatus.FAILED
+                        it.calculateDuration()
+                        it.error = e
+                    }
+
+                    takeDebugScreenshot(CommandStatus.FAILED)
+                    Orchestra.ErrorResolution.FAIL
+                },
+                onCommandSkipped = { _, command ->
+                    debugCommands[command]?.let {
+                        it.status = CommandStatus.SKIPPED
+                    }
+                },
+                onCommandReset = { command ->
+                    debugCommands[command]?.let {
+                        it.status = CommandStatus.PENDING
+                    }
+                },
             )
 
             config?.name?.let {
@@ -146,10 +214,13 @@ class TestSuiteInteractor(
             errorMessage = ErrorViewUtils.exceptionToMessage(e)
         }
 
+        TestDebugReporter.saveFlow(flowName, debug)
+
         TestSuiteStatusView.showFlowCompletion(
             TestSuiteViewModel.FlowResult(
                 name = flowName,
                 status = flowStatus,
+                error = debug.exception?.message
             )
         )
 

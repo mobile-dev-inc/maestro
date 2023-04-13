@@ -153,6 +153,7 @@ class Orchestra(
                     // Swallow exception
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
+
                     when (onCommandFailed(index, command, e)) {
                         ErrorResolution.FAIL -> return false
                         ErrorResolution.CONTINUE -> {
@@ -162,6 +163,15 @@ class Orchestra(
                 }
             }
         return true
+    }
+
+    private fun debugScreenshot(index: Int): File? {
+        val result = kotlin.runCatching {
+            val out = File("screenshot_${index}_${System.currentTimeMillis()}.png")
+            maestro.takeScreenshot(out)
+            out
+        }
+        return result.getOrNull()
     }
 
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {

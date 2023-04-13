@@ -32,6 +32,7 @@ import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
 import maestro.cli.command.mockserver.MockServerCommand
 import maestro.cli.command.network.NetworkCommand
+import maestro.cli.report.TestDebugReporter
 import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
@@ -124,6 +125,7 @@ fun main(args: Array<String>) {
     val exitCode = commandLine
         .execute(*args)
 
+    TestDebugReporter.saveLogs()
     DebugLogStore.finalizeRun()
 
     val newVersion = Updates.checkForUpdates()
