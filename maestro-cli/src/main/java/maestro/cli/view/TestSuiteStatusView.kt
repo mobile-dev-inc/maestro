@@ -146,6 +146,7 @@ object TestSuiteStatusView {
             fun UploadStatus.FlowResult.toViewModel() = FlowResult(
                 name = name,
                 status = FlowStatus.from(status),
+                error = errors.firstOrNull()
             )
 
         }
