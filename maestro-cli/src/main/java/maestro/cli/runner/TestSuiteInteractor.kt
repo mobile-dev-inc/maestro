@@ -12,12 +12,12 @@ import maestro.cli.report.ScreenshotDebugMetadata
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
-import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.cli.view.ErrorViewUtils
 import maestro.cli.view.TestSuiteStatusView
 import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel
 import maestro.orchestra.Orchestra
 import maestro.orchestra.util.Env.withEnv
+import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.Sink
 import java.io.File
@@ -230,7 +230,7 @@ class TestSuiteInteractor(
             status = flowStatus,
             failure = if (flowStatus == FlowStatus.ERROR) {
                 TestExecutionSummary.Failure(
-                    message = errorMessage ?: "Unknown error",
+                    message = errorMessage ?: debug.exception?.message ?: "Unknown error",
                 )
             } else null,
         )
