@@ -131,7 +131,7 @@ fun main(args: Array<String>) {
         System.err.println()
         System.err.println(
             ("A new version of the Maestro CLI is available ($newVersion). Upgrade command:\n" +
-                "curl -Ls "https://get.maestro.mobile.dev" | bash").box()
+                "curl -Ls \"https://get.maestro.mobile.dev\" | bash").box()
         )
     }
 
