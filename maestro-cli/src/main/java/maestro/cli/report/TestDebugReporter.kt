@@ -32,7 +32,7 @@ object TestDebugReporter {
 
         Files.createDirectories(path)
 
-        // gson
+        // json
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
     }
