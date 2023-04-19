@@ -106,7 +106,7 @@ class IOSDriver(
         launchArguments: List<String>,
         sessionId: UUID?,
     ) {
-        iosDevice.launch(appId, launchArguments)
+        iosDevice.launch(appId, launchArguments, sessionId)
             .onSuccess { this.appId = appId }
             .getOrThrow {
                 MaestroException.UnableToLaunchApp("Unable to launch app $appId ${it.message}")
