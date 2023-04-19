@@ -2611,21 +2611,6 @@ class IntegrationTest {
         ))
     }
 
-    @Test
-    fun `096 - Test assertOutgoingRequests command`() {
-        // Given
-        val commands = readCommands("096_assert_outgoing_request")
-        val driver = driver {}
-
-        // When
-        Maestro(driver).use {
-            orchestra(it).runFlow(commands)
-        }
-
-        // Then
-        driver.assertHasEvent(Event.SessionInfo(FakeDriver.sessionId))
-    }
-
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(

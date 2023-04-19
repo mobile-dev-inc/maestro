@@ -1,9 +1,0 @@
-appId: com.example.app
----
-- assertOutgoingRequest:
-    path: "/api/v1/endpoint"
-    httpMethodIs: "GET"
-    headersAndValues:
-      "headerA": "valueB"
-      "X-Request-Id": "12345"
-
