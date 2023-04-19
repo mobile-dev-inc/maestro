@@ -16,7 +16,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(path = "/endpoint")
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
         assertThat(result.first().path).isEqualTo("/endpoint")
     }
@@ -26,7 +26,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(path = "/api\\/.*\\/user")
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
         assertThat(result.first().path).isEqualTo("/api/v1/user")
     }
@@ -36,7 +36,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(httpMethodIs = "GET")
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(2)
 
         assertThat(result.first().path).isEqualTo("/foo")
@@ -48,7 +48,7 @@ class AssertOutgoingRequestServiceTest {
         val events = events()
 
         val rules = OutgoingRequestRules(headersPresent = listOf("cOnTent-tyPE", "cache-control"))
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
 
         assertThat(result.first().path).isEqualTo("/foo")
@@ -64,7 +64,7 @@ class AssertOutgoingRequestServiceTest {
                 "cache-control" to "no"
             )
         )
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
 
         assertThat(result.first().path).isEqualTo("/foo")
@@ -77,7 +77,7 @@ class AssertOutgoingRequestServiceTest {
         val rules = OutgoingRequestRules(
             requestBodyContains = "\"name\":\"felipe\""
         )
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
 
         assertThat(result.first().statusCode).isEqualTo(400)
@@ -96,7 +96,7 @@ class AssertOutgoingRequestServiceTest {
                 "cache-control" to "no"
             )
         )
-        val result = AssertOutgoingRequestService.assert(events, rules)
+        val result = AssertOutgoingRequestService.match(events, rules)
         assertThat(result.size).isEqualTo(1)
     }
 
