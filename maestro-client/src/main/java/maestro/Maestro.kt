@@ -20,12 +20,9 @@
 package maestro
 
 import com.github.romankh3.image.comparison.ImageComparison
-import dadb.Dadb
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
-import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
-import maestro.mockserver.MockInteractor
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
@@ -515,13 +512,13 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     fun assertOutgoingRequest(
-        path: String,
+        path: String? = null,
         assertHeaderIsPresent: List<String> = emptyList(),
         assertHeadersAndValues: Map<String, String> = emptyMap(),
         assertHttpMethod: String? = null,
         assertRequestBodyContains: String? = null,
     ): Boolean {
-        val events = MockInteractor().getMockEvents().filter { it.sessionId == sessionId }
+        val events = AssertOutgoingRequestService.getMockEvents(sessionId)
         if (events.isEmpty()) return false
 
         val rules = OutgoingRequestRules(
@@ -531,7 +528,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             httpMethodIs = assertHttpMethod,
             requestBodyContains = assertRequestBodyContains,
         )
-        val matched = AssertOutgoingRequestService.assert(events, rules)
+        val matched = AssertOutgoingRequestService.match(events, rules)
         return matched.isNotEmpty()
     }
 

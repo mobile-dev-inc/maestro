@@ -1,10 +1,12 @@
 package maestro
 
 import maestro.mockserver.MockEvent
+import maestro.mockserver.MockInteractor
 import maestro.utils.StringUtils.toRegexSafe
+import java.util.UUID
 
 data class OutgoingRequestRules(
-    val path: String,
+    val path: String? = null,
     val headersPresent: List<String> = emptyList(),
     val headersAndValues: Map<String, String> = emptyMap(),
     val httpMethodIs: String? = null,
@@ -15,8 +17,10 @@ object AssertOutgoingRequestService {
 
     private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
-    fun assert(events: List<MockEvent>, rules: OutgoingRequestRules): List<MockEvent> {
-        val eventsFilteredByUrl = events.filter { e -> e.path == rules.path || e.path.matches(rules.path.toRegexSafe(REGEX_OPTIONS)) }
+    fun match(events: List<MockEvent>, rules: OutgoingRequestRules): List<MockEvent> {
+        val eventsFilteredByUrl = rules.path?.let { path ->
+            events.filter { e -> e.path == path || e.path.matches(path.toRegexSafe(REGEX_OPTIONS)) }
+        } ?: events
 
         val eventsFilteredByHttpMethod = rules.httpMethodIs?.let { httpMethod ->
             eventsFilteredByUrl.filter { e -> e.method == httpMethod }
@@ -35,6 +39,28 @@ object AssertOutgoingRequestService {
         } ?: eventsFilteredByHeadersAndValues
 
         return eventsMatching
+    }
+
+    /*
+    There might be a delay between the mock event being stored in our Maestro Cloud and the client trying to retrieve it.
+    That's why we have retries
+     */
+    fun getMockEvents(sessionId: UUID): List<MockEvent> {
+        var attempts = 1
+        val maxRetries = 3
+        var events: List<MockEvent> = emptyList()
+
+        while (events.isEmpty() && attempts <= maxRetries) {
+            events = MockInteractor().getMockEvents().filter { it.sessionId == sessionId }
+            if (events.isEmpty()) {
+                Thread.sleep(3000L)
+            }
+
+            attempts += 1
+        }
+
+        return events
+
     }
 
 }

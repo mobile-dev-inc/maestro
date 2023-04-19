@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
+import kotlin.math.max
 
 data class Auth(
     val teamId: UUID,
@@ -46,6 +47,7 @@ class MockInteractor(
         .build()
 
     fun getCachedAuthToken(): String? {
+        if (!System.getProperty("MAESTRO_CLOUD_API_KEY").isNullOrEmpty()) return System.getProperty("MAESTRO_CLOUD_API_KEY")
         if (!cachedAuthTokenFile.exists()) return null
         if (cachedAuthTokenFile.isDirectory()) return null
         return cachedAuthTokenFile.readText()
@@ -108,7 +110,13 @@ class MockInteractor(
     }
 
     companion object {
-        private const val API_URL = "https://api.mobile.dev"
+        private val API_URL by lazy {
+            if (System.getProperty("MAESTRO_CLOUD_API_URL").isNullOrEmpty()) {
+                "https://api.mobile.dev"
+            } else {
+                System.getProperty("MAESTRO_CLOUD_API_URL")
+            }
+        }
 
         private val cachedAuthTokenFile by lazy {
             Paths.get(
