@@ -383,7 +383,7 @@ class IdbIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
-        sessionId: UUID?,
+        maestroSessionId: UUID?,
     ): Result<Unit, Throwable> {
         return runWithRestartRecovery {
             val responseObserver = BlockingStreamObserver<Idb.LaunchResponse>()
@@ -396,6 +396,7 @@ class IdbIOSDevice(
                         if (launchArguments.isNotEmpty()) {
                             appArgs.addAll(launchArguments)
                         }
+                        sessionId = maestroSessionId?.toString() ?: UUID.randomUUID().toString()
                     }
                 }
             )

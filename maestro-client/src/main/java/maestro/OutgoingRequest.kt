@@ -52,15 +52,10 @@ object AssertOutgoingRequestService {
 
         while (events.isEmpty() && attempts <= maxRetries) {
             events = MockInteractor().getMockEvents().filter { it.sessionId == sessionId }
-            if (events.isEmpty()) {
-                Thread.sleep(3000L)
-            }
-
+            if (events.isEmpty()) Thread.sleep(3000L) else attempts = maxRetries + 1
             attempts += 1
         }
 
         return events
-
     }
-
 }

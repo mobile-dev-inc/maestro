@@ -100,14 +100,14 @@ class SimctlIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
-        sessionId: UUID?,
+        maestroSessionId: UUID?,
     ): Result<Unit, Throwable> {
         return runCatching {
             LocalSimulatorUtils.launch(
                 deviceId = deviceId,
                 bundleId = id,
                 launchArguments = launchArguments,
-                sessionId = sessionId?.toString() ?: UUID.randomUUID().toString()
+                sessionId = maestroSessionId?.toString() ?: UUID.randomUUID().toString()
             )
         }
     }

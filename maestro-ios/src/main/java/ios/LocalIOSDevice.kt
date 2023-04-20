@@ -111,9 +111,9 @@ class LocalIOSDevice(
     override fun launch(
         id: String,
         launchArguments: List<String>,
-        sessionId: UUID?
+        maestroSessionId: UUID?
     ): Result<Unit, Throwable> {
-        return simctlIOSDevice.launch(id, launchArguments, sessionId)
+        return simctlIOSDevice.launch(id, launchArguments, maestroSessionId)
     }
 
     override fun stop(id: String): Result<Unit, Throwable> {
