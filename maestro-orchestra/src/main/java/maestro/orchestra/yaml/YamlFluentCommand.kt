@@ -511,6 +511,7 @@ data class YamlFluentCommand(
 
     private fun YamlCondition.toCondition(): Condition {
         return Condition(
+            platform = platform,
             visible = visible?.let { toElementSelector(it) },
             notVisible = notVisible?.let { toElementSelector(it) },
             scriptCondition = `true`?.trim(),

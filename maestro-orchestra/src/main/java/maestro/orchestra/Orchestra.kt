@@ -424,6 +424,12 @@ class Orchestra(
             return true
         }
 
+        condition.platform?.let {
+            if (it != maestro.deviceInfo().platform) {
+                return false
+            }
+        }
+
         condition.visible?.let {
             try {
                 findElement(it, timeoutMs = adjustedToLatestInteraction(timeoutMs ?: optionalLookupTimeoutMs))
