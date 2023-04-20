@@ -2625,6 +2625,7 @@ class IntegrationTest {
 
         // Then
         driver.assertHasEvent(Event.InputText("Hello iOS"))
+        driver.assertHasEvent(Event.InputText("Hello ios"))
         driver.assertNoEvent(Event.InputText("Hello Android"))
     }
 
