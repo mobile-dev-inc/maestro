@@ -6,21 +6,29 @@ import maestro.MaestroException
 import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
 import maestro.debuglog.DebugLogStore
+import maestro.debuglog.warn
 import maestro.orchestra.MaestroCommand
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.attribute.FileTime
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.IdentityHashMap
 import kotlin.io.path.absolutePathString
 
 object TestDebugReporter {
 
+    private val logger = DebugLogStore.loggerFor(TestDebugReporter::class.java)
+
     private val dateFormat = "yyyy-MM-dd_HHmmss"
     private val mapper = ObjectMapper()
 
+    private val parentPath = Paths.get(System.getProperty("user.home"), ".maestro", "tests")
     val path: Path
 
     init {
@@ -28,6 +36,7 @@ object TestDebugReporter {
         // folder
         val dateFormatter = DateTimeFormatter.ofPattern(dateFormat)
         val folderName = dateFormatter.format(LocalDateTime.now())
+
         path = Paths.get(System.getProperty("user.home"), ".maestro", "tests", folderName)
 
         Files.createDirectories(path)
@@ -66,6 +75,28 @@ object TestDebugReporter {
         // maestro logs
         DebugLogStore.copyTo(File(path.absolutePathString(), "maestro.log"))
         // todo - device logs
+    }
+
+    fun deleteOldFiles(path: Path = parentPath, days: Long = 14) {
+        try {
+            val currentTime = Instant.now()
+            val daysLimit = currentTime.minus(Duration.of(days, ChronoUnit.DAYS))
+
+            Files.walk(path)
+                .filter {
+                    val fileTime = Files.getAttribute(it, "basic:lastModifiedTime") as FileTime
+                    val isOlderThanLimit = fileTime.toInstant().isBefore(daysLimit)
+                    Files.isDirectory(it) && isOlderThanLimit
+                }
+                .sorted(Comparator.reverseOrder())
+                .forEach {
+                    Files.walk(it)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach { Files.delete(it) }
+                }
+        } catch (e: Exception) {
+            logger.warn("Failed to delete older files", e)
+        }
     }
 }
 

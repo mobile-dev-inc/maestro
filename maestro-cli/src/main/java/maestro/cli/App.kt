@@ -126,6 +126,8 @@ fun main(args: Array<String>) {
         .execute(*args)
 
     TestDebugReporter.saveLogs()
+    TestDebugReporter.deleteOldFiles()
+
     DebugLogStore.finalizeRun()
 
     val newVersion = Updates.checkForUpdates()
