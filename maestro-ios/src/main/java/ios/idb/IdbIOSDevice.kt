@@ -396,7 +396,6 @@ class IdbIOSDevice(
                         if (launchArguments.isNotEmpty()) {
                             appArgs.addAll(launchArguments)
                         }
-                        sessionId = maestroSessionId?.toString() ?: UUID.randomUUID().toString()
                     }
                 }
             )

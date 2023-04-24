@@ -7,13 +7,12 @@ public class MaestroMockServerSdk {
             fatalError("projectId is not initialized. Did you call MaestroSdk.setup()?")
         }
         
-        let sessionIdFromEnvVar = ProcessInfo.processInfo.environment["MAESTRO_SESSION_ID"]
-
-        var sessionId = NSUUID().uuidString
-        if (sessionIdFromEnvVar != nil) {
-            if let uuid = UUID(uuidString: sessionIdFromEnvVar!) {
-                sessionId = uuid.uuidString
-            }
+        let sessionId: String
+        if let sessionIdFromEnvVar = ProcessInfo.processInfo.environment["MAESTRO_SESSION_ID"],
+            let uuid = UUID(uuidString: sessionIdFromEnvVar) {
+            sessionId = uuid.uuidString
+        } else {
+            sessionId = UUID().uuidString
         }
         
         var payloadBuilder = ""

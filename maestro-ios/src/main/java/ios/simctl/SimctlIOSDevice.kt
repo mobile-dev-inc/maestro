@@ -107,7 +107,7 @@ class SimctlIOSDevice(
                 deviceId = deviceId,
                 bundleId = id,
                 launchArguments = launchArguments,
-                sessionId = maestroSessionId?.toString() ?: UUID.randomUUID().toString()
+                sessionId = null
             )
         }
     }

@@ -198,20 +198,22 @@ object LocalSimulatorUtils {
         deviceId: String,
         bundleId: String,
         launchArguments: List<String> = emptyList(),
-        sessionId: String,
+        sessionId: String?,
     ) {
-        runCommand(
-            listOf(
-                "xcrun",
-                "simctl",
-                "spawn",
-                deviceId,
-                "launchctl",
-                "setenv",
-                "MAESTRO_SESSION_ID",
-                sessionId,
+        sessionId?.let {
+            runCommand(
+                listOf(
+                    "xcrun",
+                    "simctl",
+                    "spawn",
+                    deviceId,
+                    "launchctl",
+                    "setenv",
+                    "MAESTRO_SESSION_ID",
+                    sessionId,
+                )
             )
-        )
+        }
 
         runCommand(
             listOf(
