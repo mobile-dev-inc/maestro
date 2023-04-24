@@ -216,10 +216,15 @@ object Filters {
 
     fun index(idx: Int): ElementFilter {
         return { nodes ->
+            val index = if (idx >= 0) {
+                idx
+            } else {
+                nodes.size + idx
+            }
             listOfNotNull(
                 nodes
                     .sortedWith(INDEX_COMPARATOR)
-                    .getOrNull(idx)
+                    .getOrNull(index)
             )
         }
     }

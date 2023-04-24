@@ -5,7 +5,7 @@ appId: org.wikipedia
 - tapOn: "Remove language"
 - tapOn:
     id: ".*wiki_language_checkbox"
-    index: 1
+    index: -1
 - tapOn:
     id: ".*menu_delete_selected"
 - tapOn: "OK"
