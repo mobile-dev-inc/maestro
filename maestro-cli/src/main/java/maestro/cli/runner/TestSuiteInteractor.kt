@@ -15,6 +15,7 @@ import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
 import maestro.cli.view.TestSuiteStatusView
 import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel
+import maestro.debuglog.DebugLogStore
 import maestro.orchestra.Orchestra
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
@@ -29,6 +30,8 @@ class TestSuiteInteractor(
     private val includeTags: List<String> = emptyList(),
     private val excludeTags: List<String> = emptyList(),
 ) {
+
+    private val logger = DebugLogStore.loggerFor(TestSuiteInteractor::class.java)
 
     fun runTestSuite(
         input: File,
@@ -168,18 +171,21 @@ class TestSuiteInteractor(
             val orchestra = Orchestra(
                 maestro = maestro,
                 onCommandStart = { _, command ->
+                    logger.info("${command.description()} RUNNING")
                     debugCommands[command] = CommandDebugMetadata(
                         timestamp = System.currentTimeMillis(),
                         status = CommandStatus.RUNNING
                     )
                 },
                 onCommandComplete = { _, command ->
+                    logger.info("${command.description()} COMPLETED")
                     debugCommands[command]?.let {
                         it.status = CommandStatus.COMPLETED
                         it.calculateDuration()
                     }
                 },
                 onCommandFailed = { _, command, e ->
+                    logger.info("${command.description()} FAILED")
                     if (e is MaestroException) debug.exception = e
                     debugCommands[command]?.let {
                         it.status = CommandStatus.FAILED
@@ -191,11 +197,13 @@ class TestSuiteInteractor(
                     Orchestra.ErrorResolution.FAIL
                 },
                 onCommandSkipped = { _, command ->
+                    logger.info("${command.description()} SKIPPED")
                     debugCommands[command]?.let {
                         it.status = CommandStatus.SKIPPED
                     }
                 },
                 onCommandReset = { command ->
+                    logger.info("${command.description()} PENDING")
                     debugCommands[command]?.let {
                         it.status = CommandStatus.PENDING
                     }

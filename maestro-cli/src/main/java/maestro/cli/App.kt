@@ -37,6 +37,7 @@ import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import maestro.debuglog.error
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -113,7 +114,7 @@ fun main(args: Array<String>) {
                 ex.stackTraceToString()
             }
 
-            logger.info(message)
+            logger.error(message)
             println()
             cmd.err.println(
                 cmd.colorScheme.errorText(message)

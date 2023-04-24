@@ -128,3 +128,17 @@ object DebugLogStore {
         return props["version"].toString()
     }
 }
+
+fun Logger.warn(message: String, throwable: Throwable? = null) {
+    if (throwable != null) {
+        log(Level.WARNING, message, throwable)
+    }
+    else log(Level.WARNING, message)
+}
+
+fun Logger.error(message: String, throwable: Throwable? = null) {
+    if (throwable != null) {
+        log(Level.SEVERE, message, throwable)
+    }
+    else log(Level.SEVERE, message)
+}

@@ -22,6 +22,8 @@ package maestro
 import com.github.romankh3.image.comparison.ImageComparison
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
+import maestro.debuglog.DebugLogStore
+import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
@@ -535,7 +537,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     companion object {
 
-        private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
+        private val LOGGER = DebugLogStore.loggerFor(Maestro::class.java)
+
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005 // 0.5%
         private const val ANIMATION_TIMEOUT_MS: Long = 15000
 

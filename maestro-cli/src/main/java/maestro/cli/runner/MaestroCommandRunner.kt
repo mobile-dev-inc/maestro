@@ -39,7 +39,7 @@ import java.util.IdentityHashMap
 
 object MaestroCommandRunner {
 
-    private val logger = DebugLogStore.loggerFor(MaestroCommand::class.java)
+    private val logger = DebugLogStore.loggerFor(MaestroCommandRunner::class.java)
 
     fun runCommands(
         maestro: Maestro,

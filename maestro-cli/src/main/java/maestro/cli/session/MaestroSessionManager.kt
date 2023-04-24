@@ -31,10 +31,11 @@ import maestro.Maestro
 import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
 import maestro.cli.device.Platform
+import maestro.debuglog.DebugLogStore
 import maestro.debuglog.IOSDriverLogger
+import maestro.debuglog.error
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
-import org.slf4j.LoggerFactory
 import sun.misc.Signal
 import sun.misc.SignalHandler
 import util.XCRunnerCLIUtils
@@ -52,7 +53,7 @@ object MaestroSessionManager {
     private const val defaultXcTestPort = 22087
 
     private val executor = Executors.newScheduledThreadPool(1)
-    private val logger = LoggerFactory.getLogger(MaestroSessionManager::class.java)
+    private val logger = DebugLogStore.loggerFor(MaestroSessionManager::class.java)
 
     fun <T> newSession(
         host: String?,
