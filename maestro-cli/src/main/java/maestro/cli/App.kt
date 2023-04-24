@@ -100,6 +100,7 @@ fun main(args: Array<String>) {
     Updates.fetchUpdatesAsync()
 
     val logger = DebugLogStore.loggerFor(App::class.java)
+    DebugLogStore.logSystemInfo()
 
     val commandLine = CommandLine(App())
         .setUsageHelpWidth(160)

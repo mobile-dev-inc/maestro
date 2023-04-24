@@ -61,8 +61,6 @@ object DebugLogStore {
                 )
             }
         }
-
-        logSystemInfo()
     }
 
     fun copyTo(file: File) {
@@ -109,7 +107,7 @@ object DebugLogStore {
         toDelete.forEach { it.deleteRecursively() }
     }
 
-    private fun logSystemInfo() {
+    fun logSystemInfo() {
         val logData = """
             Maestro version: ${appVersion()}
             OS: ${System.getProperty("os.name")}
@@ -121,11 +119,15 @@ object DebugLogStore {
     }
 
     private fun appVersion(): String {
-        val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
-            Properties().apply { load(it) }
+        try {
+            val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
+                Properties().apply { load(it) }
+            }
+            return props["version"].toString()
+        } catch (ignore: Exception) {
+            // no-action
         }
-
-        return props["version"].toString()
+        return "Undefined"
     }
 }
 
