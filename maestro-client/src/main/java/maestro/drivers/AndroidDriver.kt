@@ -124,14 +124,11 @@ class AndroidDriver(
     private fun awaitLaunch() {
         val startTime = System.currentTimeMillis()
 
-        while (System.currentTimeMillis() - startTime < SERVER_LAUNCH_TIMEOUT_MS) {
-            try {
+        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
+            runCatching {
                 dadb.open("tcp:7001").close()
                 return
-            } catch (ignored: Exception) {
-                // Continue
             }
-
             Thread.sleep(100)
         }
 
@@ -783,9 +780,14 @@ class AndroidDriver(
         return response.output
     }
 
+    private fun getStartupTimeout(): Long = runCatching {
+        System.getenv(MAESTRO_DRIVER_STARTUP_TIMEOUT).toLong()
+    }.getOrDefault(SERVER_LAUNCH_TIMEOUT_MS)
+
     companion object {
 
-        private const val SERVER_LAUNCH_TIMEOUT_MS = 15000
+        private const val SERVER_LAUNCH_TIMEOUT_MS = 15000L
+        private const val MAESTRO_DRIVER_STARTUP_TIMEOUT = "MAESTRO_DRIVER_STARTUP_TIMEOUT"
         private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
