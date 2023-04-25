@@ -32,6 +32,7 @@ import maestro.networkproxy.NetworkProxy
 import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
+import maestro.orchestra.filter.LaunchArguments.toSanitizedLaunchArguments
 import maestro.orchestra.filter.TraitFilters
 import maestro.orchestra.geo.Traveller
 import maestro.orchestra.util.Env.evaluateScripts
@@ -583,9 +584,11 @@ class Orchestra(
         }
 
         try {
+            val launchArguments = command.launchArguments.toSanitizedLaunchArguments(appId = command.appId)
+
             maestro.launchApp(
                 appId = command.appId,
-                launchArguments = command.launchArguments ?: emptyList(),
+                launchArguments = launchArguments,
                 stopIfRunning = command.stopApp ?: true
             )
         } catch (e: Exception) {
@@ -939,6 +942,7 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+        private const val MAX_LAUNCH_ARGUMENT_PAIRS_ALLOWED = 1
     }
 }
 

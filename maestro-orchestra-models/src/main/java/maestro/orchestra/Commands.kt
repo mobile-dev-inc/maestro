@@ -367,7 +367,7 @@ data class LaunchAppCommand(
         }
 
         if (launchArguments != null) {
-            result += " (launch arguments: ${launchArguments.joinToString(" ")})"
+            result += " (launch arguments: ${launchArguments.joinToString(", ")})"
         }
 
         return result

@@ -119,7 +119,7 @@ class Service(
             .forEach { arg ->
                 val keyValue = arg.split("=")
 
-                if (keyValue.size == 2) {
+                if (keyValue.size == LENGTH_KEY_VALUE_PAIR) {
                     intent.putExtra(keyValue[0], keyValue[1])
                 } else {
                     intent.putExtra(arg, true)
@@ -366,5 +366,9 @@ class Service(
 
     private fun keyPressShiftedToEvents(uiDevice: UiDevice, keyCode: Int) {
         uiDevice.pressKeyCode(keyCode, META_SHIFT_LEFT_ON)
+    }
+
+    companion object {
+        private const val LENGTH_KEY_VALUE_PAIR = 2
     }
 }

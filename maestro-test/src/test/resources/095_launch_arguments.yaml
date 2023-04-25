@@ -9,3 +9,4 @@ env:
       - ${ARGUMENT_B}
       - ${INCLUDE_ARGUMENT_C && 'argumentC'}
       - ${INCLUDE_ARGUMENT_D && 'argumentD'}
+      - argumentA = argumentAValue

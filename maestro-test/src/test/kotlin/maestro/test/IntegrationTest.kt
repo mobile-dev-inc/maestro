@@ -2607,6 +2607,7 @@ class IntegrationTest {
                 "argumentA",
                 "argumentB",
                 "argumentC",
+                "argumentA = argumentAValue"
             )
         ))
     }
