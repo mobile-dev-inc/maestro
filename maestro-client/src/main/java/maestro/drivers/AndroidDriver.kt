@@ -38,6 +38,7 @@ import maestro.UiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
+import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
@@ -168,19 +169,20 @@ class AndroidDriver(
 
     override fun launchApp(
         appId: String,
-        launchArguments: List<String>,
+        launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
         if (!isPackageInstalled(appId)) {
             throw IllegalArgumentException("Package $appId is not installed")
         }
 
+        val arguments = launchArguments.toAndroidLaunchArguments()
         val sessionUUID = sessionId ?: UUID.randomUUID()
         dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
         blockingStub.launchApp(
             launchAppRequest {
                 this.packageName = appId
-                this.arguments.addAll(launchArguments)
+                this.arguments.addAll(arguments)
             }
         ) ?: throw IllegalStateException("Maestro driver failed to launch app")
     }

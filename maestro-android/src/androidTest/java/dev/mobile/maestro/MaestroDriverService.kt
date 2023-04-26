@@ -103,8 +103,10 @@ class Service(
     private var locationCounter = 0
     private val toastAccessibilityListener = ToastAccessibilityListener.start(uiAutomation)
 
-    override fun launchApp(request: MaestroAndroid.LaunchAppRequest,
-                           responseObserver: StreamObserver<MaestroAndroid.LaunchAppResponse>) {
+    override fun launchApp(
+        request: MaestroAndroid.LaunchAppRequest,
+        responseObserver: StreamObserver<MaestroAndroid.LaunchAppResponse>
+    ) {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         val intent = context.packageManager.getLaunchIntentForPackage(request.packageName)
@@ -116,19 +118,18 @@ class Service(
         }
 
         request.argumentsList
-            .forEach { arg ->
-                val keyValue = arg.split("=")
-
-                if (keyValue.size == LENGTH_KEY_VALUE_PAIR) {
-                    intent.putExtra(keyValue[0], keyValue[1])
-                } else {
-                    intent.putExtra(arg, true)
+            .forEach {
+                when (it.type) {
+                    String::class.java.name -> intent.putExtra(it.key, it.value)
+                    Boolean::class.java.name -> intent.putExtra(it.key, it.value.toBoolean())
+                    Int::class.java.name -> intent.putExtra(it.key, it.value.toInt())
+                    Double::class.java.name -> intent.putExtra(it.key, it.value.toDouble())
+                    else -> intent.putExtra(it.key, it.value)
                 }
             }
-
         context.startActivity(intent)
 
-        responseObserver.onNext(launchAppResponse {  })
+        responseObserver.onNext(launchAppResponse { })
         responseObserver.onCompleted()
     }
 

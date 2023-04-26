@@ -2,30 +2,27 @@ package util
 
 object IOSLaunchArguments {
 
-    private val List<String>.isPair: Boolean
-        get() = size == 2
-
-    fun List<String>.toIOSLaunchArguments(): List<String> {
+    fun Map<String, Any>.toIOSLaunchArguments(): List<String> {
         if (isEmpty()) return emptyList()
 
-        val iOSLaunchArguments = mutableListOf<String>()
-        forEach {
-            val arguments = it.split("=")
-            if (arguments.isPair) {
-                iOSLaunchArguments += handlePairedArguments(arguments).split("=")
+        val iOSLaunchArgumentsMap = mutableMapOf<String, Any>()
+        forEach { (key, value) ->
+            if (value is Boolean) {
+                iOSLaunchArgumentsMap[key] = value
             } else {
-                iOSLaunchArguments += it
+                if (!key.startsWith("-")) {
+                    iOSLaunchArgumentsMap["-$key"] = value
+                } else {
+                    iOSLaunchArgumentsMap[key] = value
+                }
             }
         }
+        val iOSLaunchArguments = mutableListOf<String>()
+        iOSLaunchArgumentsMap.toList().map { "${it.first}:${it.second}" }
+            .forEach {
+                iOSLaunchArguments += it.split(":")
+            }
+
         return iOSLaunchArguments
     }
-
-    private fun handlePairedArguments(arguments: List<String>): String {
-        return if (!arguments[0].startsWith("-")) {
-            "-${arguments[0]}=${arguments[1]}"
-        } else {
-            "${arguments[0]}=${arguments[1]}"
-        }
-    }
-
 }
