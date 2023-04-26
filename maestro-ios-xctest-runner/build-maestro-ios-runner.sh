@@ -20,3 +20,4 @@ mv "$PWD"/build/Products/*.xctestrun ./maestro-ios-driver/src/main/resources/mae
 (cd ./maestro-ios-driver/src/main/resources && zip -r maestro-driver-iosUITests-Runner.zip ./maestro-driver-iosUITests-Runner.app) || exit 1
 (cd ./maestro-ios-driver/src/main/resources && zip -r maestro-driver-ios.zip ./maestro-driver-ios.app) || exit 1
 rm -r ./maestro-ios-driver/src/main/resources/*.app || exit 1
+rm -rf ./build/Products || exit 1
