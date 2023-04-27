@@ -108,6 +108,22 @@ class AndroidDriver(
         allocateForwarder()
     }
 
+    private fun waitUntilInstallMaestroApks() {
+        val startTime = System.currentTimeMillis()
+
+        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
+            Thread.sleep(1000)
+
+            if (isPackageInstalled("dev.mobile.maestro") &&
+                isPackageInstalled("dev.mobile.maestro.test")
+            ) {
+                return
+            }
+        }
+
+        throw TimeoutException("Maestro APKs were not installed in time")
+    }
+
     private fun allocateForwarder() {
         PORT_TO_FORWARDER[hostPort]?.close()
         PORT_TO_ALLOCATION_POINT[hostPort]?.let {
@@ -727,10 +743,8 @@ class AndroidDriver(
             bufferedSink.flush()
         }
         install(maestroAppApk)
-        if (!isPackageInstalled("dev.mobile.maestro")) {
-            throw IllegalStateException("dev.mobile.maestro was not installed")
-        }
         install(maestroServerApk)
+        waitUntilInstallMaestroApks()
     }
 
     private fun uninstallMaestroApks() {
