@@ -1,5 +1,6 @@
 ## Build the UI test
 ## TODO: make destination generic for iOS 15 simulator
+rm -rf ./build/Products || exit 1
 xcodebuild ARCHS="x86_64 arm64" \
   ONLY_ACTIVE_ARCH=NO \
   -project ./maestro-ios-xctest-runner/maestro-driver-ios.xcodeproj \
@@ -20,4 +21,3 @@ mv "$PWD"/build/Products/*.xctestrun ./maestro-ios-driver/src/main/resources/mae
 (cd ./maestro-ios-driver/src/main/resources && zip -r maestro-driver-iosUITests-Runner.zip ./maestro-driver-iosUITests-Runner.app) || exit 1
 (cd ./maestro-ios-driver/src/main/resources && zip -r maestro-driver-ios.zip ./maestro-driver-ios.app) || exit 1
 rm -r ./maestro-ios-driver/src/main/resources/*.app || exit 1
-rm -rf ./build/Products || exit 1
