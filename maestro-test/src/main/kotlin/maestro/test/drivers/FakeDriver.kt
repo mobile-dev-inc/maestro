@@ -91,7 +91,7 @@ class FakeDriver : Driver {
 
     override fun launchApp(
         appId: String,
-        launchArguments: List<String>,
+        launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
         ensureOpen()
@@ -332,6 +332,12 @@ class FakeDriver : Driver {
         }
     }
 
+    fun assertNoEvent(event: Event) {
+        if (events.contains(event)) {
+            throw AssertionError("Expected no event: $event\nActual events: $events")
+        }
+    }
+
     fun assertAnyEvent(condition: ((event: Event) -> Boolean)) {
         assertThat(events.any { condition(it) }).isTrue()
     }
@@ -363,7 +369,7 @@ class FakeDriver : Driver {
         }
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
@@ -419,7 +425,7 @@ class FakeDriver : Driver {
 
         data class LaunchApp(
             val appId: String,
-            val launchArguments: List<String> = emptyList()
+            val launchArguments: Map<String, Any> = emptyMap()
         ) : Event(), UserInteraction
 
         data class StopApp(

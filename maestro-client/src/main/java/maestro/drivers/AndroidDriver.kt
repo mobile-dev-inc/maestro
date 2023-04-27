@@ -38,15 +38,16 @@ import maestro.UiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
-import maestro.android.asManifest
-import maestro.android.resolveLauncherActivity
+import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
 import maestro_android.MaestroDriverGrpc
+import maestro_android.checkWindowUpdatingRequest
 import maestro_android.deviceInfoRequest
 import maestro_android.eraseAllTextRequest
 import maestro_android.inputTextRequest
+import maestro_android.launchAppRequest
 import maestro_android.screenshotRequest
 import maestro_android.setLocationRequest
 import maestro_android.tapRequest
@@ -59,7 +60,6 @@ import okio.source
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.util.UUID
@@ -183,28 +183,22 @@ class AndroidDriver(
 
     override fun launchApp(
         appId: String,
-        launchArguments: List<String>,
+        launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
         if (!isPackageInstalled(appId)) {
             throw IllegalArgumentException("Package $appId is not installed")
         }
 
-        try {
-            val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
-            val manifest = apkFile.asManifest()
-            runCatching {
-                val sessionUUID = sessionId ?: UUID.randomUUID()
-                dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
-                val launcherActivity = manifest.resolveLauncherActivity(appId)
-                val shellResponse = dadb.shell("am start-activity -n $appId/${launcherActivity}")
-                if (shellResponse.errorOutput.isNotEmpty()) shell("monkey --pct-syskeys 0 -p $appId 1")
-            }.onFailure { shell("monkey --pct-syskeys 0 -p $appId 1") }
-        } catch (ioException: IOException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
-        } catch (saxException: SAXException) {
-            shell("monkey --pct-syskeys 0 -p $appId 1")
-        }
+        val arguments = launchArguments.toAndroidLaunchArguments()
+        val sessionUUID = sessionId ?: UUID.randomUUID()
+        dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
+        blockingStub.launchApp(
+            launchAppRequest {
+                this.packageName = appId
+                this.arguments.addAll(arguments)
+            }
+        ) ?: throw IllegalStateException("Maestro driver failed to launch app")
     }
 
     override fun stopApp(appId: String) {
@@ -380,9 +374,8 @@ class AndroidDriver(
 
     override fun hideKeyboard() {
         dadb.shell("input keyevent 4") // 'Back', which dismisses the keyboard before handing over to navigation
-        dadb.shell("input keyevent 111") // 'Escape'
         Thread.sleep(300)
-        waitForAppToSettle(null)
+        waitForAppToSettle(null, null)
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
@@ -470,7 +463,7 @@ class AndroidDriver(
 
     private fun autoVerifyChromeAgreement() {
         filterById("com.android.chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
-        waitForAppToSettle(null)
+        waitForAppToSettle(null, null)
         filterById("com.android.chrome:id/negative_button")?.let { tap(it.bounds.center()) }
     }
 
@@ -542,7 +535,23 @@ class AndroidDriver(
         return false
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
+        return if (appId != null) {
+            waitForWindowToSettle(appId, initialHierarchy)
+        } else {
+            ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+        }
+    }
+
+    private fun waitForWindowToSettle(appId: String, initialHierarchy: ViewHierarchy?): ViewHierarchy {
+        val endTime = System.currentTimeMillis() + WINDOW_UPDATE_TIMEOUT_MS
+
+        do {
+            if (blockingStub.isWindowUpdating(checkWindowUpdatingRequest { this.appId = appId }).isWindowUpdating) {
+                ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+            }
+        } while (System.currentTimeMillis() < endTime)
+
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
@@ -663,7 +672,7 @@ class AndroidDriver(
                 attributesBuilder["accessibilityText"] = node.getAttribute("content-desc")
             }
 
-            if(node.hasAttribute("hintText")) {
+            if (node.hasAttribute("hintText")) {
                 attributesBuilder["hintText"] = node.getAttribute("hintText")
             }
 
@@ -802,6 +811,8 @@ class AndroidDriver(
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 15000L
         private const val MAESTRO_DRIVER_STARTUP_TIMEOUT = "MAESTRO_DRIVER_STARTUP_TIMEOUT"
+        private const val WINDOW_UPDATE_TIMEOUT_MS = 750
+
         private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)

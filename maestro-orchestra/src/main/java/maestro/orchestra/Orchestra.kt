@@ -172,7 +172,8 @@ class Orchestra(
                 tapOnElement(
                     command,
                     command.retryIfNoChange ?: true,
-                    command.waitUntilVisible ?: false
+                    command.waitUntilVisible ?: false,
+                    config
                 )
             }
 
@@ -439,6 +440,12 @@ class Orchestra(
             return true
         }
 
+        condition.platform?.let {
+            if (it != maestro.deviceInfo().platform) {
+                return false
+            }
+        }
+
         condition.visible?.let {
             try {
                 findElement(it, timeoutMs = adjustedToLatestInteraction(timeoutMs ?: optionalLookupTimeoutMs))
@@ -585,7 +592,7 @@ class Orchestra(
         try {
             maestro.launchApp(
                 appId = command.appId,
-                launchArguments = command.launchArguments ?: emptyList(),
+                launchArguments = command.launchArguments ?: emptyMap(),
                 stopIfRunning = command.stopApp ?: true
             )
         } catch (e: Exception) {
@@ -632,6 +639,7 @@ class Orchestra(
         command: TapOnElementCommand,
         retryIfNoChange: Boolean,
         waitUntilVisible: Boolean,
+        config: MaestroConfig?,
     ): Boolean {
         return try {
             val result = findElement(command.selector)
@@ -641,6 +649,7 @@ class Orchestra(
                 retryIfNoChange,
                 waitUntilVisible,
                 command.longPress ?: false,
+                config?.appId
             )
 
             true
@@ -798,6 +807,13 @@ class Orchestra(
                 filters += Filters.containsChild(findElement(it).element).asFilter()
             }
 
+        selector.containsDescendants
+            ?.let { descendantSelectors ->
+                val descendantDescriptions = descendantSelectors.joinToString("; ") { it.description() }
+                descriptions += "Contains descendants: $descendantDescriptions"
+                filters += Filters.containsDescendants(descendantSelectors.map { buildFilter(it, deviceInfo).filterFunc })
+            }
+
         selector.traits
             ?.map {
                 TraitFilters.buildFilter(it)
@@ -939,6 +955,7 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+        private const val MAX_LAUNCH_ARGUMENT_PAIRS_ALLOWED = 1
     }
 }
 

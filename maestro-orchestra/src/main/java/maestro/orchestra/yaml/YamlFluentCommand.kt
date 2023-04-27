@@ -484,6 +484,7 @@ data class YamlFluentCommand(
             leftOf = selector.leftOf?.let { toElementSelector(it) },
             rightOf = selector.rightOf?.let { toElementSelector(it) },
             containsChild = selector.containsChild?.let { toElementSelector(it) },
+            containsDescendants = selector.containsDescendants?.map { toElementSelector(it) },
             traits = selector.traits
                 ?.split(" ")
                 ?.map { ElementTrait.valueOf(it.replace('-', '_').uppercase()) },
@@ -526,6 +527,7 @@ data class YamlFluentCommand(
 
     private fun YamlCondition.toCondition(): Condition {
         return Condition(
+            platform = platform,
             visible = visible?.let { toElementSelector(it) },
             notVisible = notVisible?.let { toElementSelector(it) },
             scriptCondition = `true`?.trim(),
