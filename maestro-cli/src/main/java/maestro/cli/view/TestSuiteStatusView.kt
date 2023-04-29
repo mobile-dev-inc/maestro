@@ -6,6 +6,7 @@ import maestro.cli.util.PrintUtils
 import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel.FlowResult
 import org.fusesource.jansi.Ansi
 import java.util.UUID
+import kotlin.time.Duration
 
 object TestSuiteStatusView {
 
@@ -122,7 +123,8 @@ object TestSuiteStatusView {
         data class FlowResult(
             val name: String,
             val status: FlowStatus,
-            val error: String? = null
+            val duration: Duration? = null,
+            val error: String? = null,
         )
 
         data class UploadDetails(
