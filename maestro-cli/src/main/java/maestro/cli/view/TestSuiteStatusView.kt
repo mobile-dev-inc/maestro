@@ -71,13 +71,13 @@ object TestSuiteStatusView {
         }
         println()
 
-        if (suite.uploadDetais != null) {
+        if (suite.uploadDetails != null) {
             println("==== View details in the console ====")
             PrintUtils.message(
                 uploadUrl(
-                    suite.uploadDetais.uploadId.toString(),
-                    suite.uploadDetais.teamId,
-                    suite.uploadDetais.appId,
+                    suite.uploadDetails.uploadId.toString(),
+                    suite.uploadDetails.teamId,
+                    suite.uploadDetails.appId,
                 )
             )
             println()
@@ -119,7 +119,7 @@ object TestSuiteStatusView {
     data class TestSuiteViewModel(
         val status: FlowStatus,
         val flows: List<FlowResult>,
-        val uploadDetais: UploadDetails? = null,
+        val uploadDetails: UploadDetails? = null,
     ) {
 
         data class FlowResult(
@@ -138,9 +138,9 @@ object TestSuiteStatusView {
         companion object {
 
             fun UploadStatus.toViewModel(
-                uploadDetais: UploadDetails
+                uploadDetails: UploadDetails
             ) = TestSuiteViewModel(
-                uploadDetais = uploadDetais,
+                uploadDetails = uploadDetails,
                 status = FlowStatus.from(status),
                 flows = flows.map {
                     it.toViewModel()
@@ -162,7 +162,7 @@ object TestSuiteStatusView {
 // Helped launcher to play around with presentation
 fun main() {
     val status = TestSuiteStatusView.TestSuiteViewModel(
-        uploadDetais = TestSuiteStatusView.TestSuiteViewModel.UploadDetails(
+        uploadDetails = TestSuiteStatusView.TestSuiteViewModel.UploadDetails(
             uploadId = UUID.randomUUID(),
             teamId = "teamid",
             appId = "appid",
