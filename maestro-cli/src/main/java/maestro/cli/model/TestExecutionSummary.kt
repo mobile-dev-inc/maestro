@@ -1,5 +1,7 @@
 package maestro.cli.model
 
+import kotlin.time.Duration
+
 data class TestExecutionSummary(
     val passed: Boolean,
     val suites: List<SuiteResult>,
@@ -16,6 +18,7 @@ data class TestExecutionSummary(
         val fileName: String?,
         val status: FlowStatus,
         val failure: Failure? = null,
+        val duration: Duration? = null,
     )
 
     data class Failure(

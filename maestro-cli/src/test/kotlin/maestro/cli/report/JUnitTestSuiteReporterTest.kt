@@ -5,6 +5,7 @@ import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
 import okio.Buffer
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class JUnitTestSuiteReporterTest {
 
@@ -24,11 +25,13 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
+                            duration = 42100.milliseconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
                             fileName = "flow_b",
                             status = FlowStatus.WARNING,
+                            duration = 149400.milliseconds
                         ),
                     )
                 )
@@ -49,8 +52,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A"/>
-                    <testcase id="Flow B" name="Flow B" classname="Flow B"/>
+                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
+                    <testcase id="flow_b" name="Flow B" classname="flow_b" time="149.4"/>
                   </testsuite>
                 </testsuites>
                 
@@ -73,12 +76,14 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
+                            duration = 42100.milliseconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
                             fileName = "flow_b",
                             status = FlowStatus.ERROR,
-                            failure = TestExecutionSummary.Failure("Error message")
+                            failure = TestExecutionSummary.Failure("Error message"),
+                            duration = 1310.milliseconds
                         ),
                     )
                 )
@@ -99,8 +104,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" tests="2" failures="1">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A"/>
-                    <testcase id="Flow B" name="Flow B" classname="Flow B">
+                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
+                    <testcase id="flow_b" name="Flow B" classname="flow_b" time="1.31">
                       <failure>Error message</failure>
                     </testcase>
                   </testsuite>
@@ -126,6 +131,7 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
+                            duration = 42100.milliseconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
@@ -151,8 +157,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Custom test suite name" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A"/>
-                    <testcase id="Flow B" name="Flow B" classname="Flow B"/>
+                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
+                    <testcase id="flow_b" name="Flow B" classname="flow_b"/>
                   </testsuite>
                 </testsuites>
                 

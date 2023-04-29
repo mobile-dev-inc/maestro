@@ -47,7 +47,8 @@ class JUnitTestSuiteReporter(
                                                 Failure(
                                                     message = failure.message,
                                                 )
-                                            }
+                                            },
+                                            time = flow.duration?.inWholeMilliseconds?.let{ (it / 1000.0).toString() }
                                         )
                                     }
                             )
@@ -78,6 +79,7 @@ class JUnitTestSuiteReporter(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String,
         @JacksonXmlProperty(isAttribute = true) val classname: String,
+        @JacksonXmlProperty(isAttribute = true) val time: String? = null,
         val failure: Failure? = null,
     )
 
