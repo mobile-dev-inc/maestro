@@ -34,7 +34,7 @@ If applicable, add screenshots to help explain your problem.
  - Version [e.g. 22]
 
 **Bugreport output (if applicable)**
-The zip files created when `maestro bugreport`
+The zip files created when `maestro bugreport` can be uploaded here as well if applicable.
 
 **Additional context**
 Add any other context about the problem here.
