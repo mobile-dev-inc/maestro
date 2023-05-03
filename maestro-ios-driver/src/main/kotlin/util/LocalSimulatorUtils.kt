@@ -9,8 +9,6 @@ import util.CommandLineUtils.runCommand
 import java.io.File
 import java.io.InputStream
 import java.lang.ProcessBuilder.Redirect.PIPE
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import kotlin.io.path.createTempDirectory
 
 object LocalSimulatorUtils {
@@ -415,28 +413,22 @@ object LocalSimulatorUtils {
         val tempDir = createTempDirectory()
         val inputStream = LocalSimulatorUtils::class.java.getResourceAsStream("/screenrecord.sh")
         if (inputStream != null) {
-            // Create a temporary file
-            val tempFile = File.createTempFile("screenrecord", ".sh")
-
-            // Copy the script to the temporary file
-            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-
-            // Set the execute permission for the temporary file
-            tempFile.setExecutable(true)
-
             val recording = File(tempDir.toFile(), "screenrecording.mov")
 
-            val recordingProcess = ProcessBuilder(
+            val processBuilder = ProcessBuilder(
                 listOf(
-                    tempFile.absolutePath,
-                    deviceId,
-                    recording.path
+                    "bash",
+                    "-c",
+                    inputStream.bufferedReader().readText()
                 )
             )
+            val environment = processBuilder.environment()
+            environment["DEVICE_ID"] = deviceId
+            environment["RECORDING_PATH"] = recording.path
+
+            val recordingProcess = processBuilder
                 .redirectInput(PIPE)
                 .start()
-
-            tempFile.deleteOnExit()
 
             return ScreenRecording(
                 recordingProcess,
