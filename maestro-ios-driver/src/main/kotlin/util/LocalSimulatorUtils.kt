@@ -9,6 +9,8 @@ import util.CommandLineUtils.runCommand
 import java.io.File
 import java.io.InputStream
 import java.lang.ProcessBuilder.Redirect.PIPE
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import kotlin.io.path.createTempDirectory
 
 object LocalSimulatorUtils {
@@ -411,23 +413,38 @@ object LocalSimulatorUtils {
 
     fun startScreenRecording(deviceId: String): ScreenRecording {
         val tempDir = createTempDirectory()
-        val script = LocalSimulatorUtils::class.java.getResource("/screenrecord.sh")!!.file
-        val recording = File(tempDir.toFile(), "screenrecording.mov")
+        val inputStream = LocalSimulatorUtils::class.java.getResourceAsStream("/screenrecord.sh")
+        if (inputStream != null) {
+            // Create a temporary file
+            val tempFile = File.createTempFile("screenrecord", ".sh")
 
-        val recordingProcess = ProcessBuilder(
-            listOf(
-                script,
-                deviceId,
-                recording.path
+            // Copy the script to the temporary file
+            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+
+            // Set the execute permission for the temporary file
+            tempFile.setExecutable(true)
+
+            val recording = File(tempDir.toFile(), "screenrecording.mov")
+
+            val recordingProcess = ProcessBuilder(
+                listOf(
+                    tempFile.absolutePath,
+                    deviceId,
+                    recording.path
+                )
             )
-        )
-            .redirectInput(PIPE)
-            .start()
+                .redirectInput(PIPE)
+                .start()
 
-        return ScreenRecording(
-            recordingProcess,
-            recording
-        )
+            tempFile.deleteOnExit()
+
+            return ScreenRecording(
+                recordingProcess,
+                recording
+            )
+        } else {
+            throw IllegalStateException("screenrecord.sh file not found")
+        }
     }
 
     fun stopScreenRecording(screenRecording: ScreenRecording): File {
