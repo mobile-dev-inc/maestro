@@ -3,19 +3,18 @@ name: Bug report
 about: Create a bug report to help us improve Maestro
 title: "[Maestro version, e.g. v1.2.3]"
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Steps to reproduce the behavior, e.g.:
+
+1. Start the simulator
+2. Run `maestro test ...`
+3. The Flow fails at ...
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -23,15 +22,16 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Platform (please complete the following information):**
- - OS: [e.g. iOS, Android or Web]
- - Maestro version [e.g. v1.2.3]
+**Environment information (please complete the following information):**
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+- Maestro version [e.g. v1.2.3]
+- Platform: [e.g. iOS, Android or Web]
+- Device model and OS version: [e.g. iPhone6]
+- Simulator, emulator or physical device
+- Host [e.g. Mac M1, Windows, Linux, etc]
+
+**Workspace (if applicable)**
+Please share your workspace with Flow files and application binary if you are able to do so as that greatly helps in reproduction efforts.
 
 **Bugreport output (if applicable)**
 The zip files created when `maestro bugreport` can be uploaded here as well if applicable.
