@@ -2,12 +2,12 @@ package maestro.cli.report
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
+import maestro.Driver
 import maestro.MaestroException
 import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.warn
 import maestro.orchestra.MaestroCommand
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,11 +19,13 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.IdentityHashMap
+import java.util.Properties
 import kotlin.io.path.absolutePathString
+import kotlin.math.log
 
 object TestDebugReporter {
 
-    private val logger = DebugLogStore.loggerFor(TestDebugReporter::class.java)
+    private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
 
     private val dateFormat = "yyyy-MM-dd_HHmmss"
     private val mapper = ObjectMapper()
@@ -71,12 +73,6 @@ object TestDebugReporter {
         }
     }
 
-    fun saveLogs() {
-        // maestro logs
-        DebugLogStore.copyTo(File(path.absolutePathString(), "maestro.log"))
-        // todo - device logs
-    }
-
     fun deleteOldFiles(path: Path = parentPath, days: Long = 14) {
         try {
             val currentTime = Instant.now()
@@ -97,6 +93,27 @@ object TestDebugReporter {
         } catch (e: Exception) {
             logger.warn("Failed to delete older files", e)
         }
+    }
+
+    fun logSystemInfo() {
+        val appVersion = runCatching {
+            val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
+                Properties().apply { load(it) }
+            }
+            props["version"].toString()
+        }
+        val osName = System.getProperty("os.name")
+        val osVersion = System.getProperty("os.version")
+        val architecture = System.getProperty("os.arch")
+
+
+        val logger = LoggerFactory.getLogger("MAESTRO")
+        logger.info("---- System Info ----")
+        logger.info("Maestro Version: ${appVersion.getOrNull() ?: "Undefined"}")
+        logger.info("OS Name: $osName")
+        logger.info("OS Version: ${osVersion}")
+        logger.info("Architecture: $architecture")
+        logger.info("---------------------")
     }
 }
 
