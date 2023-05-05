@@ -23,6 +23,7 @@ import maestro.js.JsEngine
 import maestro.orchestra.util.Env.evaluateScripts
 
 data class ElementSelector(
+    val selector: String? = null,
     val textRegex: String? = null,
     val idRegex: String? = null,
     val size: SizeSelector? = null,
@@ -63,6 +64,10 @@ data class ElementSelector(
 
     fun description(): String {
         val descriptions = mutableListOf<String>()
+
+        selector?.let {
+            descriptions.add("Selector: $it")
+        }
 
         textRegex?.let {
             descriptions.add("\"$it\"")

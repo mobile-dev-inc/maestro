@@ -650,6 +650,25 @@ data class DefineVariablesCommand(
 
 }
 
+data class DefineSelectorsCommand(
+    val selectors: Map<String, ElementSelector>,
+) : Command {
+
+    override fun description(): String {
+        return "Define selectors"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): DefineSelectorsCommand {
+        return copy(
+            selectors = selectors.mapValues { (_, value) ->
+                value.evaluateScripts(jsEngine)
+            }
+        )
+    }
+
+    override fun visible(): Boolean = false
+}
+
 data class RunScriptCommand(
     val script: String,
     val env: Map<String, String> = emptyMap(),

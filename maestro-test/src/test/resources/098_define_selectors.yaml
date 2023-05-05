@@ -1,0 +1,17 @@
+appId: com.example.app
+---
+- defineSelectors:
+    LoginScreen.EmailText:
+      id: id_email_text
+      text: Email
+    LoginButton: Login
+- defineSelectors:
+    PasswordText:
+      id: id_password_text
+- assertVisible:
+    selector: LoginScreen.EmailText
+- assertNotVisible:
+    selector: PasswordText
+    text: Password
+- tapOn:
+    selector: LoginButton

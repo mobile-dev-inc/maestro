@@ -2669,6 +2669,39 @@ class IntegrationTest {
         driver.assertNoInteraction()
     }
 
+    @Test
+    fun `Case 098 - Define selectors`() {
+        // Given
+        val commands = readCommands("098_define_selectors")
+
+        val driver = driver {
+            element {
+                id = "id_email_text"
+                text = "Email"
+                bounds = Bounds.ofSize(100, 100)
+            }
+            element {
+                id = "id_password_text"
+                text = "not password"
+                bounds = Bounds.ofSize(100, 100)
+                    .translate(y = 100)
+            }
+            element {
+                text = "Login"
+                bounds = Bounds.ofSize(100, 100)
+                    .translate(y = 200)
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertHasEvent(Event.Tap(Point(50, 250)))
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(
