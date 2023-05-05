@@ -5,19 +5,8 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>some.log</file>
-        <encoder>
-            <pattern>[%-5level] %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <logger name="CONSOLE" level="INFO">
         <appender-ref ref="CONSOLE" />
-    </logger>
-
-    <logger name="FILE" level="INFO">
-        <appender-ref ref="FILE" />
     </logger>
 
     <root level="INFO">
