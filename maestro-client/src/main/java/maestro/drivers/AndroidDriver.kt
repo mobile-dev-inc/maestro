@@ -39,8 +39,6 @@ import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.warn
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
@@ -800,7 +798,7 @@ class AndroidDriver(
         private const val WINDOW_UPDATE_TIMEOUT_MS = 750
         private val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
-        private val LOGGER = DebugLogStore.loggerFor(AndroidDriver::class.java)
+        private val LOGGER = LoggerFactory.getLogger(AndroidDriver::class.java)
 
         private const val TOAST_CLASS_NAME = "android.widget.Toast"
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()

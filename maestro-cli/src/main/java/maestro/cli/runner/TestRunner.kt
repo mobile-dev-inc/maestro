@@ -21,10 +21,13 @@ import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
+import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.concurrent.thread
 
 object TestRunner {
+
+    private val logger = LoggerFactory.getLogger(TestRunner::class.java)
 
     fun runSingle(
         maestro: Maestro,
@@ -134,6 +137,7 @@ object TestRunner {
         return try {
             Ok(block())
         } catch (e: Exception) {
+            logger.error("Failed to run flow", e)
             val message = ErrorViewUtils.exceptionToMessage(e)
 
             if (!maestro.isShutDown()) {

@@ -3,16 +3,15 @@ package maestro.utils
 import com.github.romankh3.image.comparison.ImageComparison
 import maestro.Driver
 import maestro.ViewHierarchy
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.warn
 import okio.Buffer
 import okio.Sink
+import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
 class ScreenshotUtils {
     companion object {
-        private val LOGGER = DebugLogStore.loggerFor(ScreenshotUtils::class.java)
+        private val LOGGER = LoggerFactory.getLogger(ScreenshotUtils::class.java)
 
         fun takeScreenshot(out: Sink, compressed: Boolean, driver: Driver) {
             LOGGER.info("Taking screenshot to output sink")

@@ -15,12 +15,12 @@ import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
 import maestro.cli.view.TestSuiteStatusView
 import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel
-import maestro.debuglog.DebugLogStore
 import maestro.orchestra.Orchestra
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.Sink
+import org.slf4j.LoggerFactory
 import java.io.File
 
 class TestSuiteInteractor(
@@ -31,7 +31,7 @@ class TestSuiteInteractor(
     private val excludeTags: List<String> = emptyList(),
 ) {
 
-    private val logger = DebugLogStore.loggerFor(TestSuiteInteractor::class.java)
+    private val logger = LoggerFactory.getLogger(TestSuiteInteractor::class.java)
 
     fun runTestSuite(
         input: File,
@@ -217,8 +217,8 @@ class TestSuiteInteractor(
             val flowSuccess = orchestra.runFlow(commands)
             flowStatus = if (flowSuccess) FlowStatus.SUCCESS else FlowStatus.ERROR
         } catch (e: Exception) {
+            logger.error("Failed to complete flow", e)
             flowStatus = FlowStatus.ERROR
-
             errorMessage = ErrorViewUtils.exceptionToMessage(e)
         }
 

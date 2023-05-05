@@ -27,19 +27,19 @@ import maestro.cli.report.FlowDebugMetadata
 import maestro.cli.report.ScreenshotDebugMetadata
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
-import maestro.debuglog.DebugLogStore
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.CompositeCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
 import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.yaml.YamlCommandReader
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.IdentityHashMap
 
 object MaestroCommandRunner {
 
-    private val logger = DebugLogStore.loggerFor(MaestroCommandRunner::class.java)
+    private val logger = LoggerFactory.getLogger(MaestroCommandRunner::class.java)
 
     fun runCommands(
         maestro: Maestro,

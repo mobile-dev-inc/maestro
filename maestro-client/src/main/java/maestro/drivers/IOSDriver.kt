@@ -42,18 +42,17 @@ import maestro.TreeNode
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
-import maestro.debuglog.DebugLogStore
 import maestro.utils.FileUtils
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import okio.Sink
+import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
 import java.nio.file.Files
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.collections.set
 
 class IOSDriver(
@@ -524,7 +523,7 @@ class IOSDriver(
     companion object {
         const val NAME = "iOS Simulator"
 
-        private val LOGGER = DebugLogStore.loggerFor(IOSDevice::class.java)
+        private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
 
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40
