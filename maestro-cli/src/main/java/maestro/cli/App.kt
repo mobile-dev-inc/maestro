@@ -37,11 +37,14 @@ import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import maestro.debuglog.LogConfig
 import maestro.debuglog.error
+import org.slf4j.LoggerFactory
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.util.Properties
+import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 
 @Command(
@@ -96,11 +99,16 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
+    // logs & debug output
+    val debugOutputPath = TestDebugReporter.path
+    LogConfig.configure(debugOutputPath.absolutePathString() + "/maestro.log")
+
+    val logger = LoggerFactory.getLogger(App::class.java)
+    TestDebugReporter.logSystemInfo()
+    DebugLogStore.logSystemInfo()
+
     Dependencies.install()
     Updates.fetchUpdatesAsync()
-
-    val logger = DebugLogStore.loggerFor(App::class.java)
-    DebugLogStore.logSystemInfo()
 
     val commandLine = CommandLine(App())
         .setUsageHelpWidth(160)
@@ -127,9 +135,7 @@ fun main(args: Array<String>) {
     val exitCode = commandLine
         .execute(*args)
 
-    TestDebugReporter.saveLogs()
     TestDebugReporter.deleteOldFiles()
-
     DebugLogStore.finalizeRun()
 
     val newVersion = Updates.checkForUpdates()
