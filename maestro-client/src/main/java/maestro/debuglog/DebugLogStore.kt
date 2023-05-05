@@ -97,7 +97,9 @@ object DebugLogStore {
     }
 
     private fun removeOldLogs(baseDir: File) {
-        if (!baseDir.isDirectory) { return }
+        if (!baseDir.isDirectory) {
+            return
+        }
 
         val existing = baseDir.listFiles() ?: return
         val toDelete = existing.sortedByDescending { it.name }
@@ -134,13 +136,11 @@ object DebugLogStore {
 fun Logger.warn(message: String, throwable: Throwable? = null) {
     if (throwable != null) {
         log(Level.WARNING, message, throwable)
-    }
-    else log(Level.WARNING, message)
+    } else log(Level.WARNING, message)
 }
 
 fun Logger.error(message: String, throwable: Throwable? = null) {
     if (throwable != null) {
         log(Level.SEVERE, message, throwable)
-    }
-    else log(Level.SEVERE, message)
+    } else log(Level.SEVERE, message)
 }
