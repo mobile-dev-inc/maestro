@@ -165,15 +165,6 @@ class Orchestra(
         return true
     }
 
-    private fun debugScreenshot(index: Int): File? {
-        val result = kotlin.runCatching {
-            val out = File("screenshot_${index}_${System.currentTimeMillis()}.png")
-            maestro.takeScreenshot(out)
-            out
-        }
-        return result.getOrNull()
-    }
-
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val command = maestroCommand.asCommand()
 
@@ -935,7 +926,7 @@ class Orchestra(
     private fun resolveText(attributes: MutableMap<String, String>): String? {
         return if (!attributes["text"].isNullOrEmpty()) {
             attributes["text"]
-        } else if(!attributes["hintText"].isNullOrEmpty()) {
+        } else if (!attributes["hintText"].isNullOrEmpty()) {
             attributes["hintText"]
         } else {
             attributes["accessibilityText"]
