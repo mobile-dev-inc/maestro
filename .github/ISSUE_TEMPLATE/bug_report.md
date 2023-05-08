@@ -23,8 +23,9 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment information (please complete the following information):**
+
 - Maestro version [e.g. v1.2.3]
-- Platform: [e.g. iOS, Android or Web]
+- Platform: [e.g. iOS 16.4.1, Android 11.0, Chrome]
 - Device model and OS version: [e.g. iPhone6]
 - Simulator, emulator or physical device
 - Host [e.g. Mac M1, Windows, Linux, etc]
