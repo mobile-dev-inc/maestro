@@ -79,8 +79,11 @@ dependencies {
     implementation((libs.webdrivermanager)) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
-    implementation(libs.logback)
-    implementation(libs.slf4j)
+    api(libs.slf4j)
+    api(libs.logback) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)

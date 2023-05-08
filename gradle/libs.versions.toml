@@ -39,13 +39,12 @@ mozillaRhino = "1.7.14"
 picocli = "4.5.2"
 selenium = "4.7.2"
 slf4j = "2.0.4"
-slf4jNop = "2.0.4"
 squareOkhttp = "4.10.0"
 squareOkio = "3.2.0"
 squareRetrofit = "2.9.0"
 webdrivermanager = "5.3.1"
 wiremock = "2.35.0"
-logback="1.4.0"
+logback="1.2.3"
 
 [libraries]
 android-tools-apkparser = { module = "com.android.tools.apkparser:apkanalyzer", version.ref = "androidToolsApkParser" }
