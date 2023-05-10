@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
     application
     id("org.jreleaser") version "1.0.0"
-    id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "dev.mobile"
