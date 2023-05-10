@@ -659,9 +659,9 @@ data class RunScriptCommand(
 
     override fun description(): String {
         return if (condition == null) {
-            sourceDescription
+            "Run $sourceDescription"
         } else {
-            "$sourceDescription when ${condition.description()}"
+            "Run $sourceDescription when ${condition.description()}"
         }
     }
 
