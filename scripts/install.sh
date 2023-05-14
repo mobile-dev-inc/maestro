@@ -130,21 +130,21 @@ if [[ $darwin == true ]]; then
   touch "$maestro_bash_profile"
   if ! command -v maestro > /dev/null; then
     echo "Adding maestro to your PATH in $maestro_bash_profile"
-    echo 'export PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_bash_profile"
+    echo '\nexport PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_bash_profile"
   fi
 else
   echo "Attempt update of interactive bash profile on regular UNIX..."
   touch "${maestro_bashrc}"
   if ! command -v maestro > /dev/null; then
     echo "Adding maestro to your PATH in $maestro_bashrc"
-    echo 'export PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_bashrc"
+    echo '\nexport PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_bashrc"
   fi
 fi
 
 touch "$maestro_zshrc"
 if ! command -v maestro > /dev/null; then
   echo "Adding maestro to your PATH in $maestro_zshrc"
-  echo 'export PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_zshrc"
+  echo '\nexport PATH=$PATH:'"$MAESTRO_BIN_DIR_RAW" >> "$maestro_zshrc"
 fi
 
 echo ""
