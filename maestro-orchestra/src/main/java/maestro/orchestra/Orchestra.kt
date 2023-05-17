@@ -630,7 +630,34 @@ class Orchestra(
     }
 
     private fun inputTextCommandV2(command: InputTextCommandV2): Boolean {
-        // TODO : implement me
+        if (command.id != null) {
+            val selector = ElementSelector(
+                idRegex = command.id
+            )
+            val result = findElement(selector)
+            maestro.tap(
+                result.element,
+                result.hierarchy
+            )
+        } else if (command.accessibilityText != null) {
+            val selector = ElementSelector(
+                textRegex = command.accessibilityText
+            )
+            val result = findElement(selector)
+            maestro.tap(
+                result.element,
+                result.hierarchy
+            )
+        } else if (command.point != null) {
+            tapOnPointV2Command(
+                command = TapOnPointV2Command(
+                    point = command.point!!
+                )
+            )
+        } else {
+            throw MaestroException.InvalidCommand("inputText error, one of the following parameters is missing: (accessibilityText, id, point)")
+        }
+
         return true
     }
 
