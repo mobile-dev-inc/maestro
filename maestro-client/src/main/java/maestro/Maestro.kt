@@ -24,6 +24,7 @@ import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
+import maestro.utils.PointUtils
 import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
 import okio.Sink
@@ -218,19 +219,17 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }
     }
 
-    fun tapOnRelative(
-        percentX: Int,
-        percentY: Int,
-        retryIfNoChange: Boolean = true,
-        longPress: Boolean = false,
-    ) {
-        val x = cachedDeviceInfo.widthGrid * percentX / 100
-        val y = cachedDeviceInfo.heightGrid * percentY / 100
+    fun tapOnPoint(point: String, retryIfNoChange: Boolean?, longPress: Boolean?) {
+        val point = PointUtils.getPoint(
+            pointString = point,
+            deviceInfo = cachedDeviceInfo,
+        )
+
         tap(
-            x = x,
-            y = y,
-            retryIfNoChange = retryIfNoChange,
-            longPress = longPress,
+            x = point.x,
+            y = point.y,
+            retryIfNoChange = retryIfNoChange ?: true,
+            longPress = longPress ?: false
         )
     }
 
@@ -427,6 +426,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         driver.inputText(text)
         waitForAppToSettle()
+    }
+
+    fun inputTextV2(text: String) {
+        LOGGER.info("Inputting text v2: $text")
     }
 
     fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
