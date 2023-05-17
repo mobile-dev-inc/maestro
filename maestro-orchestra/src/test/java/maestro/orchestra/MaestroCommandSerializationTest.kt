@@ -238,10 +238,10 @@ internal class MaestroCommandSerializationTest {
     }
 
     @Test
-    fun `serialize InputTextCommand`() {
+    fun `serialize InputTextCommandV1`() {
         // given
         val command = MaestroCommand(
-            InputTextCommand("Hello, world!")
+            InputTextCommandV1("Hello, world!")
         )
 
         // when
@@ -252,8 +252,42 @@ internal class MaestroCommandSerializationTest {
         @Language("json")
         val expectedJson = """
             {
-              "inputTextCommand" : {
+              "inputTextCommandV1" : {
                 "text" : "Hello, world!"
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+        assertThat(deserializedCommand)
+            .isEqualTo(command)
+    }
+
+    @Test
+    fun `serialize InputTextCommandV2`() {
+        // given
+        val command = MaestroCommand(
+            InputTextCommandV2(
+                text = "Hello, world!",
+                accessibilityText = "test1",
+                id = "test2",
+                point = "test3",
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputTextCommandV2" : {
+                "text" : "Hello, world!",
+                "accessibilityText" : "test1",
+                "id" : "test2",
+                "point" : "test3"
               }
             }
           """.trimIndent()
