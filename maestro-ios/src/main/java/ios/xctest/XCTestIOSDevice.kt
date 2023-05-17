@@ -290,6 +290,12 @@ class XCTestIOSDevice(
         client.eraseText(charactersToErase).use {}
     }
 
+    override fun copyText(text: String): Result<Unit, Throwable> {
+        return runCatching {
+            client.copyText(text).use {}
+        }
+    }
+
     override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
         return runCatching {
             client.doubleTap(

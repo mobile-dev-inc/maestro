@@ -14,6 +14,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import xcuitest.api.CopyTextRequest
 import xcuitest.api.DoubleTapRequest
 import xcuitest.api.EraseTextRequest
 import xcuitest.api.InputTextRequest
@@ -141,6 +142,12 @@ class XCTestDriverClient(
         text: String,
     ): Response {
         return executeJsonRequest("inputText", InputTextRequest(text))
+    }
+
+    fun copyText(
+        text: String,
+    ): Response {
+        return executeJsonRequest("copyText", CopyTextRequest(text))
     }
 
     fun tap(

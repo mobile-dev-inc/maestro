@@ -145,6 +145,10 @@ class LocalIOSDevice(
         }
     }
 
+    override fun copyText(text: String): Result<Unit, Throwable> {
+        return xcTestDevice.copyText(text)
+    }
+
     override fun eraseText(charactersToErase: Int) {
         xcTestDevice.eraseText(charactersToErase)
     }

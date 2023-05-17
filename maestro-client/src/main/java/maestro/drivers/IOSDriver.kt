@@ -463,6 +463,7 @@ class IOSDriver(
         if (text.length > INPUT_TEXT_MAX_LENGTH) {
             inputText(text)
         } else {
+            iosDevice.copyText(text)
             iosDevice.doubleTap(point.x, point.y)
         }
     }

@@ -174,6 +174,10 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
+    override fun copyText(text: String): Result<Unit, Throwable> {
+        TODO("Not yet implemented")
+    }
+
     override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
         TODO("Not yet implemented")
     }

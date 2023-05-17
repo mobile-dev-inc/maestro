@@ -32,6 +32,8 @@ class RouteHandlerFactory {
             return SetPermissionsHandler()
         case .doubleTap:
             return DoubleTapRouteHandler()
+        case .copyText:
+            return CopyTextRouteHandler()
         }
     }
 }

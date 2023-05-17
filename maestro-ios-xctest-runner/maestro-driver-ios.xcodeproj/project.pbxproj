@@ -49,6 +49,8 @@
 		94A90DDE298AE72A006EB769 /* XCUIElement+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A90DDD298AE72A006EB769 /* XCUIElement+Extensions.swift */; };
 		94D6D60E2A153CFC005BDF94 /* DoubleTapRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */; };
 		94D6D6102A153D27005BDF94 /* DoubleTapRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */; };
+		94D6D6122A15414B005BDF94 /* CopyTextRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D6112A15414B005BDF94 /* CopyTextRequest.swift */; };
+		94D6D6142A154195005BDF94 /* CopyTextRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D6132A154195005BDF94 /* CopyTextRouteHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +108,8 @@
 		94A90DDD298AE72A006EB769 /* XCUIElement+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIElement+Extensions.swift"; sourceTree = "<group>"; };
 		94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleTapRequest.swift; sourceTree = "<group>"; };
 		94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleTapRouteHandler.swift; sourceTree = "<group>"; };
+		94D6D6112A15414B005BDF94 /* CopyTextRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyTextRequest.swift; sourceTree = "<group>"; };
+		94D6D6132A154195005BDF94 /* CopyTextRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyTextRouteHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +207,7 @@
 				61C0AFF229C8C040005D1FC5 /* DeviceInfoResponse.swift */,
 				945DD44A29D6F5D8004D8ECF /* SetPermissionsRequest.swift */,
 				94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */,
+				94D6D6112A15414B005BDF94 /* CopyTextRequest.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -238,6 +243,7 @@
 				61C0AFF029C8C01F005D1FC5 /* DeviceInfoHandler.swift */,
 				945DD44C29D6F73B004D8ECF /* SetPermissionsHandler.swift */,
 				94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */,
+				94D6D6132A154195005BDF94 /* CopyTextRouteHandler.swift */,
 			);
 			path = Handlers;
 			sourceTree = "<group>";
@@ -381,6 +387,7 @@
 				612DE4122984114B003C2BE0 /* RunnerDaemonProxy.swift in Sources */,
 				61C0AFEB29C863BB005D1FC5 /* PressButtonHandler.swift in Sources */,
 				94826F4429DB082100795E9B /* SystemPermissionHelper.swift in Sources */,
+				94D6D6122A15414B005BDF94 /* CopyTextRequest.swift in Sources */,
 				9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */,
 				61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */,
 				32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */,
@@ -399,6 +406,7 @@
 				61C0AFF729D34FEA005D1FC5 /* EventTarget.swift in Sources */,
 				612DE414298426EF003C2BE0 /* EventRecord.swift in Sources */,
 				32ECCB28298044C200A1A0A0 /* TouchRouteHandler.swift in Sources */,
+				94D6D6142A154195005BDF94 /* CopyTextRouteHandler.swift in Sources */,
 				943A9081293F5C2500C85136 /* RouteHandlerFactory.swift in Sources */,
 				61C0AFE529C7AAB3005D1FC5 /* PressKeyRequest.swift in Sources */,
 				61C0AFF329C8C040005D1FC5 /* DeviceInfoResponse.swift in Sources */,

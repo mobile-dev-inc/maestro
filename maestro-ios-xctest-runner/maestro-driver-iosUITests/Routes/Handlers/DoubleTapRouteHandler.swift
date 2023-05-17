@@ -2,11 +2,13 @@ import FlyingFox
 import XCTest
 import os
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
-                            category: String(describing: DoubleTapRouteHandler.self))
-
 @MainActor
 struct DoubleTapRouteHandler: HTTPHandler {
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: String(describing: Self.self)
+    )
+    
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
         
@@ -17,19 +19,21 @@ struct DoubleTapRouteHandler: HTTPHandler {
         
         logger.info("Double tapping \(requestBody.x), \(requestBody.y)")
         
-        let eventRecord = EventRecord(orientation: .portrait)
-        _ = eventRecord.addPointerTouchEvent(
+        let tap1 = EventRecord(orientation: .portrait)
+        _ = tap1.addPointerTouchEvent(
             at: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y)),
             touchUpAfter: nil
         )
-        _ = eventRecord.addPointerTouchEvent(
+        let tap2 = EventRecord(orientation: .portrait)
+        _ = tap2.addPointerTouchEvent(
             at: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y)),
             touchUpAfter: nil
         )
 
         do {
             let start = Date()
-            try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
+            try await RunnerDaemonProxy().synthesize(eventRecord: tap1)
+            try await RunnerDaemonProxy().synthesize(eventRecord: tap2)
             let duration = Date().timeIntervalSince(start)
             logger.info("Double tapping took \(duration)")
             return HTTPResponse(statusCode: .ok)

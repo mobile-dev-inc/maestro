@@ -166,6 +166,8 @@ interface IOSDevice : AutoCloseable {
 
     fun eraseText(charactersToErase: Int)
 
+    fun copyText(text: String): Result<Unit, Throwable>
+
     fun doubleTap(x: Int, y: Int): Result<Unit, Throwable>
 }
 
