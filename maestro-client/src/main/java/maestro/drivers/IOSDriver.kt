@@ -459,6 +459,14 @@ class IOSDriver(
         )
     }
 
+    override fun inputTextV2(text: String, point: Point) {
+        if (text.length > INPUT_TEXT_MAX_LENGTH) {
+            inputText(text)
+        } else {
+            iosDevice.doubleTap(point.x, point.y)
+        }
+    }
+
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         iosDevice.openLink(link).expect {}
     }
@@ -536,5 +544,8 @@ class IOSDriver(
         )
 
         private const val SCREEN_SETTLE_TIMEOUT_MS: Long = 3000
+
+        // in case of >50 symbols copy-paste approach will be used
+        private const val INPUT_TEXT_MAX_LENGTH = 50
     }
 }

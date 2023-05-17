@@ -482,6 +482,10 @@ class IdbIOSDevice(
         TODO("Not yet implemented")
     }
 
+    override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
+        TODO("Not yet implemented")
+    }
+
     private infix fun <T, V> T.runWithRestartRecovery(block: T.() -> V): Result<V, Throwable> {
         return runCatching {
             try {

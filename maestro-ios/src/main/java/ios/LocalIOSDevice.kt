@@ -148,4 +148,8 @@ class LocalIOSDevice(
     override fun eraseText(charactersToErase: Int) {
         xcTestDevice.eraseText(charactersToErase)
     }
+
+    override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
+        return xcTestDevice.doubleTap(x, y)
+    }
 }

@@ -165,6 +165,8 @@ interface IOSDevice : AutoCloseable {
     fun pressButton(name: String)
 
     fun eraseText(charactersToErase: Int)
+
+    fun doubleTap(x: Int, y: Int): Result<Unit, Throwable>
 }
 
 interface IOSScreenRecording : AutoCloseable

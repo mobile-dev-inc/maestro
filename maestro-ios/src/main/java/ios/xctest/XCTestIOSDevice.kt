@@ -290,6 +290,10 @@ class XCTestIOSDevice(
         client.eraseText(charactersToErase).use {}
     }
 
+    override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
+        TODO("Not yet implemented")
+    }
+
     private fun activeAppId(): String? {
         val appIds = getInstalledApps()
         logger.info("installed apps: $appIds")

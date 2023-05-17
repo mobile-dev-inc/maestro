@@ -277,6 +277,10 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
+    override fun inputTextV2(text: String, point: Point) {
+        // TODO: integration test
+    }
+
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         ensureOpen()
 

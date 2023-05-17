@@ -428,8 +428,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun inputTextV2(text: String) {
+    fun inputTextV2(text: String, point: String) {
         LOGGER.info("Inputting text v2: $text")
+
+        val point = PointUtils.getPoint(point, cachedDeviceInfo)
+        driver.inputTextV2(text, point)
+        waitForAppToSettle()
     }
 
     fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {

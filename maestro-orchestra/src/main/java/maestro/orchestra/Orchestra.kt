@@ -26,6 +26,7 @@ import maestro.Filters.asFilter
 import maestro.FindElementResult
 import maestro.Maestro
 import maestro.MaestroException
+import maestro.Point
 import maestro.js.Js
 import maestro.js.JsEngine
 import maestro.networkproxy.NetworkProxy
@@ -39,6 +40,7 @@ import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
+import java.awt.SystemColor.text
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
@@ -630,36 +632,35 @@ class Orchestra(
     }
 
     private fun inputTextCommandV2(command: InputTextCommandV2): Boolean {
-        if (command.id != null) {
-            val selector = ElementSelector(
-                idRegex = command.id
-            )
-            val result = findElement(selector)
-            maestro.tap(
-                result.element,
-                result.hierarchy
-            )
-        } else if (command.accessibilityText != null) {
-            val selector = ElementSelector(
-                textRegex = command.accessibilityText
-            )
-            val result = findElement(selector)
-            maestro.tap(
-                result.element,
-                result.hierarchy
-            )
-        } else if (command.point != null) {
-            tapOnPointV2Command(
-                command = TapOnPointV2Command(
-                    point = command.point!!
-                )
-            )
-        } else {
-            throw MaestroException.InvalidCommand("inputText error, one of the following parameters is missing: (accessibilityText, id, point)")
+        val selectorFunction: (String?) -> ElementSelector = { param ->
+            when {
+                command.id != null -> ElementSelector(idRegex = param)
+                command.accessibilityText != null -> ElementSelector(textRegex = param)
+                else -> throw MaestroException.InvalidCommand("inputText error, both 'id' and 'accessibilityText' parameters are missing.")
+            }
+        }
+
+        when {
+            command.id != null || command.accessibilityText != null -> {
+                val param = command.id ?: command.accessibilityText
+                val selector = selectorFunction(param)
+                val result = findElement(selector)
+                maestro.tap(result.element, result.hierarchy)
+                val point = result.element.bounds.center()
+                maestro.inputTextV2(text = command.text, point = "${point.x},${point.y}")
+            }
+            command.point != null -> {
+                tapOnPointV2Command(TapOnPointV2Command(point = command.point!!))
+                maestro.inputTextV2(text = command.text, point = command.point!!)
+            }
+            else -> {
+                throw MaestroException.InvalidCommand("inputText error, one of the following parameters is missing: (accessibilityText, id, point)")
+            }
         }
 
         return true
     }
+
 
     private fun inputTextRandomCommand(command: InputRandomCommand): Boolean {
         inputTextCommandV1(InputTextCommandV1(text = command.genRandomString()))

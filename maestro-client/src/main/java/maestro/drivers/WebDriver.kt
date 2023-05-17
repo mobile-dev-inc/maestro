@@ -309,6 +309,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         }
     }
 
+    override fun inputTextV2(text: String, point: Point) {
+        inputText(text)
+    }
+
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         val driver = ensureOpen()
 

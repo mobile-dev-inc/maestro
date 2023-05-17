@@ -403,6 +403,10 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
+    override fun inputTextV2(text: String, point: Point) {
+        inputText(text)
+    }
+
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         if (browser) {
             openBrowser(link)
