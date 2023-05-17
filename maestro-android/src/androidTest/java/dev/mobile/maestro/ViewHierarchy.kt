@@ -3,6 +3,7 @@ package dev.mobile.maestro
 import android.app.UiAutomation
 import android.content.Context
 import android.graphics.Rect
+import android.os.Build
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Xml
@@ -33,7 +34,14 @@ object ViewHierarchy {
             .context
             .getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        val displayRect = windowManager.currentWindowMetrics.bounds
+        val displayRect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            windowManager.currentWindowMetrics.bounds
+        } else {
+            val displayMetrics = DisplayMetrics()
+            windowManager.defaultDisplay.getRealMetrics(displayMetrics)
+            Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
+        }
+
 
         val serializer = Xml.newSerializer()
         serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true)
