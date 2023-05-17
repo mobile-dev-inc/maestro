@@ -327,7 +327,7 @@ data class AssertConditionCommand(
     }
 }
 
-data class InputTextCommand(
+data class InputTextCommandV1(
     val text: String
 ) : Command {
 
@@ -335,9 +335,29 @@ data class InputTextCommand(
         return "Input text $text"
     }
 
-    override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
+    override fun evaluateScripts(jsEngine: JsEngine): InputTextCommandV1 {
         return copy(
             text = text.evaluateScripts(jsEngine)
+        )
+    }
+}
+
+data class InputTextCommandV2(
+    val text: String,
+    val accessibilityText: String? = null,
+    val id: String? = null,
+    val point: String? = null,
+) : Command {
+    override fun description(): String {
+        return "Input text v2 $text"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): InputTextCommandV2 {
+        return copy(
+            text = text.evaluateScripts(jsEngine),
+            accessibilityText = accessibilityText,
+            id = id,
+            point = point,
         )
     }
 }

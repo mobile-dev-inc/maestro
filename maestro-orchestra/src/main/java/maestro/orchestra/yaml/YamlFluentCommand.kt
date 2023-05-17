@@ -35,7 +35,8 @@ import maestro.orchestra.EvalScriptCommand
 import maestro.orchestra.HideKeyboardCommand
 import maestro.orchestra.InputRandomCommand
 import maestro.orchestra.InputRandomType
-import maestro.orchestra.InputTextCommand
+import maestro.orchestra.InputTextCommandV1
+import maestro.orchestra.InputTextCommandV2
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MockNetworkCommand
@@ -70,7 +71,7 @@ data class YamlFluentCommand(
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: String? = null,
     val action: String? = null,
-    val inputText: String? = null,
+    val inputText: YamlInputTextUnion? = null,
     val inputRandomText: YamlInputRandomText? = null,
     val inputRandomNumber: YamlInputRandomNumber? = null,
     val inputRandomEmail: YamlInputRandomEmail? = null,
@@ -131,7 +132,7 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            inputText != null -> listOf(MaestroCommand(InputTextCommand(inputText)))
+            inputText != null -> listOf(inputTextCommand(inputText))
             inputRandomText != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT, length = inputRandomText.length)))
             inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length)))
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS)))
@@ -375,6 +376,27 @@ data class YamlFluentCommand(
                 launchArguments = command.arguments,
             )
         )
+    }
+
+    private fun inputTextCommand(inputText: YamlInputTextUnion): MaestroCommand {
+        if (inputText is YamlInputTextV1) {
+            return MaestroCommand(
+                InputTextCommandV1(
+                    inputText.text
+                )
+            )
+        } else if (inputText is YamlInputTextV2) {
+            return MaestroCommand(
+                InputTextCommandV2(
+                    text = inputText.text,
+                    accessibilityText = inputText.accessibilityText,
+                    id = inputText.id,
+                    point = inputText.point,
+                )
+            )
+        } else {
+            throw IllegalStateException("inputText command failed - not supported format provided")
+        }
     }
 
     private fun tapCommand(

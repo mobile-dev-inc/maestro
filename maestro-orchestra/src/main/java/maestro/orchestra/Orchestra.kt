@@ -189,7 +189,8 @@ class Orchestra(
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
-            is InputTextCommand -> inputTextCommand(command)
+            is InputTextCommandV1 -> inputTextCommandV1(command)
+            is InputTextCommandV2 -> inputTextCommandV2(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
             is OpenLinkCommand -> openLinkCommand(command, config)
@@ -613,7 +614,7 @@ class Orchestra(
         return true
     }
 
-    private fun inputTextCommand(command: InputTextCommand): Boolean {
+    private fun inputTextCommandV1(command: InputTextCommandV1): Boolean {
         if (!maestro.isUnicodeInputSupported()) {
             val isAscii = Charsets.US_ASCII.newEncoder()
                 .canEncode(command.text)
@@ -628,8 +629,13 @@ class Orchestra(
         return true
     }
 
+    private fun inputTextCommandV2(command: InputTextCommandV2): Boolean {
+        // TODO : implement me
+        return true
+    }
+
     private fun inputTextRandomCommand(command: InputRandomCommand): Boolean {
-        inputTextCommand(InputTextCommand(text = command.genRandomString()))
+        inputTextCommandV1(InputTextCommandV1(text = command.genRandomString()))
 
         return true
     }
