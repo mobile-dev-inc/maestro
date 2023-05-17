@@ -291,7 +291,12 @@ class XCTestIOSDevice(
     }
 
     override fun doubleTap(x: Int, y: Int): Result<Unit, Throwable> {
-        TODO("Not yet implemented")
+        return runCatching {
+            client.doubleTap(
+                x = x.toFloat(),
+                y = y.toFloat(),
+            ).use {}
+        }
     }
 
     private fun activeAppId(): String? {

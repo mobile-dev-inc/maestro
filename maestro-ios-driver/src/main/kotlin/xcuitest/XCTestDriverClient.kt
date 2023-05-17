@@ -14,6 +14,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import xcuitest.api.DoubleTapRequest
 import xcuitest.api.EraseTextRequest
 import xcuitest.api.InputTextRequest
 import xcuitest.api.PressButtonRequest
@@ -151,6 +152,16 @@ class XCTestDriverClient(
             x = x,
             y = y,
             duration = duration
+        ))
+    }
+
+    fun doubleTap(
+        x: Float,
+        y: Float,
+    ): Response {
+        return executeJsonRequest("doubleTap", DoubleTapRequest(
+            x = x,
+            y = y,
         ))
     }
 

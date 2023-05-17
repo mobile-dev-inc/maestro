@@ -47,6 +47,8 @@
 		9494CBD12982F719009C987C /* ScreenshotHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9494CBD02982F719009C987C /* ScreenshotHandler.swift */; };
 		949535FC299FD67E00FD0159 /* XCTestHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949535FB299FD67E00FD0159 /* XCTestHTTPServer.swift */; };
 		94A90DDE298AE72A006EB769 /* XCUIElement+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A90DDD298AE72A006EB769 /* XCUIElement+Extensions.swift */; };
+		94D6D60E2A153CFC005BDF94 /* DoubleTapRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */; };
+		94D6D6102A153D27005BDF94 /* DoubleTapRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +104,8 @@
 		9494CBD02982F719009C987C /* ScreenshotHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotHandler.swift; sourceTree = "<group>"; };
 		949535FB299FD67E00FD0159 /* XCTestHTTPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestHTTPServer.swift; sourceTree = "<group>"; };
 		94A90DDD298AE72A006EB769 /* XCUIElement+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIElement+Extensions.swift"; sourceTree = "<group>"; };
+		94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleTapRequest.swift; sourceTree = "<group>"; };
+		94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleTapRouteHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +202,7 @@
 				61C0AFEE29C8961F005D1FC5 /* EraseTextRequest.swift */,
 				61C0AFF229C8C040005D1FC5 /* DeviceInfoResponse.swift */,
 				945DD44A29D6F5D8004D8ECF /* SetPermissionsRequest.swift */,
+				94D6D60D2A153CFC005BDF94 /* DoubleTapRequest.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -232,6 +237,7 @@
 				61C0AFEC29C88926005D1FC5 /* EraseTextHandler.swift */,
 				61C0AFF029C8C01F005D1FC5 /* DeviceInfoHandler.swift */,
 				945DD44C29D6F73B004D8ECF /* SetPermissionsHandler.swift */,
+				94D6D60F2A153D27005BDF94 /* DoubleTapRouteHandler.swift */,
 			);
 			path = Handlers;
 			sourceTree = "<group>";
@@ -383,6 +389,7 @@
 				943A9084293F5CC400C85136 /* SubTreeRouteHandler.swift in Sources */,
 				945DD44B29D6F5D8004D8ECF /* SetPermissionsRequest.swift in Sources */,
 				613E87DF299BE78400FF8551 /* KeyModifierFlags.swift in Sources */,
+				94D6D6102A153D27005BDF94 /* DoubleTapRouteHandler.swift in Sources */,
 				94A90DDE298AE72A006EB769 /* XCUIElement+Extensions.swift in Sources */,
 				945DD44D29D6F73B004D8ECF /* SetPermissionsHandler.swift in Sources */,
 				61C0AFE729C7AB0C005D1FC5 /* PressKeyHandler.swift in Sources */,
@@ -403,6 +410,7 @@
 				32762AF82965E2A200FB69BD /* SwipeRouteHandler.swift in Sources */,
 				320979632970925500340282 /* InputTextRouteHandler.swift in Sources */,
 				9494CBD12982F719009C987C /* ScreenshotHandler.swift in Sources */,
+				94D6D60E2A153CFC005BDF94 /* DoubleTapRequest.swift in Sources */,
 				32762AFA2966DC8300FB69BD /* SwipeRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
