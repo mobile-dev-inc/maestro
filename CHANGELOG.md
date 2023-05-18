@@ -7,11 +7,11 @@
   - Shows failure reason when command fails
   - Generates screenshot when command fails
   - Unified most logs under ~/.maestro/tests/<date>/maestro.log
-- Feature: Launch arguments support for long values
+- Tweak: Launch arguments support for long values
 - Tweak: JUnit report naming changes. Local and Cloud should now have the same naming convention.
 - Tweak: Added deprecation notice for experimental features
 - Fix: maestro record command was not working on iOS
-- Fix: WebDriver, only scroll to elements outside of the window befiore tapping
+- Fix: WebDriver, only scroll to elements outside of the window before tapping
 - Fix: close request leaking body
 - Fix: maestro cloud now will fail on timeout if configured as such
 
