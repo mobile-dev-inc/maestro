@@ -7,7 +7,7 @@
   - Shows failure reason when command fails
   - Generates screenshot when command fails
   - Unified most logs under ~/.maestro/tests/<date>/maestro.log
-- Tweak: Launch arguments support for long values
+- Change: Launch arguments support for long values
 - Tweak: JUnit report naming changes. Local and Cloud should now have the same naming convention.
 - Tweak: Added deprecation notice for experimental features
 - Fix: maestro record command was not working on iOS
