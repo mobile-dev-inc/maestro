@@ -4,6 +4,8 @@ import io.github.bonigarcia.wdm.WebDriverManager
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.ElementFilter
+import maestro.FindElementResult
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.Platform
@@ -309,7 +311,9 @@ class WebDriver(val isStudio: Boolean) : Driver {
         }
     }
 
-    override fun inputTextV2(text: String, point: Point) {
+    override fun inputTextV2(text: String,
+                             point: Point,
+                             findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
         inputText(text)
     }
 

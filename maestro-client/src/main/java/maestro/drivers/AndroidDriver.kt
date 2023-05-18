@@ -26,7 +26,9 @@ import io.grpc.ManagedChannelBuilder
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.ElementFilter
 import maestro.Filters
+import maestro.FindElementResult
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.Platform
@@ -403,7 +405,9 @@ class AndroidDriver(
         }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
-    override fun inputTextV2(text: String, point: Point) {
+    override fun inputTextV2(text: String,
+                    point: Point,
+                    findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
         inputText(text)
     }
 

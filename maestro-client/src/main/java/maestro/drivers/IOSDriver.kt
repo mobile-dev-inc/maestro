@@ -31,7 +31,9 @@ import ios.IOSDevice
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.ElementFilter
 import maestro.Filters
+import maestro.FindElementResult
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Platform
@@ -45,6 +47,7 @@ import maestro.ViewHierarchy
 import maestro.utils.FileUtils
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
+import maestro.utils.StringUtils.toRegexSafe
 import okio.Sink
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
@@ -459,13 +462,23 @@ class IOSDriver(
         )
     }
 
-    override fun inputTextV2(text: String, point: Point) {
-        if (text.length > INPUT_TEXT_MAX_LENGTH) {
-            inputText(text)
-        } else {
-            iosDevice.copyText(text)
-            iosDevice.doubleTap(point.x, point.y)
-        }
+    override fun inputTextV2(text: String,
+                             point: Point,
+                             findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
+        iosDevice.copyText(text)
+        iosDevice.doubleTap(point.x, point.y)
+        val filter = Filters.deepestMatchingElement(Filters.textMatches(INPUT_TEXT_PASTE_TITLE.toRegexSafe(INPUT_TEXT_REGEX_OPTIONS)))
+        val pasteButton = findPasteButton(INPUT_TEXT_PASTE_SEARCH_TIMEOUT, filter)
+        pasteButton?.let {
+            val center = pasteButton.element.bounds.center()
+            iosDevice.tap(center.x, center.y)
+        } ?: throw MaestroException.InputTextFailed("")
+//        if (text.length > INPUT_TEXT_MAX_LENGTH) {
+//            iosDevice.copyText(text)
+//            iosDevice.doubleTap(point.x, point.y)
+//        } else {
+//            inputText(text)
+//        }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -548,5 +561,8 @@ class IOSDriver(
 
         // in case of >50 symbols copy-paste approach will be used
         private const val INPUT_TEXT_MAX_LENGTH = 50
+        private const val INPUT_TEXT_PASTE_SEARCH_TIMEOUT = 5000L
+        private const val INPUT_TEXT_PASTE_TITLE = "Paste"
+        private val INPUT_TEXT_REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
     }
 }

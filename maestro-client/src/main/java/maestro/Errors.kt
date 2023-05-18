@@ -53,4 +53,7 @@ sealed class MaestroException(override val message: String) : RuntimeException(m
         message: String,
     ) : MaestroException(message)
 
+    class InputTextFailed(
+        message: String,
+    ) : MaestroException(message)
 }

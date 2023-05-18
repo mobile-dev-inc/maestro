@@ -24,6 +24,8 @@ import com.google.common.truth.Truth.assertThat
 import maestro.Capability
 import maestro.DeviceInfo
 import maestro.Driver
+import maestro.ElementFilter
+import maestro.FindElementResult
 import maestro.KeyCode
 import maestro.MaestroException
 import maestro.Platform
@@ -277,7 +279,9 @@ class FakeDriver : Driver {
         events += Event.InputText(text)
     }
 
-    override fun inputTextV2(text: String, point: Point) {
+    override fun inputTextV2(text: String,
+                             point: Point,
+                             findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
         // TODO: integration test
     }
 
