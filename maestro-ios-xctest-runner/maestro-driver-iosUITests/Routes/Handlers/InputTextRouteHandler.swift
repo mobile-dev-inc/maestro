@@ -3,13 +3,15 @@ import XCTest
 import os
 
 @MainActor
-struct InputTextRouteHandler : HTTPHandler {
+final class InputTextRouteHandler : HTTPHandler {
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: Self.self)
     )
     
-    private let typingFrequency = 30
+    private let defaultTypingSpeed = 10
+    // in case of exceeding 50 symbols maestro will rely on copy-paste functionality
+    private let maxDefaultInputCharacters = 50
 
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
@@ -22,7 +24,9 @@ struct InputTextRouteHandler : HTTPHandler {
             let start = Date()
 
             var eventPath = PointerEventPath.pathForTextInput()
-            eventPath.type(text: requestBody.text, typingSpeed: typingFrequency)
+            let typingSpeed = calculateTypingSpeed(for: requestBody.text)
+            logger.info("Typing text \"\(requestBody.text)\" with speed \(typingSpeed) characters per second")
+            eventPath.type(text: requestBody.text, typingSpeed: typingSpeed)
             let eventRecord = EventRecord(orientation: .portrait)
             _ = eventRecord.add(eventPath)
             try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
@@ -43,5 +47,16 @@ struct InputTextRouteHandler : HTTPHandler {
         """
         let errorData = Data(jsonString.utf8)
         return HTTPResponse(statusCode: HTTPStatusCode.badRequest, body: errorData)
+    }
+    
+    private func calculateTypingSpeed(for text: String) -> Int {
+        let maxCommandTimeSeconds = 5.0
+        let timeWithDefaultSpeed = Double(text.count) / Double(defaultTypingSpeed)
+
+        if timeWithDefaultSpeed < maxCommandTimeSeconds {
+            return defaultTypingSpeed
+        } else {
+            return Int((Double(text.count) / maxCommandTimeSeconds).rounded())
+        }
     }
 }

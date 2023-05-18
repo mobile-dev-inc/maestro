@@ -465,14 +465,16 @@ class IOSDriver(
     override fun inputTextV2(text: String,
                              point: Point,
                              findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
-        iosDevice.copyText(text)
-        iosDevice.doubleTap(point.x, point.y)
-        val filter = Filters.deepestMatchingElement(Filters.textMatches(INPUT_TEXT_PASTE_TITLE.toRegexSafe(INPUT_TEXT_REGEX_OPTIONS)))
-        val pasteButton = findPasteButton(INPUT_TEXT_PASTE_SEARCH_TIMEOUT, filter)
-        pasteButton?.let {
-            val center = pasteButton.element.bounds.center()
-            iosDevice.tap(center.x, center.y)
-        } ?: throw MaestroException.InputTextFailed("")
+        inputText(text)
+//        iosDevice.copyText(text)
+//        iosDevice.doubleTap(point.x, point.y)
+//        val filter = Filters.deepestMatchingElement(Filters.textMatches(INPUT_TEXT_PASTE_TITLE.toRegexSafe(INPUT_TEXT_REGEX_OPTIONS)))
+//        val pasteButton = findPasteButton(INPUT_TEXT_PASTE_SEARCH_TIMEOUT, filter)
+//        pasteButton?.let {
+//            val center = pasteButton.element.bounds.center()
+//            iosDevice.tap(center.x, center.y)
+//        } ?: throw MaestroException.InputTextFailed("")
+
 //        if (text.length > INPUT_TEXT_MAX_LENGTH) {
 //            iosDevice.copyText(text)
 //            iosDevice.doubleTap(point.x, point.y)
