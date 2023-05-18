@@ -71,6 +71,7 @@ interface Driver {
 
     fun inputTextV2(text: String,
                     point: Point,
+                    pasteTitle: String?,
                     findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?)
 
     fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean)

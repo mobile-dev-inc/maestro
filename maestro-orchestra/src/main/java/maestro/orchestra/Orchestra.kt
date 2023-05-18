@@ -647,11 +647,11 @@ class Orchestra(
                 val result = findElement(selector)
                 maestro.tap(result.element, result.hierarchy)
                 val point = result.element.bounds.center()
-                maestro.inputTextV2(text = command.text, point = "${point.x},${point.y}")
+                maestro.inputTextV2(text = command.text, point = "${point.x},${point.y}", pasteTitle = command.pasteTitle)
             }
             command.point != null -> {
                 tapOnPointV2Command(TapOnPointV2Command(point = command.point!!))
-                maestro.inputTextV2(text = command.text, point = command.point!!)
+                maestro.inputTextV2(text = command.text, point = command.point!!, pasteTitle = command.pasteTitle)
             }
             else -> {
                 throw MaestroException.InvalidCommand("inputText error, one of the following parameters is missing: (accessibilityText, id, point)")

@@ -406,8 +406,9 @@ class AndroidDriver(
     }
 
     override fun inputTextV2(text: String,
-                    point: Point,
-                    findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
+                             point: Point,
+                             pasteTitle: String?,
+                             findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
         inputText(text)
     }
 

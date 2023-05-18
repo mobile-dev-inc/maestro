@@ -281,6 +281,7 @@ class FakeDriver : Driver {
 
     override fun inputTextV2(text: String,
                              point: Point,
+                             pasteTitle: String?,
                              findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
         // TODO: integration test
     }

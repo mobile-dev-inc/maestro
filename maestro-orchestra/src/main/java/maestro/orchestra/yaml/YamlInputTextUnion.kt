@@ -19,6 +19,7 @@ data class YamlInputTextV2(
     val accessibilityText: String? = null,
     val id: String? = null,
     val point: String? = null,
+    val pasteTitle: String? = null,
 ) : YamlInputTextUnion
 
 class YamlInputTextDeserializer : JsonDeserializer<YamlInputTextUnion>() {

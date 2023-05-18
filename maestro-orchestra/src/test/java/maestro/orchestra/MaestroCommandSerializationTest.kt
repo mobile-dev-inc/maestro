@@ -272,6 +272,7 @@ internal class MaestroCommandSerializationTest {
                 accessibilityText = "test1",
                 id = "test2",
                 point = "test3",
+                pasteTitle = "Pegar",
             )
         )
 
@@ -287,7 +288,8 @@ internal class MaestroCommandSerializationTest {
                 "text" : "Hello, world!",
                 "accessibilityText" : "test1",
                 "id" : "test2",
-                "point" : "test3"
+                "point" : "test3",
+                "pasteTitle": "Pegar"
               }
             }
           """.trimIndent()

@@ -464,23 +464,21 @@ class IOSDriver(
 
     override fun inputTextV2(text: String,
                              point: Point,
+                             pasteTitle: String?,
                              findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
-        inputText(text)
-//        iosDevice.copyText(text)
-//        iosDevice.doubleTap(point.x, point.y)
-//        val filter = Filters.deepestMatchingElement(Filters.textMatches(INPUT_TEXT_PASTE_TITLE.toRegexSafe(INPUT_TEXT_REGEX_OPTIONS)))
-//        val pasteButton = findPasteButton(INPUT_TEXT_PASTE_SEARCH_TIMEOUT, filter)
-//        pasteButton?.let {
-//            val center = pasteButton.element.bounds.center()
-//            iosDevice.tap(center.x, center.y)
-//        } ?: throw MaestroException.InputTextFailed("")
-
-//        if (text.length > INPUT_TEXT_MAX_LENGTH) {
-//            iosDevice.copyText(text)
-//            iosDevice.doubleTap(point.x, point.y)
-//        } else {
-//            inputText(text)
-//        }
+        if (text.length > INPUT_TEXT_MAX_LENGTH) {
+            iosDevice.copyText(text)
+            iosDevice.doubleTap(point.x, point.y)
+            val title = pasteTitle ?: INPUT_TEXT_PASTE_TITLE
+            val filter = Filters.deepestMatchingElement(Filters.textMatches(title.toRegexSafe(INPUT_TEXT_REGEX_OPTIONS)))
+            val pasteButton = findPasteButton(INPUT_TEXT_PASTE_SEARCH_TIMEOUT, filter)
+            pasteButton?.let {
+                val center = pasteButton.element.bounds.center()
+                iosDevice.tap(center.x, center.y)
+            } ?: throw MaestroException.InputTextFailed("Failed to locate the Paste button")
+        } else {
+            inputText(text)
+        }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {

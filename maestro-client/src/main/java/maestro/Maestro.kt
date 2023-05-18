@@ -402,11 +402,16 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun inputTextV2(text: String, point: String) {
+    fun inputTextV2(text: String, point: String, pasteTitle: String?) {
         LOGGER.info("Inputting text v2: $text")
 
         val point = PointUtils.getPoint(point, cachedDeviceInfo)
-        driver.inputTextV2(text, point, this::findElementWithTimeout)
+        driver.inputTextV2(
+            text = text,
+            point = point,
+            pasteTitle = pasteTitle,
+            findPasteButton = this::findElementWithTimeout
+        )
         waitForAppToSettle()
     }
 

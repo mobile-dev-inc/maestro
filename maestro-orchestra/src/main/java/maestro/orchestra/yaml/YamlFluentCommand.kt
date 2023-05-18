@@ -392,6 +392,7 @@ data class YamlFluentCommand(
                     accessibilityText = inputText.accessibilityText,
                     id = inputText.id,
                     point = inputText.point,
+                    pasteTitle = inputText.pasteTitle,
                 )
             )
         } else {

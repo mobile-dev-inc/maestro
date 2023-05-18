@@ -347,6 +347,7 @@ data class InputTextCommandV2(
     val accessibilityText: String? = null,
     val id: String? = null,
     val point: String? = null,
+    val pasteTitle: String? = null
 ) : Command {
     override fun description(): String {
         return "Input text v2 $text"
@@ -358,6 +359,7 @@ data class InputTextCommandV2(
             accessibilityText = accessibilityText,
             id = id,
             point = point,
+            pasteTitle = pasteTitle,
         )
     }
 }
