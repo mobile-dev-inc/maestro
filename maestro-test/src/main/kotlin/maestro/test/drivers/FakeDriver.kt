@@ -283,7 +283,15 @@ class FakeDriver : Driver {
                              point: Point,
                              pasteTitle: String?,
                              findPasteButton: (timeoutMs: Long, filter: ElementFilter) -> FindElementResult?) {
-        // TODO: integration test
+        ensureOpen()
+
+        currentText += text
+
+        events += Event.InputTextV2(
+            text = text,
+            point = point,
+            pasteTitle = pasteTitle,
+        )
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -416,6 +424,12 @@ class FakeDriver : Driver {
 
         data class InputText(
             val text: String
+        ) : Event(), UserInteraction
+
+        data class InputTextV2(
+            val text: String,
+            val point: Point,
+            val pasteTitle: String?,
         ) : Event(), UserInteraction
 
         data class Swipe(

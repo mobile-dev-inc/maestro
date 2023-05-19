@@ -1,0 +1,9 @@
+appId: com.example.app
+---
+- inputText:
+    text: "user@example.com"
+    id: "text_field_email_id"
+- inputText:
+    text: "abcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXZ0123456789"
+    accessibilityText: "Password"
+    pasteTitle: "Pegar"

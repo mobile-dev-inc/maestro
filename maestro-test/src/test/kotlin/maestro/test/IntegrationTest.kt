@@ -2705,6 +2705,46 @@ class IntegrationTest {
         ).inOrder()
     }
 
+    @Test
+    fun `Case 099 - Input text V2`() {
+        // Given
+        val commands = readCommands("099_input_text_v2")
+
+        val driver = driver {
+            element {
+                text = "Email"
+                id = "text_field_email_id"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+            element {
+                text = "Password"
+                id = "text_field_password_id"
+                bounds = Bounds(0, 0, 200, 200)
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.Tap(point=Point(x=50, y=50)))
+        driver.assertHasEvent(Event.InputTextV2(
+            text = "user@example.com",
+            point = Point(50,50),
+            pasteTitle = null
+        ))
+        driver.assertHasEvent(Event.Tap(point=Point(x=100, y=100)))
+        driver.assertHasEvent(Event.InputTextV2(
+            text = "abcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXZ0123456789",
+            point = Point(100,100),
+            pasteTitle = "Pegar"
+        ))
+        driver.assertCurrentTextInput("user@example.comabcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXZ0123456789")
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(
