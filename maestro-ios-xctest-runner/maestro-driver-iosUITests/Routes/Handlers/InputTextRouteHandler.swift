@@ -3,7 +3,7 @@ import XCTest
 import os
 
 @MainActor
-final class InputTextRouteHandler : HTTPHandler {
+struct InputTextRouteHandler : HTTPHandler {
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: Self.self)
