@@ -646,7 +646,9 @@ class Orchestra(
                 val selector = selectorFunction(param)
                 val result = findElement(selector)
                 maestro.tap(result.element, result.hierarchy)
-                val point = result.element.bounds.center()
+                // text field might be moved during keyboard presentation
+                val newResult = findElement(selector)
+                val point = newResult.element.bounds.center()
                 maestro.inputTextV2(text = command.text, point = "${point.x},${point.y}", pasteTitle = command.pasteTitle)
             }
             command.point != null -> {
