@@ -36,6 +36,7 @@ class LocalIOSDevice(
             .recoverIf(
                 { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
                 {
+                    println("Falling back on IDB")
                     idbIOSDevice.contentDescriptor()
                         .getOrThrow()
                 }

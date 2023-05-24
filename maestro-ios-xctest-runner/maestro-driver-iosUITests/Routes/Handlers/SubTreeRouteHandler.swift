@@ -18,12 +18,13 @@ final class SubTreeRouteHandler: HTTPHandler {
             logger.info("Trying to capture hierarchy snapshot for \(appId)")
             let start = NSDate().timeIntervalSince1970 * 1000
             let xcuiApplication = XCUIApplication(bundleIdentifier: appId)
+            let firstXCUIElement = xcuiApplication.children(matching: XCUIElement.ElementType.any).firstMatch
             let springboardApplication = XCUIApplication(bundleIdentifier: springboardBundleId)
             
             SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
             
             logger.info("[Start] Now trying hierarchy for: \(appId)")
-            var viewHierarchyDictionary = try xcuiApplication.snapshot().dictionaryRepresentation
+            var viewHierarchyDictionary = try firstXCUIElement.snapshot().dictionaryRepresentation
             logger.info("[Done] Now trying hierarchy for: \(appId)")
             logger.info("[Start] Now trying hierarchy for: \(springboardBundleId)")
             let springboardHierarchyDictionary = try springboardApplication.snapshot().dictionaryRepresentation
