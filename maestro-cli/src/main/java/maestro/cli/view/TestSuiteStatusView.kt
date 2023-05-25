@@ -8,13 +8,16 @@ import org.fusesource.jansi.Ansi
 import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 object TestSuiteStatusView {
 
     fun showFlowCompletion(result: FlowResult) {
         printStatus(result.status)
 
-        val durationString = result.duration?.let { " ($it)" }.orEmpty()
+        val durationString = result.duration?.let {
+            " (${it.toComponents { s, _ -> s.seconds }})"
+        }.orEmpty()
         print(" ${result.name}$durationString")
         if (result.status == FlowStatus.ERROR && result.error != null) {
             print(
@@ -177,7 +180,7 @@ fun main() {
             FlowResult(
                 name = "B",
                 status = FlowStatus.SUCCESS,
-                duration = 1230.milliseconds,
+                duration = 231.seconds,
             ),
             FlowResult(
                 name = "C",
