@@ -52,8 +52,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
-                    <testcase id="flow_b" name="Flow B" classname="flow_b" time="149.4"/>
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
+                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="149.4"/>
                   </testsuite>
                 </testsuites>
                 
@@ -104,8 +104,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" tests="2" failures="1">
-                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
-                    <testcase id="flow_b" name="Flow B" classname="flow_b" time="1.31">
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
+                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="1.31">
                       <failure>Error message</failure>
                     </testcase>
                   </testsuite>
@@ -157,8 +157,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Custom test suite name" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="flow_a" name="Flow A" classname="flow_a" time="42.1"/>
-                    <testcase id="flow_b" name="Flow B" classname="flow_b"/>
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
+                    <testcase id="Flow B" name="Flow B" classname="Flow B"/>
                   </testsuite>
                 </testsuites>
                 
