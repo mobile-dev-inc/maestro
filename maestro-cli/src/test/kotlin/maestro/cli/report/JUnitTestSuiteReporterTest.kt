@@ -5,7 +5,7 @@ import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
 import okio.Buffer
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class JUnitTestSuiteReporterTest {
 
@@ -25,13 +25,13 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
-                            duration = 42100.milliseconds
+                            duration = 421.seconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
                             fileName = "flow_b",
                             status = FlowStatus.WARNING,
-                            duration = 149400.milliseconds
+                            duration = 1494.seconds
                         ),
                     )
                 )
@@ -52,8 +52,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
-                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="149.4"/>
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="421"/>
+                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="1494"/>
                   </testsuite>
                 </testsuites>
                 
@@ -76,14 +76,14 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
-                            duration = 42100.milliseconds
+                            duration = 421.seconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
                             fileName = "flow_b",
                             status = FlowStatus.ERROR,
                             failure = TestExecutionSummary.Failure("Error message"),
-                            duration = 1310.milliseconds
+                            duration = 131.seconds
                         ),
                     )
                 )
@@ -104,8 +104,8 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Test Suite" tests="2" failures="1">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
-                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="1.31">
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="421"/>
+                    <testcase id="Flow B" name="Flow B" classname="Flow B" time="131">
                       <failure>Error message</failure>
                     </testcase>
                   </testsuite>
@@ -131,7 +131,7 @@ class JUnitTestSuiteReporterTest {
                             name = "Flow A",
                             fileName = "flow_a",
                             status = FlowStatus.SUCCESS,
-                            duration = 42100.milliseconds
+                            duration = 421.seconds
                         ),
                         TestExecutionSummary.FlowResult(
                             name = "Flow B",
@@ -157,7 +157,7 @@ class JUnitTestSuiteReporterTest {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <testsuites>
                   <testsuite name="Custom test suite name" device="iPhone 14" tests="2" failures="0">
-                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="42.1"/>
+                    <testcase id="Flow A" name="Flow A" classname="Flow A" time="421"/>
                     <testcase id="Flow B" name="Flow B" classname="Flow B"/>
                   </testsuite>
                 </testsuites>

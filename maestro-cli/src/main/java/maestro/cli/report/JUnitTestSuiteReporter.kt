@@ -48,7 +48,7 @@ class JUnitTestSuiteReporter(
                                                     message = failure.message,
                                                 )
                                             },
-                                            time = flow.duration?.inWholeMilliseconds?.let{ (it / 1000.0).toString() }
+                                            time = flow.duration?.inWholeSeconds?.toString()
                                         )
                                     }
                             )

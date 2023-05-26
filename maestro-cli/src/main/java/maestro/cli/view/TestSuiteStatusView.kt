@@ -7,7 +7,6 @@ import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel.FlowResult
 import org.fusesource.jansi.Ansi
 import java.util.UUID
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 object TestSuiteStatusView {
@@ -15,9 +14,7 @@ object TestSuiteStatusView {
     fun showFlowCompletion(result: FlowResult) {
         printStatus(result.status)
 
-        val durationString = result.duration?.let {
-            " (${it.toComponents { s, _ -> s.seconds }})"
-        }.orEmpty()
+        val durationString = result.duration?.let { " ($it)" }.orEmpty()
         print(" ${result.name}$durationString")
         if (result.status == FlowStatus.ERROR && result.error != null) {
             print(
@@ -175,7 +172,7 @@ fun main() {
             FlowResult(
                 name = "A",
                 status = FlowStatus.SUCCESS,
-                duration = 4200.milliseconds,
+                duration = 42.seconds,
             ),
             FlowResult(
                 name = "B",

@@ -22,8 +22,9 @@ import maestro.orchestra.yaml.YamlCommandReader
 import okio.Sink
 import org.slf4j.LoggerFactory
 import java.io.File
+import kotlin.math.roundToLong
 import kotlin.system.measureTimeMillis
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class TestSuiteInteractor(
     private val maestro: Maestro,
@@ -99,7 +100,7 @@ class TestSuiteInteractor(
                         TestSuiteViewModel.FlowResult(
                             name = it.name,
                             status = it.status,
-                            duration = 4200.milliseconds,
+                            duration = 42.seconds,
                         )
                     },
             )
@@ -165,7 +166,7 @@ class TestSuiteInteractor(
             return result.getOrNull()
         }
 
-        val flowTime = measureTimeMillis {
+        val flowTimeMillis = measureTimeMillis {
             try {
                 val commands = YamlCommandReader.readCommands(flowFile.toPath())
                     .withEnv(env)
@@ -225,7 +226,8 @@ class TestSuiteInteractor(
                 flowStatus = FlowStatus.ERROR
                 errorMessage = ErrorViewUtils.exceptionToMessage(e)
             }
-        }.milliseconds
+        }
+        val flowDuration = (flowTimeMillis / 1000f).roundToLong().seconds
 
         TestDebugReporter.saveFlow(flowName, debug)
 
@@ -233,7 +235,7 @@ class TestSuiteInteractor(
             TestSuiteViewModel.FlowResult(
                 name = flowName,
                 status = flowStatus,
-                duration = flowTime,
+                duration = flowDuration,
                 error = debug.exception?.message,
             )
         )
@@ -247,7 +249,7 @@ class TestSuiteInteractor(
                     message = errorMessage ?: debug.exception?.message ?: "Unknown error",
                 )
             } else null,
-            duration = flowTime,
+            duration = flowDuration,
         )
     }
 
