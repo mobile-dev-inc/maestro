@@ -11,6 +11,7 @@ data class TestExecutionSummary(
     data class SuiteResult(
         val passed: Boolean,
         val flows: List<FlowResult>,
+        val duration: Duration? = null,
     )
 
     data class FlowResult(

@@ -56,8 +56,9 @@ object TestSuiteStatusView {
                 .filter { it.status == FlowStatus.CANCELED }
 
             if (passedFlows.isNotEmpty()) {
+                val durationMessage = suite.duration?.let { " in $it" } ?: ""
                 PrintUtils.success(
-                    "${passedFlows.size}/${suite.flows.size} ${flowWord(passedFlows.size)} Passed",
+                    "${passedFlows.size}/${suite.flows.size} ${flowWord(passedFlows.size)} Passed$durationMessage",
                     bold = true,
                 )
 
@@ -119,6 +120,7 @@ object TestSuiteStatusView {
     data class TestSuiteViewModel(
         val status: FlowStatus,
         val flows: List<FlowResult>,
+        val duration: Duration? = null,
         val uploadDetails: UploadDetails? = null,
     ) {
 
@@ -183,7 +185,8 @@ fun main() {
                 name = "C",
                 status = FlowStatus.CANCELED,
             )
-        )
+        ),
+        duration = 273.seconds,
     )
 
     status.flows

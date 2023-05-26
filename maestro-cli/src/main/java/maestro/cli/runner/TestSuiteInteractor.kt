@@ -92,15 +92,18 @@ class TestSuiteInteractor(
             flowResults.add(result)
         }
 
+        val suiteDuration = flowResults.sumOf { it.duration?.inWholeSeconds ?: 0 }.seconds
+
         TestSuiteStatusView.showSuiteResult(
             TestSuiteViewModel(
                 status = if (passed) FlowStatus.SUCCESS else FlowStatus.ERROR,
+                duration = suiteDuration,
                 flows = flowResults
                     .map {
                         TestSuiteViewModel.FlowResult(
                             name = it.name,
                             status = it.status,
-                            duration = 42.seconds,
+                            duration = it.duration,
                         )
                     },
             )
@@ -112,7 +115,8 @@ class TestSuiteInteractor(
             suites = listOf(
                 TestExecutionSummary.SuiteResult(
                     passed = passed,
-                    flows = flowResults
+                    flows = flowResults,
+                    duration = suiteDuration
                 )
             )
         )
