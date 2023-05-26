@@ -170,7 +170,7 @@ class TestSuiteInteractor(
                 val commands = YamlCommandReader.readCommands(flowFile.toPath())
                     .withEnv(env)
 
-                    val config = YamlCommandReader.getConfig(commands)
+                val config = YamlCommandReader.getConfig(commands)
 
                 val orchestra = Orchestra(
                     maestro = maestro,
