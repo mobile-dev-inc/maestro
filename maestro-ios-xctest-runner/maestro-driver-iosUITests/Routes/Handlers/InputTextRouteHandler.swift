@@ -9,7 +9,10 @@ struct InputTextRouteHandler : HTTPHandler {
         category: String(describing: Self.self)
     )
     
-    private let typingFrequency = 30
+    private enum Constants {
+        static let typingFrequency = 30
+        static let slowInputCharactersCount = 3
+    }
 
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
@@ -21,11 +24,25 @@ struct InputTextRouteHandler : HTTPHandler {
         do {
             let start = Date()
 
+            // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
+            // 2nd and 3rd characters are often skipped, so we'll input them with lower typing frequency
+            let firstThreeCharacters = String(requestBody.text.prefix(Constants.slowInputCharactersCount))
+            logger.info("first three characters: \(firstThreeCharacters)")
             var eventPath = PointerEventPath.pathForTextInput()
-            eventPath.type(text: requestBody.text, typingSpeed: typingFrequency)
+            eventPath.type(text: firstThreeCharacters, typingSpeed: 2)
             let eventRecord = EventRecord(orientation: .portrait)
             _ = eventRecord.add(eventPath)
             try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
+            
+            if (requestBody.text.count > Constants.slowInputCharactersCount) {
+                let remainingText = String(requestBody.text.suffix(requestBody.text.count - Constants.slowInputCharactersCount))
+                logger.info("remaining text: \(remainingText)")
+                var eventPath2 = PointerEventPath.pathForTextInput()
+                eventPath2.type(text: remainingText, typingSpeed: Constants.typingFrequency)
+                let eventRecord2 = EventRecord(orientation: .portrait)
+                _ = eventRecord2.add(eventPath2)
+                try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord2)
+            }
 
             let duration = Date().timeIntervalSince(start)
             logger.info("Text input duration took \(duration)")
