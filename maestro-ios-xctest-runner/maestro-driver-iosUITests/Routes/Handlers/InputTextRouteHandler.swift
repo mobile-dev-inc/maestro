@@ -25,11 +25,11 @@ struct InputTextRouteHandler : HTTPHandler {
             let start = Date()
 
             // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
-            // 2nd and 3rd characters are often skipped, so we'll input them with lower typing frequency
-            let firstThreeCharacters = String(requestBody.text.prefix(Constants.slowInputCharactersCount))
-            logger.info("first three characters: \(firstThreeCharacters)")
+            // characters after the first on are often skipped, so we'll input it with lower typing frequency
+            let firstCharacter = String(requestBody.text.prefix(Constants.slowInputCharactersCount))
+            logger.info("first character: \(firstCharacter)")
             var eventPath = PointerEventPath.pathForTextInput()
-            eventPath.type(text: firstThreeCharacters, typingSpeed: 1)
+            eventPath.type(text: firstCharacter, typingSpeed: 1)
             let eventRecord = EventRecord(orientation: .portrait)
             _ = eventRecord.add(eventPath)
             try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
