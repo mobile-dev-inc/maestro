@@ -11,7 +11,7 @@ struct InputTextRouteHandler : HTTPHandler {
     
     private enum Constants {
         static let typingFrequency = 30
-        static let slowInputCharactersCount = 3
+        static let slowInputCharactersCount = 1
     }
 
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
@@ -29,7 +29,7 @@ struct InputTextRouteHandler : HTTPHandler {
             let firstThreeCharacters = String(requestBody.text.prefix(Constants.slowInputCharactersCount))
             logger.info("first three characters: \(firstThreeCharacters)")
             var eventPath = PointerEventPath.pathForTextInput()
-            eventPath.type(text: firstThreeCharacters, typingSpeed: 2)
+            eventPath.type(text: firstThreeCharacters, typingSpeed: 1)
             let eventRecord = EventRecord(orientation: .portrait)
             _ = eventRecord.add(eventPath)
             try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
