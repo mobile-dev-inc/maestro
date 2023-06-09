@@ -51,42 +51,18 @@ class JsEngine(
             1,
             null
         )
-        currentScope.sealObject()
-
-        // We are entering a sub-scope so that no more declarations can be made
-        // on the root scope that is now sealed.
-        enterScope()
     }
 
     fun onLogMessage(callback: (String) -> Unit) {
         onLogMessage = callback
     }
 
-    fun enterScope() {
-        val subScope = JsScope(root = false)
-        subScope.parentScope = currentScope
-        currentScope = subScope
-    }
-
-    fun leaveScope() {
-        currentScope = currentScope.parentScope as JsScope
-    }
-
     fun evaluateScript(
         script: String,
         env: Map<String, String> = emptyMap(),
         sourceName: String = "inline-script",
-        runInSubScope: Boolean = false,
     ): Any? {
-        val scope = if (runInSubScope) {
-            // We create a new scope for each evaluation to prevent local variables
-            // from clashing with each other across multiple scripts.
-            // Only 'output' is shared across scopes.
-            JsScope(root = false)
-                .apply { parentScope = currentScope }
-        } else {
-            currentScope
-        }
+        val scope = currentScope
 
         if (env.isNotEmpty()) {
             env.forEach { (key, value) ->

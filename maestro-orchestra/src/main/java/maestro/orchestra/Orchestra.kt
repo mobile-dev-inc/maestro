@@ -275,7 +275,6 @@ class Orchestra(
                 script = command.script,
                 env = command.env,
                 sourceName = command.sourceDescription,
-                runInSubScope = true,
             )
 
             // We do not actually know if there were any mutations, but we assume there were
@@ -507,43 +506,37 @@ class Orchestra(
     }
 
     private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
-        jsEngine.enterScope()
+        return commands
+            .mapIndexed { index, command ->
+                onCommandStart(index, command)
 
-        return try {
-            commands
-                .mapIndexed { index, command ->
-                    onCommandStart(index, command)
+                val evaluatedCommand = command.evaluateScripts(jsEngine)
+                val metadata = getMetadata(command)
+                    .copy(
+                        evaluatedCommand = evaluatedCommand,
+                    )
+                updateMetadata(command, metadata)
 
-                    val evaluatedCommand = command.evaluateScripts(jsEngine)
-                    val metadata = getMetadata(command)
-                        .copy(
-                            evaluatedCommand = evaluatedCommand,
-                        )
-                    updateMetadata(command, metadata)
-
-                    return@mapIndexed try {
-                        executeCommand(evaluatedCommand, config)
-                            .also {
-                                onCommandComplete(index, command)
-                            }
-                    } catch (ignored: CommandSkipped) {
-                        // Swallow exception
-                        onCommandSkipped(index, command)
-                        false
-                    } catch (e: Throwable) {
-                        when (onCommandFailed(index, command, e)) {
-                            ErrorResolution.FAIL -> throw e
-                            ErrorResolution.CONTINUE -> {
-                                // Do nothing
-                                false
-                            }
+                return@mapIndexed try {
+                    executeCommand(evaluatedCommand, config)
+                        .also {
+                            onCommandComplete(index, command)
+                        }
+                } catch (ignored: CommandSkipped) {
+                    // Swallow exception
+                    onCommandSkipped(index, command)
+                    false
+                } catch (e: Throwable) {
+                    when (onCommandFailed(index, command, e)) {
+                        ErrorResolution.FAIL -> throw e
+                        ErrorResolution.CONTINUE -> {
+                            // Do nothing
+                            false
                         }
                     }
                 }
-                .any { it }
-        } finally {
-            jsEngine.leaveScope()
-        }
+            }
+            .any { it }
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
