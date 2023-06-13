@@ -106,7 +106,7 @@ object WorkspaceExecutionPlanner {
         workspaceConfig: WorkspaceConfig)
     : List<Path>? {
         if (workspaceConfig.executionOrder?.flowsOrder?.isNotEmpty() == true) {
-            val flowsOrder = workspaceConfig.executionOrder?.flowsOrder!!
+            val flowsOrder = workspaceConfig.executionOrder?.flowsOrder!!.distinct()
 
             return flowsOrder.map { flowName ->
                 list.find {
