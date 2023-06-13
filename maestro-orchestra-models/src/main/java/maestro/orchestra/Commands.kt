@@ -809,7 +809,7 @@ internal fun tapOnDescription(isLongPress: Boolean?, repeat: TapRepeat?): String
     else if (repeat != null) {
         when (repeat.repeat) {
             1 -> "Tap"
-            2 -> "Tap twice"
+            2 -> "Double tap"
             else -> "Tap x${repeat.repeat}"
         }
     } else "Tap"
