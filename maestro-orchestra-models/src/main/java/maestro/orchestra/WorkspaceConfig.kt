@@ -22,7 +22,7 @@ data class WorkspaceConfig(
     )
 
     data class ExecutionOrder(
-        val continueOnFailure: Boolean = true,
+        val continueOnFailure: Boolean? = true,
         val flowsOrder: List<String> = emptyList()
     )
 
