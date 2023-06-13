@@ -68,6 +68,7 @@ import kotlin.io.path.readText
 
 data class YamlFluentCommand(
     val tapOn: YamlElementSelectorUnion? = null,
+    val doubleTapOn: YamlElementSelectorUnion? = null,
     val longPressOn: YamlElementSelectorUnion? = null,
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
@@ -221,6 +222,12 @@ data class YamlFluentCommand(
             assertOutgoingRequest != null -> listOf(assertOutgoingRequestsCommand(assertOutgoingRequest))
             startRecording != null -> listOf(MaestroCommand(StartRecordingCommand(startRecording.path)))
             stopRecording != null -> listOf(MaestroCommand(StopRecordingCommand()))
+            doubleTapOn != null -> {
+                val yamlDelay = (doubleTapOn as? YamlElementSelector)?.delay?.toLong()
+                val delay = if (yamlDelay != null && yamlDelay >= 0) yamlDelay else TapOnElementCommand.DEFAULT_REPEAT_DELAY
+                val tapRepeat = TapRepeat(2, delay)
+                listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
+            }
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -387,13 +394,14 @@ data class YamlFluentCommand(
     private fun tapCommand(
         tapOn: YamlElementSelectorUnion,
         longPress: Boolean = false,
+        tapRepeat: TapRepeat? = null
     ): MaestroCommand {
         val retryIfNoChange = (tapOn as? YamlElementSelector)?.retryTapIfNoChange ?: true
         val waitUntilVisible = (tapOn as? YamlElementSelector)?.waitUntilVisible ?: false
         val point = (tapOn as? YamlElementSelector)?.point
 
         val delay = (tapOn as? YamlElementSelector)?.delay?.toLong()
-        val repeat = (tapOn as? YamlElementSelector)?.repeat?.let {
+        val repeat = tapRepeat ?: (tapOn as? YamlElementSelector)?.repeat?.let {
             val count = if (it <= 0) 1 else it
             val d = if (delay != null && delay >= 0) delay else TapOnElementCommand.DEFAULT_REPEAT_DELAY
             TapRepeat(count, d)
