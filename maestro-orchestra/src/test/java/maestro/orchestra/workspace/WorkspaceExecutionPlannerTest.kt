@@ -226,10 +226,15 @@ internal class WorkspaceExecutionPlannerTest {
 
         // Then
         assertThat(plan.flowsToRun).containsExactly(
+            path("/workspaces/013_execution_order/flowA.yaml"),
+        )
+
+        // Then
+        assertThat(plan.sequence).isNotNull()
+        assertThat(plan.sequence!!.flows).containsExactly(
             path("/workspaces/013_execution_order/flowB.yaml"),
             path("/workspaces/013_execution_order/flowCWithCustomName.yaml"),
             path("/workspaces/013_execution_order/flowD.yaml"),
-            path("/workspaces/013_execution_order/flowA.yaml"),
         ).inOrder()
     }
 

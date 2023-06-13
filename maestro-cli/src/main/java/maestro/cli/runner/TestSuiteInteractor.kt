@@ -43,7 +43,7 @@ class TestSuiteInteractor(
     ): TestExecutionSummary {
         return if (input.isFile) {
             runTestSuite(
-                listOf(input),
+                WorkspaceExecutionPlanner.ExecutionPlan(flowsToRun = listOf(input.toPath())),
                 reportOut,
                 env,
             )
@@ -61,19 +61,17 @@ class TestSuiteInteractor(
             }
 
             runTestSuite(
-                flowFiles.map { it.toFile() },
+                plan,
                 reportOut,
                 env,
-                plan.stopOnFailure
             )
         }
     }
 
     private fun runTestSuite(
-        flows: List<File>,
+        executionPlan: WorkspaceExecutionPlanner.ExecutionPlan,
         reportOut: Sink?,
         env: Map<String, String>,
-        stopOnFailure: Boolean? = false,
     ): TestExecutionSummary {
         val flowResults = mutableListOf<TestExecutionSummary.FlowResult>()
 
@@ -81,22 +79,33 @@ class TestSuiteInteractor(
         println()
 
         var passed = true
-        for (flow in flows) {
-            val result = runFlow(flow, env, maestro)
 
-            // TODO accumulate extra information
-            // - Command statuses
-            // - View hierarchies
+        // first run sequence of flows if present
+        val flowSequence = executionPlan.sequence
+        for (flow in flowSequence?.flows ?: emptyList()) {
+            val result = runFlow(flow.toFile(), env, maestro)
             flowResults.add(result)
 
             if (result.status == FlowStatus.ERROR) {
                 passed = false
-                if (stopOnFailure == true) {
-                    PrintUtils.message("Flow ${result.name} failed and continueOnFailure is set to false, aborting")
+                if (executionPlan.sequence?.continueOnFailure != true) {
+                    PrintUtils.message("Flow ${result.name} failed and continueOnFailure is set to false, aborting running sequential Flows")
+                    println()
                     break
                 }
             }
         }
+
+        // proceed to run all other Flows
+        executionPlan.flowsToRun.forEach { flow ->
+            val result = runFlow(flow.toFile(), env, maestro)
+
+            if (result.status == FlowStatus.ERROR) {
+                passed = false
+            }
+            flowResults.add(result)
+        }
+
 
         val suiteDuration = flowResults.sumOf { it.duration?.inWholeSeconds ?: 0 }.seconds
 

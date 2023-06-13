@@ -61,7 +61,7 @@ object WorkspaceExecutionPlanner {
         }
 
         // filter out all Flows not matching tags if present
-        val filteredUnsortedFlows = unsortedFlowFiles.filter {
+        val allFlows = unsortedFlowFiles.filter {
             val config = configPerFlowFile[it]
             val tags = config?.tags ?: emptyList()
 
@@ -71,9 +71,21 @@ object WorkspaceExecutionPlanner {
                 && (globalExcludeTags.isEmpty() || !tags.any(globalExcludeTags::contains))
         }
 
+        val flowsToRunInSequence = getFlowsToRunInSequence(allFlows, configPerFlowFile, workspaceConfig) ?: emptyList()
+        var normalFlows = allFlows - flowsToRunInSequence.toSet()
+
+        if (workspaceConfig.local?.deterministicOrder == true) {
+            println()
+            println("WARNING! deterministicOrder has been deprecated in favour of executionOrder and will be removed in a future version")
+            normalFlows = normalFlows.sortedBy { it.name }
+        }
+
         return ExecutionPlan(
-            flowsToRun = sortFlows(filteredUnsortedFlows, configPerFlowFile, workspaceConfig),
-            stopOnFailure = workspaceConfig.executionOrder?.continueOnFailure != true
+            flowsToRun = normalFlows,
+            FlowSequence(
+                flowsToRunInSequence,
+                workspaceConfig.executionOrder?.continueOnFailure
+            )
         )
     }
 
@@ -88,34 +100,33 @@ object WorkspaceExecutionPlanner {
         return file.fileName.toString().substringBeforeLast(".")
     }
 
-    private fun sortFlows(
+    private fun getFlowsToRunInSequence(
         list: List<Path>,
         configPerFlowFile: Map<Path, MaestroConfig?>,
         workspaceConfig: WorkspaceConfig)
-    : List<Path> {
-        return if (workspaceConfig.local?.deterministicOrder == true) {
-            println("WARNING! deterministicOrder has been deprecated in favour of executionOrder and will be removed in a future version")
-            list.sortedBy { it.name }
-        } else if (workspaceConfig.executionOrder?.flowsOrder?.isNotEmpty() == true) {
-            val flowsOrder = workspaceConfig?.executionOrder?.flowsOrder!!
+    : List<Path>? {
+        if (workspaceConfig.executionOrder?.flowsOrder?.isNotEmpty() == true) {
+            val flowsOrder = workspaceConfig.executionOrder?.flowsOrder!!
 
-            val flowsToRunInSequence = flowsOrder.map { flowName ->
+            return flowsOrder.map { flowName ->
                 list.find {
                     val config = configPerFlowFile[it]
                     val name = config?.name ?: parseFileName(it)
                     flowName == name
                 } ?: error("Could not find Flow with name $flowName")
             }
-            val otherFlows = list - flowsToRunInSequence.toSet()
-            flowsToRunInSequence + otherFlows
-        } else {
-            list
         }
+        return null
     }
+
+    data class FlowSequence(
+        val flows: List<Path>,
+        val continueOnFailure: Boolean? = true
+    )
 
     data class ExecutionPlan(
         val flowsToRun: List<Path>,
-        val stopOnFailure: Boolean? = false
+        val sequence: FlowSequence? = null
     )
 
 }
