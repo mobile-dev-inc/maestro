@@ -16,7 +16,7 @@ data class WorkspaceConfig(
         // Do nothing
     }
 
-    // deprecated in favour of ExecutionOrder
+    @Deprecated("Use ExecutionOrder instead")
     data class Local(
         val deterministicOrder: Boolean? = null,
     )
