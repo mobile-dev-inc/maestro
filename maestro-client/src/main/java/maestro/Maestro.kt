@@ -20,6 +20,7 @@
 package maestro
 
 import com.github.romankh3.image.comparison.ImageComparison
+import com.google.protobuf.duration
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.WebDriver
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.UUID
+import kotlin.system.measureTimeMillis
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Maestro(private val driver: Driver) : AutoCloseable {
@@ -294,8 +296,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 driver.longPress(Point(x, y))
             } else if (tapRepeat != null) {
                 for (i in 0 until tapRepeat.repeat) {
-                    driver.tap(Point(x, y))
-                    if (tapRepeat.repeat > 1) Thread.sleep(tapRepeat.delay) // do not wait for single taps
+
+                    // subtract execution duration from tap delay
+                    val duration = measureTimeMillis { driver.tap(Point(x, y)) }
+                    val delay = if (duration >= tapRepeat.delay) 0 else tapRepeat.delay - duration
+
+                    if (tapRepeat.repeat > 1) Thread.sleep(delay) // do not wait for single taps
                 }
             } else driver.tap(Point(x, y))
             val hierarchyAfterTap = waitForAppToSettle()
@@ -326,8 +332,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 driver.longPress(Point(x, y))
             } else if (tapRepeat != null) {
                 for (i in 0 until tapRepeat.repeat) {
-                    driver.tap(Point(x, y))
-                    if (tapRepeat.repeat > 1) Thread.sleep(tapRepeat.delay) // do not wait for single taps
+
+                    // subtract execution duration from tap delay
+                    val duration = measureTimeMillis { driver.tap(Point(x, y)) }
+                    val delay = if (duration >= tapRepeat.delay) 0 else tapRepeat.delay - duration
+
+                    if (tapRepeat.repeat > 1) Thread.sleep(delay) // do not wait for single taps
                 }
             } else {
                 driver.tap(Point(x, y))
