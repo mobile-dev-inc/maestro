@@ -48,13 +48,13 @@ class TestSuiteInteractor(
                 env,
             )
         } else {
-            val flowFiles = WorkspaceExecutionPlanner
+            val plan = WorkspaceExecutionPlanner
                 .plan(
                     input = input.toPath().toAbsolutePath(),
                     includeTags = includeTags,
                     excludeTags = excludeTags,
                 )
-                .flowsToRun
+            val flowFiles = plan.flowsToRun
 
             if (flowFiles.isEmpty()) {
                 throw CliError("No flow returned from the tag filter used")
@@ -64,6 +64,7 @@ class TestSuiteInteractor(
                 flowFiles.map { it.toFile() },
                 reportOut,
                 env,
+                plan.stopOnFailure
             )
         }
     }
@@ -72,6 +73,7 @@ class TestSuiteInteractor(
         flows: List<File>,
         reportOut: Sink?,
         env: Map<String, String>,
+        stopOnFailure: Boolean? = false,
     ): TestExecutionSummary {
         val flowResults = mutableListOf<TestExecutionSummary.FlowResult>()
 
@@ -79,17 +81,21 @@ class TestSuiteInteractor(
         println()
 
         var passed = true
-        flows.forEach { flowFile ->
-            val result = runFlow(flowFile, env, maestro)
-
-            if (result.status == FlowStatus.ERROR) {
-                passed = false
-            }
+        for (flow in flows) {
+            val result = runFlow(flow, env, maestro)
 
             // TODO accumulate extra information
             // - Command statuses
             // - View hierarchies
             flowResults.add(result)
+
+            if (result.status == FlowStatus.ERROR) {
+                passed = false
+                if (stopOnFailure == true) {
+                    PrintUtils.message("Flow ${result.name} failed and continueOnFailure is set to false, aborting")
+                    break
+                }
+            }
         }
 
         val suiteDuration = flowResults.sumOf { it.duration?.inWholeSeconds ?: 0 }.seconds
