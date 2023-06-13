@@ -22,6 +22,7 @@ package maestro.orchestra.yaml
 import com.fasterxml.jackson.annotation.JsonCreator
 import maestro.KeyCode
 import maestro.Point
+import maestro.TapRepeat
 import maestro.orchestra.AssertConditionCommand
 import maestro.orchestra.AssertOutgoingRequestsCommand
 import maestro.orchestra.BackPressCommand
@@ -391,12 +392,20 @@ data class YamlFluentCommand(
         val waitUntilVisible = (tapOn as? YamlElementSelector)?.waitUntilVisible ?: false
         val point = (tapOn as? YamlElementSelector)?.point
 
+        val delay = (tapOn as? YamlElementSelector)?.delay?.toLong()
+        val repeat = (tapOn as? YamlElementSelector)?.repeat?.let {
+            val count = if (it <= 0) 1 else it
+            val d = if (delay != null && delay >= 0) delay else TapOnElementCommand.DEFAULT_REPEAT_DELAY
+            TapRepeat(count, d)
+        }
+
         return if (point != null) {
             MaestroCommand(
                 TapOnPointV2Command(
                     point = point,
                     retryIfNoChange = retryIfNoChange,
                     longPress = longPress,
+                    repeat = repeat
                 )
             )
         } else {
@@ -406,6 +415,7 @@ data class YamlFluentCommand(
                     retryIfNoChange = retryIfNoChange,
                     waitUntilVisible = waitUntilVisible,
                     longPress = longPress,
+                    repeat = repeat
                 )
             )
         }

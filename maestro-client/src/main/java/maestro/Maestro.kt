@@ -175,7 +175,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         waitUntilVisible: Boolean = false,
         longPress: Boolean = false,
-        appId: String? = null
+        appId: String? = null,
+        tapRepeat: TapRepeat? = null
     ) {
         LOGGER.info("Tapping on element: $element")
 
@@ -190,11 +191,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             ).bounds
             .center()
         performTap(
-            center.x,
-            center.y,
-            retryIfNoChange,
-            longPress,
-            hierarchyBeforeTap,
+            x = center.x,
+            y = center.y,
+            retryIfNoChange = retryIfNoChange,
+            longPress = longPress,
+            initialHierarchy = hierarchyBeforeTap,
+            tapRepeat = tapRepeat
         )
 
         if (waitUntilVisible) {
@@ -208,11 +210,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 val hierarchy = waitUntilVisible(element)
 
                 tap(
-                    element,
-                    hierarchy,
+                    element = element,
+                    initialHierarchy = hierarchy,
                     retryIfNoChange = false,
                     waitUntilVisible = false,
                     longPress = longPress,
+                    tapRepeat = tapRepeat
                 )
             }
         }
@@ -223,6 +226,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         percentY: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
+        tapRepeat: TapRepeat? = null
     ) {
         val x = cachedDeviceInfo.widthGrid * percentX / 100
         val y = cachedDeviceInfo.heightGrid * percentY / 100
@@ -231,6 +235,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             y = y,
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
+            tapRepeat = tapRepeat
         )
     }
 
@@ -239,8 +244,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         y: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
+        tapRepeat: TapRepeat? = null,
     ) {
-        performTap(x, y, retryIfNoChange, longPress)
+        performTap(
+            x = x,
+            y = y,
+            retryIfNoChange = retryIfNoChange,
+            longPress = longPress,
+            tapRepeat = tapRepeat
+        )
     }
 
     private fun getNumberOfRetries(retryIfNoChange: Boolean): Int {
@@ -252,14 +264,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         y: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
-        initialHierarchy: ViewHierarchy? = null
+        initialHierarchy: ViewHierarchy? = null,
+        tapRepeat: TapRepeat? = null
     ) {
         val capabilities = driver.capabilities()
 
         if (Capability.FAST_HIERARCHY in capabilities) {
-            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat)
         } else {
-            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy)
+            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat)
         }
     }
 
@@ -268,7 +281,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         y: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
-        initialHierarchy: ViewHierarchy? = null
+        initialHierarchy: ViewHierarchy? = null,
+        tapRepeat: TapRepeat? = null
     ) {
         LOGGER.info("Tapping at ($x, $y) using screenshot based logic for wait")
 
@@ -278,9 +292,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         repeat(retries) {
             if (longPress) {
                 driver.longPress(Point(x, y))
-            } else {
-                driver.tap(Point(x, y))
-            }
+            } else if (tapRepeat != null) {
+                for (i in 0 until tapRepeat.repeat) {
+                    driver.tap(Point(x, y))
+                    if (tapRepeat.repeat > 1) Thread.sleep(tapRepeat.delay) // do not wait for single taps
+                }
+            } else driver.tap(Point(x, y))
             val hierarchyAfterTap = waitForAppToSettle()
 
             if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
@@ -295,7 +312,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         y: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
-        initialHierarchy: ViewHierarchy? = null
+        initialHierarchy: ViewHierarchy? = null,
+        tapRepeat: TapRepeat? = null
     ) {
         LOGGER.info("Tapping at ($x, $y) using hierarchy based logic for wait")
 
@@ -306,6 +324,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         repeat(retries) {
             if (longPress) {
                 driver.longPress(Point(x, y))
+            } else if (tapRepeat != null) {
+                for (i in 0 until tapRepeat.repeat) {
+                    driver.tap(Point(x, y))
+                    if (tapRepeat.repeat > 1) Thread.sleep(tapRepeat.delay) // do not wait for single taps
+                }
             } else {
                 driver.tap(Point(x, y))
             }
