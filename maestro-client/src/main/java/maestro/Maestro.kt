@@ -180,7 +180,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         appId: String? = null,
         tapRepeat: TapRepeat? = null
     ) {
-        LOGGER.info("Tapping on element: $element")
+        LOGGER.info("Tapping on element: ${tapRepeat ?: ""} $element")
 
         val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy, appId) ?: initialHierarchy
 
