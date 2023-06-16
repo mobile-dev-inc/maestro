@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.29.0 - 2023-06-19
+
+- Feature: Add test duration measurement and display
+- Feature: New screen recording commands
+  - Thanks, @tokou, for the contribution!
+- Feature: Add support for sequential execution
+- Feature: Add support for double taps in tapOn
+- Feature: Add support for custom Android driver startup timeout
+  - Thanks, @arildojr7, for the contribution!
+- Fix: Resolve Android scrollUntilVisible flakiness
+- Fix: Resolve inputText flakiness
+
 ## 1.28.0 - 2023-05-18
 
 - Feature: runScript command now support conditional execution
