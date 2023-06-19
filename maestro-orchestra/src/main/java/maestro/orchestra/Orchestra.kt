@@ -52,7 +52,6 @@ class Orchestra(
     private val screenshotsDir: File? = null,
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
-    private val networkProxy: NetworkProxy = NetworkProxy(port = 8085),
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
@@ -212,7 +211,6 @@ class Orchestra(
             is EvalScriptCommand -> evalScriptCommand(command)
             is ApplyConfigurationCommand -> false
             is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
-            is MockNetworkCommand -> mockNetworkCommand(command)
             is TravelCommand -> travelCommand(command)
             is AssertOutgoingRequestsCommand -> assertOutgoingRequestsCommand(command)
             is StartRecordingCommand -> startRecordingCommand(command)
@@ -361,21 +359,6 @@ class Orchestra(
     private fun backPressCommand(): Boolean {
         maestro.backPress()
         return true
-    }
-
-    private fun mockNetworkCommand(command: MockNetworkCommand): Boolean {
-        maestro.setProxy(
-            port = networkProxy.port,
-        )
-
-        val rules = YamlMappingRuleParser.readRules(File(command.path).toPath())
-        if (!networkProxy.isStarted()) {
-            networkProxy.start(rules)
-        } else {
-            networkProxy.replaceRules(rules)
-        }
-
-        return false
     }
 
     private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
