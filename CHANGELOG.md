@@ -9,8 +9,11 @@
 - Feature: Add support for double taps in tapOn
 - Feature: Add support for custom Android driver startup timeout
   - Thanks, @arildojr7, for the contribution!
+- Fix: Validate workspace prior to upload to Maestro Cloud
 - Fix: Resolve Android scrollUntilVisible flakiness
 - Fix: Resolve inputText flakiness
+- Fix: iOS url arguments
+  - Thanks, @tokou, for the contribution!
 
 ## 1.28.0 - 2023-05-18
 
