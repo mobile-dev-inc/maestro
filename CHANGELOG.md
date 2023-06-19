@@ -6,7 +6,7 @@
 - Feature: New screen recording commands
   - Thanks, @tokou, for the contribution!
 - Feature: Add support for sequential execution
-- Feature: Add support for double taps in tapOn
+- Feature: Add support for double taps + multiple taps in tapOn
 - Feature: Add support for custom Android driver startup timeout
   - Thanks, @arildojr7, for the contribution!
 - Fix: Validate workspace prior to upload to Maestro Cloud
