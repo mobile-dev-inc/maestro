@@ -29,8 +29,6 @@ import maestro.MaestroException
 import maestro.ScreenRecording
 import maestro.js.Js
 import maestro.js.JsEngine
-import maestro.networkproxy.NetworkProxy
-import maestro.networkproxy.yaml.YamlMappingRuleParser
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
