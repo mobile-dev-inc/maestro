@@ -51,7 +51,7 @@ class CloudCommand : Callable<Int> {
     @Option(names = ["--appFile"], description = ["App binary to run your Flows against"])
     private var appFile: File? = null
 
-    @Option(names = ["--flowFile"], description = ["Flow file or workspace directory"])
+    @Option(names = ["--workspace"], description = ["Flow file or workspace directory"])
     private lateinit var flowFile: File
 
     @Option(order = 0, names = ["--apiKey"], description = ["API key"])
@@ -200,7 +200,7 @@ class CloudCommand : Callable<Int> {
             }
         }
         if (appFile == null && appBinaryId == null) throw CliError("Missing required parameter for option '--appFile' or '--appBinaryId'")
-        if (!this::flowFile.isInitialized) throw CliError("Missing required parameter for option '--flowFile'")
+        if (!this::flowFile.isInitialized) throw CliError("Missing required parameter for option '--workspace'")
     }
 
 }
