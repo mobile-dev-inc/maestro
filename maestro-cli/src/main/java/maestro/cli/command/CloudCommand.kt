@@ -44,10 +44,10 @@ class CloudCommand : Callable<Int> {
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
-    @CommandLine.Parameters(description = ["App binary to run your Flows against"])
-    private lateinit var appFile: File
+    @CommandLine.Parameters(index = "0..*", arity = "0..1", description = ["App binary to run your Flows against"])
+    private var appFile: File? = null
 
-    @CommandLine.Parameters(description = ["Flow file or directory"])
+    @CommandLine.Parameters(index = "0..*", description = ["Flow file or directory"])
     private lateinit var flowFile: File
 
     @Option(order = 0, names = ["--apiKey"], description = ["API key"])
@@ -126,6 +126,9 @@ class CloudCommand : Callable<Int> {
     @Option(order = 16, names = ["--ios-version"], description = ["iOS version to run your flow against"])
     private var iOSVersion: String? = null
 
+    @Option(order = 17, names = ["--appBinaryId"], description = ["The ID of the app binary previously uploaded to Maestro Cloud"])
+    private var appBinaryId: String? = null
+
     @Option(hidden = true, names = ["--fail-on-cancellation"], description = ["Fail the command if the upload is marked as cancelled"])
     private var failOnCancellation: Boolean = false
 
@@ -158,6 +161,7 @@ class CloudCommand : Callable<Int> {
                 apiKey = apiKey,
                 androidApiLevel = androidApiLevel,
                 iOSVersion = iOSVersion,
+                appBinaryId = appBinaryId,
                 includeTags = includeTags,
                 excludeTags = excludeTags,
                 reportFormat = format,
