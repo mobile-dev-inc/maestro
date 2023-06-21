@@ -227,7 +227,7 @@ class ApiClient(
         completedRetries: Int = 0,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): UploadResponse {
-        if (appBinaryId == null && appFile == null) throw CliError("Please provide an appBinaryId or an app file")
+        if (appBinaryId == null && appFile == null) throw CliError("Missing required parameter: <appFile> or <appBinaryId>")
         if (appFile != null && !appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
         if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
 

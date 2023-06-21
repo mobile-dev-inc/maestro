@@ -19,6 +19,7 @@
 
 package maestro.cli.command
 
+import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
 import maestro.cli.api.ApiClient
 import maestro.cli.cloud.CloudInteractor
@@ -44,10 +45,13 @@ class CloudCommand : Callable<Int> {
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
-    @CommandLine.Parameters(index = "0..*", arity = "0..1", description = ["App binary to run your Flows against"])
+    @CommandLine.Parameters(hidden = true, arity = "0..2", description = ["App file and/or Flow file i.e <appFile> <flowFile>"])
+    private lateinit var files: List<File>
+
+    @Option(names = ["--appFile"], description = ["App binary to run your Flows against"])
     private var appFile: File? = null
 
-    @CommandLine.Parameters(index = "0..*", description = ["Flow file or directory"])
+    @Option(names = ["--flowFile"], description = ["Flow file or workspace directory"])
     private lateinit var flowFile: File
 
     @Option(order = 0, names = ["--apiKey"], description = ["API key"])
@@ -133,6 +137,40 @@ class CloudCommand : Callable<Int> {
     private var failOnCancellation: Boolean = false
 
     override fun call(): Int {
+
+        validateFiles()
+        validateWorkSpace()
+
+        // Upload
+        return CloudInteractor(
+            client = ApiClient(apiUrl),
+            failOnTimeout = failOnCancellation,
+        ).upload(
+            async = async,
+            flowFile = flowFile,
+            appFile = appFile,
+            mapping = mapping,
+            env = env.withInjectedShellEnvVars(),
+            uploadName = uploadName,
+            repoOwner = repoOwner,
+            repoName = repoName,
+            branch = branch,
+            commitSha = commitSha,
+            pullRequestId = pullRequestId,
+            apiKey = apiKey,
+            androidApiLevel = androidApiLevel,
+            iOSVersion = iOSVersion,
+            appBinaryId = appBinaryId,
+            includeTags = includeTags,
+            excludeTags = excludeTags,
+            reportFormat = format,
+            reportOutput = output,
+            failOnCancellation = failOnCancellation,
+            testSuiteName = testSuiteName
+        )
+    }
+
+    private fun validateWorkSpace() {
         try {
             PrintUtils.message("Evaluating workspace...")
             WorkspaceExecutionPlanner
@@ -141,38 +179,28 @@ class CloudCommand : Callable<Int> {
                     includeTags = includeTags,
                     excludeTags = excludeTags,
                 )
-
-
-            return CloudInteractor(
-                client = ApiClient(apiUrl),
-                failOnTimeout = failOnCancellation,
-            ).upload(
-                async = async,
-                flowFile = flowFile,
-                appFile = appFile,
-                mapping = mapping,
-                env = env.withInjectedShellEnvVars(),
-                uploadName = uploadName,
-                repoOwner = repoOwner,
-                repoName = repoName,
-                branch = branch,
-                commitSha = commitSha,
-                pullRequestId = pullRequestId,
-                apiKey = apiKey,
-                androidApiLevel = androidApiLevel,
-                iOSVersion = iOSVersion,
-                appBinaryId = appBinaryId,
-                includeTags = includeTags,
-                excludeTags = excludeTags,
-                reportFormat = format,
-                reportOutput = output,
-                failOnCancellation = failOnCancellation,
-                testSuiteName = testSuiteName
-            )
         } catch (e: Exception) {
-            PrintUtils.err("Upload aborted. Received error when evaluating workspace: ${e.message}")
-            return 1
+            throw CliError("Upload aborted. Received error when evaluating workspace: ${e.message}")
         }
+    }
+
+    private fun validateFiles() {
+
+        // Maintains backwards compatibility for this syntax: maestro cloud <appFile> <workspace>
+        // App file can be optional now
+        if (this::files.isInitialized) {
+            when (files.size) {
+                2 -> {
+                    appFile = files[0]
+                    flowFile = files[1]
+                }
+                1 -> {
+                    flowFile = files[0]
+                }
+            }
+        }
+        if (appFile == null && appBinaryId == null) throw CliError("Missing required parameter for option '--appFile' or '--appBinaryId'")
+        if (!this::flowFile.isInitialized) throw CliError("Missing required parameter for option '--flowFile'")
     }
 
 }
