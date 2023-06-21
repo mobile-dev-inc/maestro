@@ -322,8 +322,9 @@ class ApiClient(
             val uploadId = analysisRequest["id"] as String
             val teamId = analysisRequest["teamId"] as String
             val appId = responseBody["targetId"] as String
+            val appBinaryIdResponse = responseBody["appBinaryId"] as? String
 
-            return UploadResponse(teamId, appId, uploadId)
+            return UploadResponse(teamId, appId, uploadId, appBinaryIdResponse)
         }
     }
 
@@ -381,6 +382,7 @@ data class UploadResponse(
     val teamId: String,
     val appId: String,
     val uploadId: String,
+    val appBinaryId: String?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

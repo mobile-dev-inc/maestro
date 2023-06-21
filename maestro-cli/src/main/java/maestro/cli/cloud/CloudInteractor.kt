@@ -92,7 +92,7 @@ class CloudInteractor(
                 }
             }
 
-            val (teamId, appId, uploadId) = client.upload(
+            val (teamId, appId, uploadId, appBinaryIdResponse) = client.upload(
                 authToken =  authToken,
                 appFile = appFileToSend?.toPath(),
                 workspaceZip = workspaceZip,
@@ -116,11 +116,13 @@ class CloudInteractor(
 
             if (async) {
                 PrintUtils.message("✅ Upload successful! View the results of your upload below:")
+                if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
                 PrintUtils.message(uploadUrl(uploadId, teamId, appId))
 
                 return 0
             } else {
                 PrintUtils.message("Visit the web console for more details about the upload: ${uploadUrl(uploadId, teamId, appId)}")
+                if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
                 PrintUtils.message("Waiting for analyses to complete...")
                 println()
 
