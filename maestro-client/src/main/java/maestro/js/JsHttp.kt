@@ -1,11 +1,15 @@
 package maestro.js
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
+import java.io.File
 
 class JsHttp(
     private val httpClient: OkHttpClient
@@ -69,6 +73,9 @@ class JsHttp(
         val requestBuilder = Request.Builder()
             .url(url)
 
+        val multipartBodyBuilder = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+
         val body = params
             ?.get("body")
             ?.let {
@@ -79,7 +86,23 @@ class JsHttp(
                 }
             }
 
-        requestBuilder.method(method, body?.toRequestBody())
+        val multipartForm = params?.get("multipartForm") as? NativeObject
+        multipartForm?.forEach { (key, value) ->
+            val filePath = (value as? NativeObject)?.get("filePath")
+            if (filePath != null) {
+                val file = File(filePath.toString())
+                val mediaType = value["mediaType"].toString()
+                multipartBodyBuilder.addFormDataPart(key.toString(), file.name, file.asRequestBody(mediaType.toMediaTypeOrNull()))
+            } else {
+                multipartBodyBuilder.addFormDataPart(key.toString(), value.toString())
+            }
+        }
+
+        if (multipartForm == null) {
+            requestBuilder.method(method, body?.toRequestBody())
+        } else {
+            requestBuilder.method(method, multipartBodyBuilder.build())
+        }
 
         params
             ?.get("headers")

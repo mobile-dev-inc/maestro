@@ -1,10 +1,14 @@
 package maestro.js
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.graalvm.polyglot.HostAccess.Export
 import org.graalvm.polyglot.proxy.ProxyObject
+import java.io.File
 
 class GraalJsHttp(
     private val httpClient: OkHttpClient
@@ -68,9 +72,28 @@ class GraalJsHttp(
         val requestBuilder = Request.Builder()
             .url(url)
 
+        val multipartBodyBuilder = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+
         val body = params?.get("body") as? String
 
-        requestBuilder.method(method, body?.toRequestBody())
+        val multipartForm = params?.get("multipartForm") as? Map<*, *> ?: emptyMap<Any, Any>()
+        multipartForm.forEach { (key, value) ->
+            val filePath = (value as? Map<*, *> ?: emptyMap<Any, Any>())["filePath"]
+            if (filePath != null) {
+                val file = File(filePath.toString())
+                val mediaType = (value as? Map<*, *> ?: emptyMap<Any, Any>())["mediaType"].toString()
+                multipartBodyBuilder.addFormDataPart(key.toString(), file.name, file.asRequestBody(mediaType.toMediaTypeOrNull()))
+            } else {
+                multipartBodyBuilder.addFormDataPart(key.toString(), value.toString())
+            }
+        }
+
+        if (multipartForm.isEmpty()) {
+            requestBuilder.method(method, body?.toRequestBody())
+        } else {
+            requestBuilder.method(method, multipartBodyBuilder.build())
+        }
 
         val headers: Map<*, *> = params?.get("headers") as? Map<*, *> ?: emptyMap<Any, Any>()
 
