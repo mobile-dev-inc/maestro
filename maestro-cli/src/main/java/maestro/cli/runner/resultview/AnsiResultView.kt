@@ -105,7 +105,7 @@ class AnsiResultView(
         render(
             commandState.command.description()
                 .replace("(?<!\\\\)\\\$\\{.*}".toRegex()) { match ->
-                    "@|cyan ${match.value} |@"
+                    "@|cyan ${match.value}|@"
                 }
         )
 
