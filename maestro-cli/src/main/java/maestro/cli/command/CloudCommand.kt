@@ -207,7 +207,10 @@ class CloudCommand : Callable<Int> {
         val hasWorkspace = this::flowFile.isInitialized
 
         if (!hasApp && !hasWorkspace) {
-            throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameters: '<appFile>', '<workspace>'. Usage: maestro cloud <appFile> <workspace>")
+            throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameters: '--app-file', " +
+                "'--workspace'. " +
+                "Example:" +
+                " maestro cloud --app-file <path> --workspace <path>")
         }
 
         if (!hasApp) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--app-file"), "Missing required parameter for option '--app-file' or " +
