@@ -203,9 +203,16 @@ class CloudCommand : Callable<Int> {
             }
         }
 
-        if (appFile == null && appBinaryId == null) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--app-file"), "Missing required parameter for option '--app-file' or " +
+        val hasApp = appFile != null || appBinaryId != null
+        val hasWorkspace = this::flowFile.isInitialized
+
+        if (!hasApp && !hasWorkspace) {
+            throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameters: '<appFile>', '<workspace>'. Usage: maestro cloud <appFile> <workspace>")
+        }
+
+        if (!hasApp) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--app-file"), "Missing required parameter for option '--app-file' or " +
             "'--app-binary-id'")
-        if (!this::flowFile.isInitialized) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameter for option '--workspace'")
+        if (!hasWorkspace) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameter for option '--workspace'")
 
     }
 
