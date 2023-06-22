@@ -58,7 +58,7 @@ class CloudInteractor(
         reportOutput: File? = null,
         testSuiteName: String? = null
     ): Int {
-        if (appBinaryId == null && appFile == null) throw CliError("Please provide an appBinaryId or an app file")
+        if (appBinaryId == null && appFile == null) throw CliError("Missing required parameter for option '--app-file' or '--app-binary-id'")
         if (!flowFile.exists()) throw CliError("File does not exist: ${flowFile.absolutePath}")
         if (mapping?.exists() == false) throw CliError("File does not exist: ${mapping.absolutePath}")
         if (async && reportFormat != ReportFormat.NOOP) throw CliError("Cannot use --format with --async")

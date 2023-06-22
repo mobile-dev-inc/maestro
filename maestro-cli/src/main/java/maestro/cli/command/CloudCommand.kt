@@ -42,40 +42,43 @@ import java.util.concurrent.Callable
 )
 class CloudCommand : Callable<Int> {
 
+    @CommandLine.Spec
+    var spec: CommandLine.Model.CommandSpec? = null
+
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
     @CommandLine.Parameters(hidden = true, arity = "0..2", description = ["App file and/or Flow file i.e <appFile> <flowFile>"])
     private lateinit var files: List<File>
 
-    @Option(names = ["--appFile"], description = ["App binary to run your Flows against"])
+    @Option(names = ["--app-file"], description = ["App binary to run your Flows against"])
     private var appFile: File? = null
 
     @Option(names = ["--workspace"], description = ["Flow file or workspace directory"])
     private lateinit var flowFile: File
 
-    @Option(order = 0, names = ["--apiKey"], description = ["API key"])
+    @Option(order = 0, names = ["--api-key", "--apiKey"], description = ["API key"])
     private var apiKey: String? = null
 
-    @Option(order = 1, names = ["--apiUrl"], description = ["API base URL"])
+    @Option(order = 1, names = ["--api-url", "--apiUrl"], description = ["API base URL"])
     private var apiUrl: String = "https://api.mobile.dev"
 
     @Option(order = 2, names = ["--mapping"], description = ["dSYM file (iOS) or Proguard mapping file (Android)"])
     private var mapping: File? = null
 
-    @Option(order = 3, names = ["--repoOwner"], description = ["Repository owner (ie: GitHub organization or user slug)"])
+    @Option(order = 3, names = ["--repo-owner", "--repoOwner"], description = ["Repository owner (ie: GitHub organization or user slug)"])
     private var repoOwner: String? = null
 
-    @Option(order = 4, names = ["--repoName"], description = ["Repository name (ie: GitHub repo slug)"])
+    @Option(order = 4, names = ["--repo-name", "--repoName"], description = ["Repository name (ie: GitHub repo slug)"])
     private var repoName: String? = null
 
     @Option(order = 5, names = ["--branch"], description = ["The branch this upload originated from"])
     private var branch: String? = null
 
-    @Option(order = 6, names = ["--commitSha"], description = ["The commit SHA of this upload"])
+    @Option(order = 6, names = ["--commit-sha", "--commitSha"], description = ["The commit SHA of this upload"])
     private var commitSha: String? = null
 
-    @Option(order = 7, names = ["--pullRequestId"], description = ["The ID of the pull request this upload originated from"])
+    @Option(order = 7, names = ["--pull-request-id", "--pullRequestId"], description = ["The ID of the pull request this upload originated from"])
     private var pullRequestId: String? = null
 
     @Option(order = 8, names = ["-e", "--env"], description = ["Environment variables to inject into your Flows"])
@@ -130,7 +133,7 @@ class CloudCommand : Callable<Int> {
     @Option(order = 16, names = ["--ios-version"], description = ["iOS version to run your flow against"])
     private var iOSVersion: String? = null
 
-    @Option(order = 17, names = ["--appBinaryId"], description = ["The ID of the app binary previously uploaded to Maestro Cloud"])
+    @Option(order = 17, names = ["--app-binary-id", "--appBinaryId"], description = ["The ID of the app binary previously uploaded to Maestro Cloud"])
     private var appBinaryId: String? = null
 
     @Option(hidden = true, names = ["--fail-on-cancellation"], description = ["Fail the command if the upload is marked as cancelled"])
@@ -199,8 +202,11 @@ class CloudCommand : Callable<Int> {
                 }
             }
         }
-        if (appFile == null && appBinaryId == null) throw CliError("Missing required parameter for option '--appFile' or '--appBinaryId'")
-        if (!this::flowFile.isInitialized) throw CliError("Missing required parameter for option '--workspace'")
+
+        if (appFile == null && appBinaryId == null) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--app-file"), "Missing required parameter for option '--app-file' or " +
+            "'--app-binary-id'")
+        if (!this::flowFile.isInitialized) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameter for option '--workspace'")
+
     }
 
 }
