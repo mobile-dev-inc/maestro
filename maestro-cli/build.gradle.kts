@@ -49,9 +49,6 @@ dependencies {
     implementation(libs.jarchivelib)
     implementation(libs.commons.codec)
 
-    // Silence logs from WireMock
-    implementation(libs.slf4j.nop)
-
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
