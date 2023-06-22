@@ -135,7 +135,7 @@ class AnsiResultView(
     private fun Ansi.printLogMessages(indent: Int, commandState: CommandState) {
         renderLineStart(indent + 1)
         render("   ")   // Space that a status symbol would normally occupy
-        render("@|yellow Log messages: |@\n")
+        render("@|yellow Log messages:|@\n")
 
         commandState.logMessages.forEach {
             renderLineStart(indent + 2)
