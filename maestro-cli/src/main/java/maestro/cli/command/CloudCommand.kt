@@ -54,8 +54,8 @@ class CloudCommand : Callable<Int> {
     @Option(names = ["--app-file"], description = ["App binary to run your Flows against"])
     private var appFile: File? = null
 
-    @Option(names = ["--workspace"], description = ["Flow file or workspace directory"])
-    private lateinit var flowFile: File
+    @Option(order = 1, names = ["--flows"], description = ["A Flow filepath or a folder filepath that contains Flows"])
+    private lateinit var flowsFile: File
 
     @Option(order = 0, names = ["--api-key", "--apiKey"], description = ["API key"])
     private var apiKey: String? = null
@@ -150,7 +150,7 @@ class CloudCommand : Callable<Int> {
             failOnTimeout = failOnCancellation,
         ).upload(
             async = async,
-            flowFile = flowFile,
+            flowFile = flowsFile,
             appFile = appFile,
             mapping = mapping,
             env = env.withInjectedShellEnvVars(),
@@ -178,7 +178,7 @@ class CloudCommand : Callable<Int> {
             PrintUtils.message("Evaluating workspace...")
             WorkspaceExecutionPlanner
                 .plan(
-                    input = flowFile.toPath().toAbsolutePath(),
+                    input = flowsFile.toPath().toAbsolutePath(),
                     includeTags = includeTags,
                     excludeTags = excludeTags,
                 )
@@ -195,27 +195,27 @@ class CloudCommand : Callable<Int> {
             when (files.size) {
                 2 -> {
                     appFile = files[0]
-                    flowFile = files[1]
+                    flowsFile = files[1]
                 }
                 1 -> {
-                    flowFile = files[0]
+                    flowsFile = files[0]
                 }
             }
         }
 
         val hasApp = appFile != null || appBinaryId != null
-        val hasWorkspace = this::flowFile.isInitialized
+        val hasWorkspace = this::flowsFile.isInitialized
 
         if (!hasApp && !hasWorkspace) {
-            throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameters: '--app-file', " +
-                "'--workspace'. " +
+            throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--flows"), "Missing required parameters: '--app-file', " +
+                "'--flows'. " +
                 "Example:" +
-                " maestro cloud --app-file <path> --workspace <path>")
+                " maestro cloud --app-file <path> --flows <path>")
         }
 
         if (!hasApp) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--app-file"), "Missing required parameter for option '--app-file' or " +
             "'--app-binary-id'")
-        if (!hasWorkspace) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--workspace"), "Missing required parameter for option '--workspace'")
+        if (!hasWorkspace) throw CommandLine.MissingParameterException(spec!!.commandLine(), spec!!.findOption("--flows"), "Missing required parameter for option '--flows'")
 
     }
 
