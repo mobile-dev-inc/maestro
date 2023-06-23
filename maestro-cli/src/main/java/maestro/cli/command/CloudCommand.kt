@@ -54,7 +54,7 @@ class CloudCommand : Callable<Int> {
     @Option(names = ["--app-file"], description = ["App binary to run your Flows against"])
     private var appFile: File? = null
 
-    @Option(order = 1, names = ["--flows"], description = ["A Flow filepath or a folder filepath that contains Flows"])
+    @Option(order = 1, names = ["--flows"], description = ["A Flow filepath or a folder path that contains Flows"])
     private lateinit var flowsFile: File
 
     @Option(order = 0, names = ["--api-key", "--apiKey"], description = ["API key"])
