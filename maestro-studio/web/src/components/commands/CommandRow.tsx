@@ -1,5 +1,5 @@
 import { ReactElement, useState } from "react";
-import { ReplCommand, ReplCommandStatus } from "../../models";
+import { ReplCommand, ReplCommandStatus } from "../../const/models";
 import { Checkbox } from "../design-system/checkbox";
 import { TextArea } from "../design-system/input";
 import { Icon } from "../design-system/icon";
@@ -40,7 +40,7 @@ export default function CommandRow({
           rows={1}
           resize="automatic"
           showResizeIcon={false}
-          className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent"
+          className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent whitespace-nowrap"
           value={value}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             setValue(e.target.value)

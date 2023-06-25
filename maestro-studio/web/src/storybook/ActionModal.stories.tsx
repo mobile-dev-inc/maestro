@@ -1,5 +1,6 @@
-import { ActionModal } from "../ActionModal";
-import { DeviceScreen, UIElement } from "../models";
+// import ActionModal from "../components/depreciated(toremove)/ActionModal";
+import ActionModal from "../components/device-and-device-elements/ActionModal";
+import { DeviceScreen, UIElement } from "../const/models";
 
 export default {
   title: "ActionModal",
@@ -33,6 +34,7 @@ export const Main = () => {
         onEdit={() => {}}
         onRun={() => {}}
         onClose={() => {}}
+        open={true}
       />
     </div>
   );

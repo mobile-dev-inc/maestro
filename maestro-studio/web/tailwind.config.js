@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -29,6 +31,9 @@ module.exports = {
       },
       boxShadow: {
         up: "0px -6px 12px -6px rgba(17, 12, 34, 0.1)",
+      },
+      minWidth: {
+        ...defaultTheme.spacing,
       },
     },
   },

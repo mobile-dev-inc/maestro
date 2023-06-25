@@ -1,7 +1,7 @@
 import React, { MouseEventHandler, useState } from "react";
-import { DeviceScreen, DivProps, UIElement } from "../../models";
+import { DeviceScreen, DivProps, UIElement } from "../../const/models";
 import { API } from "../../api/api";
-import { AnnotatedScreenshot } from "../../AnnotatedScreenshot";
+import { AnnotatedScreenshot } from "./AnnotatedScreenshot";
 import { MousePosition } from "@react-hook/mouse-position";
 import { isHotkeyPressed } from "react-hotkeys-hook";
 
@@ -90,21 +90,21 @@ const toPercent = (n: number, total: number) =>
   `${Math.round((100 * n) / total)}%`;
 
 const InteractableDevice = ({
+  hoveredElement,
+  setHoveredElement,
   deviceScreen,
   onHint,
   inspectedElement,
   onInspectElement,
 }: {
+  hoveredElement: UIElement | null;
+  setHoveredElement: (element: UIElement | null) => void;
   deviceScreen: DeviceScreen;
   onHint: (hint: string | null) => void;
   inspectedElement: UIElement | null;
   onInspectElement: (element: UIElement | null) => void;
 }) => {
-  const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
   const metaKeyDown = useMetaKeyDown();
-
-  const hoveredElement =
-    deviceScreen.elements.find((e) => e.id === hoveredElementId) || null;
 
   const onTapGesture = (x: number, y: number) => {
     API.repl.runCommand(`
@@ -165,7 +165,7 @@ const InteractableDevice = ({
     const mouseHint = mouse == null ? null : getMouseHint(mouse);
     const elementHint = element == null ? null : getElementHint(element);
     onHint(elementHint || mouseHint);
-    setHoveredElementId(element?.id || null);
+    setHoveredElement(element?.id ? element : null);
   };
 
   return (

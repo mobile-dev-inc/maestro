@@ -1,8 +1,8 @@
-import { FormattedFlow } from "./models";
+import { FormattedFlow } from "../../const/models";
 import React, { useState } from "react";
-import AutosizingTextArea from "./components/commands/CommandInput";
+import AutosizingTextArea from "./CommandInput";
 import { saveAs } from "file-saver";
-import { Modal } from "./Modal";
+import { Modal } from "../common/Modal";
 
 export const SaveFlowModal = ({
   formattedFlow,

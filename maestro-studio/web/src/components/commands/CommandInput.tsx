@@ -1,5 +1,5 @@
 import { InputHint, InputWrapper, TextArea } from "../design-system/input";
-import { TextAreaProps } from "../../models";
+import { TextAreaProps } from "../../const/models";
 
 const CommandInput = ({
   value,

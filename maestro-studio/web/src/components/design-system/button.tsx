@@ -11,45 +11,45 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-purple-500 text-white border-transparent shadow-e1 hover:bg-purple-400 focus-visible:bg-purple-400 focus-visible:ring-purple-100",
+          "bg-purple-500 text-white border-transparent shadow-sm hover:bg-purple-400 focus-visible:bg-purple-400 focus-visible:ring-purple-100",
         "primary-blue":
-          "bg-blue-500 text-white border-transparent shadow-e1 hover:bg-blue-400 focus-visible:bg-blue-400 focus-visible:ring-blue-100",
+          "bg-blue-500 text-white border-transparent shadow-sm hover:bg-blue-400 focus-visible:bg-blue-400 focus-visible:ring-blue-100",
         "primary-red":
-          "bg-red-500 text-white border-transparent shadow-e1 hover:bg-red-400 focus-visible:bg-red-400 focus-visible:ring-red-100",
+          "bg-red-500 text-white border-transparent shadow-sm hover:bg-red-400 focus-visible:bg-red-400 focus-visible:ring-red-100",
         "primary-green":
-          "bg-green-500 text-white border-transparent shadow-e1 hover:bg-green-400 focus-visible:bg-green-400 focus-visible:ring-green-100",
+          "bg-green-500 dark:bg-green-500/40 text-white border-transparent shadow-sm hover:bg-green-400 focus-visible:bg-green-400 focus-visible:ring-green-100",
         "primary-yellow":
-          "bg-yellow-500 text-gray-400 border-transparent shadow-e1 hover:bg-yellow-400 focus-visible:bg-yellow-400 focus-visible:ring-yellow-100",
+          "bg-yellow-500 text-gray-400 border-transparent shadow-sm hover:bg-yellow-400 focus-visible:bg-yellow-400 focus-visible:ring-yellow-100",
         secondary:
-          "bg-purple-25 text-purple-500 border-purple-low-em shadow-e1 hover:bg-purple-50 hover:text-purple-on-accentLight focus-visible:bg-purple-50 focus-visible:ring-purple-100",
+          "bg-purple-25 dark:bg-purple-500/10 text-purple-500 border-purple-75 dark:border-purple-500/20 shadow-sm hover:bg-purple-50 hover:text-purple-500 focus-visible:bg-purple-50 focus-visible:ring-purple-100",
         "secondary-blue":
-          "bg-blue-25 text-blue-500 border-blue-low-em shadow-e1 hover:bg-blue-50 hover:text-blue-on-accentLight focus-visible:bg-blue-50 focus-visible:ring-blue-100",
+          "bg-blue-50 dark:bg-blue-50/10 text-blue-500 border-blue-200 dark:border-blue-200/20 shadow-sm hover:bg-blue-50 hover:text-blue-500 focus-visible:bg-blue-50 focus-visible:ring-blue-100",
         "secondary-green":
-          "bg-green-25 text-green-500 border-green-low-em shadow-e1 hover:bg-green-50 hover:text-green-on-accentLight focus-visible:bg-green-50 focus-visible:ring-green-100",
+          "bg-green-50 dark:bg-green-50/10 text-green-500 border-green-200 dark:border-green-200/20 shadow-sm hover:bg-green-50 hover:text-green-500 focus-visible:bg-green-50 focus-visible:ring-green-100",
         "secondary-red":
-          "bg-red-25 text-red-500 border-red-low-em shadow-e1 hover:bg-red-50 hover:text-red-on-accentLight focus-visible:bg-red-50 focus-visible:ring-red-100",
+          "bg-red-50 dark:bg-red-50/10 text-red-500 border-red-200 dark:border-red-200/20 shadow-sm hover:bg-red-50 hover:text-red-500 focus-visible:bg-red-50 focus-visible:ring-red-100",
         "secondary-yellow":
-          "bg-yellow-25 text-yellow-500 border-yellow-low-em shadow-e1 hover:bg-yellow-50 hover:text-yellow-on-accentLight focus-visible:bg-yellow-50 focus-visible:ring-yellow-100",
+          "bg-yellow-50 dark:bg-yellow-50/10 text-yellow-500 border-yellow-200 dark:border-yellow-200/20 shadow-sm hover:bg-yellow-50 hover:text-yellow-500 focus-visible:bg-yellow-50 focus-visible:ring-yellow-100",
         tertiary:
-          "bg-white text-med-em border-low-em shadow-e1 hover:bg-gray-25 focus-visible:bg-gray-25 focus-visible:ring-gray-100",
+          "bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-slate-200 dark:border-slate-200/20 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-50/10 focus-visible:bg-slate-50 dark:focus-visible:bg-slate-50/10 focus-visible:ring-slate-100 dark:focus-visible:ring-slate-100/20",
         "tertiary-blue":
-          "bg-white text-blue-500 border-blue-med-em shadow-e1 hover:bg-blue-50 focus-visible:bg-blue-25 focus-visible:ring-blue-100",
+          "bg-white dark:bg-slate-800 text-blue-500 dark:text-blue-200 border-blue-200 dark:border-blue-200/20 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-50/10 focus-visible:bg-blue-50 dark:focus-visible:bg-blue-50/10 focus-visible:ring-blue-100 dark:focus-visible:ring-blue-100/20",
         "tertiary-green":
-          "bg-white text-green-500 border-green-med-em shadow-e1 hover:bg-green-50 focus-visible:bg-green-25 focus-visible:ring-green-100",
+          "bg-white dark:bg-slate-800 text-green-500 dark:text-green-200 border-green-200 dark:border-green-200/20 shadow-sm hover:bg-green-50 dark:hover:bg-green-50/10 focus-visible:bg-green-50 dark:focus-visible:bg-green-50/10 focus-visible:ring-green-100 dark:focus-visible:ring-green-100/20",
         "tertiary-red":
-          "bg-white text-red-500 border-red-med-em shadow-e1 hover:bg-red-50 focus-visible:bg-red-25 focus-visible:ring-red-100",
+          "bg-white dark:bg-slate-800 text-red-500 dark:text-red-200 border-red-200 dark:border-red-200/20 shadow-sm hover:bg-red-50 dark:hover:bg-red-50/10 focus-visible:bg-red-50 dark:focus-visible:bg-red-50/10 focus-visible:ring-red-100 dark:focus-visible:ring-red-100/20",
         "tertiary-yellow":
-          "bg-white text-yellow-500 border-yellow-med-em shadow-e1 hover:bg-yellow-50 focus-visible:bg-yellow-25 focus-visible:ring-yellow-100",
+          "bg-white dark:bg-slate-800 text-yellow-500 dark:text-yellow-200 border-yellow-200 dark:border-yellow-200/20 shadow-sm hover:bg-yellow-50 focus-visible:bg-yellow-50 dark:focus-visible:bg-yellow-50/10 focus-visible:ring-yellow-100 dark:focus-visible:ring-yellow-100/20",
         quaternary:
-          "bg-transparent text-med-em border-transparent hover:border-low-em hover:bg-gray-50 dark:hover:bg-gray-50/10 focus-visible:border-low-em focus-visible:bg-gray-25 focus-visible:ring-gray-100",
+          "bg-transparent text-gray-700 dark:text-white border-transparent hover:border-low-em hover:bg-slate-50 dark:hover:bg-slate-50/10 focus-visible:border-low-em focus-visible:bg-slate-50 focus-visible:ring-slate-100",
         "quaternary-blue":
-          "bg-transparent text-blue-500 border-transparent hover:border-blue-low-em hover:bg-blue-50 dark:hover:bg-blue-50/10 focus-visible:border-blue-low-em focus-visible:bg-blue-25 focus-visible:ring-blue-100",
+          "bg-transparent text-blue-500 border-transparent hover:border-blue-low-em hover:bg-blue-50 dark:hover:bg-blue-50/10 focus-visible:border-blue-low-em focus-visible:bg-blue-50 focus-visible:ring-blue-100",
         "quaternary-green":
-          "bg-transparent text-green-500 border-transparent hover:border-green-low-em hover:bg-green-50 dark:hover:bg-green-50/10 focus-visible:border-green-low-em focus-visible:bg-green-25 focus-visible:ring-green-100",
+          "bg-transparent text-green-500 border-transparent hover:border-green-low-em hover:bg-green-50 dark:hover:bg-green-50/10 focus-visible:border-green-low-em focus-visible:bg-green-50 focus-visible:ring-green-100",
         "quaternary-red":
-          "bg-transparent text-red-500 border-transparent hover:border-red-low-em hover:bg-red-50 dark:hover:bg-red-50/10 focus-visible:border-red-low-em focus-visible:bg-red-25 focus-visible:ring-red-100",
+          "bg-transparent text-red-500 border-transparent hover:border-red-low-em hover:bg-red-50 dark:hover:bg-red-50/10 focus-visible:border-red-low-em focus-visible:bg-red-50 focus-visible:ring-red-100",
         "quaternary-yellow":
-          "bg-transparent text-yellow-500 border-transparent hover:border-yellow-low-em hover:bg-yellow-50 dark:hover:bg-yellow-50/10 focus-visible:border-yellow-low-em focus-visible:bg-yellow-25 focus-visible:ring-yellow-100",
+          "bg-transparent text-yellow-500 border-transparent hover:border-yellow-low-em hover:bg-yellow-50 dark:hover:bg-yellow-50/10 focus-visible:border-yellow-low-em focus-visible:bg-yellow-50 focus-visible:ring-yellow-100",
       },
       size: {
         xs: "rounded-sm gap-px text-[10px] px-2 h-6",

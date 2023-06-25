@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DeviceScreen, UIElement } from "../../models";
+import { DeviceScreen, UIElement } from "../../const/models";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const isBoundsEmpty = (element: UIElement): boolean => {

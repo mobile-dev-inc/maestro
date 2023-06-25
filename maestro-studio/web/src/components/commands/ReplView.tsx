@@ -1,9 +1,10 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { API } from "../../api/api";
-import { FormattedFlow, ReplCommand } from "../../models";
+import { Icon } from "../design-system/icon";
+import { FormattedFlow, ReplCommand } from "../../const/models";
 import { Reorder } from "framer-motion";
-import { SaveFlowModal } from "../../SaveFlowModal";
-import { useConfirmationDialog } from "../../ConfirmationDialog";
+import { SaveFlowModal } from "./SaveFlowModal";
+import { useConfirmationDialog } from "../common/ConfirmationDialog";
 import { Button } from "../design-system/button";
 import ReplHeader from "./ReplHeader";
 import CommandRow from "./CommandRow";
@@ -81,7 +82,6 @@ const ReplView = ({
     if (selectedIds.length === 0) return;
     API.repl.formatFlow(selectedIds).then(setFormattedFlow);
   };
-  const onCopy = () => {};
   const onDelete = () => {
     showConfirmationDialog();
   };
@@ -90,72 +90,72 @@ const ReplView = ({
 
   return (
     <>
-      {repl.commands.length > 0 ? (
-        <div className="flex flex-col">
-          <ReplHeader
-            onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
-            onDeselectAll={() => setSelected([])}
-            selected={selectedIds.length}
-            copyText={flowText}
-            onPlay={onPlay}
-            onExport={onExport}
-            onCopy={onCopy}
-            onDelete={onDelete}
-          />
-          <Reorder.Group
-            ref={listRef}
-            className="overflow-y-scroll overflow-hidden"
-            onReorder={onReorder}
-            values={repl.commands}
-          >
-            {repl.commands.map((command) => (
-              <Reorder.Item
-                value={command}
-                key={command.id}
-                transition={{ duration: 0.1 }}
-                dragTransition={{ bounceStiffness: 2000, bounceDamping: 100 }}
-                onDragStart={() => {
-                  setDragging(true);
-                }}
-                onDragEnd={() => {
-                  setTimeout(() => setDragging(false));
-                }}
-              >
-                <CommandRow
-                  command={command}
-                  selected={selectedIds.includes(command.id)}
-                  onClick={() => {
-                    if (dragging) return;
-                    if (selectedIds.includes(command.id)) {
-                      setSelected((prevState) =>
-                        prevState.filter((id) => id !== command.id)
-                      );
-                    } else {
-                      setSelected((prevState) => [...prevState, command.id]);
-                    }
+      <div className="px-12 pt-6 pb-8 flex-grow overflow-scroll">
+        {repl.commands.length > 0 ? (
+          <div className="flex flex-col">
+            <ReplHeader
+              onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
+              onDeselectAll={() => setSelected([])}
+              selected={selectedIds.length}
+              allSelected={selectedIds.length === repl.commands.length}
+              copyText={flowText}
+              onPlay={onPlay}
+              onExport={onExport}
+              onDelete={onDelete}
+            />
+            <Reorder.Group
+              ref={listRef}
+              className="overflow-y-scroll overflow-hidden"
+              onReorder={onReorder}
+              values={repl.commands}
+            >
+              {repl.commands.map((command) => (
+                <Reorder.Item
+                  value={command}
+                  key={command.id}
+                  transition={{ duration: 0.1 }}
+                  dragTransition={{ bounceStiffness: 2000, bounceDamping: 100 }}
+                  onDragStart={() => {
+                    setDragging(true);
                   }}
-                />
-              </Reorder.Item>
-            ))}
-          </Reorder.Group>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center">
-          <img
-            src="https://i.giphy.com/media/eJ3sBGzMKRRJKnEPxz/giphy.webp"
-            alt="empty"
-            className="w-[188px] h-[104px] object-cover rounded-lg mb-4"
-          />
-          <p className="text-center text-base font-semibold mb-1">
-            No commands added yet.
-          </p>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-300">
-            Write command below OR select an element, then a command to add it
-          </p>
-        </div>
-      )}
+                  onDragEnd={() => {
+                    setTimeout(() => setDragging(false));
+                  }}
+                >
+                  <CommandRow
+                    command={command}
+                    selected={selectedIds.includes(command.id)}
+                    onClick={() => {
+                      if (dragging) return;
+                      if (selectedIds.includes(command.id)) {
+                        setSelected((prevState) =>
+                          prevState.filter((id) => id !== command.id)
+                        );
+                      } else {
+                        setSelected((prevState) => [...prevState, command.id]);
+                      }
+                    }}
+                  />
+                </Reorder.Item>
+              ))}
+            </Reorder.Group>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center pt-4">
+            <div className="p-4 bg-slate-200 dark:bg-slate-800 rounded-lg mb-4">
+              <Icon iconName="RiCodeLine" size="20" />
+            </div>
+            <p className="text-center text-base font-semibold mb-1">
+              No commands added yet.
+            </p>
+            <p className="text-center text-sm text-gray-600 dark:text-gray-300">
+              Write command below OR select an element, then a command to add it
+            </p>
+          </div>
+        )}
+      </div>
       <form
-        className="absolute bottom-0 left-0 right-0 border-t border-slate-100 shadow-up dark:border-slate-800 px-12 pt-6 pb-8 gap-2 flex flex-col"
+        className="border-t border-slate-100 shadow-up dark:border-slate-800 px-12 pt-6 pb-8 gap-2 flex flex-col"
         onSubmit={(e: React.FormEvent) => {
           e.preventDefault();
           runCommand();

@@ -1,6 +1,6 @@
 import Inspect from "../components/depreciated(toremove)/Inspect";
 import React, { useCallback, useEffect, useState } from "react";
-import { DeviceScreen } from "../models";
+import { DeviceScreen } from "../const/models";
 import { motion } from "framer-motion";
 import { API } from "../api/api";
 

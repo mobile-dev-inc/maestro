@@ -1,6 +1,6 @@
 import { ResponseComposition, rest, RestContext, setupWorker } from "msw";
-import { DeviceScreen, MockEvent, ReplCommand } from "../models";
-import { sampleElements } from "../sampleElements";
+import { DeviceScreen, MockEvent, ReplCommand } from "../const/models";
+import { sampleElements } from "../const/sampleElements";
 import { wait } from "./api";
 
 export const mockDeviceScreen: DeviceScreen = {

@@ -3,6 +3,7 @@ import React, {
   InputHTMLAttributes,
   LabelHTMLAttributes,
   TextareaHTMLAttributes,
+  forwardRef,
 } from "react";
 import clsx from "clsx";
 import { cva } from "class-variance-authority";
@@ -31,7 +32,7 @@ const inputVariants = cva(
     variants: {
       size: {
         sm: "rounded-md gap-1.5 text-xs px-2 h-8",
-        md: "rounded-md gap-2 text-sm px-12 h-10",
+        md: "rounded-md gap-2 text-sm px-3 h-10",
         lg: "rounded-lg gap-2.5 text-base px-4 h-12",
         xl: "rounded-lg gap-3 text-lg px-4 h-14",
       },
@@ -256,70 +257,80 @@ function InputLabel({
   );
 }
 
-function Input({
-  size = "md",
-  leftElement,
-  leftIcon,
-  leftIconClassName,
-  rightElement,
-  rightIcon,
-  rightIconClassName,
-  success,
-  error,
-  className,
-  disabled,
-  ...rest
-}: InputProps) {
-  return (
-    <>
-      <div
-        className={twMerge(
-          clsx(
-            inputVariants({
-              size,
-              success: !!success,
-              error: !!error,
-              disabled,
-              className,
-            })
-          )
-        )}
-      >
-        {leftElement}
-        {leftIcon && (
-          <Icon
-            iconName={leftIcon as keyof typeof IconList}
-            size={size && getIconSize(size)}
-            className={twMerge(
-              clsx(
-                disabled ? "text-gray-400" : "text-gray-800 dark:text-white/80",
-                leftIconClassName
-              )
-            )}
+const Input = forwardRef(
+  (
+    {
+      size = "md",
+      leftElement,
+      leftIcon,
+      leftIconClassName,
+      rightElement,
+      rightIcon,
+      rightIconClassName,
+      success,
+      error,
+      className,
+      disabled,
+      ...rest
+    }: InputProps,
+    ref: React.ForwardedRef<HTMLInputElement>
+  ) => {
+    return (
+      <>
+        <div
+          className={twMerge(
+            clsx(
+              inputVariants({
+                size,
+                success: !!success,
+                error: !!error,
+                disabled,
+                className,
+              })
+            )
+          )}
+        >
+          {leftElement}
+          {leftIcon && (
+            <Icon
+              iconName={leftIcon as keyof typeof IconList}
+              size={size && getIconSize(size)}
+              className={twMerge(
+                clsx(
+                  disabled
+                    ? "text-gray-400"
+                    : "text-gray-800 dark:text-white/80",
+                  leftIconClassName
+                )
+              )}
+            />
+          )}
+          <input
+            ref={ref}
+            className="flex-grow border-none bg-transparent placeholder:text-gray-400 autofill:shadow-[0_0_0_30px_white_inset_!important] focus:outline-none disabled:cursor-not-allowed"
+            disabled={disabled}
+            {...rest}
           />
-        )}
-        <input
-          className="flex-grow border-none bg-transparent placeholder:text-gray-400 autofill:shadow-[0_0_0_30px_white_inset_!important] focus:outline-none disabled:cursor-not-allowed"
-          disabled={disabled}
-          {...rest}
-        />
-        {rightIcon && (
-          <Icon
-            iconName={rightIcon as keyof typeof IconList}
-            size={size && getIconSize(size)}
-            className={twMerge(
-              clsx(
-                disabled ? "text-gray-400" : "text-gray-800 dark:text-white/80",
-                rightIconClassName
-              )
-            )}
-          />
-        )}
-        {rightElement}
-      </div>
-    </>
-  );
-}
+          {rightIcon && (
+            <Icon
+              iconName={rightIcon as keyof typeof IconList}
+              size={size && getIconSize(size)}
+              className={twMerge(
+                clsx(
+                  disabled
+                    ? "text-gray-400"
+                    : "text-gray-800 dark:text-white/80",
+                  rightIconClassName
+                )
+              )}
+            />
+          )}
+          {rightElement}
+        </div>
+      </>
+    );
+  }
+);
 
 function TextArea({
   size = "md",

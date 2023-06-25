@@ -1,4 +1,4 @@
-import { useConfirmationDialog } from "../ConfirmationDialog";
+import { useConfirmationDialog } from "../components/common/ConfirmationDialog";
 
 export default {
   title: "ConfirmationDialog",

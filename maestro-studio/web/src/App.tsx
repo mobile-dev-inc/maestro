@@ -5,7 +5,7 @@ import Header from "./components/common/Header";
 import InteractPage from "./pages/InteractPage";
 
 const App = () => (
-  <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-800">
+  <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-900">
     <Header />
     <div className="overflow-hidden h-full">
       <Routes>

@@ -1,29 +1,44 @@
+import { useState } from "react";
 import clsx from "clsx";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Checkbox } from "../design-system/checkbox";
 import { Button } from "../design-system/button";
+
+interface ReplHeaderProps {
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  selected: number;
+  copyText: string;
+  allSelected: boolean;
+  onPlay: () => void;
+  onExport: () => void;
+  onDelete: () => void;
+}
 
 export default function ReplHeader({
   onSelectAll,
   onDeselectAll,
   selected,
   copyText,
+  allSelected,
   onPlay,
   onExport,
-  onCopy,
   onDelete,
-}: {
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  selected: number;
-  copyText: string;
-  onPlay: () => void;
-  onExport: () => void;
-  onCopy: () => void;
-  onDelete: () => void;
-}) {
+}: ReplHeaderProps) {
+  const [commandCopied, setCommandCopied] = useState<boolean>(false);
+
+  /**
+   * Show success state for copy
+   */
+  const onCommandCopy = () => {
+    setCommandCopied(true);
+    setTimeout(() => {
+      setCommandCopied(false);
+    }, 1000);
+  };
+
   return (
-    <div className="flex justify-between w-full border-b border-slate-100 dark:border-slate-800">
+    <div className="flex justify-between w-full border-b border-slate-100 dark:border-slate-800 flex-wrap">
       <div
         className={clsx(
           "py-2",
@@ -34,7 +49,7 @@ export default function ReplHeader({
       >
         <Checkbox
           size="sm"
-          checked={selected > 0}
+          checked={allSelected}
           onChange={(value: boolean) => {
             if (value) {
               onSelectAll();
@@ -42,11 +57,12 @@ export default function ReplHeader({
               onDeselectAll();
             }
           }}
+          indeterminate={selected > 0 && !allSelected}
           label={selected > 0 ? `${selected} Selected` : "Select All"}
         />
       </div>
       {selected > 0 && (
-        <div className="flex gap-0">
+        <div className="flex gap-0 flex-wrap justify-end">
           <Button
             variant="quaternary"
             size="sm"
@@ -63,16 +79,17 @@ export default function ReplHeader({
           >
             Export
           </Button>
-          <CopyToClipboard text={copyText}>
-            <Button
-              variant="quaternary"
-              size="sm"
-              leftIcon="RiFileCopyLine"
-              onClick={onCopy}
-            >
+          {commandCopied ? (
+            <Button variant="primary-green" size="sm" leftIcon="RiCheckLine">
               Copy
             </Button>
-          </CopyToClipboard>
+          ) : (
+            <CopyToClipboard text={copyText} onCopy={onCommandCopy}>
+              <Button variant="quaternary" size="sm" leftIcon="RiFileCopyLine">
+                Copy
+              </Button>
+            </CopyToClipboard>
+          )}
           <Button
             variant="quaternary-red"
             size="sm"

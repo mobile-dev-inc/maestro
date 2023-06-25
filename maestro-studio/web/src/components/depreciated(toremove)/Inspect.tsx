@@ -1,8 +1,8 @@
-import { AnnotatedScreenshot } from "../../AnnotatedScreenshot";
+import { AnnotatedScreenshot } from "../device-and-device-elements/AnnotatedScreenshot";
 import React, { useState } from "react";
-import { DeviceScreen, UIElement } from "../../models";
+import { DeviceScreen, UIElement } from "../../const/models";
 import PageSwitcher from "../common/PageSwitcher";
-import Banner, { ElementLabel } from "../../Banner";
+import Banner, { ElementLabel } from "../common/Banner";
 import ElementSearch from "./ElementSearch";
 import { motion } from "framer-motion";
 import Examples from "./Examples";
@@ -78,13 +78,13 @@ const Inspect = ({
         transition={{ ease: "easeOut", duration: 0.1 }}
         className="flex gap-10 p-10 overflow-hidden h-full"
       >
-        <AnnotatedScreenshot
+        {/* <AnnotatedScreenshot
           deviceScreen={deviceScreen}
           onHover={(e) => setHoveredElementId(e?.id || null)}
           hoveredElement={hoveredElement}
           onElementSelected={(e) => setSelectedElementId(e?.id || null)}
           selectedElement={selectedElement}
-        />
+        /> */}
         <PageSwitcher banner={banner}>
           <ElementSearch
             deviceScreen={deviceScreen}

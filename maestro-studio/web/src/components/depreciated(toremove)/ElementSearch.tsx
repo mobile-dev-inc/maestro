@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { DeviceScreen, UIElement } from "../../models";
-import { ElementLabel } from "../../Banner";
+import { DeviceScreen, UIElement } from "../../const/models";
+import { ElementLabel } from "../common/Banner";
 
 const RefreshIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg

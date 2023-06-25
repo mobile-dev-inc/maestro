@@ -4,7 +4,7 @@ import {
   MockEvent,
   Repl,
   ReplCommand,
-} from "../models";
+} from "../const/models";
 import useSWR, { mutate, SWRConfiguration, SWRResponse } from "swr";
 
 export type ReplResponse = {

@@ -1,5 +1,5 @@
-import { SaveFlowModal } from "../SaveFlowModal";
-import { FormattedFlow } from "../models";
+import { SaveFlowModal } from "../components/commands/SaveFlowModal";
+import { FormattedFlow } from "../const/models";
 
 export default {
   title: "SaveFlowModal",

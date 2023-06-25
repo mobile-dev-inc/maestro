@@ -1,6 +1,6 @@
 import PageSwitcher from "../components/common/PageSwitcher";
 import { useState } from "react";
-import Banner from "../Banner";
+import Banner from "../components/common/Banner";
 
 export default {
   title: "PageSwitcher",

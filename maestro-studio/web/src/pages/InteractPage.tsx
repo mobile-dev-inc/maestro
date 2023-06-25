@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 import InteractableDevice from "../components/device-and-device-elements/InteractableDevice";
 import ReplView from "../components/commands/ReplView";
-import { DeviceScreen } from "../models";
+import { DeviceScreen, UIElement } from "../const/models";
 import { API, wait } from "../api/api";
-import { ActionModal } from "../ActionModal";
-import { Input } from "../components/design-system/input";
+// import { ActionModal } from "../components/depreciated(toremove)/ActionModal";
+import ActionModal from "../components/device-and-device-elements/ActionModal";
+import { CommandExample } from "../const/commandExample";
+import ElementsPanel from "../components/device-and-device-elements/ElementsPanel";
+import { Button } from "../components/design-system/button";
 
 const InteractPage = () => {
+  const [showElementsPanel, setShowElementsPanel] = useState<boolean>(false);
   const [deviceScreen, setDeviceScreen] = useState<DeviceScreen>();
   const [input, setInput] = useState("");
   const [footerHint, setFooterHint] = useState<string | null>();
+  const [hoveredElement, setHoveredElement] = useState<UIElement | null>(null);
   const [inspectedElementId, setInspectedElementId] =
     useState<string | null>(null);
   const inspectedElement =
@@ -38,8 +44,38 @@ const InteractPage = () => {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="px-8 py-6 bg-white dark:bg-slate-900 basis-1/2 lg:basis-5/12 relative gap-4 flex flex-col">
+      {showElementsPanel && (
+        <ElementsPanel
+          hoveredElement={hoveredElement}
+          setHoveredElement={setHoveredElement}
+          deviceScreen={deviceScreen}
+          onElementSelected={(element: UIElement | null) => {
+            console.log(element);
+            if (!element) return;
+            setInspectedElementId(element?.id);
+          }}
+          closePanel={() => setShowElementsPanel(false)}
+        />
+      )}
+      <div
+        className={clsx(
+          "px-8 py-6 bg-white dark:bg-slate-900 basis-1/2  relative gap-4 flex flex-col",
+          showElementsPanel ? "lg:basis-4/12" : "lg:basis-5/12"
+        )}
+      >
+        {!showElementsPanel && (
+          <Button
+            variant="secondary"
+            leftIcon="RiSearchLine"
+            className="w-full"
+            onClick={() => setShowElementsPanel(true)}
+          >
+            Search Elements with Text or Id
+          </Button>
+        )}
         <InteractableDevice
+          hoveredElement={hoveredElement}
+          setHoveredElement={setHoveredElement}
           deviceScreen={deviceScreen}
           onHint={setFooterHint}
           inspectedElement={inspectedElement}
@@ -55,28 +91,26 @@ const InteractPage = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <div className="px-12 pt-6 pb-40 h-full overflow-hidden">
-          <ReplView input={input} onInput={setInput} />
-        </div>
-
-        {inspectedElement && (
-          <ActionModal
-            deviceScreen={deviceScreen}
-            uiElement={inspectedElement}
-            onEdit={(example) => {
-              if (example.status === "unavailable") return;
-              setInput(example.content.trim());
-              setInspectedElementId(null);
-            }}
-            onRun={(example) => {
-              if (example.status === "unavailable") return;
-              API.repl.runCommand(example.content);
-              setInspectedElementId(null);
-            }}
-            onClose={() => setInspectedElementId(null)}
-          />
-        )}
+        <ReplView input={input} onInput={setInput} />
       </div>
+      {inspectedElement && (
+        <ActionModal
+          deviceScreen={deviceScreen}
+          uiElement={inspectedElement}
+          onEdit={(example: CommandExample) => {
+            if (example.status === "unavailable") return;
+            setInput(example.content.trim());
+            setInspectedElementId(null);
+          }}
+          onRun={(example: CommandExample) => {
+            if (example.status === "unavailable") return;
+            API.repl.runCommand(example.content);
+            setInspectedElementId(null);
+          }}
+          open={!!inspectedElement}
+          onClose={() => setInspectedElementId(null)}
+        />
+      )}
     </div>
   );
 };
