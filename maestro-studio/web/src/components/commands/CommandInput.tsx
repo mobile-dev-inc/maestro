@@ -39,6 +39,7 @@ const CommandInput = ({
           setValue(e.target.value);
         }}
         onKeyDown={handleKeyDown}
+        className="font-mono font-normal"
         {...rest}
       />
       <InputHint />

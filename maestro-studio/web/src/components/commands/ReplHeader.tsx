@@ -50,8 +50,8 @@ export default function ReplHeader({
         <Checkbox
           size="sm"
           checked={allSelected}
-          onChange={(value: boolean) => {
-            if (value) {
+          onChange={() => {
+            if (selected === 0) {
               onSelectAll();
             } else {
               onDeselectAll();

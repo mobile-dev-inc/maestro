@@ -187,7 +187,7 @@ const ActionCommandListItem = ({
 
   return (
     <div className="py-2 px-3 border border-slate-200 dark:border-slate-800 rounded-md flex gap-2">
-      <pre className="overflow-x-scroll font-sans font-medium text-gray-700 dark:text-white flex-grow">
+      <pre className="overflow-x-scroll font-mono text-gray-700 dark:text-white flex-grow">
         {command.content}
       </pre>
       <Button

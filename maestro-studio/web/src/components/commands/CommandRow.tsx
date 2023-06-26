@@ -40,8 +40,8 @@ export default function CommandRow({
           className="pointer-events-none"
         />
       </div>
-      <div className="flex-grow ">
-        <pre className="font-sans cursor-default overflow-x-scroll text-sm font-semibold py-0.5 w-full">
+      <div className="flex-grow">
+        <pre className="font-mono cursor-default overflow-x-scroll text-sm text-gray-900 dark:text-white py-0.5 w-full">
           {command.yaml}
         </pre>
         {/* <CommandInput

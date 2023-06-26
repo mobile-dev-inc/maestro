@@ -6,6 +6,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ["'Space Grotesk'", "sans-serif"],
+      mono: ["'Space Mono'", "monospace"],
     },
     extend: {
       colors: {
