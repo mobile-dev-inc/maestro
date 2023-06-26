@@ -60,7 +60,7 @@ class Orchestra(
     private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
 ) {
 
-    private lateinit var jsEngine: JsEngine
+    lateinit var jsEngine: JsEngine
 
     private var copiedText: String? = null
 
