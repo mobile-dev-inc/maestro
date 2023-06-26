@@ -39,7 +39,7 @@ export const useConfirmationDialog = (
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="px-4 cursor-pointer py-1 mr-2 border text-black bg-gray-100 text-white rounded cursor-default hover:bg-gray-200 active:bg-gray-300 dark:text-white dark:bg-transparent dark:hover:bg-slate-850 dark:active:bg-slate-900"
+                className="px-4 cursor-pointer py-1 mr-2 border bg-gray-100 text-white rounded hover:bg-gray-200 active:bg-gray-300 dark:text-white dark:bg-transparent dark:hover:bg-slate-850 dark:active:bg-slate-900"
               >
                 Cancel
               </button>
@@ -49,7 +49,7 @@ export const useConfirmationDialog = (
                   setIsOpen(false);
                   onConfirm();
                 }}
-                className="px-4 py-1 cursor-pointer border bg-red-700 text-white rounded cursor-default hover:bg-red-800 active:bg-red-900 dark:border-none"
+                className="px-4 py-1 cursor-pointer border bg-red-700 text-white rounded hover:bg-red-800 active:bg-red-900 dark:border-none"
               >
                 Confirm
               </button>

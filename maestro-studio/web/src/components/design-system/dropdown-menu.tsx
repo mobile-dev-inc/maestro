@@ -1,8 +1,7 @@
-"use client";
-
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { twMerge } from "tailwind-merge";
+import { Icon } from "./icon";
 import clsx from "clsx";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
@@ -35,7 +34,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    {/* <ChevronRight className="ml-auto h-4 w-4" /> */}
+    <Icon iconName="RiArrowDownSLine" className="ml-auto h-4 w-4" />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName =
@@ -72,7 +71,7 @@ interface DropdownCombinedProps
     DropdownMenuPortalType {
   className?: string;
   sideOffset?: number;
-  container?: any; // replace with actual type
+  container?: any;
 }
 const DropdownMenuContent: React.FC<DropdownCombinedProps> = ({
   className,
@@ -132,7 +131,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        {/* <Check className="h-4 w-4" /> */}
+        <div className="h-4 w-4 rounded-full bg-slate-600" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -157,7 +156,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        {/* <Circle className="h-2 w-2 fill-current" /> */}
+        <div className="h-4 w-4 rounded-full bg-slate-600" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}

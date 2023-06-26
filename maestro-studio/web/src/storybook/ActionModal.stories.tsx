@@ -1,6 +1,5 @@
-// import ActionModal from "../components/depreciated(toremove)/ActionModal";
 import ActionModal from "../components/device-and-device-elements/ActionModal";
-import { DeviceScreen, UIElement } from "../const/models";
+import { DeviceScreen, UIElement } from "../helpers/models";
 
 export default {
   title: "ActionModal",

@@ -7,7 +7,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../design-system/dialog";
-import { DeviceScreen, UIElement } from "../../const/models";
+import { DeviceScreen, UIElement } from "../../helpers/models";
 import {
   Tabs,
   TabsList,
@@ -19,7 +19,10 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { Link } from "../design-system/link";
 import Fuse from "fuse.js";
 
-import { CommandExample, getCommandExamples } from "../../const/commandExample";
+import {
+  CommandExample,
+  getCommandExamples,
+} from "../../helpers/commandExample";
 import { Input } from "../design-system/input";
 
 interface ActionModalProps {
@@ -53,8 +56,6 @@ export default function ActionModal({
       deviceScreen,
       uiElement
     ).filter((item: CommandExample) => item.status === "available");
-
-    console.log(unfilteredExamples);
     const fuse = new Fuse(unfilteredExamples, { keys: ["title", "content"] });
     const examples = query
       ? fuse.search(query).map((r) => r.item)

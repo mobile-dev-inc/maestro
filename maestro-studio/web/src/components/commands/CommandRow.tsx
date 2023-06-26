@@ -1,12 +1,10 @@
-import { ReactElement, useState } from "react";
-import { ReplCommand, ReplCommandStatus } from "../../const/models";
+import { ReactElement } from "react";
+import { ReplCommand, ReplCommandStatus } from "../../helpers/models";
 import { Checkbox } from "../design-system/checkbox";
-import { TextArea } from "../design-system/input";
 import { Icon } from "../design-system/icon";
 import { Spinner } from "../design-system/spinner";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import CommandInput from "./CommandInput";
 
 interface CommandRowProps {
   command: ReplCommand;
@@ -21,9 +19,6 @@ export default function CommandRow({
   onClick,
   isDragging,
 }: CommandRowProps) {
-  // const [value, setValue] = useState(command.yaml);
-
-  console.log(command.yaml);
   return (
     <div
       className={twMerge(
@@ -44,15 +39,6 @@ export default function CommandRow({
         <pre className="font-mono cursor-default overflow-x-scroll text-sm text-gray-900 dark:text-white py-0.5 w-full">
           {command.yaml}
         </pre>
-        {/* <CommandInput
-          onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
-            e.stopPropagation();
-          }}
-          rows={1}
-          className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent whitespace-nowrap"
-          value={value}
-          setValue={(val: string) => setValue(val)}
-        /> */}
       </div>
       <div className="p-1">
         <StatusIcon status={command.status} />

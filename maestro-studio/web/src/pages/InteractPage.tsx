@@ -3,11 +3,10 @@ import clsx from "clsx";
 
 import InteractableDevice from "../components/device-and-device-elements/InteractableDevice";
 import ReplView from "../components/commands/ReplView";
-import { DeviceScreen, UIElement } from "../const/models";
+import { DeviceScreen, UIElement } from "../helpers/models";
 import { API, wait } from "../api/api";
-// import { ActionModal } from "../components/depreciated(toremove)/ActionModal";
 import ActionModal from "../components/device-and-device-elements/ActionModal";
-import { CommandExample } from "../const/commandExample";
+import { CommandExample } from "../helpers/commandExample";
 import ElementsPanel from "../components/device-and-device-elements/ElementsPanel";
 import { Button } from "../components/design-system/button";
 
@@ -50,7 +49,6 @@ const InteractPage = () => {
           setHoveredElement={setHoveredElement}
           deviceScreen={deviceScreen}
           onElementSelected={(element: UIElement | null) => {
-            console.log(element);
             if (!element) return;
             setInspectedElementId(element?.id);
           }}

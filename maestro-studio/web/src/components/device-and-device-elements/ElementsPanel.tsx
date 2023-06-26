@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo, useState } from "react";
 import { Button } from "../design-system/button";
 import { Input } from "../design-system/input";
-import { DeviceScreen, UIElement } from "../../const/models";
+import { DeviceScreen, UIElement } from "../../helpers/models";
 import clsx from "clsx";
 
 const compare = (a: string | undefined, b: string | undefined) => {

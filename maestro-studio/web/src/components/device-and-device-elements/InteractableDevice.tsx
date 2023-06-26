@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, useState } from "react";
-import { DeviceScreen, DivProps, UIElement } from "../../const/models";
+import { DeviceScreen, DivProps, UIElement } from "../../helpers/models";
 import { API } from "../../api/api";
 import { AnnotatedScreenshot } from "./AnnotatedScreenshot";
 import { MousePosition } from "@react-hook/mouse-position";

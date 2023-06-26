@@ -1,4 +1,4 @@
-import { ReplCommand } from "../../const/models";
+import { ReplCommand } from "../../helpers/models";
 import CommandRow from "./CommandRow";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Button } from "../design-system/button";

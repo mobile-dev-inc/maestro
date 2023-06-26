@@ -1,13 +1,11 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { API } from "../../api/api";
 import { Icon } from "../design-system/icon";
-import { FormattedFlow, ReplCommand } from "../../const/models";
-import { Reorder } from "framer-motion";
+import { FormattedFlow, ReplCommand } from "../../helpers/models";
 import { SaveFlowModal } from "./SaveFlowModal";
 import { useConfirmationDialog } from "../common/ConfirmationDialog";
 import { Button } from "../design-system/button";
 import ReplHeader from "./ReplHeader";
-import CommandRow from "./CommandRow";
 import CommandInput from "./CommandInput";
 import CommandList from "./CommandList";
 
@@ -123,7 +121,7 @@ const ReplView = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center pt-4">
+          <div className="flex px-12 flex-col items-center pt-4">
             <div className="p-4 bg-slate-200 dark:bg-slate-800 rounded-lg mb-4">
               <Icon iconName="RiCodeLine" size="20" />
             </div>

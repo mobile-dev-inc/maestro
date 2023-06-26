@@ -1,5 +1,5 @@
 import { InputHint, InputWrapper, TextArea } from "../design-system/input";
-import { TextAreaProps } from "../../const/models";
+import { TextAreaProps } from "../../helpers/models";
 
 const CommandInput = ({
   value,
@@ -18,7 +18,7 @@ const CommandInput = ({
       onSubmit && onSubmit();
       return;
     } else if (e.key === "Tab") {
-      e.preventDefault(); // Prevents the default action (focus switch)
+      e.preventDefault();
       const start = e.currentTarget.selectionStart;
       setValue(
         value.slice(0, start) +

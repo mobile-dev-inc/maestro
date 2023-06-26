@@ -1,4 +1,4 @@
-import { FormattedFlow } from "../../const/models";
+import { FormattedFlow } from "../../helpers/models";
 import React, { useState } from "react";
 import AutosizingTextArea from "./CommandInput";
 import { saveAs } from "file-saver";
@@ -27,7 +27,7 @@ export const SaveFlowModal = ({
         <span className="text-lg font-bold">Save Flow to File</span>
         <div className="flex flex-col h-full border rounded dark:border-slate-600">
           <AutosizingTextArea
-            className="resize-none p-4 pr-16 overflow-y-scroll overflow-hidden bg-gray-50 dark:bg-slate-700 dark:border-slate-600 font-mono cursor-text outline-none border border-transparent border-b-slate-200 dark:border-slate-600 focus:border focus:border-slate-400 dark:focus:border-slate-600"
+            className="resize-none p-4 pr-16 overflow-y-scroll overflow-hidden bg-gray-50 dark:bg-slate-700 dark:border-slate-600 font-mono cursor-text outline-none border border-transparent border-b-slate-200 focus:border focus:border-slate-400 dark:focus:border-slate-600"
             value={config}
             setValue={setConfig}
           />
