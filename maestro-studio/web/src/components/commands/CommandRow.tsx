@@ -21,8 +21,9 @@ export default function CommandRow({
   onClick,
   isDragging,
 }: CommandRowProps) {
-  const [value, setValue] = useState(command.yaml);
+  // const [value, setValue] = useState(command.yaml);
 
+  console.log(command.yaml);
   return (
     <div
       className={twMerge(
@@ -39,13 +40,11 @@ export default function CommandRow({
           className="pointer-events-none"
         />
       </div>
-      <div
-        className="flex-grow"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        <CommandInput
+      <div className="flex-grow ">
+        <pre className="font-sans cursor-default overflow-x-scroll text-sm font-semibold py-0.5 w-full">
+          {command.yaml}
+        </pre>
+        {/* <CommandInput
           onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
             e.stopPropagation();
           }}
@@ -53,19 +52,6 @@ export default function CommandRow({
           className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent whitespace-nowrap"
           value={value}
           setValue={(val: string) => setValue(val)}
-        />
-        {/* <TextArea
-          onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
-            e.stopPropagation();
-          }}
-          rows={1}
-          resize="automatic"
-          showResizeIcon={false}
-          className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent whitespace-nowrap"
-          value={value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setValue(e.target.value)
-          }
         /> */}
       </div>
       <div className="p-1">

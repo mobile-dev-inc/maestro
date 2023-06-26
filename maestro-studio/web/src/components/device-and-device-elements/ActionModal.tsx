@@ -151,7 +151,7 @@ export default function ActionModal({
             </Tabs>
           ) : (
             <div className="px-6 pb-4">
-              <div className="p-3 bg-slate-100 rounded-md text-center font-semibold text-sm">
+              <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-md text-center font-semibold text-sm">
                 Coundn't find any command for the element
               </div>
             </div>

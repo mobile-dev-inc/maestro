@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import DeprecatedInspectPage from "./pages/DeprecatedInspectPage";
 import Header from "./components/common/Header";
 import InteractPage from "./pages/InteractPage";
 
@@ -9,7 +8,6 @@ const App = () => (
     <Header />
     <div className="overflow-hidden h-full">
       <Routes>
-        <Route path="inspect" element={<DeprecatedInspectPage />} />
         <Route path="interact" element={<InteractPage />} />
         <Route path="*" element={<Navigate to="/interact" replace />} />
       </Routes>
