@@ -53,11 +53,12 @@ const InteractPage = () => {
             setInspectedElementId(element?.id);
           }}
           closePanel={() => setShowElementsPanel(false)}
+          onHint={setFooterHint}
         />
       )}
       <div
         className={clsx(
-          "px-8 py-6 bg-white dark:bg-slate-900 basis-1/2  relative gap-4 flex flex-col",
+          "px-8 pt-6 pb-7 bg-white dark:bg-slate-900 basis-1/2  relative gap-4 flex flex-col",
           showElementsPanel ? "lg:basis-4/12" : "lg:basis-5/12"
         )}
       >

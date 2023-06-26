@@ -23,24 +23,23 @@ export default function CommandRow({
     <div
       className={twMerge(
         clsx(
-          "flex flex-row border-b border-slate-100 dark:border-slate-800 gap-3 py-3 flex-grow",
+          "flex flex-row border-b border-slate-100 dark:border-slate-800 gap-3 w-[calc(100%-24px)] relative overflow-hidden",
           isDragging && "border-transparent"
         )
       )}
     >
-      <div onClick={onClick} className="my-0.5 cursor-pointer">
+      <div onClick={onClick} className="py-3 cursor-pointer">
         <Checkbox
           size="sm"
           checked={selected}
           className="pointer-events-none"
         />
       </div>
-      <div className="flex-grow">
-        <pre className="font-mono cursor-default overflow-x-scroll text-sm text-gray-900 dark:text-white py-0.5 w-full">
-          {command.yaml}
-        </pre>
-      </div>
-      <div className="p-1">
+      <pre className="font-mono flex-grow cursor-default overflow-x-scroll text-sm text-gray-900 dark:text-white py-3 overflow-scroll">
+        {command.yaml}
+      </pre>
+      <div className="bg-gradient-to-r from-transparent to-white dark:to-slate-900 w-10 absolute top-0 right-0 bottom-0 pointer-events-none rounded-lg" />
+      <div className="absolute top-4 right-1">
         <StatusIcon status={command.status} />
       </div>
     </div>

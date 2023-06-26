@@ -187,29 +187,32 @@ const ActionCommandListItem = ({
   };
 
   return (
-    <div className="py-2 px-3 border border-slate-200 dark:border-slate-800 rounded-md flex gap-2">
-      <pre className="overflow-x-scroll font-mono text-gray-700 dark:text-white flex-grow">
+    <div className="relative border border-slate-200 dark:border-slate-800 rounded-md flex gap-2 overflow-hidden">
+      <pre className="overflow-x-scroll font-mono text-gray-700 dark:text-white flex-grow pt-3 pb-5 pl-3 pr-40">
         {command.content}
       </pre>
-      <Button
-        onClick={() => onRun(command)}
-        variant="primary"
-        size="sm"
-        icon="RiPlayLine"
-      />
-      <Button
-        onClick={() => onEdit(command)}
-        variant="secondary"
-        size="sm"
-        icon="RiCodeLine"
-      />
-      {commandCopied ? (
-        <Button variant="primary-green" size="sm" icon="RiCheckLine" />
-      ) : (
-        <CopyToClipboard text={command.content} onCopy={onCommandCopy}>
-          <Button variant="tertiary" size="sm" icon="RiFileCopyLine" />
-        </CopyToClipboard>
-      )}
+      <div className="bg-gradient-to-r from-transparent to-white dark:to-slate-900 w-80 absolute top-0 right-0 bottom-0 pointer-events-none" />
+      <div className="absolute flex gap-2 right-2 top-2">
+        <Button
+          onClick={() => onRun(command)}
+          variant="primary"
+          size="sm"
+          icon="RiPlayLine"
+        />
+        <Button
+          onClick={() => onEdit(command)}
+          variant="secondary"
+          size="sm"
+          icon="RiCodeLine"
+        />
+        {commandCopied ? (
+          <Button variant="primary-green" size="sm" icon="RiCheckLine" />
+        ) : (
+          <CopyToClipboard text={command.content} onCopy={onCommandCopy}>
+            <Button variant="tertiary" size="sm" icon="RiFileCopyLine" />
+          </CopyToClipboard>
+        )}
+      </div>
     </div>
   );
 };

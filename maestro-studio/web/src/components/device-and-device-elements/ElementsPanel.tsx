@@ -16,6 +16,7 @@ interface ElementsPanelProps {
   hoveredElement: UIElement | null;
   setHoveredElement: (element: UIElement | null) => void;
   closePanel: () => void;
+  onHint: (hint: string | null) => void;
 }
 
 export default function ElementsPanel({
@@ -24,6 +25,7 @@ export default function ElementsPanel({
   hoveredElement,
   setHoveredElement,
   closePanel,
+  onHint,
 }: ElementsPanelProps) {
   const [query, setQuery] = useState<string>("");
 
@@ -71,8 +73,12 @@ export default function ElementsPanel({
       <div className="px-8 py-6 flex-grow overflow-y-scroll overflow-x-hidden">
         {sortedElements.map((item: UIElement) => {
           const onClick = () => onElementSelected(item);
-          const onMouseEnter = () => setHoveredElement(item);
+          const onMouseEnter = () => {
+            setHoveredElement(item);
+            onHint(item?.resourceId || item?.text || null);
+          };
           const onMouseLeave = () => {
+            onHint(null);
             if (hoveredElement?.id === item.id) {
               setHoveredElement(null);
             }
