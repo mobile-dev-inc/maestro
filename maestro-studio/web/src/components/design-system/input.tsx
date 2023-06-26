@@ -351,7 +351,7 @@ function TextArea({
         textAreaRef.current.scrollHeight + 2
       }px`;
     }
-  }, []);
+  }, [resize]);
 
   const handleEvent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = e.target as HTMLTextAreaElement;

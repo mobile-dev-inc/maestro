@@ -84,7 +84,7 @@ export default function ActionModal({
         setSelectedTab(firstKey);
       }
     }
-  }, [commandList]);
+  }, [commandList, selectedTab]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
