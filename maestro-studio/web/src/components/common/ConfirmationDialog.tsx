@@ -16,7 +16,7 @@ export const useConfirmationDialog = (
 
     return (
       <div
-        className="modal fade fixed bg-black/60 w-full center top-0 left-0 h-full outline-none overflow-x-hidden overflow-y-auto"
+        className="modal fade fixed bg-black/60 w-full center top-0 left-0 h-full outline-none overflow-x-hidden overflow-y-auto z-50"
         tabIndex={1}
       >
         <motion.div

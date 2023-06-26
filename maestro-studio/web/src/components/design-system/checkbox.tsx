@@ -5,7 +5,7 @@ import { CheckboxCheck, CheckboxIntermediate } from "./utils/images";
 
 const checkboxStates = {
   indeterminate: [
-    "[&>input:indeterminate~.checkmark>.icon-wrapper]:bg-purple-300", // Checkmark bg color
+    "[&>input:indeterminate~.checkmark>.icon-wrapper]:bg-purple-300 dark:[&>input:indeterminate~.checkmark>.icon-wrapper]:bg-purple-500/50", // Checkmark bg color
     "[&>input:indeterminate~.checkmark>.icon-wrapper]:border-none", // Checkmark no border
     "[&>input:indeterminate~.checkmark>.icon-wrapper>.indeterminate-icon]:block", // Show indeterminate icon
   ],
@@ -17,9 +17,9 @@ const checkboxStates = {
   focus: [
     "[&>input:focus-visible~.checkmark>.icon-wrapper]:ring-4",
     "[&>input:focus-visible~.checkmark>.icon-wrapper]:ring-ring",
-    "[&>input:focus-visible~.checkmark>.icon-wrapper]:ring-gray-100", // Focus shadow when unchecked
-    "[&>input:focus-visible:checked~.checkmark>.icon-wrapper]:ring-purple-100", // Focus shadow when checked
-    "[&>input:focus:indeterminate~.checkmark>.icon-wrapper]:ring-purple-100", // Focus shadow when indeterminate
+    "[&>input:focus-visible~.checkmark>.icon-wrapper]:ring-gray-100 dark:[&>input:focus-visible~.checkmark>.icon-wrapper]:ring-gray-100/10", // Focus shadow when unchecked
+    "[&>input:focus-visible:checked~.checkmark>.icon-wrapper]:ring-purple-100 dark:[&>input:focus-visible:checked~.checkmark>.icon-wrapper]:ring-purple-100/10", // Focus shadow when checked
+    "[&>input:focus:indeterminate~.checkmark>.icon-wrapper]:ring-purple-100 dark:[&>input:focus:indeterminate~.checkmark>.icon-wrapper]:ring-purple-100/10", // Focus shadow when indeterminate
   ],
   disabled: [
     '[&>input[type="checkbox"]:disabled~.checkmark>.icon-wrapper]:border-gray-200', // Checkmark border when unchecked

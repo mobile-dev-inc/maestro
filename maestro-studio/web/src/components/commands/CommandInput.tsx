@@ -17,12 +17,6 @@ const CommandInput = ({
     if (e.metaKey && e.key === "Enter") {
       onSubmit && onSubmit();
       return;
-    } else if (e.key === "Enter") {
-      e.preventDefault(); // Prevents the default action (newline/submit)
-      const start = e.currentTarget.selectionStart;
-      setValue(
-        value.slice(0, start) + "\n" + value.slice(e.currentTarget.selectionEnd)
-      );
     } else if (e.key === "Tab") {
       e.preventDefault(); // Prevents the default action (focus switch)
       const start = e.currentTarget.selectionStart;

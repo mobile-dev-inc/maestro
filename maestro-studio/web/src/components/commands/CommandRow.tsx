@@ -4,36 +4,57 @@ import { Checkbox } from "../design-system/checkbox";
 import { TextArea } from "../design-system/input";
 import { Icon } from "../design-system/icon";
 import { Spinner } from "../design-system/spinner";
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+import CommandInput from "./CommandInput";
+
+interface CommandRowProps {
+  command: ReplCommand;
+  selected: boolean;
+  onClick: () => void;
+  isDragging: boolean;
+}
 
 export default function CommandRow({
   command,
   selected,
   onClick,
-}: {
-  command: ReplCommand;
-  selected: boolean;
-  onClick: () => void;
-}) {
+  isDragging,
+}: CommandRowProps) {
   const [value, setValue] = useState(command.yaml);
 
   return (
     <div
-      key={command.id}
-      className="relative flex flex-row border-b border-slate-100 dark:border-slate-800 gap-3 py-3 dark:active:bg-slate-900 active:bg-slate-100 cursor-pointer"
-      onClick={onClick}
+      className={twMerge(
+        clsx(
+          "flex flex-row border-b border-slate-100 dark:border-slate-800 gap-3 py-3 flex-grow",
+          isDragging && "border-transparent"
+        )
+      )}
     >
-      <Checkbox
-        size="sm"
-        checked={selected}
-        className="pointer-events-none my-0.5"
-      />
+      <div onClick={onClick} className="my-0.5 cursor-pointer">
+        <Checkbox
+          size="sm"
+          checked={selected}
+          className="pointer-events-none"
+        />
+      </div>
       <div
         className="flex-grow"
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        <TextArea
+        <CommandInput
+          onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
+            e.stopPropagation();
+          }}
+          rows={1}
+          className="p-0 bg-transparent border-transparent dark:bg-transparent dark:border-transparent whitespace-nowrap"
+          value={value}
+          setValue={(val: string) => setValue(val)}
+        />
+        {/* <TextArea
           onFocus={(e: React.FocusEvent<HTMLTextAreaElement>) => {
             e.stopPropagation();
           }}
@@ -45,7 +66,7 @@ export default function CommandRow({
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             setValue(e.target.value)
           }
-        />
+        /> */}
       </div>
       <div className="p-1">
         <StatusIcon status={command.status} />

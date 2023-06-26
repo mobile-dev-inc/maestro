@@ -21,7 +21,7 @@ const buttonVariants = cva(
         "primary-yellow":
           "bg-yellow-500 text-gray-400 border-transparent shadow-sm hover:bg-yellow-400 focus-visible:bg-yellow-400 focus-visible:ring-yellow-100",
         secondary:
-          "bg-purple-25 dark:bg-purple-500/10 text-purple-500 border-purple-75 dark:border-purple-500/20 shadow-sm hover:bg-purple-50 hover:text-purple-500 focus-visible:bg-purple-50 focus-visible:ring-purple-100",
+          "bg-purple-25 dark:bg-purple-500/10 text-purple-500 dark:text-purple-200 border-purple-75 dark:border-purple-500/20 shadow-sm hover:bg-purple-50 dark:hover:bg-purple-500/20 hover:text-purple-500 dark:hover-text-200 focus-visible:bg-purple-50 dark:focus-visible:bg-purple-400/10 focus-visible:ring-purple-100 dark:focus-visible:ring-purple-100/10",
         "secondary-blue":
           "bg-blue-50 dark:bg-blue-50/10 text-blue-500 border-blue-200 dark:border-blue-200/20 shadow-sm hover:bg-blue-50 hover:text-blue-500 focus-visible:bg-blue-50 focus-visible:ring-blue-100",
         "secondary-green":
@@ -41,15 +41,15 @@ const buttonVariants = cva(
         "tertiary-yellow":
           "bg-white dark:bg-slate-800 text-yellow-500 dark:text-yellow-200 border-yellow-200 dark:border-yellow-200/20 shadow-sm hover:bg-yellow-50 focus-visible:bg-yellow-50 dark:focus-visible:bg-yellow-50/10 focus-visible:ring-yellow-100 dark:focus-visible:ring-yellow-100/20",
         quaternary:
-          "bg-transparent text-gray-700 dark:text-white border-transparent hover:border-low-em hover:bg-slate-50 dark:hover:bg-slate-50/10 focus-visible:border-low-em focus-visible:bg-slate-50 focus-visible:ring-slate-100",
+          "bg-transparent text-gray-700 dark:text-white border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:bg-slate-50/10 focus-visible:border-slate-200 dark:focus-visible:border-slate-200/20 focus-visible:bg-slate-50 dark:focus-visible:bg-slate-50/10 focus-visible:ring-slate-100 dark:focus-visible:ring-slate-100/20",
         "quaternary-blue":
-          "bg-transparent text-blue-500 border-transparent hover:border-blue-low-em hover:bg-blue-50 dark:hover:bg-blue-50/10 focus-visible:border-blue-low-em focus-visible:bg-blue-50 focus-visible:ring-blue-100",
+          "bg-transparent text-blue-500 border-transparent hover:border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-50/10 focus-visible:border-blue-200 dark:focus-visible:border-blue-200/20 focus-visible:bg-blue-50 dark:focus-visible:bg-blue-50/10 focus-visible:ring-blue-100 dark:focus-visible:ring-blue-100/20",
         "quaternary-green":
-          "bg-transparent text-green-500 border-transparent hover:border-green-low-em hover:bg-green-50 dark:hover:bg-green-50/10 focus-visible:border-green-low-em focus-visible:bg-green-50 focus-visible:ring-green-100",
+          "bg-transparent text-green-500 border-transparent hover:border-green-200 hover:bg-green-50 dark:hover:bg-green-50/10 focus-visible:border-green-200 dark:focus-visible:border-green-200/20 focus-visible:bg-green-50 dark:focus-visible:bg-green-50/10 focus-visible:ring-green-100 dark:focus-visible:ring-green-100/20",
         "quaternary-red":
-          "bg-transparent text-red-500 border-transparent hover:border-red-low-em hover:bg-red-50 dark:hover:bg-red-50/10 focus-visible:border-red-low-em focus-visible:bg-red-50 focus-visible:ring-red-100",
+          "bg-transparent text-red-500 border-transparent hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-50/10 focus-visible:border-red-200 dark:focus-visible:border-red-200/20 focus-visible:bg-red-50 dark:focus-visible:bg-red-50/10 focus-visible:ring-red-100 dark:focus-visible:ring-red-100/20",
         "quaternary-yellow":
-          "bg-transparent text-yellow-500 border-transparent hover:border-yellow-low-em hover:bg-yellow-50 dark:hover:bg-yellow-50/10 focus-visible:border-yellow-low-em focus-visible:bg-yellow-50 focus-visible:ring-yellow-100",
+          "bg-transparent text-yellow-500 border-transparent hover:border-yellow-200 hover:bg-yellow-50 dark:hover:bg-yellow-50/10 focus-visible:border-yellow-200 dark:focus-visible:border-yellow-200/20 focus-visible:bg-yellow-50 dark:focus-visible:bg-yellow-50/10 focus-visible:ring-yellow-100 dark:focus-visible:ring-yellow-100/20",
       },
       size: {
         xs: "rounded-sm gap-px text-[10px] px-2 h-6",

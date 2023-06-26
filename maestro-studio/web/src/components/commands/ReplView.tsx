@@ -9,6 +9,7 @@ import { Button } from "../design-system/button";
 import ReplHeader from "./ReplHeader";
 import CommandRow from "./CommandRow";
 import CommandInput from "./CommandInput";
+import CommandList from "./CommandList";
 
 const getFlowText = (selected: ReplCommand[]): string => {
   return selected
@@ -26,7 +27,6 @@ const ReplView = ({
   const listRef = useRef<HTMLElement>();
   const [replError, setReplError] = useState<string | null>(null);
   const [_selected, setSelected] = useState<string[]>([]);
-  const [dragging, setDragging] = useState(false);
   const [formattedFlow, setFormattedFlow] =
     useState<FormattedFlow | null>(null);
   const { error, repl } = API.repl.useRepl();
@@ -90,55 +90,37 @@ const ReplView = ({
 
   return (
     <>
-      <div className="px-12 pt-6 pb-8 flex-grow overflow-scroll">
+      <div className="pt-6 pb-8 flex-grow overflow-scroll">
         {repl.commands.length > 0 ? (
           <div className="flex flex-col">
-            <ReplHeader
-              onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
-              onDeselectAll={() => setSelected([])}
-              selected={selectedIds.length}
-              allSelected={selectedIds.length === repl.commands.length}
-              copyText={flowText}
-              onPlay={onPlay}
-              onExport={onExport}
-              onDelete={onDelete}
-            />
-            <Reorder.Group
-              ref={listRef}
-              className="overflow-y-scroll overflow-hidden"
-              onReorder={onReorder}
-              values={repl.commands}
-            >
-              {repl.commands.map((command) => (
-                <Reorder.Item
-                  value={command}
-                  key={command.id}
-                  transition={{ duration: 0.1 }}
-                  dragTransition={{ bounceStiffness: 2000, bounceDamping: 100 }}
-                  onDragStart={() => {
-                    setDragging(true);
-                  }}
-                  onDragEnd={() => {
-                    setTimeout(() => setDragging(false));
-                  }}
-                >
-                  <CommandRow
-                    command={command}
-                    selected={selectedIds.includes(command.id)}
-                    onClick={() => {
-                      if (dragging) return;
-                      if (selectedIds.includes(command.id)) {
-                        setSelected((prevState) =>
-                          prevState.filter((id) => id !== command.id)
-                        );
-                      } else {
-                        setSelected((prevState) => [...prevState, command.id]);
-                      }
-                    }}
-                  />
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
+            <div className="px-12">
+              <ReplHeader
+                onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
+                onDeselectAll={() => setSelected([])}
+                selected={selectedIds.length}
+                allSelected={selectedIds.length === repl.commands.length}
+                copyText={flowText}
+                onPlay={onPlay}
+                onExport={onExport}
+                onDelete={onDelete}
+              />
+            </div>
+            <div className="pr-12 pl-6">
+              <CommandList
+                onReorder={onReorder}
+                commands={repl.commands}
+                selectedIds={selectedIds}
+                updateSelected={(id: string) => {
+                  if (selectedIds.includes(id)) {
+                    setSelected((prevState: string[]) =>
+                      prevState.filter((val: string) => val !== id)
+                    );
+                  } else {
+                    setSelected((prevState: string[]) => [...prevState, id]);
+                  }
+                }}
+              />
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center pt-4">
