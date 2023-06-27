@@ -6,6 +6,11 @@ interface AspectRatioContainerProps
   children: ReactNode;
 }
 
+/**
+ * This component is for make it work on different browsers.
+ * Safari doesnt change aspect ratio even with max width, which cause overflow
+ * So created this wrapper div that will calculate the width dynamically and then we can place aspect ratio inside it
+ */
 const DeviceWrapperAspectRatio = ({
   aspectRatio,
   children,
@@ -22,9 +27,7 @@ const DeviceWrapperAspectRatio = ({
         setWidth(newWidth);
       }
     };
-    // Calculate initial width
     updateWidth();
-    // Update width on screen resize
     window.addEventListener("resize", updateWidth);
     return () => {
       window.removeEventListener("resize", updateWidth);
