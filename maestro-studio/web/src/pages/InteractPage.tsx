@@ -9,6 +9,7 @@ import ActionModal from "../components/device-and-device-elements/ActionModal";
 import { CommandExample } from "../helpers/commandExample";
 import ElementsPanel from "../components/device-and-device-elements/ElementsPanel";
 import { Button } from "../components/design-system/button";
+import DeviceWrapperAspectRatio from "../components/device-and-device-elements/DeviceWrapperAspectRatio";
 
 const InteractPage = () => {
   const [showElementsPanel, setShowElementsPanel] = useState<boolean>(false);
@@ -59,27 +60,34 @@ const InteractPage = () => {
       <div
         className={clsx(
           "px-8 pt-6 pb-7 bg-white dark:bg-slate-900 basis-1/2  relative gap-4 flex flex-col",
-          showElementsPanel ? "lg:basis-4/12" : "lg:basis-5/12"
+          showElementsPanel
+            ? "lg:basis-4/12 max-w-[33.333333%]"
+            : "lg:basis-5/12 max-w-[41.666667%]"
         )}
       >
         {!showElementsPanel && (
           <Button
             variant="secondary"
             leftIcon="RiSearchLine"
-            className="w-full"
+            className="w-full min-h-[32px]"
             onClick={() => setShowElementsPanel(true)}
           >
             Search Elements with Text or Id
           </Button>
         )}
-        <InteractableDevice
-          hoveredElement={hoveredElement}
-          setHoveredElement={setHoveredElement}
-          deviceScreen={deviceScreen}
-          onHint={setFooterHint}
-          inspectedElement={inspectedElement}
-          onInspectElement={(e) => setInspectedElementId(e?.id || null)}
-        />
+        <DeviceWrapperAspectRatio
+          aspectRatio={deviceScreen.width / deviceScreen.height}
+        >
+          <InteractableDevice
+            hoveredElement={hoveredElement}
+            setHoveredElement={setHoveredElement}
+            deviceScreen={deviceScreen}
+            onHint={setFooterHint}
+            inspectedElement={inspectedElement}
+            onInspectElement={(e) => setInspectedElementId(e?.id || null)}
+          />
+        </DeviceWrapperAspectRatio>
+
         <p className="text-xs text-center">
           Hold CMD (⌘) down to freely tap and swipe on the device screen
         </p>

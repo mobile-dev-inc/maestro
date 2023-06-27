@@ -33,10 +33,13 @@ export default function ElementsPanel({
     const filteredElements = deviceScreen.elements.filter((element) => {
       if (!element.text && !element.resourceId) return false;
 
+      const modifiedText = element.text?.replace(/0/g, "");
+      const modifiedResourceId = element.resourceId?.replace(/0/g, "");
+
       return (
         !query ||
-        element.text?.toLowerCase().includes(query.toLowerCase()) ||
-        element.resourceId?.toLowerCase().includes(query.toLowerCase()) ||
+        modifiedText?.toLowerCase().includes(query.toLowerCase()) ||
+        modifiedResourceId?.toLowerCase().includes(query.toLowerCase()) ||
         element.hintText?.toLowerCase().includes(query.toLowerCase()) ||
         element.accessibilityText?.toLowerCase().includes(query.toLowerCase())
       );
@@ -47,8 +50,10 @@ export default function ElementsPanel({
         query && a.text?.toLowerCase().startsWith(query.toLowerCase());
       const bTextPrefixMatch =
         query && b.text?.toLowerCase().startsWith(query.toLowerCase());
+
       if (aTextPrefixMatch && !bTextPrefixMatch) return -1;
       if (bTextPrefixMatch && !aTextPrefixMatch) return 1;
+
       return compare(a.text, b.text) || compare(a.resourceId, b.resourceId);
     });
   }, [query, deviceScreen.elements]);
@@ -85,7 +90,7 @@ export default function ElementsPanel({
           };
           return (
             <Fragment key={item.id}>
-              {item.resourceId !== "" && (
+              {item.resourceId !== "" && item.resourceId !== " " && (
                 <ElementListItem
                   onClick={onClick}
                   onMouseEnter={onMouseEnter}
@@ -96,7 +101,7 @@ export default function ElementsPanel({
                   elementType="id"
                 />
               )}
-              {item.text !== "" && (
+              {item.text !== "" && item.text !== " " && (
                 <ElementListItem
                   onClick={onClick}
                   isHovered={hoveredElement?.id === item?.id}

@@ -232,7 +232,7 @@ export const AnnotatedScreenshot = ({
   return (
     <div
       ref={ref}
-      className="relative h-full overflow-hidden"
+      className="relative overflow-hidden"
       style={{
         aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
