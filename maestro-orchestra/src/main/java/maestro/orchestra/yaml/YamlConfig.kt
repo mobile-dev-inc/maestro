@@ -6,6 +6,7 @@ import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroInitFlow
+import maestro.orchestra.MaestroOnFlowComplete
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -16,6 +17,7 @@ data class YamlConfig(
     val initFlow: YamlInitFlowUnion?,
     val tags: List<String>? = emptyList(),
     val env: Map<String, String> = emptyMap(),
+    val onFlowComplete: YamlOnFlowComplete?,
 ) {
 
     private val ext = mutableMapOf<String, Any?>()
@@ -31,7 +33,8 @@ data class YamlConfig(
             name = name,
             tags = tags,
             initFlow = initFlow(flowPath),
-            ext = ext.toMap()
+            ext = ext.toMap(),
+            onFlowComplete = onFlowComplete(flowPath)
         )
         return MaestroCommand(ApplyConfigurationCommand(config))
     }
@@ -56,6 +59,12 @@ data class YamlConfig(
             appId = appId,
             commands = initCommands,
         )
+    }
+
+    private fun onFlowComplete(flowPath: Path): MaestroOnFlowComplete? {
+        if (onFlowComplete == null) return null
+
+        return MaestroOnFlowComplete(onFlowComplete.commands.flatMap { it.toCommands(flowPath, appId) })
     }
 
     companion object {

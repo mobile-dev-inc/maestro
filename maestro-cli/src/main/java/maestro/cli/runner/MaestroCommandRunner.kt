@@ -50,6 +50,7 @@ object MaestroCommandRunner {
         debug: FlowDebugMetadata
     ): Result {
         val initFlow = YamlCommandReader.getConfig(commands)?.initFlow
+        val onFlowComplete = YamlCommandReader.getConfig(commands)?.onFlowComplete
 
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
         val commandMetadata = IdentityHashMap<MaestroCommand, Orchestra.CommandMetadata>()
@@ -89,6 +90,11 @@ object MaestroCommandRunner {
                     device = device,
                     initCommands = toCommandStates(
                         initFlow?.commands ?: emptyList(),
+                        commandStatuses,
+                        commandMetadata
+                    ),
+                    onFlowCompleteCommands = toCommandStates(
+                        onFlowComplete?.commands ?: emptyList(),
                         commandStatuses,
                         commandMetadata
                     ),
@@ -177,6 +183,11 @@ object MaestroCommandRunner {
         }
 
         val flowSuccess = orchestra.runFlow(commands, cachedState)
+
+        if (onFlowComplete != null) {
+            orchestra.runFlow(onFlowComplete.commands)
+        }
+
         return Result(flowSuccess = flowSuccess, cachedAppState = cachedState)
     }
 

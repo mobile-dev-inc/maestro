@@ -54,6 +54,15 @@ class PlainTextResultView: ResultView {
             renderCommandsPlainText(state.initCommands)
         }
 
+        if (state.onFlowCompleteCommands.isNotEmpty()) {
+            if (shouldPrintStep()) {
+                println("  > On Flow Complete")
+            }
+
+
+            renderCommandsPlainText(state.onFlowCompleteCommands)
+        }
+
         if (shouldPrintStep()) {
             println(" > Flow")
         }
