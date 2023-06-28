@@ -1,10 +1,9 @@
 import { FormattedFlow } from "../../helpers/models";
-import React, { useState } from "react";
-import AutosizingTextArea from "./CommandInput";
+import { useState } from "react";
+import CommandInput from "./CommandInput";
 import { saveAs } from "file-saver";
 import { Modal } from "../common/Modal";
 import { Button } from "../design-system/button";
-import { TextArea } from "../design-system/input";
 
 export const SaveFlowModal = ({
   formattedFlow,
@@ -29,19 +28,13 @@ export const SaveFlowModal = ({
       <div className="flex flex-col gap-3 p-8 h-full dark:bg-slate-800 dark:text-white rounded-lg">
         <span className="text-lg font-bold">Save Flow to File</span>
         <div className="flex flex-col h-full rounded gap-2">
-          <TextArea
-            value={config}
-            resize="automatic"
-            showResizeIcon={false}
-            onChange={(e) => setConfig(e.target.value)}
-          />
+          <CommandInput value={config} setValue={setConfig} />
           <div className="flex-grow">
-            <TextArea
+            <CommandInput
               value={commands}
               resize="vertical"
               className="h-full"
-              showResizeIcon={false}
-              onChange={(e) => setCommands(e.target.value)}
+              setValue={setCommands}
             />
           </div>
         </div>
