@@ -50,17 +50,15 @@ class PlainTextResultView: ResultView {
                 println("  > Init Flow")
             }
 
-
             renderCommandsPlainText(state.initCommands)
         }
 
-        if (state.onFlowCompleteCommands.isNotEmpty()) {
+        if (state.onFlowStartCommands.isNotEmpty()) {
             if (shouldPrintStep()) {
-                println("  > On Flow Complete")
+                println("  > On Flow Start")
             }
 
-
-            renderCommandsPlainText(state.onFlowCompleteCommands)
+            renderCommandsPlainText(state.onFlowStartCommands)
         }
 
         if (shouldPrintStep()) {
@@ -68,6 +66,14 @@ class PlainTextResultView: ResultView {
         }
 
         renderCommandsPlainText(state.commands)
+
+        if (state.onFlowCompleteCommands.isNotEmpty()) {
+            if (shouldPrintStep()) {
+                println("  > On Flow Complete")
+            }
+
+            renderCommandsPlainText(state.onFlowCompleteCommands)
+        }
     }
 
     private fun renderCommandsPlainText(commands: List<CommandState>, indent: Int = 0) {

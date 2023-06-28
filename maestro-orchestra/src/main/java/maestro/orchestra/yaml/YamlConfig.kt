@@ -7,6 +7,7 @@ import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.MaestroOnFlowComplete
+import maestro.orchestra.MaestroOnFlowStart
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -17,6 +18,7 @@ data class YamlConfig(
     val initFlow: YamlInitFlowUnion?,
     val tags: List<String>? = emptyList(),
     val env: Map<String, String> = emptyMap(),
+    val onFlowStart: YamlOnFlowStart?,
     val onFlowComplete: YamlOnFlowComplete?,
 ) {
 
@@ -34,6 +36,7 @@ data class YamlConfig(
             tags = tags,
             initFlow = initFlow(flowPath),
             ext = ext.toMap(),
+            onFlowStart = onFlowStart(flowPath),
             onFlowComplete = onFlowComplete(flowPath)
         )
         return MaestroCommand(ApplyConfigurationCommand(config))
@@ -65,6 +68,12 @@ data class YamlConfig(
         if (onFlowComplete == null) return null
 
         return MaestroOnFlowComplete(onFlowComplete.commands.flatMap { it.toCommands(flowPath, appId) })
+    }
+
+    private fun onFlowStart(flowPath: Path): MaestroOnFlowStart? {
+        if (onFlowStart == null) return null
+
+        return MaestroOnFlowStart(onFlowStart.commands.flatMap { it.toCommands(flowPath, appId) })
     }
 
     companion object {
