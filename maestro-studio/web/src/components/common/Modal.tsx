@@ -1,9 +1,12 @@
-import React, { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import React, { ReactNode } from "react";
+import { motion } from "framer-motion";
 
-export const Modal = ({onClose, children}: {
-  onClose: () => void
-  children: ReactNode
+export const Modal = ({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: ReactNode;
 }) => {
   return (
     <motion.div
@@ -11,14 +14,14 @@ export const Modal = ({onClose, children}: {
       onClick={onClose}
     >
       <motion.div
-        className="flex flex-col h-full min-w-[70%] min-h-[70%] max-w-[1000px] bg-white rounded-lg"
-        initial={{ scale: .97, opacity: 0 }}
+        className="flex flex-col h-full min-w-[70%] min-h-[70%] max-w-[1000px] rounded-lg"
+        initial={{ scale: 0.97, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ ease: 'easeOut', duration: .1 }}
-        onClick={e => e.stopPropagation()}
+        transition={{ ease: "easeOut", duration: 0.1 }}
+        onClick={(e) => e.stopPropagation()}
       >
         {children}
       </motion.div>
     </motion.div>
-  )
-}
+  );
+};

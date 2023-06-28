@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import AutosizingTextArea from "./CommandInput";
 import { saveAs } from "file-saver";
 import { Modal } from "../common/Modal";
+import { Button } from "../design-system/button";
+import { TextArea } from "../design-system/input";
 
 export const SaveFlowModal = ({
   formattedFlow,
@@ -21,35 +23,35 @@ export const SaveFlowModal = ({
     );
     onClose();
   };
+
   return (
     <Modal onClose={onClose}>
-      <div className="flex flex-col gap-8 p-10 h-full dark:bg-slate-800 dark:text-white">
+      <div className="flex flex-col gap-3 p-8 h-full dark:bg-slate-800 dark:text-white rounded-lg">
         <span className="text-lg font-bold">Save Flow to File</span>
-        <div className="flex flex-col h-full border rounded dark:border-slate-600">
-          <AutosizingTextArea
-            className="resize-none p-4 pr-16 overflow-y-scroll overflow-hidden bg-gray-50 dark:bg-slate-700 dark:border-slate-600 font-mono cursor-text outline-none border border-transparent border-b-slate-200 focus:border focus:border-slate-400 dark:focus:border-slate-600"
+        <div className="flex flex-col h-full rounded gap-2">
+          <TextArea
             value={config}
-            setValue={setConfig}
+            resize="automatic"
+            showResizeIcon={false}
+            onChange={(e) => setConfig(e.target.value)}
           />
-          <textarea
-            className="resize-none p-4 pr-16 h-full overflow-y-scroll overflow-hidden bg-gray-50 dark:bg-slate-700 font-mono cursor-text outline-none border border-transparent focus:border focus:border-slate-400 dark:focus:border-slate-600"
-            value={commands}
-            onChange={(e) => setCommands(e.currentTarget.value)}
-          />
+          <div className="flex-grow">
+            <TextArea
+              value={commands}
+              resize="vertical"
+              className="h-full"
+              showResizeIcon={false}
+              onChange={(e) => setCommands(e.target.value)}
+            />
+          </div>
         </div>
         <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-1 border rounded cursor-default hover:bg-slate-100 active:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-850 dark:active:bg-slate-900 dark:border-slate-600"
-            onClick={onClose}
-          >
+          <Button onClick={onClose} type="button" size="md" variant="tertiary">
             Cancel
-          </button>
-          <button
-            className="px-4 py-1 border bg-blue-700 text-white rounded cursor-default hover:bg-blue-800 active:bg-blue-900 dark:border-none"
-            onClick={onSave}
-          >
+          </Button>
+          <Button onClick={onSave} type="button" size="md" variant="primary">
             Save
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

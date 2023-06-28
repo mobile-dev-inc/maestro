@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Button } from "../design-system/button";
 
 type DialogProps = {
   title: string;
@@ -29,30 +30,34 @@ export const useConfirmationDialog = (
           }}
         >
           <div className="modal-content relative flex flex-col w-full pointer-events-auto bg-white dark:bg-slate-800 dark:text-white rounded-md">
-            <div className="modal-header flex flex-shrink-0 items-center justify-between p-4 rounded-t-md">
+            <div className="modal-header flex flex-shrink-0 items-center justify-between px-6 pt-4 rounded-t-md">
               <h1 className="text-xl font-medium leading-normal text-gray-800 dark:text-white">
                 {title}
               </h1>
             </div>
-            <div className="modal-body relative py-2 px-4">{content}</div>
-            <div className="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-md">
-              <button
-                type="button"
+            <div className="modal-body relative py-2 px-6 text-sm">
+              {content}
+            </div>
+            <div className="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end py-4 px-6 pb-6 rounded-b-md gap-2">
+              <Button
                 onClick={() => setIsOpen(false)}
-                className="px-4 cursor-pointer py-1 mr-2 border bg-gray-100 text-white rounded hover:bg-gray-200 active:bg-gray-300 dark:text-white dark:bg-transparent dark:hover:bg-slate-850 dark:active:bg-slate-900"
+                type="button"
+                size="md"
+                variant="tertiary"
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 onClick={() => {
                   setIsOpen(false);
                   onConfirm();
                 }}
-                className="px-4 py-1 cursor-pointer border bg-red-700 text-white rounded hover:bg-red-800 active:bg-red-900 dark:border-none"
+                type="button"
+                size="md"
+                variant="primary-red"
               >
                 Confirm
-              </button>
+              </Button>
             </div>
           </div>
         </motion.div>

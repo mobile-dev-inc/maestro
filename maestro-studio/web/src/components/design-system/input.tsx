@@ -367,7 +367,7 @@ function TextArea({
   };
 
   return (
-    <div className="relative">
+    <div className={twMerge(clsx("relative", className))}>
       <textarea
         ref={textAreaRef}
         className={twMerge(
