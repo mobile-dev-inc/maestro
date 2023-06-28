@@ -11,8 +11,8 @@ data class MaestroConfig(
     val tags: List<String>? = emptyList(),
     val initFlow: MaestroInitFlow? = null,
     val ext: Map<String, Any?> = emptyMap(),
-    val onFlowStart: MaestroOnFlowStart?,
-    val onFlowComplete: MaestroOnFlowComplete?,
+    val onFlowStart: MaestroOnFlowStart? = null,
+    val onFlowComplete: MaestroOnFlowComplete? = null,
 ) {
 
     fun evaluateScripts(jsEngine: JsEngine): MaestroConfig {
