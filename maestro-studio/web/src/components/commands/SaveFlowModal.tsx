@@ -25,7 +25,7 @@ export const SaveFlowModal = ({
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex flex-col gap-3 p-8 h-full dark:bg-slate-800 dark:text-white rounded-lg">
+      <div className="flex flex-col gap-3 p-8 h-full bg-white dark:bg-slate-900 dark:text-white rounded-lg">
         <span className="text-lg font-bold">Save Flow to File</span>
         <div className="flex flex-col h-full rounded gap-2">
           <CommandInput value={config} setValue={setConfig} />

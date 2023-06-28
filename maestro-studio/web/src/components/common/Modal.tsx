@@ -10,7 +10,7 @@ export const Modal = ({
 }) => {
   return (
     <motion.div
-      className="fixed w-full h-full p-12 top-0 left-0 flex items-center justify-center bg-slate-900/60 z-50"
+      className="fixed w-full h-full p-12 top-0 left-0 flex items-center justify-center bg-slate-900/60 dark:bg-white/20 z-50"
       onClick={onClose}
     >
       <motion.div
