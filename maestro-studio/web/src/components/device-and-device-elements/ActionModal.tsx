@@ -80,11 +80,11 @@ export default function ActionModal({
   useEffect(() => {
     if (document.activeElement === inputElementRef.current) {
       const firstKey: string = Object.keys(commandList)[0];
-      if (firstKey && selectedTab !== firstKey) {
+      if (firstKey) {
         setSelectedTab(firstKey);
       }
     }
-  }, [commandList, selectedTab]);
+  }, [commandList]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
