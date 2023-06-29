@@ -48,13 +48,23 @@ struct ViewHierarchyHandler: HTTPHandler {
     func getViewHierarchy(appId: String) throws -> AXElement {
         SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
 
-        let children = [
-            // Ignore errors on sprinboard view hierarchy
-            try? elementHierarchy(xcuiElement: springboardApplication),
-            try appHierarchy(XCUIApplication(bundleIdentifier: appId))
-        ].compactMap { $0 }
+        // Fetch the view hierarchy of the springboard application
+        // to make it possible to interact with the home screen.
+        // If an error happens on the springboard hierarchy,
+        let springboardHierarchy: AXElement?
+        do {
+            springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
+        } catch {
+            print("Springboard hierarchy failed to fetch: \(error)")
+            springboardHierarchy = nil
+        }
 
-        return AXElement(children: children)
+        let appHierarchy = try appHierarchy(XCUIApplication(bundleIdentifier: appId))
+
+        return AXElement(children: [
+            springboardHierarchy,
+            appHierarchy,
+        ].compactMap { $0 })
     }
 
     func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
@@ -89,13 +99,13 @@ struct ViewHierarchyHandler: HTTPHandler {
                 .map { try elementHierarchyWithFallback(element: $0) }
 
             return hierarchy
-            
+
         } catch {
-            // In apps with bigger view hierarchys
-            // calling XCUIApplication().snapshot().dictionaryRepresentation or XCUIApplication().allElementsBoundByIndex
+            // In apps with bigger view hierarchys, calling
+            // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
             // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
-            // We recover by selecting the first child of the element,
-            // which should be the app window, and continue from there.
+            // We recover by selecting the first child of the app element,
+            // which should be the window, and continue from there.
 
             let firstChild = element
                 .children(matching: .any)
