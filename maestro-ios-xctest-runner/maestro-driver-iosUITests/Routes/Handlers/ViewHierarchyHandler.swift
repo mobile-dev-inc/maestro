@@ -7,8 +7,9 @@ extension NSException: Error {}
 @MainActor
 struct ViewHierarchyHandler: HTTPHandler {
 
-    let maxDepth = 60
-    let springboardApplication = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    private let maxDepth = 60
+    private let springboardApplication = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    private static let springboardBundleId = "com.apple.springboard"
 
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -24,7 +25,8 @@ struct ViewHierarchyHandler: HTTPHandler {
             return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
         }
 
-        let appId = requestBody.appId
+        let installedApps = requestBody.appIds
+        let appId = getRunningAppId(requestBody)
 
         do {
             let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(appId)") {
@@ -32,9 +34,6 @@ struct ViewHierarchyHandler: HTTPHandler {
             }
 
             let body = try JSONEncoder().encode(viewHierarchy)
-
-            // TODO: Remove debug print here
-            print(String(data: body, encoding: .utf8)!)
 
             return HTTPResponse(statusCode: .ok, body: body)
         } catch {
@@ -67,6 +66,14 @@ struct ViewHierarchyHandler: HTTPHandler {
             springboardHierarchy,
             appHierarchy,
         ].compactMap { $0 })
+    }
+    
+    func getRunningAppId(_ requestBody: ViewHierarchyRequest) -> String {
+        return requestBody.appIds.first { appId in
+            let app = XCUIApplication(bundleIdentifier: appId)
+            
+            return app.state == .runningForeground
+        } ?? ViewHierarchyHandler.springboardBundleId
     }
 
     func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
