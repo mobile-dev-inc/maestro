@@ -109,8 +109,40 @@ struct ViewHierarchyHandler: HTTPHandler {
 
             let recoveryElement = findRecoveryElement(element)
             let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
+
+            // When the application element is skipped, try to fetch
+            // the keyboard and alert hierarchies separately.
+            if let element = element as? XCUIApplication {
+                let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
+                     try keyboardHierarchy(element)
+                }
+
+                let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
+                    try fullScreenAlertHierarchy(element)
+                })
+
+                return AXElement(children: [
+                    hierarchy,
+                    keyboard,
+                    alerts
+                ].compactMap { $0 })
+            }
+
             return hierarchy
         }
+    }
+
+    func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement {
+        let keyboard = element.children(matching: .keyboard).firstMatch
+        return try elementHierarchy(xcuiElement: keyboard)
+    }
+
+    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement {
+        let alerts = element.children(matching: .alert).allElementsBoundByIndex
+        let alertHierarchies = try alerts.map { alert in
+            try elementHierarchy(xcuiElement: alert)
+        }
+        return AXElement(children: alertHierarchies)
     }
 
     let useFirstParentWithMultipleChildren = false
@@ -129,9 +161,7 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
-        return try logger.measure(message: "Take element snapshot") {
-            let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
-            return AXElement(snapshotDictionary)
-        }
+        let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
+        return AXElement(snapshotDictionary)
     }
 }
