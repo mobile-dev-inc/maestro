@@ -107,12 +107,24 @@ struct ViewHierarchyHandler: HTTPHandler {
             // We recover by selecting the first child of the app element,
             // which should be the window, and continue from there.
 
-            let firstChild = element
+            let recoveryElement = findRecoveryElement(element)
+            let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
+            return hierarchy
+        }
+    }
+
+    let useFirstParentWithMultipleChildren = false
+    func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
+        if !useFirstParentWithMultipleChildren {
+            return element
                 .children(matching: .any)
                 .firstMatch
-            let childHierarchy = try elementHierarchyWithFallback(element: firstChild)
-
-            return childHierarchy
+        } else {
+            if element.children(matching: .any).count > 1 {
+                return element
+            } else {
+                return findRecoveryElement(element.children(matching: .any).firstMatch)
+            }
         }
     }
 
