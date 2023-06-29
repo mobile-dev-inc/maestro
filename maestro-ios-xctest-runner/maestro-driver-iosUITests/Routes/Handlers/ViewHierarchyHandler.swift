@@ -13,18 +13,6 @@ struct ViewHierarchyHandler: HTTPHandler {
         category: String(describing: Self.self)
     )
 
-    func measure<T>(message: String, _ block: () throws -> T) rethrows -> T {
-        let start = Date()
-        logger.info("\(message) - start")
-
-        let result = try block()
-
-        let duration = Date().timeIntervalSince(start)
-        logger.info("\(message) - duration \(duration)")
-
-        return result
-    }
-    
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> HTTPResponse {
         guard let requestBody = try? JSONDecoder().decode(ViewHierarchyRequest.self, from: request.body) else {
             let errorInfo = [
@@ -37,7 +25,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         let appId = requestBody.appId
 
         do {
-            let viewHierarchy = try measure(message: "View hierarchy snapshot for \(appId)") {
+            let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(appId)") {
                 try getViewHierarchy(appId: appId)
             }
 
@@ -57,21 +45,16 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
-    func handleSystemPermisionAlert() {
-        SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
-    }
-
     func getViewHierarchy(appId: String) throws -> AXElement {
-        handleSystemPermisionAlert()
+        SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
 
         let children = [
-            try? springboardHierarchy(),
+            // Ignore errors on sprinboard view hierarchy
+            try? elementHierarchy(xcuiElement: springboardApplication),
             try appHierarchy(XCUIApplication(bundleIdentifier: appId))
         ].compactMap { $0 }
 
-        let root = AXElement(children: children)
-
-        return root
+        return AXElement(children: children)
     }
 
     func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
@@ -82,7 +65,7 @@ struct ViewHierarchyHandler: HTTPHandler {
     func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement {
         do {
             var hierarchy = try elementHierarchy(xcuiElement: element)
-            let hierarchyDepth = depth(hierarchy)
+            let hierarchyDepth = hierarchy.depth()
 
             if hierarchyDepth < maxDepth {
                 logger.info("Hierarchy dept below maxdepth \(hierarchyDepth)")
@@ -91,7 +74,7 @@ struct ViewHierarchyHandler: HTTPHandler {
 
             // depth == maxdepth handling from here:
 
-            let elementChildren = measure(message: "Get element children") {
+            let elementChildren = logger.measure(message: "Get element children") {
                 element
                     .children(matching: .any)
                     .allElementsBoundByIndex
@@ -115,27 +98,10 @@ struct ViewHierarchyHandler: HTTPHandler {
 
             return childHierarchy
         }
-
-    }
-
-    func depth(_ hierarchy: AXElement) -> Int {
-        guard let children = hierarchy.children
-        else { return 1 }
-
-        let max = children
-            .map { child in depth(child) + 1 }
-            .max()
-
-        return max ?? 1
-    }
-
-
-    func springboardHierarchy() throws -> AXElement {
-        return try elementHierarchy(xcuiElement: springboardApplication)
     }
 
     func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
-        return try measure(message: "Take element snapshot") {
+        return try logger.measure(message: "Take element snapshot") {
             let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
             return AXElement(snapshotDictionary)
         }

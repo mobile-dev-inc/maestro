@@ -25,6 +25,7 @@
 		610D58FB2A49E3CA00B4BBEB /* AXClientSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610D58FA2A49E3CA00B4BBEB /* AXClientSwizzler.swift */; };
 		6124329C2A4B368100F5F619 /* ViewHierarchyRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */; };
 		6124329E2A4DA5BB00F5F619 /* AXElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329D2A4DA5BB00F5F619 /* AXElement.swift */; };
+		612432A02A4DA72F00F5F619 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329F2A4DA72F00F5F619 /* Logger.swift */; };
 		612DE40229801F71003C2BE0 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 612DE40129801F71003C2BE0 /* XCTest.framework */; platformFilter = ios; };
 		612DE4122984114B003C2BE0 /* RunnerDaemonProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612DE4112984114B003C2BE0 /* RunnerDaemonProxy.swift */; };
 		612DE414298426EF003C2BE0 /* EventRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612DE413298426EF003C2BE0 /* EventRecord.swift */; };
@@ -85,6 +86,7 @@
 		610D58FA2A49E3CA00B4BBEB /* AXClientSwizzler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AXClientSwizzler.swift; sourceTree = "<group>"; };
 		6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHierarchyRequest.swift; sourceTree = "<group>"; };
 		6124329D2A4DA5BB00F5F619 /* AXElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXElement.swift; sourceTree = "<group>"; };
+		6124329F2A4DA72F00F5F619 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		612DE40129801F71003C2BE0 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		612DE4112984114B003C2BE0 /* RunnerDaemonProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerDaemonProxy.swift; sourceTree = "<group>"; };
 		612DE413298426EF003C2BE0 /* EventRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRecord.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 			children = (
 				94A90DDD298AE72A006EB769 /* XCUIElement+Extensions.swift */,
 				F328D3E52A2A98E7000546D3 /* StringExtensions.swift */,
+				6124329F2A4DA72F00F5F619 /* Logger.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -391,6 +394,7 @@
 				612DE4122984114B003C2BE0 /* RunnerDaemonProxy.swift in Sources */,
 				61C0AFEB29C863BB005D1FC5 /* PressButtonHandler.swift in Sources */,
 				94826F4429DB082100795E9B /* SystemPermissionHelper.swift in Sources */,
+				612432A02A4DA72F00F5F619 /* Logger.swift in Sources */,
 				9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */,
 				61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */,
 				32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */,
