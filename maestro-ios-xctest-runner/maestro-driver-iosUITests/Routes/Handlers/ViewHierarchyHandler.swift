@@ -72,7 +72,12 @@ struct ViewHierarchyHandler: HTTPHandler {
                 return hierarchy
             }
 
-            // depth == maxdepth handling from here:
+            // When the hierarchy depth is equal to maxDepth, it is unknown if
+            // the hierarchy contains everything (it may be limited by the maxDepth).
+            // To handle this case, for each child of the current node the hierarchy
+            // is fetched again (recursively). This repeats until a hierarchy is found
+            // smaller than maxDepth, the result will contain all nodes in the hierarchy.
+            // Also if the hierarchy was deeper than maxDepth.
 
             let elementChildren = logger.measure(message: "Get element children") {
                 element
@@ -84,6 +89,7 @@ struct ViewHierarchyHandler: HTTPHandler {
                 .map { try elementHierarchyWithFallback(element: $0) }
 
             return hierarchy
+            
         } catch {
             // In apps with bigger view hierarchys
             // calling XCUIApplication().snapshot().dictionaryRepresentation or XCUIApplication().allElementsBoundByIndex
