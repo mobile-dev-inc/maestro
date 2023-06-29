@@ -2,9 +2,8 @@ package ios
 
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.recoverIf
 import com.github.michaelbull.result.runCatching
+import hierarchy.AXElement
 import hierarchy.XCUIElement
 import ios.device.DeviceInfo
 import ios.idb.IdbIOSDevice
@@ -33,13 +32,11 @@ class LocalIOSDevice(
 
     override fun contentDescriptor(): Result<XCUIElement, Throwable> {
         return xcTestDevice.contentDescriptor()
-            .recoverIf(
-                { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
-                {
-                    idbIOSDevice.contentDescriptor()
-                        .getOrThrow()
-                }
-            )
+
+    }
+
+    override fun viewHierarchy(): Result<AXElement, Throwable> {
+        return xcTestDevice.viewHierarchy()
     }
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {

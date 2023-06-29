@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
+import hierarchy.AXElement
 import hierarchy.Error
 import hierarchy.XCUIElement
 import ios.IOSDevice
@@ -60,6 +61,15 @@ class XCTestIOSDevice(
             is Ok -> result
             is Err -> Err(result.error)
         }
+    }
+
+    override fun viewHierarchy(): Result<AXElement, Throwable> {
+        val appId = activeAppId() ?: error("Unable to obtain active app id")
+        logger.info("Using /viewHierarchy to get view hierarchy")
+        val result = runCatching {
+            client.viewHierarchy(appId)
+        }
+        return result
     }
 
     private fun getViewHierarchy(appId: String): Result<XCUIElement, Throwable> {
