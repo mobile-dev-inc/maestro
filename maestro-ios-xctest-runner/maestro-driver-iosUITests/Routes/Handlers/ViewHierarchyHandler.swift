@@ -50,7 +50,7 @@ struct ViewHierarchyHandler: HTTPHandler {
 
         // Fetch the view hierarchy of the springboard application
         // to make it possible to interact with the home screen.
-        // If an error happens on the springboard hierarchy,
+        // Ignore any errors on fetching the springboard hierarchy.
         let springboardHierarchy: AXElement?
         do {
             springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
