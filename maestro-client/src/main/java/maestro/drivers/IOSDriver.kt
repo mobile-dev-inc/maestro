@@ -22,8 +22,10 @@ package maestro.drivers
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.expect
+import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
+import hierarchy.AXElement
 import hierarchy.IdbElementNode
 import hierarchy.XCUIElement
 import hierarchy.XCUIElementNode
@@ -185,6 +187,41 @@ class IOSDriver(
             is Ok -> mapHierarchy(contentDescriptorResult.value)
             is Err -> TreeNode()
         }
+    }
+
+    fun viewHierarchy(): TreeNode {
+        val hierarchy = iosDevice.viewHierarchy().get() ?: return TreeNode()
+        return mapViewHierarchy(hierarchy)
+    }
+
+    private fun mapViewHierarchy(element: AXElement): TreeNode {
+        val attributes = mutableMapOf<String, String>()
+        attributes["accessibilityText"] = element.label
+        attributes["title"] = element.title ?: ""
+        attributes["value"] = element.value ?: ""
+        attributes["text"] = element.title?.ifEmpty { element.value } ?: ""
+        attributes["hintText"] = element.placeholderValue ?: ""
+        attributes["resource-id"] = element.identifier
+        attributes["bounds"] = element.frame.boundsString
+        attributes["enabled"] = element.enabled.toString()
+        attributes["focused"] = element.hasFocus.toString()
+        attributes["selected"] = element.selected.toString()
+
+        val checked = element.elementType in CHECKABLE_ELEMENTS && element.value == "1"
+        attributes["checked"] = checked.toString()
+
+        val children = element.children.map {
+            mapViewHierarchy(it)
+        }
+
+        return TreeNode(
+            attributes = attributes,
+            children = children,
+            enabled = element.enabled,
+            focused = element.hasFocus,
+            selected = element.selected,
+            checked = checked,
+        )
     }
 
     override fun isUnicodeInputSupported(): Boolean {
