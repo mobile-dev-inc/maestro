@@ -2,6 +2,8 @@ import FlyingFox
 import XCTest
 import os
 
+extension NSException: Error {}
+
 @MainActor
 struct ViewHierarchyHandler: HTTPHandler {
 
@@ -133,24 +135,37 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement {
-        let keyboard = element.children(matching: .keyboard).firstMatch
+        let keyboard = try objcTry {
+             element.keyboards.firstMatch
+        }
+
         return try elementHierarchy(xcuiElement: keyboard)
     }
 
     func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement {
-        let alerts = element.children(matching: .alert).allElementsBoundByIndex
+        let alerts = try objcTry {
+            element.alerts.allElementsBoundByIndex
+        }
+
         let alertHierarchies = try alerts.map { alert in
             try elementHierarchy(xcuiElement: alert)
         }
+
         return AXElement(children: alertHierarchies)
     }
 
     let useFirstParentWithMultipleChildren = false
     func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
         if !useFirstParentWithMultipleChildren {
-            return element
-                .children(matching: .any)
-                .firstMatch
+            do {
+                return try objcTry{
+                    element
+                        .children(matching: .any)
+                        .firstMatch
+                }
+            } catch {
+                return element.windows.firstMatch
+            }
         } else {
             if element.children(matching: .any).count > 1 {
                 return element
