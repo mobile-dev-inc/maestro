@@ -86,4 +86,15 @@ struct AXElement: Codable {
         try container.encode(self.windowContextID, forKey: .windowContextID)
         try container.encode(self.displayID, forKey: .displayID)
     }
+
+    func depth() -> Int {
+        guard let children = children
+        else { return 1 }
+
+        let max = children
+            .map { child in child.depth() + 1 }
+            .max()
+
+        return max ?? 1
+    }
 }
