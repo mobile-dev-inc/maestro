@@ -141,7 +141,11 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
-    func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement {
+    func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+        if !element.keyboards.firstMatch.exists {
+            return nil
+        }
+        
         let keyboard = try objcTry {
              element.keyboards.firstMatch
         }
@@ -149,16 +153,16 @@ struct ViewHierarchyHandler: HTTPHandler {
         return try elementHierarchy(xcuiElement: keyboard)
     }
 
-    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement {
-        let alerts = try objcTry {
-            element.alerts.allElementsBoundByIndex
+    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+        if !element.alerts.firstMatch.exists {
+            return nil
+        }
+        
+        let alert = try objcTry {
+            element.alerts.firstMatch
         }
 
-        let alertHierarchies = try alerts.map { alert in
-            try elementHierarchy(xcuiElement: alert)
-        }
-
-        return AXElement(children: alertHierarchies)
+        return try elementHierarchy(xcuiElement: alert)
     }
 
     let useFirstParentWithMultipleChildren = false
