@@ -83,21 +83,29 @@ class Orchestra(
     ): Boolean {
         timeMsOfLastInteraction = System.currentTimeMillis()
 
-        val config = YamlCommandReader.getConfig(commands)
+        val config: MaestroConfig? = YamlCommandReader.getConfig(commands)
 
         initJsEngine(config)
 
-        val state = initState ?: config?.initFlow?.let {
-            runInitFlow(it) ?: return false
-        }
+        return retryOnFailure(config) {
 
-        if (state != null) {
-            maestro.clearAppState(state.appId)
-            maestro.pushAppState(state.appId, state.file)
-        }
+            val state = initState ?: config?.initFlow?.let {
+                runInitFlow(it) ?: return@retryOnFailure false
+            }
 
-        onFlowStart(commands)
-        return executeCommands(commands, config)
+            if (state != null) {
+                maestro.clearAppState(state.appId)
+                maestro.pushAppState(state.appId, state.file)
+            }
+
+            onFlowStart(commands)
+            return@retryOnFailure executeCommands(commands, config)
+        }
+    }
+
+    private fun retryOnFailure(config: MaestroConfig?, block: () -> Boolean): Boolean {
+        repeat(config?.retryTestsCount ?: 1) { if (block()) return true }
+        return false
     }
 
     /**

@@ -13,6 +13,7 @@ import kotlin.io.path.isDirectory
 data class YamlConfig(
     val name: String?,
     val appId: String,
+    val retryTestsCount: Int?,
     val initFlow: YamlInitFlowUnion?,
     val tags: List<String>? = emptyList(),
     val env: Map<String, String> = emptyMap(),
@@ -30,6 +31,7 @@ data class YamlConfig(
             appId = appId,
             name = name,
             tags = tags,
+            retryTestsCount = retryTestsCount,
             initFlow = initFlow(flowPath),
             ext = ext.toMap()
         )
