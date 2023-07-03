@@ -58,7 +58,9 @@ struct ViewHierarchyHandler: HTTPHandler {
             springboardHierarchy = nil
         }
 
-        let appHierarchy = try appHierarchy(XCUIApplication(bundleIdentifier: appId))
+        guard let appHierarchy = try appHierarchy(XCUIApplication(bundleIdentifier: appId)) else {
+            throw ViewHierarchyError.MissingHierarchy("Empty hierarchy for \(appId)")
+        }
 
         return AXElement(children: [
             springboardHierarchy,
@@ -74,47 +76,63 @@ struct ViewHierarchyHandler: HTTPHandler {
         } ?? ViewHierarchyHandler.springboardBundleId
     }
 
-    func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
+    func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement? {
         return try elementHierarchyWithFallback(element: xcuiApplication)
     }
 
-    func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement {
+    func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement? {
         do {
             let hierarchy = try elementHierarchy(xcuiElement: element)
             return hierarchy
-        } catch {
-            // In apps with bigger view hierarchys, calling
-            // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
-            // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
-            // We recover by selecting the first child of the app element,
-            // which should be the window, and continue from there.
+        } catch let error {
+            let message = error.localizedDescription
+            let errorCode = getErrorCode(message: message)
+            if errorCode == "illegal-argument-snapshot-failure" {
+                logger.error("Snapshot failure, getting recovery element for fallback")
+                // In apps with bigger view hierarchys, calling
+                // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
+                // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
+                // We recover by selecting the first child of the app element,
+                // which should be the window, and continue from there.
 
-            let recoveryElement = findRecoveryElement(element)
-            let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
+                let recoveryElement = findRecoveryElement(element)
+                let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
 
-            // When the application element is skipped, try to fetch
-            // the keyboard and alert hierarchies separately.
-            if let element = element as? XCUIApplication {
-                let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
-                     try keyboardHierarchy(element)
+                // When the application element is skipped, try to fetch
+                // the keyboard and alert hierarchies separately.
+                if let element = element as? XCUIApplication {
+                    let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
+                         try keyboardHierarchy(element)
+                    }
+
+                    let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
+                        try fullScreenAlertHierarchy(element)
+                    })
+
+                    return AXElement(children: [
+                        hierarchy,
+                        keyboard,
+                        alerts
+                    ].compactMap { $0 })
                 }
 
-                let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
-                    try fullScreenAlertHierarchy(element)
-                })
-
-                return AXElement(children: [
-                    hierarchy,
-                    keyboard,
-                    alerts
-                ].compactMap { $0 })
+                return hierarchy
+            } else {
+                logger.error("Snapshot failure, cannot return view hierarchy due to \(message)")
+                return nil
             }
-
-            return hierarchy
+        }
+    }
+    
+    private func getErrorCode(message: String) -> String {
+        if message.contains("Error kAXErrorIllegalArgument getting snapshot for element") {
+            return "illegal-argument-snapshot-failure"
+        } else {
+            return "unknown-snapshot-failure"
         }
     }
 
-    func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+    private func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement? {
         if !element.keyboards.firstMatch.exists {
             return nil
         }
@@ -139,7 +157,7 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     let useFirstParentWithMultipleChildren = false
-    func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
+    private func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
         if !useFirstParentWithMultipleChildren {
             do {
                 return try objcTry{
@@ -159,8 +177,12 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
-    func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
+    private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
         let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
         return AXElement(snapshotDictionary)
+    }
+    
+    enum ViewHierarchyError: Error {
+        case MissingHierarchy(String)
     }
 }
