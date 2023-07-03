@@ -19,10 +19,7 @@
 
 package maestro.drivers
 
-import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.*
 import hierarchy.AXElement
 import hierarchy.IdbElementNode
 import hierarchy.XCUIElement
@@ -181,7 +178,10 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        return viewHierarchy()
+        return when (val contentDescriptorResult = iosDevice.contentDescriptor()) {
+            is Ok -> mapHierarchy(contentDescriptorResult.value)
+            is Err -> TreeNode()
+        }
     }
 
     fun viewHierarchy(): TreeNode {
