@@ -25,7 +25,6 @@ struct ViewHierarchyHandler: HTTPHandler {
             return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
         }
 
-        let installedApps = requestBody.appIds
         let appId = getRunningAppId(requestBody)
 
         do {
@@ -37,12 +36,11 @@ struct ViewHierarchyHandler: HTTPHandler {
 
             return HTTPResponse(statusCode: .ok, body: body)
         } catch {
-            print(error)
             let errorInfo = [
                 "errorMessage": "Snapshot failure while getting view hierarchy. Error: \(error)",
             ]
             let body = try? JSONEncoder().encode(errorInfo)
-            return HTTPResponse(statusCode: .internalServerError, body: body ?? Data())
+            return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
         }
     }
 
@@ -56,7 +54,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         do {
             springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
         } catch {
-            print("Springboard hierarchy failed to fetch: \(error)")
+            logger.error("Springboard hierarchy failed to fetch: \(error)")
             springboardHierarchy = nil
         }
 
@@ -77,38 +75,13 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
-        AXClientSwizzler.overwriteDefaultParameters["maxDepth"] = maxDepth
         return try elementHierarchyWithFallback(element: xcuiApplication)
     }
 
     func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement {
         do {
-            var hierarchy = try elementHierarchy(xcuiElement: element)
-            let hierarchyDepth = hierarchy.depth()
-
-            if hierarchyDepth < maxDepth {
-                logger.info("Hierarchy dept below maxdepth \(hierarchyDepth)")
-                return hierarchy
-            }
-
-            // When the hierarchy depth is equal to maxDepth, it is unknown if
-            // the hierarchy contains everything (it may be limited by the maxDepth).
-            // To handle this case, for each child of the current node the hierarchy
-            // is fetched again (recursively). This repeats until a hierarchy is found
-            // smaller than maxDepth, the result will contain all nodes in the hierarchy.
-            // Also if the hierarchy was deeper than maxDepth.
-
-            let elementChildren = logger.measure(message: "Get element children") {
-                element
-                    .children(matching: .any)
-                    .allElementsBoundByIndex
-            }
-
-            hierarchy.children = try elementChildren
-                .map { try elementHierarchyWithFallback(element: $0) }
-
+            let hierarchy = try elementHierarchy(xcuiElement: element)
             return hierarchy
-
         } catch {
             // In apps with bigger view hierarchys, calling
             // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
