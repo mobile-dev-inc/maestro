@@ -231,7 +231,7 @@ class XCTestDriverClient(
                     .code(200)
                     .build()
             } else {
-                val message = "Failed request for XCTest server"
+                val message = "Failed request for XCTest server: $connectException"
                 val responseBody = """
                     { "message" : "$message" }
                 """.trimIndent().toResponseBody("application/json; charset=utf-8".toMediaType())
