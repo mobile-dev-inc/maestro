@@ -21,22 +21,22 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
 
         let runningAppIds = requestBody.appIds
-        let appId = getRunningAppId(runningAppIds)
+        let app = getRunningApp(runningAppIds)
 
         do {
-            if appId == ViewHierarchyHandler.springboardBundleId {
+            guard let app = app else {
                 let springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
                 let body = try JSONEncoder().encode(springboardHierarchy)
                 return HTTPResponse(statusCode: .ok, body: body)
-            } else {
-                let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(appId)") {
-                    try getViewHierarchy(appId: appId)
-                }
-
-                let body = try JSONEncoder().encode(viewHierarchy)
-
-                return HTTPResponse(statusCode: .ok, body: body)
             }
+
+            let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(app)") {
+                try getAppViewHierarchy(app: app)
+            }
+
+            let body = try JSONEncoder().encode(viewHierarchy)
+            return HTTPResponse(statusCode: .ok, body: body)
+
         } catch let error as AppError {
             return error.httpResponse
         } catch let error {
@@ -44,7 +44,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
-    func getViewHierarchy(appId: String) throws -> AXElement {
+    func getAppViewHierarchy(app: XCUIApplication) throws -> AXElement {
         SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
 
         // Fetch the view hierarchy of the springboard application
@@ -58,7 +58,7 @@ struct ViewHierarchyHandler: HTTPHandler {
             springboardHierarchy = nil
         }
 
-        let appHierarchy = try appHierarchy(XCUIApplication(bundleIdentifier: appId))
+        let appHierarchy = try getHierarchyWithFallback(app)
 
         return AXElement(children: [
             springboardHierarchy,
@@ -66,22 +66,15 @@ struct ViewHierarchyHandler: HTTPHandler {
         ].compactMap { $0 })
     }
     
-    func getRunningAppId(_ runningAppIds: [String]) -> String {
-        return runningAppIds.first { appId in
-            let app = XCUIApplication(bundleIdentifier: appId)
-            
-            return app.state == .runningForeground
-        } ?? ViewHierarchyHandler.springboardBundleId
+    func getRunningApp(_ runningAppIds: [String]) -> XCUIApplication? {
+        runningAppIds
+            .map { XCUIApplication(bundleIdentifier: $0) }
+            .first { app in app.state == .runningForeground }
     }
 
-    func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
-        return try elementHierarchyWithFallback(element: xcuiApplication)
-    }
-
-    func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement {
+    func getHierarchyWithFallback(_ element: XCUIElement) throws -> AXElement {
         do {
-            let hierarchy = try elementHierarchy(xcuiElement: element)
-            return hierarchy
+            return try elementHierarchy(xcuiElement: element)
         } catch let error {
             guard isIllegalArgumentError(error) else {
                 logger.error("Snapshot failure, cannot return view hierarchy due to \(error.localizedDescription)")
@@ -96,7 +89,7 @@ struct ViewHierarchyHandler: HTTPHandler {
             // which should be the window, and continue from there.
 
             let recoveryElement = findRecoveryElement(element)
-            let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
+            let hierarchy = try getHierarchyWithFallback(recoveryElement)
 
             // When the application element is skipped, try to fetch
             // the keyboard and alert hierarchies separately.
