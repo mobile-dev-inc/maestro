@@ -8,7 +8,7 @@ import maestro.orchestra.util.Env.evaluateScripts
 data class MaestroConfig(
     val appId: String? = null,
     val name: String? = null,
-    val retryTestsCount: Int? = 1,
+    val retryTestsCount: Int? = null,
     val tags: List<String>? = emptyList(),
     val initFlow: MaestroInitFlow? = null,
     val ext: Map<String, Any?> = emptyMap(),

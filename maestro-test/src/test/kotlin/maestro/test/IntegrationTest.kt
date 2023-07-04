@@ -554,6 +554,7 @@ class IntegrationTest {
                     ApplyConfigurationCommand(
                         config = MaestroConfig(
                             appId = "com.example.app",
+                            retryTestsCount = 3,
                             initFlow = MaestroInitFlow(
                                 appId = "com.example.app",
                                 commands = listOf(
