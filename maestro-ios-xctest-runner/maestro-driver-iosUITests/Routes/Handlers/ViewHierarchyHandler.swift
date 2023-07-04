@@ -7,8 +7,9 @@ extension NSException: Error {}
 @MainActor
 struct ViewHierarchyHandler: HTTPHandler {
 
-    let maxDepth = 60
-    let springboardApplication = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    private let maxDepth = 60
+    private let springboardApplication = XCUIApplication(bundleIdentifier: ViewHierarchyHandler.springboardBundleId)
+    private static let springboardBundleId = "com.apple.springboard"
 
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -24,26 +25,32 @@ struct ViewHierarchyHandler: HTTPHandler {
             return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
         }
 
-        let appId = requestBody.appId
+        let runningAppIds = requestBody.appIds
+        let appId = getRunningAppId(runningAppIds)
 
         do {
-            let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(appId)") {
-                try getViewHierarchy(appId: appId)
+            if appId == ViewHierarchyHandler.springboardBundleId {
+                let springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
+                let body = try JSONEncoder().encode(springboardHierarchy)
+                return HTTPResponse(statusCode: .ok, body: body)
+            } else {
+                let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(appId)") {
+                    try getViewHierarchy(appId: appId)
+                }
+
+                let body = try JSONEncoder().encode(viewHierarchy)
+
+                return HTTPResponse(statusCode: .ok, body: body)
             }
-
-            let body = try JSONEncoder().encode(viewHierarchy)
-
-            // TODO: Remove debug print here
-            print(String(data: body, encoding: .utf8)!)
-
-            return HTTPResponse(statusCode: .ok, body: body)
-        } catch {
-            print(error)
+        } catch let error as ViewHierarchyError {
+            let body = try? JSONEncoder().encode(error)
+            return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
+        } catch let error {
             let errorInfo = [
-                "errorMessage": "Snapshot failure while getting view hierarchy. Error: \(error)",
+                "errorMessage": "Snapshot failure while getting view hierarchy. Error: \(error.localizedDescription)",
             ]
             let body = try? JSONEncoder().encode(errorInfo)
-            return HTTPResponse(statusCode: .internalServerError, body: body ?? Data())
+            return HTTPResponse(statusCode: .badRequest, body: body ?? Data())
         }
     }
 
@@ -57,7 +64,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         do {
             springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
         } catch {
-            print("Springboard hierarchy failed to fetch: \(error)")
+            logger.error("Springboard hierarchy failed to fetch: \(error)")
             springboardHierarchy = nil
         }
 
@@ -68,73 +75,82 @@ struct ViewHierarchyHandler: HTTPHandler {
             appHierarchy,
         ].compactMap { $0 })
     }
+    
+    func getRunningAppId(_ runningAppIds: [String]) -> String {
+        return runningAppIds.first { appId in
+            let app = XCUIApplication(bundleIdentifier: appId)
+            
+            return app.state == .runningForeground
+        } ?? ViewHierarchyHandler.springboardBundleId
+    }
 
     func appHierarchy(_ xcuiApplication: XCUIApplication) throws -> AXElement {
-        AXClientSwizzler.overwriteDefaultParameters["maxDepth"] = maxDepth
         return try elementHierarchyWithFallback(element: xcuiApplication)
     }
 
     func elementHierarchyWithFallback(element: XCUIElement) throws -> AXElement {
         do {
-            var hierarchy = try elementHierarchy(xcuiElement: element)
-            let hierarchyDepth = hierarchy.depth()
-
-            if hierarchyDepth < maxDepth {
-                logger.info("Hierarchy dept below maxdepth \(hierarchyDepth)")
-                return hierarchy
-            }
-
-            // When the hierarchy depth is equal to maxDepth, it is unknown if
-            // the hierarchy contains everything (it may be limited by the maxDepth).
-            // To handle this case, for each child of the current node the hierarchy
-            // is fetched again (recursively). This repeats until a hierarchy is found
-            // smaller than maxDepth, the result will contain all nodes in the hierarchy.
-            // Also if the hierarchy was deeper than maxDepth.
-
-            let elementChildren = logger.measure(message: "Get element children") {
-                element
-                    .children(matching: .any)
-                    .allElementsBoundByIndex
-            }
-
-            hierarchy.children = try elementChildren
-                .map { try elementHierarchyWithFallback(element: $0) }
-
+            let hierarchy = try elementHierarchy(xcuiElement: element)
             return hierarchy
+        } catch let error {
+            let message = error.localizedDescription
+            let viewHierarchyError = getErrorType(message: message)
+            if viewHierarchyError.errorType == ViewHierarchyErrorType.MaxDepthExceededError {
+                logger.error("Snapshot failure, getting recovery element for fallback")
+                // In apps with bigger view hierarchys, calling
+                // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
+                // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
+                // We recover by selecting the first child of the app element,
+                // which should be the window, and continue from there.
 
-        } catch {
-            // In apps with bigger view hierarchys, calling
-            // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
-            // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
-            // We recover by selecting the first child of the app element,
-            // which should be the window, and continue from there.
+                let recoveryElement = findRecoveryElement(element)
+                let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
 
-            let recoveryElement = findRecoveryElement(element)
-            let hierarchy = try elementHierarchyWithFallback(element: recoveryElement)
+                // When the application element is skipped, try to fetch
+                // the keyboard and alert hierarchies separately.
+                if let element = element as? XCUIApplication {
+                    let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
+                         try keyboardHierarchy(element)
+                    }
 
-            // When the application element is skipped, try to fetch
-            // the keyboard and alert hierarchies separately.
-            if let element = element as? XCUIApplication {
-                let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
-                     try keyboardHierarchy(element)
+                    let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
+                        try fullScreenAlertHierarchy(element)
+                    })
+
+                    return AXElement(children: [
+                        hierarchy,
+                        keyboard,
+                        alerts
+                    ].compactMap { $0 })
                 }
 
-                let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
-                    try fullScreenAlertHierarchy(element)
-                })
-
-                return AXElement(children: [
-                    hierarchy,
-                    keyboard,
-                    alerts
-                ].compactMap { $0 })
+                return hierarchy
+            } else {
+                logger.error("Snapshot failure, cannot return view hierarchy due to \(message)")
+                throw viewHierarchyError
             }
-
-            return hierarchy
+        }
+    }
+    
+    private func getErrorType(message: String) -> ViewHierarchyError {
+        if message.contains("Error kAXErrorIllegalArgument getting snapshot for element") {
+            return ViewHierarchyError(
+                message: "kAXErrorIllegalArgument error due to maxDepth exceeded limits",
+                errorType: ViewHierarchyErrorType.MaxDepthExceededError
+            )
+        } else {
+            return ViewHierarchyError(
+                message: "Unknown error while retrieving hierarchy, due to \(message)",
+                errorType: ViewHierarchyErrorType.UnknownError
+            )
         }
     }
 
-    func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement {
+    private func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+        if !element.keyboards.firstMatch.exists {
+            return nil
+        }
+        
         let keyboard = try objcTry {
              element.keyboards.firstMatch
         }
@@ -142,20 +158,20 @@ struct ViewHierarchyHandler: HTTPHandler {
         return try elementHierarchy(xcuiElement: keyboard)
     }
 
-    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement {
-        let alerts = try objcTry {
-            element.alerts.allElementsBoundByIndex
+    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+        if !element.alerts.firstMatch.exists {
+            return nil
+        }
+        
+        let alert = try objcTry {
+            element.alerts.firstMatch
         }
 
-        let alertHierarchies = try alerts.map { alert in
-            try elementHierarchy(xcuiElement: alert)
-        }
-
-        return AXElement(children: alertHierarchies)
+        return try elementHierarchy(xcuiElement: alert)
     }
 
     let useFirstParentWithMultipleChildren = false
-    func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
+    private func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
         if !useFirstParentWithMultipleChildren {
             do {
                 return try objcTry{
@@ -175,7 +191,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
-    func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
+    private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
         let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
         return AXElement(snapshotDictionary)
     }

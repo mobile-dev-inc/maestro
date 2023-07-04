@@ -64,10 +64,10 @@ class XCTestIOSDevice(
     }
 
     override fun viewHierarchy(): Result<AXElement, Throwable> {
-        val appId = activeAppId() ?: error("Unable to obtain active app id")
-        logger.info("Using /viewHierarchy to get view hierarchy")
+        val installedApps = getInstalledApps()
+        logger.info("Using viewHierarchy to get view hierarchy")
         val result = runCatching {
-            client.viewHierarchy(appId)
+            client.viewHierarchy(installedApps)
         }
         return result
     }

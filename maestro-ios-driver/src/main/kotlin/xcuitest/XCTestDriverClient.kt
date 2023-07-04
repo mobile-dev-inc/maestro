@@ -75,11 +75,12 @@ class XCTestDriverClient(
         return okHttpClient.newCall(request).execute()
     }
 
-    fun viewHierarchy(appId: String): AXElement {
+    fun viewHierarchy(installedApps: Set<String>): AXElement {
         return executeJsonRequest(
             "viewHierarchy",
-            ViewHierarchyRequest(appId),
-            AXElement::class)
+            ViewHierarchyRequest(installedApps),
+            AXElement::class
+        )
     }
 
     fun screenshot(compressed: Boolean): Response {

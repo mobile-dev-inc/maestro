@@ -1,5 +1,5 @@
 import Foundation
 
 struct ViewHierarchyRequest: Codable {
-    let appId: String
+    let appIds: [String]
 }

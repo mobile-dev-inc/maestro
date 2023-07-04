@@ -1,8 +1,6 @@
 package ios
 
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.runCatching
+import com.github.michaelbull.result.*
 import hierarchy.AXElement
 import hierarchy.XCUIElement
 import ios.device.DeviceInfo
@@ -32,6 +30,13 @@ class LocalIOSDevice(
 
     override fun contentDescriptor(): Result<XCUIElement, Throwable> {
         return xcTestDevice.contentDescriptor()
+            .recoverIf(
+                { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
+                {
+                    idbIOSDevice.contentDescriptor()
+                        .getOrThrow()
+                }
+            )
 
     }
 
