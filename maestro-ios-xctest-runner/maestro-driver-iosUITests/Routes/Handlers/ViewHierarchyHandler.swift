@@ -2,8 +2,6 @@ import FlyingFox
 import XCTest
 import os
 
-extension NSException: Error {}
-
 @MainActor
 struct ViewHierarchyHandler: HTTPHandler {
 
@@ -94,13 +92,13 @@ struct ViewHierarchyHandler: HTTPHandler {
             // When the application element is skipped, try to fetch
             // the keyboard and alert hierarchies separately.
             if let element = element as? XCUIApplication {
-                let keyboard = try? logger.measure(message: "Fetch keyboard hierarchy") {
-                    try keyboardHierarchy(element)
+                let keyboard = logger.measure(message: "Fetch keyboard hierarchy") {
+                    keyboardHierarchy(element)
                 }
 
-                let alerts = try? logger.measure(message: "Fetch alert hierarchy", {
-                    try fullScreenAlertHierarchy(element)
-                })
+                let alerts = logger.measure(message: "Fetch alert hierarchy") {
+                    fullScreenAlertHierarchy(element)
+                }
 
                 return AXElement(children: [
                     hierarchy,
@@ -117,42 +115,32 @@ struct ViewHierarchyHandler: HTTPHandler {
         error.localizedDescription.contains("Error kAXErrorIllegalArgument getting snapshot for element")
     }
 
-    private func keyboardHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+    private func keyboardHierarchy(_ element: XCUIApplication) -> AXElement? {
         if !element.keyboards.firstMatch.exists {
             return nil
         }
         
-        let keyboard = try objcTry {
-             element.keyboards.firstMatch
-        }
+        let keyboard = element.keyboards.firstMatch
 
-        return try elementHierarchy(xcuiElement: keyboard)
+        return try? elementHierarchy(xcuiElement: keyboard)
     }
 
-    func fullScreenAlertHierarchy(_ element: XCUIApplication) throws -> AXElement? {
+    func fullScreenAlertHierarchy(_ element: XCUIApplication) -> AXElement? {
         if !element.alerts.firstMatch.exists {
             return nil
         }
         
-        let alert = try objcTry {
-            element.alerts.firstMatch
-        }
+        let alert = element.alerts.firstMatch
 
-        return try elementHierarchy(xcuiElement: alert)
+        return try? elementHierarchy(xcuiElement: alert)
     }
 
     let useFirstParentWithMultipleChildren = false
     private func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
         if !useFirstParentWithMultipleChildren {
-            do {
-                return try objcTry{
-                    element
-                        .children(matching: .any)
-                        .firstMatch
-                }
-            } catch {
-                return element.windows.firstMatch
-            }
+            return element
+                .children(matching: .any)
+                .firstMatch
         } else {
             if element.children(matching: .any).count > 1 {
                 return element

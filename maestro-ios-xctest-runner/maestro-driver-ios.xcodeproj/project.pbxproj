@@ -27,7 +27,6 @@
 		6124329C2A4B368100F5F619 /* ViewHierarchyRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */; };
 		6124329E2A4DA5BB00F5F619 /* AXElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329D2A4DA5BB00F5F619 /* AXElement.swift */; };
 		612432A02A4DA72F00F5F619 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329F2A4DA72F00F5F619 /* Logger.swift */; };
-		612432A92A4DDFC200F5F619 /* ObjcTry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612432A82A4DDFC200F5F619 /* ObjcTry.swift */; };
 		612DE40229801F71003C2BE0 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 612DE40129801F71003C2BE0 /* XCTest.framework */; platformFilter = ios; };
 		612DE4122984114B003C2BE0 /* RunnerDaemonProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612DE4112984114B003C2BE0 /* RunnerDaemonProxy.swift */; };
 		612DE414298426EF003C2BE0 /* EventRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612DE413298426EF003C2BE0 /* EventRecord.swift */; };
@@ -90,9 +89,6 @@
 		6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHierarchyRequest.swift; sourceTree = "<group>"; };
 		6124329D2A4DA5BB00F5F619 /* AXElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXElement.swift; sourceTree = "<group>"; };
 		6124329F2A4DA72F00F5F619 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		612432A42A4DD9DE00F5F619 /* ExceptionCatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExceptionCatcher.h; path = "maestro-driver-iosUITests/Routes/ExceptionCatcher.h"; sourceTree = SOURCE_ROOT; };
-		612432A52A4DDA2600F5F619 /* maestro-driver-iosUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "maestro-driver-iosUITests-Bridging-Header.h"; sourceTree = "<group>"; };
-		612432A82A4DDFC200F5F619 /* ObjcTry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjcTry.swift; sourceTree = "<group>"; };
 		612DE40129801F71003C2BE0 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		612DE4112984114B003C2BE0 /* RunnerDaemonProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerDaemonProxy.swift; sourceTree = "<group>"; };
 		612DE413298426EF003C2BE0 /* EventRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRecord.swift; sourceTree = "<group>"; };
@@ -180,7 +176,6 @@
 			children = (
 				943A907A293F5AF400C85136 /* Routes */,
 				52049BF7293503A200807AA3 /* maestro_driver_iosUITests.swift */,
-				612432A52A4DDA2600F5F619 /* maestro-driver-iosUITests-Bridging-Header.h */,
 			);
 			path = "maestro-driver-iosUITests";
 			sourceTree = "<group>";
@@ -262,9 +257,7 @@
 		94826F4229DB080E00795E9B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				612432A42A4DD9DE00F5F619 /* ExceptionCatcher.h */,
 				94826F4329DB082100795E9B /* SystemPermissionHelper.swift */,
-				612432A82A4DDFC200F5F619 /* ObjcTry.swift */,
 				522785802A54410D008DBC0A /* AppError.swift */,
 			);
 			path = Helpers;
@@ -407,7 +400,6 @@
 				612432A02A4DA72F00F5F619 /* Logger.swift in Sources */,
 				9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */,
 				61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */,
-				612432A92A4DDFC200F5F619 /* ObjcTry.swift in Sources */,
 				32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */,
 				610D58FB2A49E3CA00B4BBEB /* AXClientSwizzler.swift in Sources */,
 				F328D3E62A2A98E7000546D3 /* StringExtensions.swift in Sources */,
@@ -662,7 +654,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.mobile.maestro-driver-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "maestro-driver-iosUITests/maestro-driver-iosUITests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -688,7 +680,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.mobile.maestro-driver-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "maestro-driver-iosUITests/maestro-driver-iosUITests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = "maestro-driver-ios";
