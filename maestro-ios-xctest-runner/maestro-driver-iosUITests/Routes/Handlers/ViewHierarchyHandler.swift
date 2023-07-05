@@ -19,7 +19,7 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
 
         let runningAppIds = requestBody.appIds
-        let app = getRunningApp(runningAppIds)
+        let app = getForegroundApp(runningAppIds)
 
         do {
             guard let app = app else {
@@ -42,6 +42,12 @@ struct ViewHierarchyHandler: HTTPHandler {
         }
     }
 
+    func getForegroundApp(_ runningAppIds: [String]) -> XCUIApplication? {
+        runningAppIds
+            .map { XCUIApplication(bundleIdentifier: $0) }
+            .first { app in app.state == .runningForeground }
+    }
+
     func getAppViewHierarchy(app: XCUIApplication) throws -> AXElement {
         SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
 
@@ -62,12 +68,6 @@ struct ViewHierarchyHandler: HTTPHandler {
             springboardHierarchy,
             appHierarchy,
         ].compactMap { $0 })
-    }
-    
-    func getRunningApp(_ runningAppIds: [String]) -> XCUIApplication? {
-        runningAppIds
-            .map { XCUIApplication(bundleIdentifier: $0) }
-            .first { app in app.state == .runningForeground }
     }
 
     func getHierarchyWithFallback(_ element: XCUIElement) throws -> AXElement {
@@ -116,38 +116,27 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     private func keyboardHierarchy(_ element: XCUIApplication) -> AXElement? {
-        if !element.keyboards.firstMatch.exists {
+        guard element.keyboards.firstMatch.exists else {
             return nil
         }
         
         let keyboard = element.keyboards.firstMatch
-
         return try? elementHierarchy(xcuiElement: keyboard)
     }
 
     func fullScreenAlertHierarchy(_ element: XCUIApplication) -> AXElement? {
-        if !element.alerts.firstMatch.exists {
+        guard element.alerts.firstMatch.exists else {
             return nil
         }
         
         let alert = element.alerts.firstMatch
-
         return try? elementHierarchy(xcuiElement: alert)
     }
 
-    let useFirstParentWithMultipleChildren = false
     private func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
-        if !useFirstParentWithMultipleChildren {
-            return element
-                .children(matching: .any)
-                .firstMatch
-        } else {
-            if element.children(matching: .any).count > 1 {
-                return element
-            } else {
-                return findRecoveryElement(element.children(matching: .any).firstMatch)
-            }
-        }
+        return element
+            .children(matching: .any)
+            .firstMatch
     }
 
     private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
