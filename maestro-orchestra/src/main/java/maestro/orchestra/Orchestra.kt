@@ -97,10 +97,21 @@ class Orchestra(
         }
 
         onFlowStart(commands)
-        return executeCommands(commands, config).also {
+
+        config?.onFlowStart?.commands?.let {
+            executeCommands(it)
+        }
+
+        val flowSuccess = executeCommands(commands, config).also {
             // close existing screen recording, if left open.
             screenRecording?.close()
         }
+
+        config?.onFlowComplete?.commands?.let {
+            executeCommands(it)
+        }
+
+        return flowSuccess
     }
 
     /**

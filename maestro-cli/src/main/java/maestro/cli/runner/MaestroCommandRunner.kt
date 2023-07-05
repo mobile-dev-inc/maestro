@@ -190,15 +190,7 @@ object MaestroCommandRunner {
             cachedAppState
         }
 
-        if (onFlowStart != null) {
-            orchestra.runFlow(onFlowStart.commands)
-        }
-
         val flowSuccess = orchestra.runFlow(commands, cachedState)
-
-        if (onFlowComplete != null) {
-            orchestra.runFlow(onFlowComplete.commands)
-        }
 
         return Result(flowSuccess = flowSuccess, cachedAppState = cachedState)
     }
