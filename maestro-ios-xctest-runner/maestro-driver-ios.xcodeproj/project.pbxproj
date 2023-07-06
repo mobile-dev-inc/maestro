@@ -23,6 +23,7 @@
 		522785812A54410D008DBC0A /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 522785802A54410D008DBC0A /* AppError.swift */; };
 		5279BFD62935ECE20056C609 /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = 5279BFD52935ECE20056C609 /* FlyingFox */; };
 		610D58F92A45B5DA00B4BBEB /* ViewHierarchyHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610D58F82A45B5DA00B4BBEB /* ViewHierarchyHandler.swift */; };
+		610D58FB2A49E3CA00B4BBEB /* AXClientSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610D58FA2A49E3CA00B4BBEB /* AXClientSwizzler.swift */; };
 		6124329C2A4B368100F5F619 /* ViewHierarchyRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */; };
 		6124329E2A4DA5BB00F5F619 /* AXElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329D2A4DA5BB00F5F619 /* AXElement.swift */; };
 		612432A02A4DA72F00F5F619 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6124329F2A4DA72F00F5F619 /* Logger.swift */; };
@@ -84,6 +85,7 @@
 		52049BF7293503A200807AA3 /* maestro_driver_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maestro_driver_iosUITests.swift; sourceTree = "<group>"; };
 		522785802A54410D008DBC0A /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		610D58F82A45B5DA00B4BBEB /* ViewHierarchyHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHierarchyHandler.swift; sourceTree = "<group>"; };
+		610D58FA2A49E3CA00B4BBEB /* AXClientSwizzler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AXClientSwizzler.swift; sourceTree = "<group>"; };
 		6124329B2A4B368100F5F619 /* ViewHierarchyRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHierarchyRequest.swift; sourceTree = "<group>"; };
 		6124329D2A4DA5BB00F5F619 /* AXElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXElement.swift; sourceTree = "<group>"; };
 		6124329F2A4DA72F00F5F619 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 		612DE410298410F9003C2BE0 /* XCTest */ = {
 			isa = PBXGroup;
 			children = (
+				610D58FA2A49E3CA00B4BBEB /* AXClientSwizzler.swift */,
 				612DE4112984114B003C2BE0 /* RunnerDaemonProxy.swift */,
 				612DE413298426EF003C2BE0 /* EventRecord.swift */,
 				613E87D6299A64BD00FF8551 /* PointerEventPath.swift */,
@@ -398,6 +401,7 @@
 				9407362E2940CA1600A72E99 /* GetRunningAppRequest.swift in Sources */,
 				61C0AFED29C88926005D1FC5 /* EraseTextHandler.swift in Sources */,
 				32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */,
+				610D58FB2A49E3CA00B4BBEB /* AXClientSwizzler.swift in Sources */,
 				F328D3E62A2A98E7000546D3 /* StringExtensions.swift in Sources */,
 				61C0AFEF29C8961F005D1FC5 /* EraseTextRequest.swift in Sources */,
 				61A79B9729DF0B8A00C38882 /* SwipeRouteHandlerV2.swift in Sources */,
