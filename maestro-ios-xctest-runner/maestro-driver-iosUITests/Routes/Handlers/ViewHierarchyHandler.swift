@@ -7,6 +7,7 @@ struct ViewHierarchyHandler: HTTPHandler {
 
     private static let springboardBundleId = "com.apple.springboard"
     private let springboardApplication = XCUIApplication(bundleIdentifier: Self.springboardBundleId)
+    private let snapshotMaxDepth = 60
 
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -50,6 +51,7 @@ struct ViewHierarchyHandler: HTTPHandler {
 
     func getAppViewHierarchy(app: XCUIApplication) throws -> AXElement {
         SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
+        AXClientSwizzler.overwriteDefaultParameters["maxDepth"] = snapshotMaxDepth
 
         // Fetch the view hierarchy of the springboard application
         // to make it possible to interact with the home screen.

@@ -13,11 +13,9 @@ struct AXClientSwizzler {
 
     static var overwriteDefaultParameters: [String: Int] {
         get { _overwriteDefaultParameters }
-        set { _overwriteDefaultParameters = newValue }
+        set { setup; _overwriteDefaultParameters = newValue }
     }
 
-    // Setup will be called when the type is first used
-    // (eg. by setting defaultParameters)
     static let setup: Void = {
         print("Swizzle XCAXClient_iOS.defaultParameters")
 
