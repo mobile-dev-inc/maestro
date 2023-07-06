@@ -563,6 +563,7 @@ data class RunFlowCommand(
     val commands: List<MaestroCommand>,
     val condition: Condition? = null,
     val sourceDescription: String? = null,
+    val config: MaestroConfig?,
 ) : CompositeCommand {
 
     override fun subCommands(): List<MaestroCommand> {
@@ -586,6 +587,7 @@ data class RunFlowCommand(
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
             condition = condition?.evaluateScripts(jsEngine),
+            config = config?.evaluateScripts(jsEngine),
         )
     }
 

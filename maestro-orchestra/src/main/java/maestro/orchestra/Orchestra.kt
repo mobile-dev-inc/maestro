@@ -398,7 +398,7 @@ class Orchestra(
                 command.commands.forEach { resetCommand(it) }
             }
 
-            val mutated = runSubFlow(command.commands, config)
+            val mutated = runSubFlow(command.commands, config, null)
             mutatiing = mutatiing || mutated
             counter++
 
@@ -436,7 +436,7 @@ class Orchestra(
 
     private fun runFlowCommand(command: RunFlowCommand, config: MaestroConfig?): Boolean {
         return if (evaluateCondition(command.condition)) {
-            runSubFlow(command.commands, config)
+            runSubFlow(command.commands, config, command.config)
         } else {
             throw CommandSkipped
         }
@@ -511,8 +511,12 @@ class Orchestra(
         return true
     }
 
-    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
+    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?, subflowConfig: MaestroConfig?): Boolean {
         jsEngine.enterScope()
+
+        subflowConfig?.onFlowStart?.commands?.let {
+            executeCommands(it)
+        }
 
         return try {
             commands
@@ -547,6 +551,10 @@ class Orchestra(
                 }
                 .any { it }
         } finally {
+            subflowConfig?.onFlowComplete?.commands?.let {
+                executeCommands(it)
+            }
+
             jsEngine.leaveScope()
         }
     }
