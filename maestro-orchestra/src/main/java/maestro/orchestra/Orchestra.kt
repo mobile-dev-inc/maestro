@@ -99,7 +99,10 @@ class Orchestra(
             }
 
             onFlowStart(commands)
-            return@retryOnFailure executeCommands(commands, config)
+            return@retryOnFailure executeCommands(commands, config).also {
+                // close existing screen recording, if left open.
+                screenRecording?.close()
+            }
         }
     }
 
