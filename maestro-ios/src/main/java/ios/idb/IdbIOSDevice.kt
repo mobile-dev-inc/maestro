@@ -27,6 +27,7 @@ import com.github.michaelbull.result.map
 import com.github.michaelbull.result.runCatching
 import com.google.protobuf.ByteString
 import hierarchy.AXElement
+import hierarchy.ViewHierarchy
 import hierarchy.XCUIElement
 import idb.CompanionServiceGrpc
 import idb.HIDEventKt
@@ -120,7 +121,7 @@ class IdbIOSDevice(
         }
     }
 
-    override fun viewHierarchy(): Result<AXElement, Throwable> {
+    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         TODO("Not yet implemented")
     }
 

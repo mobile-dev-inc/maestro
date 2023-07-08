@@ -2,6 +2,11 @@
 import Foundation
 import XCTest
 
+struct ViewHierarchy : Codable {
+    let axElement: AXElement
+    let depth: Int
+}
+
 typealias AXFrame = [String: Double]
 extension AXFrame {
     static var zero: Self {

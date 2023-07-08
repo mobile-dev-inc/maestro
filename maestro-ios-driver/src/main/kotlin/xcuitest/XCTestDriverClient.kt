@@ -3,6 +3,7 @@ package xcuitest
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import hierarchy.AXElement
 import hierarchy.Error
+import hierarchy.ViewHierarchy
 import maestro.api.GetRunningAppRequest
 import maestro.logger.Logger
 import okhttp3.Interceptor
@@ -75,11 +76,11 @@ class XCTestDriverClient(
         return okHttpClient.newCall(request).execute()
     }
 
-    fun viewHierarchy(installedApps: Set<String>): AXElement {
+    fun viewHierarchy(installedApps: Set<String>): ViewHierarchy {
         return executeJsonRequest(
             "viewHierarchy",
             ViewHierarchyRequest(installedApps),
-            AXElement::class
+            ViewHierarchy::class
         )
     }
 

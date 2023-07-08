@@ -11,6 +11,7 @@ import okio.Sink
 import java.io.File
 import java.io.InputStream
 import java.util.UUID
+import hierarchy.ViewHierarchy
 
 class LocalIOSDevice(
     override val deviceId: String?,
@@ -40,7 +41,7 @@ class LocalIOSDevice(
 
     }
 
-    override fun viewHierarchy(): Result<AXElement, Throwable> {
+    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         return xcTestDevice.viewHierarchy()
     }
 

@@ -48,10 +48,6 @@ struct AXClientSwizzler {
             defaultParameters[key] = value
         }
 
-        if !_overwriteDefaultParameters.isEmpty {
-            print("Return swizzled defaultParameters \(defaultParameters)")
-        }
-
         return defaultParameters
     }
 }

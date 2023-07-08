@@ -29,13 +29,13 @@ struct ViewHierarchyHandler: HTTPHandler {
                 return HTTPResponse(statusCode: .ok, body: body)
             }
 
-            let viewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(app)") {
+            let appViewHierarchy = try logger.measure(message: "View hierarchy snapshot for \(app)") {
                 try getAppViewHierarchy(app: app)
             }
-
+            let viewHierarchy = ViewHierarchy.init(axElement: appViewHierarchy, depth: appViewHierarchy.depth())
+            
             let body = try JSONEncoder().encode(viewHierarchy)
             return HTTPResponse(statusCode: .ok, body: body)
-
         } catch let error as AppError {
             return error.httpResponse
         } catch let error {
@@ -51,8 +51,6 @@ struct ViewHierarchyHandler: HTTPHandler {
 
     func getAppViewHierarchy(app: XCUIApplication) throws -> AXElement {
         SystemPermissionHelper.handleSystemPermissionAlertIfNeeded(springboardApplication: springboardApplication)
-        AXClientSwizzler.overwriteDefaultParameters["maxDepth"] = snapshotMaxDepth
-
         // Fetch the view hierarchy of the springboard application
         // to make it possible to interact with the home screen.
         // Ignore any errors on fetching the springboard hierarchy.
@@ -74,7 +72,18 @@ struct ViewHierarchyHandler: HTTPHandler {
 
     func getHierarchyWithFallback(_ element: XCUIElement) throws -> AXElement {
         do {
-            return try elementHierarchy(xcuiElement: element)
+            var hierarchy = try elementHierarchy(xcuiElement: element)
+            if hierarchy.depth() < snapshotMaxDepth {
+                return hierarchy
+            }
+            let count = try element.snapshot().children.count
+            var children: [AXElement] = []
+            for i in 0..<count {
+              let element = element.descendants(matching: .other).element(boundBy: i).firstMatch
+              children.append(try getHierarchyWithFallback(element))
+            }
+            hierarchy.children = children
+            return hierarchy
         } catch let error {
             guard isIllegalArgumentError(error) else {
                 logger.error("Snapshot failure, cannot return view hierarchy due to \(error.localizedDescription)")
@@ -82,13 +91,14 @@ struct ViewHierarchyHandler: HTTPHandler {
             }
 
             logger.error("Snapshot failure, getting recovery element for fallback")
+            AXClientSwizzler.overwriteDefaultParameters["maxDepth"] = snapshotMaxDepth
             // In apps with bigger view hierarchys, calling
             // `XCUIApplication().snapshot().dictionaryRepresentation` or `XCUIApplication().allElementsBoundByIndex`
             // throws "Error kAXErrorIllegalArgument getting snapshot for element <AXUIElementRef 0x6000025eb660>"
             // We recover by selecting the first child of the app element,
             // which should be the window, and continue from there.
 
-            let recoveryElement = findRecoveryElement(element)
+            let recoveryElement = try findRecoveryElement(element.children(matching: .any).firstMatch)
             let hierarchy = try getHierarchyWithFallback(recoveryElement)
 
             // When the application element is skipped, try to fetch
@@ -135,10 +145,11 @@ struct ViewHierarchyHandler: HTTPHandler {
         return try? elementHierarchy(xcuiElement: alert)
     }
 
-    private func findRecoveryElement(_ element: XCUIElement) -> XCUIElement {
-        return element
-            .children(matching: .any)
-            .firstMatch
+    private func findRecoveryElement(_ element: XCUIElement) throws -> XCUIElement {
+        if try element.snapshot().children.count > 1 {
+            return element
+        }
+        return try findRecoveryElement(element.children(matching: .other).firstMatch)
     }
 
     private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {

@@ -190,7 +190,7 @@ class IOSDriver(
     }
 
     fun viewHierarchy(): TreeNode {
-        val hierarchy = iosDevice.viewHierarchy().get() ?: return TreeNode()
+        val hierarchy = iosDevice.viewHierarchy().get()?.axElement ?: return TreeNode()
         return mapViewHierarchy(hierarchy)
     }
 

@@ -15,6 +15,11 @@ data class AXFrame(
     val boundsString = "[${left.toInt()},${top.toInt()}][${right.toInt()},${bottom.toInt()}]"
 }
 
+data class ViewHierarchy(
+    val axElement: AXElement,
+    val depth: Int
+)
+
 data class AXElement(
     val label: String,
     val elementType: Int,

@@ -7,6 +7,7 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.AXElement
 import hierarchy.Error
+import hierarchy.ViewHierarchy
 import hierarchy.XCUIElement
 import ios.IOSDevice
 import ios.IOSScreenRecording
@@ -63,7 +64,7 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun viewHierarchy(): Result<AXElement, Throwable> {
+    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         val installedApps = getInstalledApps()
         logger.info("Using viewHierarchy to get view hierarchy")
         val result = runCatching {
