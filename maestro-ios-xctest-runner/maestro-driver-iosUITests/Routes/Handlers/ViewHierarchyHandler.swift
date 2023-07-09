@@ -25,7 +25,8 @@ struct ViewHierarchyHandler: HTTPHandler {
         do {
             guard let app = app else {
                 let springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
-                let body = try JSONEncoder().encode(springboardHierarchy)
+                let springBoardViewHierarchy = ViewHierarchy.init(axElement: springboardHierarchy, depth: springboardHierarchy.depth())
+                let body = try JSONEncoder().encode(springBoardViewHierarchy)
                 return HTTPResponse(statusCode: .ok, body: body)
             }
 
@@ -102,7 +103,7 @@ struct ViewHierarchyHandler: HTTPHandler {
             let hierarchy = try getHierarchyWithFallback(recoveryElement)
 
             // When the application element is skipped, try to fetch
-            // the keyboard and alert hierarchies separately.
+            // the keyboard, alert and other custom element hierarchies separately.
             if let element = element as? XCUIApplication {
                 let keyboard = logger.measure(message: "Fetch keyboard hierarchy") {
                     keyboardHierarchy(element)
@@ -112,10 +113,14 @@ struct ViewHierarchyHandler: HTTPHandler {
                     fullScreenAlertHierarchy(element)
                 }
 
+                let other = try logger.measure(message: "Fetch other custom element from window") {
+                    try customWindowElements(element)
+                }
                 return AXElement(children: [
-                    hierarchy,
+                    other,
                     keyboard,
-                    alerts
+                    alerts,
+                    hierarchy
                 ].compactMap { $0 })
             }
 
@@ -134,6 +139,14 @@ struct ViewHierarchyHandler: HTTPHandler {
         
         let keyboard = element.keyboards.firstMatch
         return try? elementHierarchy(xcuiElement: keyboard)
+    }
+    
+    private func customWindowElements(_ element: XCUIApplication) throws -> AXElement? {
+        let windowElement = element.children(matching: .any).firstMatch
+        if try windowElement.snapshot().children.count > 1 {
+            return nil
+        }
+        return try? elementHierarchy(xcuiElement: windowElement)
     }
 
     func fullScreenAlertHierarchy(_ element: XCUIApplication) -> AXElement? {

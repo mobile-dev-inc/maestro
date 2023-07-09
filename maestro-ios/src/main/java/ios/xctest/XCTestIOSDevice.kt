@@ -66,9 +66,10 @@ class XCTestIOSDevice(
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         val installedApps = getInstalledApps()
-        logger.info("Using viewHierarchy to get view hierarchy")
         val result = runCatching {
-            client.viewHierarchy(installedApps)
+            val viewHierarchy = client.viewHierarchy(installedApps)
+            logger.info("Using new viewHierarchy call to get view hierarchy. Depth received: ${viewHierarchy.depth}")
+            viewHierarchy
         }
         return result
     }

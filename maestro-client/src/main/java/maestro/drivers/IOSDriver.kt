@@ -190,7 +190,9 @@ class IOSDriver(
     }
 
     fun viewHierarchy(): TreeNode {
-        val hierarchy = iosDevice.viewHierarchy().get()?.axElement ?: return TreeNode()
+        val hierarchyResult = iosDevice.viewHierarchy().get()
+        LOGGER.info("Depth of the screen is ${hierarchyResult?.depth ?: 0}")
+        val hierarchy = hierarchyResult?.axElement ?: return TreeNode()
         return mapViewHierarchy(hierarchy)
     }
 

@@ -17,8 +17,6 @@ struct AXClientSwizzler {
     }
 
     static let setup: Void = {
-        print("Swizzle XCAXClient_iOS.defaultParameters")
-
         let axClientiOSClass: AnyClass = objc_getClass("XCAXClient_iOS") as! AnyClass
         let defaultParametersSelector = Selector(("defaultParameters"))
         let original = class_getInstanceMethod(axClientiOSClass, defaultParametersSelector)!
