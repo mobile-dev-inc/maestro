@@ -92,7 +92,21 @@ class PlainTextResultView: ResultView {
                 println("  ".repeat(indent) + "${c?.description()}...")
             }
 
+            if (command.subOnStartCommands != null) {
+                if (shouldPrintStep()) {
+                    println("  > On Flow Start")
+                }
+                renderCommandsPlainText(command.subOnStartCommands, indent = indent + 1)
+            }
+
             renderCommandsPlainText(command.subCommands, indent = indent + 1)
+
+            if (command.subOnCompleteCommands != null) {
+                if (shouldPrintStep()) {
+                    println("  > On Flow Complete")
+                }
+                renderCommandsPlainText(command.subOnCompleteCommands, indent = indent + 1)
+            }
 
             if (shouldPrintStep()) {
                 println("  ".repeat(indent) + "${c?.description()}... " + status(command.status))
