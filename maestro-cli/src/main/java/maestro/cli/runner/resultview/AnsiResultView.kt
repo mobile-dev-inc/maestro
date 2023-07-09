@@ -134,12 +134,32 @@ class AnsiResultView(
             printLogMessages(indent, commandState)
         }
 
-        val expandSubCommands = commandState.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED) &&
+        val subCommandsHasNotPending =
             (commandState.subCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+        val onStartHasNotPending =
+            (commandState.subOnStartCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+        val onCompleteHasNotPending =
+            (commandState.subOnCompleteCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+        val expandSubCommands = commandState.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED) &&
+                (subCommandsHasNotPending || onStartHasNotPending || onCompleteHasNotPending)
 
         if (expandSubCommands) {
+            commandState.subOnStartCommands?.let {
+                render(" ║\n")
+                render(" ║  > On Flow Start\n")
+                render(" ║\n")
+                renderCommands(it)
+            }
+
             commandState.subCommands?.let { subCommands ->
                 renderCommands(subCommands, indent + 1)
+            }
+
+            commandState.subOnCompleteCommands?.let {
+                render(" ║\n")
+                render(" ║  > On Flow Complete\n")
+                render(" ║\n")
+                renderCommands(it)
             }
         }
     }
