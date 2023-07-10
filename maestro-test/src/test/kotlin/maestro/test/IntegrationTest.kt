@@ -11,10 +11,7 @@ import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroInitFlow
-import maestro.orchestra.MaestroOnFlowComplete
-import maestro.orchestra.MaestroOnFlowStart
 import maestro.orchestra.Orchestra
-import maestro.orchestra.RunScriptCommand
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
@@ -2800,37 +2797,20 @@ class IntegrationTest {
 
     @Test
     fun `Case 103 - execute onFlowStart and onFlowComplete hooks`() {
+        // given
         val commands = readCommands("103_on_flow_start_complete_hooks")
-
         val driver = driver {
         }
-
         val receivedLogs = mutableListOf<String>()
 
-        for (command in commands) {
-            val maestroCommand = command.asCommand()
-            if (maestroCommand is ApplyConfigurationCommand) {
-                Maestro(driver).use {
-                    val onFlowStart = maestroCommand.config.onFlowStart
-                    val onFlowComplete = maestroCommand.config.onFlowComplete
-                    if (onFlowStart != null) {
-                        orchestra(
-                            it,
-                            onCommandMetadataUpdate = { _, metadata ->
-                                receivedLogs += metadata.logMessages
-                            }
-                        ).runFlow(onFlowStart.commands)
-                    }
-                    if (onFlowComplete != null) {
-                        orchestra(
-                            it,
-                            onCommandMetadataUpdate = { _, metadata ->
-                                receivedLogs += metadata.logMessages
-                            }
-                        ).runFlow(onFlowComplete.commands)
-                    }
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
                 }
-            }
+            ).runFlow(commands)
         }
 
         // Then
@@ -2838,6 +2818,39 @@ class IntegrationTest {
             "setup",
             "teardown",
         ).inOrder()
+        driver.assertEvents(
+            listOf(
+                Event.InputText("test1"),
+                Event.Tap(Point(100, 200)),
+                Event.InputText("test2"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 104 - execute onFlowStart and onFlowComplete hooks when flow failed`() {
+        // Given
+        val commands = readCommands("104_on_flow_start_complete_hooks_flow_failed")
+
+        val driver = driver {
+            element {
+                id = "another_id"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+
+        // When & Then
+        assertThrows<MaestroException.AssertionFailure> {
+            Maestro(driver).use {
+                orchestra(it).runFlow(commands)
+            }
+        }
+        driver.assertEvents(
+            listOf(
+                Event.InputText("test1"),
+                Event.InputText("test2"),
+            )
+        )
     }
 
     private fun orchestra(
