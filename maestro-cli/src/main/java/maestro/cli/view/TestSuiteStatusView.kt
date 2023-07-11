@@ -79,6 +79,7 @@ object TestSuiteStatusView {
                     suite.uploadDetails.uploadId.toString(),
                     suite.uploadDetails.teamId,
                     suite.uploadDetails.appId,
+                    suite.uploadDetails.domain,
                 )
             )
             println()
@@ -136,6 +137,7 @@ object TestSuiteStatusView {
             val uploadId: UUID,
             val teamId: String,
             val appId: String,
+            val domain: String,
         )
 
         companion object {
@@ -169,6 +171,7 @@ fun main() {
             uploadId = UUID.randomUUID(),
             teamId = "teamid",
             appId = "appid",
+            domain = "mobile.dev",
         ),
         status = FlowStatus.CANCELED,
         flows = listOf(

@@ -49,7 +49,7 @@ class ApiClient(
 
     val domain: String
         get() {
-            val regex = "https?://[^.]+.(.*)".toRegex()
+            val regex = "https?://[^.]+.([a-zA-Z0-9.-]*).*".toRegex()
             val matchResult = regex.matchEntire(baseUrl)
             val domain = matchResult?.groups?.get(1)?.value
             return domain ?: "mobile.dev"

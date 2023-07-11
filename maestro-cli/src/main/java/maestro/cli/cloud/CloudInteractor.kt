@@ -117,7 +117,7 @@ class CloudInteractor(
             if (async) {
                 PrintUtils.message("✅ Upload successful! View the results of your upload below:")
                 if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
-                PrintUtils.message(uploadUrl(uploadId, teamId, appId))
+                PrintUtils.message(uploadUrl(uploadId, teamId, appId, client.domain))
 
                 return 0
             } else {
@@ -235,6 +235,7 @@ class CloudInteractor(
                     uploadId = upload.uploadId,
                     teamId = teamId,
                     appId = appId,
+                    domain = client.domain,
                 )
             )
         )
