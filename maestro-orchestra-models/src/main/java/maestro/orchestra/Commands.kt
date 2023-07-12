@@ -690,7 +690,7 @@ data class RunScriptCommand(
     val script: String,
     val env: Map<String, String> = emptyMap(),
     val sourceDescription: String,
-    val condition: Condition?,
+    val condition: Condition?
 ) : Command {
 
     override fun description(): String {
