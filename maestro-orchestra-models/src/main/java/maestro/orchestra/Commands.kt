@@ -221,11 +221,12 @@ data class TapOnElementCommand(
     val retryIfNoChange: Boolean? = null,
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
-    val repeat: TapRepeat? = null
+    val repeat: TapRepeat? = null,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-        return "${tapOnDescription(longPress, repeat)} on ${selector.description()}"
+        return label ?: "${tapOnDescription(longPress, repeat)} on ${selector.description()}"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TapOnElementCommand {
@@ -246,11 +247,12 @@ data class TapOnPointCommand(
     val retryIfNoChange: Boolean? = null,
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
-    val repeat: TapRepeat? = null
+    val repeat: TapRepeat? = null,
+    val label: String? = null    
 ) : Command {
 
     override fun description(): String {
-        return "${tapOnDescription(longPress, repeat)} on point ($x, $y)"
+         return label ?: "${tapOnDescription(longPress, repeat)} on point ($x, $y)"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TapOnPointCommand {
@@ -262,11 +264,12 @@ data class TapOnPointV2Command(
     val point: String,
     val retryIfNoChange: Boolean? = null,
     val longPress: Boolean? = null,
-    val repeat: TapRepeat? = null
+    val repeat: TapRepeat? = null,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-        return "${tapOnDescription(longPress, repeat)} on point ($point)"
+        return label ?: "${tapOnDescription(longPress, repeat)} on point ($point)"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TapOnPointV2Command {
@@ -319,12 +322,13 @@ data class AssertCommand(
 data class AssertConditionCommand(
     val condition: Condition,
     private val timeout: String? = null,
+    val label: String? = null
 ) : Command {
 
     fun timeoutMs() = timeout?.toLong()
 
     override fun description(): String {
-        return "Assert that ${condition.description()}"
+         return label ?: return "Assert that ${condition.description()}"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
@@ -336,11 +340,12 @@ data class AssertConditionCommand(
 }
 
 data class InputTextCommand(
-    val text: String
+    val text: String,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-        return "Input text $text"
+         return label ?: "Input text $text"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
@@ -432,9 +437,10 @@ data class OpenLinkCommand(
 
 data class PressKeyCommand(
     val code: KeyCode,
+    val label: String? = null    
 ) : Command {
     override fun description(): String {
-        return "Press ${code.description} key"
+        return label ?: "Press ${code.description} key"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): PressKeyCommand {
@@ -463,10 +469,11 @@ data class EraseTextCommand(
 
 data class TakeScreenshotCommand(
     val path: String,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-        return "Take screenshot $path"
+        return label ?: "Take screenshot $path"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TakeScreenshotCommand {
@@ -478,10 +485,11 @@ data class TakeScreenshotCommand(
 
 data class StopAppCommand(
     val appId: String,
+    val label: String? = null    
 ) : Command {
 
     override fun description(): String {
-        return "Stop $appId"
+        return label ?: return "Stop $appId"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
@@ -600,10 +608,11 @@ data class RunFlowCommand(
 data class SetLocationCommand(
     val latitude: Double,
     val longitude: Double,
+    val label: String? = null    
 ) : Command {
 
     override fun description(): String {
-        return "Set location (${latitude}, ${longitude})"
+        return label ?: "Set location (${latitude}, ${longitude})"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): SetLocationCommand {
@@ -650,10 +659,12 @@ data class RepeatCommand(
 
 data class DefineVariablesCommand(
     val env: Map<String, String>,
+    val label: String? = null,
+        
 ) : Command {
 
     override fun description(): String {
-        return "Define variables"
+        return label ?: "Define variables"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): DefineVariablesCommand {
@@ -672,7 +683,7 @@ data class RunScriptCommand(
     val script: String,
     val env: Map<String, String> = emptyMap(),
     val sourceDescription: String,
-    val condition: Condition?
+    val condition: Condition?,
 ) : Command {
 
     override fun description(): String {
@@ -695,10 +706,11 @@ data class RunScriptCommand(
 }
 
 data class WaitForAnimationToEndCommand(
-    val timeout: Long?
+    val timeout: Long?,
+    val label: String? = null    
 ) : Command {
     override fun description(): String {
-        return "Wait for animation to end"
+        return label ?: "Wait for animation to end"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
@@ -708,10 +720,12 @@ data class WaitForAnimationToEndCommand(
 
 data class EvalScriptCommand(
     val scriptString: String,
+    val label: String? = null
+    
 ) : Command {
 
     override fun description(): String {
-        return "Run $scriptString"
+        return label ?:  "Run $scriptString"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
