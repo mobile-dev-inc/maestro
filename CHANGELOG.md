@@ -13,7 +13,6 @@
 - Fix: Close existing screen recording if it was left open.
   - Thanks, @carlosmuvi, for the contribution!
 - Fix: Execute sequential Flows even if no other Flows are present
-- Fix: Advanced flow on iOS clears state on launch to be able to execute flow more than once
 - Fix: Various XCTestClient connection improvements
 - Deprecate: `assertOutgoingRequestsCommand`
 - Deprecate: Network Mocking feature
