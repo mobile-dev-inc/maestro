@@ -76,9 +76,13 @@ class GraalJsEngine(
                 reset()
             }
         }
-
+        var options : HashMap<String, String = new HashMap<String, String>();
+        options.put("js.strict", "true");
+        options.put("js.commonjs-require", "true");
         val context = Context.newBuilder("js")
-            .option("js.strict", "true")
+            .allowExperimentalOptions(true)
+            .allowIO(true)
+            .options(options)
             .logHandler(NULL_HANDLER)
             .out(outputStream)
             .build()
