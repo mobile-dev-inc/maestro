@@ -202,22 +202,25 @@ class XCTestDriverClient(
 
     private fun OkHttpClient.Builder.addRetryInterceptor() = addInterceptor(Interceptor { chain ->
         var exception: IOException? = null
+        var response: Response? = null
+
         repeat(3) {
             try {
-                val response = chain.proceed(chain.request())
-                if (response.isSuccessful) {
-                    return@Interceptor response
+                response?.close()
+                response = chain.proceed(chain.request())
+                if (response?.isSuccessful == true) {
+                    return@Interceptor response!!
                 }
-                response.close()
             } catch (e: IOException) {
                 installer.start()?.let {
                     client = it
                 }
                 exception = e
             }
+            Thread.sleep(300)
         }
 
-        exception?.let { throw it }
+        response ?: exception?.let { throw it }
             ?: throw XCTestDriverUnreachable("Failed to reach out XCUITest Server after 3 attempts")
     })
 
