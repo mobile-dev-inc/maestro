@@ -208,6 +208,7 @@ class XCTestDriverClient(
                 if (response.isSuccessful) {
                     return@Interceptor response
                 }
+                response.close()
             } catch (e: IOException) {
                 installer.start()?.let {
                     client = it
