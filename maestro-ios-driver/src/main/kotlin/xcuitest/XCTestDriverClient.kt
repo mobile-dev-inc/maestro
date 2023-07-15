@@ -215,7 +215,6 @@ class XCTestDriverClient(
                 }
                 exception = e
             }
-            Thread.sleep(200L)
         }
 
         exception?.let { throw it }
