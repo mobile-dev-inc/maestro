@@ -3,6 +3,7 @@ import { Button } from "../design-system/button";
 import { Input } from "../design-system/input";
 import { DeviceScreen, UIElement } from "../../helpers/models";
 import clsx from "clsx";
+import Draggable from "react-draggable";
 
 const compare = (a: string | undefined, b: string | undefined) => {
   if (!a) return b ? 1 : 0;
@@ -29,10 +30,23 @@ export default function ElementsPanel({
 }: ElementsPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>("");
+  const [width, setWidth] = useState(264);
+  const minWidth = 264;
+  const maxWidth = 560;
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  const handleDrag = (e: any, ui: any) => {
+    let newWidth = width + ui.deltaX;
+    if (newWidth < minWidth) {
+      newWidth = minWidth;
+    } else if (newWidth > maxWidth) {
+      newWidth = maxWidth;
+    }
+    setWidth(newWidth);
+  };
 
   const sortedElements: UIElement[] = useMemo(() => {
     const filteredElements = deviceScreen.elements.filter((element) => {
@@ -67,7 +81,14 @@ export default function ElementsPanel({
   }, [query, deviceScreen.elements]);
 
   return (
-    <div className="relative min-w-[264px] max-w-[264px] border-r border-slate-200 dark:border-slate-800 h-full overflow-visible z-10 flex flex-col">
+    <div
+      style={{
+        width: width,
+        minWidth: width,
+        maxWidth: width,
+      }}
+      className="flex flex-col relative h-full overflow-visible z-10 border-r border-slate-200 dark:border-slate-800"
+    >
       <Button
         onClick={closePanel}
         variant="tertiary"
@@ -150,6 +171,17 @@ export default function ElementsPanel({
           );
         })}
       </div>
+      <Draggable axis="x" onDrag={handleDrag} position={{ x: 0, y: 0 }}>
+        <div
+          style={{
+            cursor:
+              (width === maxWidth && "w-resize") ||
+              (width === minWidth && "e-resize") ||
+              "ew-resize",
+          }}
+          className="w-2 absolute top-0 -right-1 bottom-0 "
+        />
+      </Draggable>
     </div>
   );
 }
