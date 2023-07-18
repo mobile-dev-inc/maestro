@@ -98,8 +98,8 @@ class Orchestra(
 
         onFlowStart(commands)
 
-        // filter out DefineVariablesCommand to not execute it twice
         executeDefineVariablesCommand(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
         config?.onFlowStart?.commands?.let {
@@ -576,6 +576,7 @@ class Orchestra(
 
     private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?, subflowConfig: MaestroConfig?): Boolean {
         executeDefineVariablesCommand(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
         subflowConfig?.onFlowStart?.commands?.let {
