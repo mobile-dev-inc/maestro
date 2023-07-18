@@ -98,6 +98,10 @@ class Orchestra(
 
         onFlowStart(commands)
 
+        // filter out DefineVariablesCommand to not execute it twice
+        executeDefineVariablesCommand(commands, config)
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
         config?.onFlowStart?.commands?.let {
             executeCommands(
                 commands = it,
@@ -108,7 +112,7 @@ class Orchestra(
 
         try {
             val flowSuccess = executeCommands(
-                commands = commands,
+                commands = filteredCommands,
                 config = config,
                 shouldReinitJsEngine = false,
             ).also {
@@ -571,12 +575,15 @@ class Orchestra(
     }
 
     private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?, subflowConfig: MaestroConfig?): Boolean {
+        executeDefineVariablesCommand(commands, config)
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
         subflowConfig?.onFlowStart?.commands?.let {
             executeSubflowCommands(it, config)
         }
 
         try {
-            return executeSubflowCommands(commands, config)
+            return executeSubflowCommands(filteredCommands, config)
         } finally {
             subflowConfig?.onFlowComplete?.commands?.let {
                 executeSubflowCommands(it, config)
@@ -996,6 +1003,16 @@ class Orchestra(
     private fun pasteText(): Boolean {
         copiedText?.let { maestro.inputText(it) }
         return true
+    }
+
+    private fun executeDefineVariablesCommand(commands: List<MaestroCommand>, config: MaestroConfig?) {
+        commands.firstOrNull { it.asCommand() is DefineVariablesCommand }?.let {
+            executeCommands(
+                commands = listOf(it),
+                config = config,
+                shouldReinitJsEngine = false
+            )
+        }
     }
 
     private object CommandSkipped : Exception()
