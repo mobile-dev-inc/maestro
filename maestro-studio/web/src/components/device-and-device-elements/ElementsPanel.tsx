@@ -30,13 +30,21 @@ export default function ElementsPanel({
 }: ElementsPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>("");
-  const [width, setWidth] = useState(264);
+  const [width, setWidth] = useState(
+    localStorage.sidebarWidth ? parseInt(localStorage.sidebarWidth) : 264
+  );
   const minWidth = 264;
   const maxWidth = 560;
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      localStorage.setItem("sidebarWidth", width.toString());
+    };
+  }, [width]);
 
   const handleDrag = (e: any, ui: any) => {
     let newWidth = width + ui.deltaX;
@@ -93,7 +101,7 @@ export default function ElementsPanel({
         onClick={closePanel}
         variant="tertiary"
         icon="RiCloseLine"
-        className="rounded-full absolute top-6 -right-4"
+        className="rounded-full absolute top-6 -right-4 z-10"
       />
       <div className="px-8 py-6 border-b border-slate-200 dark:border-slate-800">
         <Input
