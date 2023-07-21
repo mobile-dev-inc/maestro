@@ -34,7 +34,7 @@
       }
 
       if (!!node.id || !!node.ariaLabel || !!node.name || !!node.title || !!node.htmlFor || !!node.attributes['data-testid']) {
-        attributes['resource-id'] = node.id || node.ariaLabel || node.name || node.title || node.htmlFor || (node.attributes['data-testid'] ? node.attributes['data-testid'].value : undefined)
+        attributes['resource-id'] = node.id || node.ariaLabel || node.name || node.title || node.htmlFor || node.attributes['data-testid']?.value
       }
 
       if (node.tagName.toLowerCase() === 'body') {
