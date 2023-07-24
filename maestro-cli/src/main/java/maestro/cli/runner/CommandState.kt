@@ -29,4 +29,5 @@ data class CommandState(
     val numberOfRuns: Int? = null,
     val subCommands: List<CommandState>? = null,
     val logMessages: List<String> = emptyList(),
+    val insightsMessages: List<String> = emptyList()
 )

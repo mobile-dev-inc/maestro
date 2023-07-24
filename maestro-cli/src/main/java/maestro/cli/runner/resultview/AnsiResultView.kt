@@ -22,6 +22,8 @@ package maestro.cli.runner.resultview
 import io.ktor.util.encodeBase64
 import maestro.cli.runner.CommandState
 import maestro.cli.runner.CommandStatus
+import maestro.utils.Insights
+import maestro.utils.chunkStringByWordCount
 import org.fusesource.jansi.Ansi
 
 class AnsiResultView(
@@ -134,6 +136,10 @@ class AnsiResultView(
             printLogMessages(indent, commandState)
         }
 
+        if (Insights.list().isNotEmpty()) {
+            printWarning(indent)
+        }
+
         val subCommandsHasNotPending =
             (commandState.subCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
         val onStartHasNotPending =
@@ -174,6 +180,21 @@ class AnsiResultView(
             render("   ")   // Space that a status symbol would normally occupy
             render(it)
             render("\n")
+        }
+    }
+
+    private fun Ansi.printWarning(indent: Int) {
+        renderLineStart(indent + 1)
+        render("   ")   // Space that a status symbol would normally occupy
+        render("@|yellow Warning:|@\n")
+
+        Insights.list().forEach {
+            it.message.chunkStringByWordCount(12).forEach { chunkedMessage ->
+                renderLineStart(indent + 2)
+                render("   ")   // Space that a status symbol would normally occupy
+                render(chunkedMessage)
+                render("\n")
+            }
         }
     }
 
