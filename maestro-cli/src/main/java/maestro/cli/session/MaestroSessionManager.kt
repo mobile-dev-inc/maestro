@@ -195,6 +195,7 @@ object MaestroSessionManager {
     }
 
     private fun isAndroid(host: String?, port: Int?): Boolean {
+        println("Port number is :$port")
         return try {
             val dadb = if (port != null) {
                 Dadb.create(host ?: defaultHost, port)
