@@ -98,12 +98,24 @@ class Orchestra(
 
         onFlowStart(commands)
 
+        executeDefineVariablesCommands(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
         config?.onFlowStart?.commands?.let {
-            executeCommands(it, config)
+            executeCommands(
+                commands = it,
+                config = config,
+                shouldReinitJsEngine = false,
+            )
         }
 
         try {
-            val flowSuccess = executeCommands(commands, config).also {
+            val flowSuccess = executeCommands(
+                commands = filteredCommands,
+                config = config,
+                shouldReinitJsEngine = false,
+            ).also {
                 // close existing screen recording, if left open.
                 screenRecording?.close()
             }
@@ -113,7 +125,11 @@ class Orchestra(
             throw e
         } finally {
             config?.onFlowComplete?.commands?.let {
-                executeCommands(it, config)
+                executeCommands(
+                    commands = it,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                )
             }
         }
     }
@@ -148,9 +164,12 @@ class Orchestra(
 
     fun executeCommands(
         commands: List<MaestroCommand>,
-        config: MaestroConfig? = null
+        config: MaestroConfig? = null,
+        shouldReinitJsEngine: Boolean = true,
     ): Boolean {
-        initJsEngine(config)
+        if (shouldReinitJsEngine) {
+            initJsEngine(config)
+        }
 
         commands
             .forEachIndexed { index, command ->
@@ -556,12 +575,16 @@ class Orchestra(
     }
 
     private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?, subflowConfig: MaestroConfig?): Boolean {
+        executeDefineVariablesCommands(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
         subflowConfig?.onFlowStart?.commands?.let {
             executeSubflowCommands(it, config)
         }
 
         try {
-            return executeSubflowCommands(commands, config)
+            return executeSubflowCommands(filteredCommands, config)
         } finally {
             subflowConfig?.onFlowComplete?.commands?.let {
                 executeSubflowCommands(it, config)
@@ -981,6 +1004,16 @@ class Orchestra(
     private fun pasteText(): Boolean {
         copiedText?.let { maestro.inputText(it) }
         return true
+    }
+
+    private fun executeDefineVariablesCommands(commands: List<MaestroCommand>, config: MaestroConfig?) {
+        commands.filter { it.asCommand() is DefineVariablesCommand }.takeIf { it.isNotEmpty() }?.let {
+            executeCommands(
+                commands = it,
+                config = config,
+                shouldReinitJsEngine = false
+            )
+        }
     }
 
     private object CommandSkipped : Exception()
