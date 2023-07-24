@@ -19,14 +19,8 @@
 
 package maestro.orchestra
 
-import maestro.DeviceInfo
-import maestro.ElementFilter
-import maestro.Filters
+import maestro.*
 import maestro.Filters.asFilter
-import maestro.FindElementResult
-import maestro.Maestro
-import maestro.MaestroException
-import maestro.ScreenRecording
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
 import maestro.js.RhinoJsEngine
@@ -818,16 +812,49 @@ class Orchestra(
                     lookupTimeoutMs
                 }
             )
-
         val (description, filterFunc) = buildFilter(
             selector,
             deviceInfo(),
         )
+        if(selector.childOf != null){
+            val parentViewHierarchy = findElementViewHierarchy(
+                selector.childOf,
+                timeout
+            )
+            return maestro.findElementFromViewHierarchyWithTimeout(
+                timeout,
+                filterFunc,
+                parentViewHierarchy)?:throw MaestroException.ElementNotFound(
+                "Element not found: $description",
+                maestro.viewHierarchy().root,
+            )
+        }
+
 
         return maestro.findElementWithTimeout(
             timeoutMs = timeout,
             filter = filterFunc,
         ) ?: throw MaestroException.ElementNotFound(
+            "Element not found: $description",
+            maestro.viewHierarchy().root,
+        )
+    }
+
+    private fun findElementViewHierarchy(
+        selector: ElementSelector?,
+        timeout: Long
+    ):ViewHierarchy {
+        if(selector == null ){
+            return maestro.viewHierarchy()
+        }
+        val parentViewHierarchy = findElementViewHierarchy(selector.childOf,timeout);
+        val (description, filterFunc) = buildFilter(
+            selector,
+            deviceInfo(),
+        )
+        return maestro.findElementFromViewHierarchyWithTimeout(timeout,
+            filterFunc,
+            parentViewHierarchy)?.hierarchy?: throw MaestroException.ElementNotFound(
             "Element not found: $description",
             maestro.viewHierarchy().root,
         )
