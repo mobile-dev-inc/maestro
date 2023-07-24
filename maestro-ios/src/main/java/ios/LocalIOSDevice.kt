@@ -45,7 +45,6 @@ class LocalIOSDevice(
                         .getOrThrow()
                 }
             )
-
     }
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
