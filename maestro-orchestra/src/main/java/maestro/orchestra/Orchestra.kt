@@ -856,7 +856,7 @@ class Orchestra(
             filterFunc,
             parentViewHierarchy)?.hierarchy?: throw MaestroException.ElementNotFound(
             "Element not found: $description",
-            maestro.viewHierarchy().root,
+            parentViewHierarchy.root,
         )
     }
 
