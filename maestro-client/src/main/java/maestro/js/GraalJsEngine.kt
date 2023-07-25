@@ -3,6 +3,7 @@ package maestro.js
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.PolyglotAccess
 import org.graalvm.polyglot.Source
 import org.graalvm.polyglot.Value
 import org.graalvm.polyglot.proxy.ProxyObject
@@ -76,17 +77,16 @@ class GraalJsEngine(
                 reset()
             }
         }
-        var options : HashMap<String, String = new HashMap<String, String>();
-        options.put("js.strict", "true");
-        options.put("js.commonjs-require", "true");
+        val options = hashMapOf<String, String>();
+        options["js.strict"] = "true";
         val context = Context.newBuilder("js")
-            .allowExperimentalOptions(true)
+            .allowAllAccess(true)
             .allowIO(true)
-            .options(options)
+            .allowHostClassLookup { c -> c.matches(Regex(".*")) }
             .logHandler(NULL_HANDLER)
             .out(outputStream)
+            .options(options)
             .build()
-
         openContexts.add(context)
 
         envBinding.forEach { (key, value) -> context.getBindings("js").putMember(key, value) }

@@ -44,4 +44,13 @@ class GraalJsEngineTest : JsEngineTest() {
         val result = engine.evaluateScript("parseInt('1')").toString()
         assertThat(result).isEqualTo("1")
     }
+
+    @Test
+    fun `Java type correctly imports Java class`() {
+        val result = engine.evaluateScript("""
+            const pi = Java.type('java.lang.Math').PI;
+            parseFloat(pi);
+        """).toString();
+        assertThat(result).isEqualTo(kotlin.math.PI.toString());
+    }
 }
