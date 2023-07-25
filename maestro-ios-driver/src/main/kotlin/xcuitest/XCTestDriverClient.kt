@@ -109,7 +109,7 @@ class XCTestDriverClient(
     }
 
     fun runningAppId(appIds: Set<String>): Response {
-        return executeJsonRequestUNCHECKED("runningApp", GetRunningAppRequest(appIds))
+        return executeJsonRequest("runningApp", GetRunningAppRequest(appIds))
     }
 
     fun swipe(
@@ -120,7 +120,7 @@ class XCTestDriverClient(
         endY: Double,
         duration: Double,
     ): Response {
-        return executeJsonRequestUNCHECKED(
+        return executeJsonRequest(
             "swipe", SwipeRequest(
                 appId = appId,
                 startX = startX,
@@ -140,7 +140,7 @@ class XCTestDriverClient(
         endY: Double,
         duration: Double,
     ): Response {
-        return executeJsonRequestUNCHECKED("swipeV2", SwipeRequest(
+        return executeJsonRequest("swipeV2", SwipeRequest(
             startX = startX,
             startY = startY,
             endX = endX,
@@ -153,7 +153,7 @@ class XCTestDriverClient(
     fun inputText(
         text: String,
     ): Response {
-        return executeJsonRequestUNCHECKED("inputText", InputTextRequest(text))
+        return executeJsonRequest("inputText", InputTextRequest(text))
     }
 
     fun tap(
@@ -161,7 +161,7 @@ class XCTestDriverClient(
         y: Float,
         duration: Double? = null,
     ): Response {
-        return executeJsonRequestUNCHECKED("touch", TouchRequest(
+        return executeJsonRequest("touch", TouchRequest(
             x = x,
             y = y,
             duration = duration
@@ -169,19 +169,19 @@ class XCTestDriverClient(
     }
 
     fun pressKey(name: String): Response {
-        return executeJsonRequestUNCHECKED("pressKey", PressKeyRequest(name))
+        return executeJsonRequest("pressKey", PressKeyRequest(name))
     }
 
     fun pressButton(name: String): Response {
-        return executeJsonRequestUNCHECKED("pressButton", PressButtonRequest(name))
+        return executeJsonRequest("pressButton", PressButtonRequest(name))
     }
 
     fun eraseText(charactersToErase: Int): Response {
-        return executeJsonRequestUNCHECKED("eraseText", EraseTextRequest(charactersToErase))
+        return executeJsonRequest("eraseText", EraseTextRequest(charactersToErase))
     }
 
     fun deviceInfo(): Response {
-        return executeJsonRequestUNCHECKED("deviceInfo", Unit)
+        return executeJsonRequest("deviceInfo", Unit)
     }
 
     fun isChannelAlive(): Boolean {
@@ -193,25 +193,25 @@ class XCTestDriverClient(
     }
 
     fun setPermissions(permissions: Map<String, String>) {
-        executeJsonRequestUNCHECKED("setPermissions", SetPermissionsRequest(permissions))
-    }
-
-
-    private fun executeJsonRequestUNCHECKED(pathSegment: String, body: Any): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
-
-        val requestBuilder = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(client.xctestAPIBuilder(pathSegment).build())
-            .post(bodyData)
-
-        return okHttpClient
-            .newCall(requestBuilder.build())
-            .execute()
+        executeJsonRequest("setPermissions", SetPermissionsRequest(permissions))
     }
 
     private fun executeJsonRequest(url: String, body: Any): Response {
+
+        fun executeJsonRequestUNCHECKED(pathSegment: String, body: Any): Response {
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
+
+            val requestBuilder = Request.Builder()
+                .addHeader("Content-Type", "application/json")
+                .url(client.xctestAPIBuilder(pathSegment).build())
+                .post(bodyData)
+
+            return okHttpClient
+                .newCall(requestBuilder.build())
+                .execute()
+        }
+
         val response = executeJsonRequestUNCHECKED(url, body)
 
         if (!response.isSuccessful) {
@@ -222,7 +222,7 @@ class XCTestDriverClient(
             error("Request for $url failed, status code ${response.code}, error response: $error")
         }
 
-        return response
+        return response.use { it }
     }
 
     private inline fun <reified T: Any> executeJsonRequest(url: String, body: Any, type: KClass<T>): T {
