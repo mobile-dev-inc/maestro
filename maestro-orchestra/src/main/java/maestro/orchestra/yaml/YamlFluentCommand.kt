@@ -389,6 +389,7 @@ data class YamlFluentCommand(
         val retryIfNoChange = (tapOn as? YamlElementSelector)?.retryTapIfNoChange ?: true
         val waitUntilVisible = (tapOn as? YamlElementSelector)?.waitUntilVisible ?: false
         val point = (tapOn as? YamlElementSelector)?.point
+        val label = (tapOn as? YamlElementSelector)?.label
 
         val delay = (tapOn as? YamlElementSelector)?.delay?.toLong()
         val repeat = tapRepeat ?: (tapOn as? YamlElementSelector)?.repeat?.let {
@@ -413,7 +414,8 @@ data class YamlFluentCommand(
                     retryIfNoChange = retryIfNoChange,
                     waitUntilVisible = waitUntilVisible,
                     longPress = longPress,
-                    repeat = repeat
+                    repeat = repeat,
+                    label = label
                 )
             )
         }
