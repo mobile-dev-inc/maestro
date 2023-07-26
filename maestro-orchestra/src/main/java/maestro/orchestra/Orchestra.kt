@@ -104,22 +104,23 @@ class Orchestra(
 
         var flowSuccess = false
         try {
-            config?.onFlowStart?.commands?.let {
-                if (!executeCommands(
-                        commands = it,
-                        config = config,
-                        shouldReinitJsEngine = false)) {
-                    return false
-                }
-            }
+            val onStartSuccess = config?.onFlowStart?.commands?.let {
+                executeCommands(
+                    commands = it,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                )
+            } ?: true
 
-            flowSuccess = executeCommands(
-                commands = filteredCommands,
-                config = config,
-                shouldReinitJsEngine = false,
-            ).also {
-                // close existing screen recording, if left open.
-                screenRecording?.close()
+            if (onStartSuccess) {
+                flowSuccess = executeCommands(
+                    commands = filteredCommands,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                ).also {
+                    // close existing screen recording, if left open.
+                    screenRecording?.close()
+                }
             }
         } catch (e: Throwable) {
             throw e
