@@ -11,8 +11,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import com.google.common.truth.Truth.assertThat
 import maestro.js.JsEngine
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mozilla.javascript.RhinoException
 
 @WireMockTest
 abstract class JsEngineTest {
