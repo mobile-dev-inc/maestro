@@ -102,16 +102,18 @@ class Orchestra(
         // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
-        config?.onFlowStart?.commands?.let {
-            executeCommands(
-                commands = it,
-                config = config,
-                shouldReinitJsEngine = false,
-            )
-        }
-
+        var flowSuccess = false
         try {
-            val flowSuccess = executeCommands(
+            config?.onFlowStart?.commands?.let {
+                if (!executeCommands(
+                        commands = it,
+                        config = config,
+                        shouldReinitJsEngine = false)) {
+                    return false
+                }
+            }
+
+            flowSuccess = executeCommands(
                 commands = filteredCommands,
                 config = config,
                 shouldReinitJsEngine = false,
@@ -119,18 +121,18 @@ class Orchestra(
                 // close existing screen recording, if left open.
                 screenRecording?.close()
             }
-
-            return flowSuccess
         } catch (e: Throwable) {
             throw e
         } finally {
-            config?.onFlowComplete?.commands?.let {
+            val onCompleteSuccess = config?.onFlowComplete?.commands?.let {
                 executeCommands(
                     commands = it,
                     config = config,
                     shouldReinitJsEngine = false,
                 )
-            }
+            } ?: true
+
+            return onCompleteSuccess && flowSuccess
         }
     }
 
