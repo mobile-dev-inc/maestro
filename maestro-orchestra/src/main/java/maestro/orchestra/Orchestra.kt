@@ -103,6 +103,7 @@ class Orchestra(
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
         var flowSuccess = false
+        var exception: Throwable? = null
         try {
             val onStartSuccess = config?.onFlowStart?.commands?.let {
                 executeCommands(
@@ -123,7 +124,7 @@ class Orchestra(
                 }
             }
         } catch (e: Throwable) {
-            throw e
+            exception = e
         } finally {
             val onCompleteSuccess = config?.onFlowComplete?.commands?.let {
                 executeCommands(
@@ -132,6 +133,8 @@ class Orchestra(
                     shouldReinitJsEngine = false,
                 )
             } ?: true
+
+            exception?.let { throw it }
 
             return onCompleteSuccess && flowSuccess
         }
@@ -582,6 +585,7 @@ class Orchestra(
         // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
+        var exception: Throwable? = null
         var flowSuccess = false
         try {
             val onStartSuccess = subflowConfig?.onFlowStart?.commands?.let {
@@ -591,10 +595,14 @@ class Orchestra(
             if (onStartSuccess) {
                 flowSuccess = executeSubflowCommands(filteredCommands, config)
             }
+        } catch (e: Throwable) {
+            exception = e
         } finally {
             val onCompleteSuccess = subflowConfig?.onFlowComplete?.commands?.let {
                 executeSubflowCommands(it, config)
             } ?: true
+
+            exception?.let { throw it }
 
             return onCompleteSuccess && flowSuccess
         }
