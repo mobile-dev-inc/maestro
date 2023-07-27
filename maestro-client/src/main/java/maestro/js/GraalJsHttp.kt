@@ -96,8 +96,9 @@ class GraalJsHttp(
 
     private fun convertHeaders(headers: Headers): ProxyObject {
         val headersMap = headers.toMultimap().mapValues { (_, values) ->
-            ProxyArray.fromArray(*values.toTypedArray())
+            values.joinToString(",")
         }
         return ProxyObject.fromMap(headersMap)
     }
+
 }
