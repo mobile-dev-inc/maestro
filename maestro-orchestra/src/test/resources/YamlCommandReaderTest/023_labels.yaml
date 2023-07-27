@@ -41,3 +41,6 @@ appId: com.example.app
 - scrollUntilVisible:
     element: "Footer"
     label: "Scroll to the bottom"
+- runScript:
+    file: "023_runScript_test.js"
+    label: "Run some special calculations"

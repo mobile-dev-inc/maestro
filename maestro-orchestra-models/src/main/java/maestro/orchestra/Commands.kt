@@ -685,11 +685,14 @@ data class RunScriptCommand(
     val script: String,
     val env: Map<String, String> = emptyMap(),
     val sourceDescription: String,
-    val condition: Condition?
+    val condition: Condition?,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-        return if (condition == null) {
+        return if (label != null) {
+            label
+        } else if (condition == null) {
             "Run $sourceDescription"
         } else {
             "Run $sourceDescription when ${condition.description()}"
