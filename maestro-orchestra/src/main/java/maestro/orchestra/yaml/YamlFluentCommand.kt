@@ -547,7 +547,8 @@ data class YamlFluentCommand(
                 timeout = timeout,
                 scrollDuration = yaml.speedToDuration(),
                 visibilityPercentage = visibility,
-                centerElement = yaml.centerElement
+                centerElement = yaml.centerElement,
+                label = yaml.label
             )
         )
     }

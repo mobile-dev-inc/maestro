@@ -95,13 +95,14 @@ data class ScrollUntilVisibleCommand(
     val scrollDuration: Long,
     val visibilityPercentage: Int,
     val timeout: Long = DEFAULT_TIMEOUT_IN_MILLIS,
-    val centerElement: Boolean
+    val centerElement: Boolean,
+    val label: String? = null
 ) : Command {
 
     val visibilityPercentageNormalized = (visibilityPercentage / 100).toDouble()
 
     override fun description(): String {
-        return "Scrolling $direction until ${selector.description()} is visible."
+        return label ?: "Scrolling $direction until ${selector.description()} is visible."
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): ScrollUntilVisibleCommand {
