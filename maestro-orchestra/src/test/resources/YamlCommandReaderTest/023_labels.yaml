@@ -31,3 +31,7 @@ appId: com.example.app
 - waitForAnimationToEnd:
     timeout: 4000
     label: "Wait for the thing to stop spinning"
+- runFlow:
+    commands:
+        - assertTrue: ${5 == 5}
+    label: "Check that five is still what we think it is"
