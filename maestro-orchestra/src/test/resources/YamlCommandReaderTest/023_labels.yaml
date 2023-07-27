@@ -38,3 +38,6 @@ appId: com.example.app
 - inputText:
     text: "correct horse battery staple"
     label: "Enter my secret password"
+- scrollUntilVisible:
+    element: "Footer"
+    label: "Scroll to the bottom"

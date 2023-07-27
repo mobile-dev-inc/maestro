@@ -3,6 +3,7 @@ package maestro.orchestra.yaml
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.FileSystems
 import java.nio.file.Paths
+import maestro.ScrollDirection
 import maestro.TapRepeat
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.AssertConditionCommand
@@ -18,6 +19,7 @@ import maestro.orchestra.MaestroOnFlowComplete
 import maestro.orchestra.MaestroOnFlowStart
 import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.ScrollCommand
+import maestro.orchestra.ScrollUntilVisibleCommand
 import maestro.orchestra.SetLocationCommand
 import maestro.orchestra.StopAppCommand
 import maestro.orchestra.TakeScreenshotCommand
@@ -371,6 +373,14 @@ internal class YamlCommandReaderTest {
             InputTextCommand(
                 text = "correct horse battery staple",
                 label = "Enter my secret password"
+            ),
+            ScrollUntilVisibleCommand(
+                selector = ElementSelector(textRegex = "Footer"),
+                direction = ScrollDirection.DOWN,
+                timeout = 20000,
+                scrollDuration = 601,
+                visibilityPercentage = 100,
+                label = "Scroll to the bottom"
             )
         )
     }
