@@ -80,18 +80,20 @@ data class YamlFluentCommand(
             assertVisible != null -> listOf(
                 MaestroCommand(
                     AssertConditionCommand(
-                        Condition(
+                        condition = Condition(
                             visible = toElementSelector(assertVisible),
-                        )
+                        ),
+                        label = (assertVisible as? YamlElementSelector)?.label
                     )
                 )
             )
             assertNotVisible != null -> listOf(
                 MaestroCommand(
                     AssertConditionCommand(
-                        Condition(
+                        condition = Condition(
                             notVisible = toElementSelector(assertNotVisible),
-                        )
+                        ),
+                        label = (assertNotVisible as? YamlElementSelector)?.label
                     )
                 )
             )
@@ -128,12 +130,13 @@ data class YamlFluentCommand(
                     else -> error("Unknown navigation target: $action")
                 }
             )
-            takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(takeScreenshot.path)))
+            takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(takeScreenshot.path, takeScreenshot.label)))
             extendedWaitUntil != null -> listOf(extendedWait(extendedWaitUntil))
             stopApp != null -> listOf(
                 MaestroCommand(
                     StopAppCommand(
                         appId = stopApp.appId ?: appId,
+                        label = stopApp.label
                     )
                 )
             )
@@ -150,6 +153,7 @@ data class YamlFluentCommand(
                     SetLocationCommand(
                         latitude = setLocation.latitude,
                         longitude = setLocation.longitude,
+                        label = setLocation.label
                     )
                 )
             )
@@ -171,7 +175,8 @@ data class YamlFluentCommand(
             waitForAnimationToEnd != null -> listOf(
                 MaestroCommand(
                     WaitForAnimationToEndCommand(
-                        timeout = waitForAnimationToEnd.timeout
+                        timeout = waitForAnimationToEnd.timeout,
+                        label = waitForAnimationToEnd.label
                     )
                 )
             )
@@ -404,7 +409,8 @@ data class YamlFluentCommand(
                     retryIfNoChange = retryIfNoChange,
                     longPress = longPress,
                     repeat = repeat,
-                    waitToSettleTimeoutMs = waitToSettleTimeoutMs
+                    waitToSettleTimeoutMs = waitToSettleTimeoutMs,
+                    label = label
                 )
             )
         } else {
@@ -623,7 +629,7 @@ data class YamlFluentCommand(
                 )
 
                 "waitForAnimationToEnd" -> YamlFluentCommand(
-                    waitForAnimationToEnd = YamlWaitForAnimationToEndCommand(null)
+                    waitForAnimationToEnd = YamlWaitForAnimationToEndCommand(timeout = null)
                 )
 
                 "stopRecording" -> YamlFluentCommand(
