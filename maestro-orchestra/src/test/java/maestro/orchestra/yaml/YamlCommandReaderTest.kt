@@ -15,6 +15,7 @@ import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroOnFlowComplete
 import maestro.orchestra.MaestroOnFlowStart
+import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.SetLocationCommand
 import maestro.orchestra.StopAppCommand
@@ -356,6 +357,15 @@ internal class YamlCommandReaderTest {
             WaitForAnimationToEndCommand(
                 timeout = 4000,
                 label = "Wait for the thing to stop spinning"
+            ),
+            RunFlowCommand(
+                config = null,
+                commands = commands(
+                    AssertConditionCommand(
+                        condition = Condition(scriptCondition = "\${5 == 5}")
+                    )
+                ),
+                label = "Check that five is still what we think it is"
             )
         )
     }

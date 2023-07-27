@@ -252,7 +252,8 @@ data class YamlFluentCommand(
                 commands = commands,
                 condition = runFlow.`when`?.toCondition(),
                 sourceDescription = runFlow.file,
-                config
+                config = config,
+                label = runFlow.label
             )
         )
     }
