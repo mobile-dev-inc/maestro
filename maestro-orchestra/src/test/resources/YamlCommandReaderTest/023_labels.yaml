@@ -1,0 +1,33 @@
+appId: com.example.app
+---
+- tapOn:
+    id: "foo"
+    label: "Tap on the important button"
+- doubleTapOn:
+    id: "foo"
+    label: "Tap on the important button twice more"
+- longPressOn:
+    id: "foo"
+    label: "Press and hold the important button"
+- tapOn:
+    point: 50%,50%
+    label: "Tap on the middle of the screen"
+- assertVisible:
+    id: "bar"
+    label: "Check that the important number is visible"
+- assertNotVisible:
+    id: "bar2"
+    label: "Check that the secret number is invisible"
+- takeScreenshot:
+    path: "baz"
+    label: "Snap this for later evaluation"
+- stopApp:
+    appId: "com.some.other"
+    label: "Stop that other app from running"
+- setLocation:
+    latitude: 12.5266
+    longitude: 78.2150
+    label: "Set Location to Test Laboratory"
+- waitForAnimationToEnd:
+    timeout: 4000
+    label: "Wait for the thing to stop spinning"

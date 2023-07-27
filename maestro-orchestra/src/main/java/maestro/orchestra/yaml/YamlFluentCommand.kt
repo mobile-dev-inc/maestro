@@ -158,7 +158,7 @@ data class YamlFluentCommand(
                     else -> error("Unknown navigation target: $action")
                 }
             )
-            takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(takeScreenshot.path, takeScreenshot.label)))
+            takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(path = takeScreenshot.path, label = takeScreenshot.label)))
             extendedWaitUntil != null -> listOf(extendedWait(extendedWaitUntil))
             stopApp != null -> listOf(
                 MaestroCommand(
