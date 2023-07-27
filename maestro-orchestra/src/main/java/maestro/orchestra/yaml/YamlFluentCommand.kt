@@ -169,6 +169,7 @@ data class YamlFluentCommand(
                         env = runScript.env,
                         sourceDescription = runScript.file,
                         condition = runScript.`when`?.toCondition(),
+                        label = runScript.label
                     )
                 )
             )

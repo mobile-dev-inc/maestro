@@ -18,6 +18,7 @@ import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroOnFlowComplete
 import maestro.orchestra.MaestroOnFlowStart
 import maestro.orchestra.RunFlowCommand
+import maestro.orchestra.RunScriptCommand
 import maestro.orchestra.ScrollCommand
 import maestro.orchestra.ScrollUntilVisibleCommand
 import maestro.orchestra.SetLocationCommand
@@ -381,6 +382,12 @@ internal class YamlCommandReaderTest {
                 scrollDuration = 601,
                 visibilityPercentage = 100,
                 label = "Scroll to the bottom"
+            ),
+            RunScriptCommand(
+                script = "const myNumber = 1 + 1;",
+                condition = null,
+                sourceDescription = "023_runScript_test.js",
+                label = "Run some special calculations"
             )
         )
     }
