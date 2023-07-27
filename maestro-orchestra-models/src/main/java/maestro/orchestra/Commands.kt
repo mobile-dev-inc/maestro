@@ -328,7 +328,7 @@ data class AssertConditionCommand(
     fun timeoutMs() = timeout?.toLong()
 
     override fun description(): String {
-         return label ?: return "Assert that ${condition.description()}"
+         return label ?: "Assert that ${condition.description()}"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
