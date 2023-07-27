@@ -35,3 +35,6 @@ appId: com.example.app
     commands:
         - assertTrue: ${5 == 5}
     label: "Check that five is still what we think it is"
+- inputText:
+    text: "correct horse battery staple"
+    label: "Enter my secret password"
