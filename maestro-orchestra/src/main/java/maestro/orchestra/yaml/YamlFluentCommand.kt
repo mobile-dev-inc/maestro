@@ -42,7 +42,7 @@ data class YamlFluentCommand(
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: String? = null,
     val action: String? = null,
-    val inputText: String? = null,
+    val inputText: YamlInputText? = null,
     val inputRandomText: YamlInputRandomText? = null,
     val inputRandomNumber: YamlInputRandomNumber? = null,
     val inputRandomEmail: YamlInputRandomEmail? = null,
@@ -111,7 +111,7 @@ data class YamlFluentCommand(
                     addMediaCommand = addMediaCommand(addMedia, flowPath)
                 )
             )
-            inputText != null -> listOf(MaestroCommand(InputTextCommand(inputText)))
+            inputText != null -> listOf(MaestroCommand(InputTextCommand(text = inputText.text, label = inputText.label)))
             inputRandomText != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT, length = inputRandomText.length)))
             inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length)))
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS)))

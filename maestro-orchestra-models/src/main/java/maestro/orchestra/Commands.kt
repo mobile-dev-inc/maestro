@@ -348,11 +348,12 @@ data class AssertConditionCommand(
 }
 
 data class InputTextCommand(
-    val text: String
+    val text: String,
+    val label: String? = null
 ) : Command {
 
     override fun description(): String {
-         return "Input text $text"
+         return label ?: "Input text $text"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {

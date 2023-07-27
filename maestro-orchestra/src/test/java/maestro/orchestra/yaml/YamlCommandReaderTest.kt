@@ -10,6 +10,7 @@ import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
 import maestro.orchestra.Condition
 import maestro.orchestra.ElementSelector
+import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
@@ -366,6 +367,10 @@ internal class YamlCommandReaderTest {
                     )
                 ),
                 label = "Check that five is still what we think it is"
+            ),
+            InputTextCommand(
+                text = "correct horse battery staple",
+                label = "Enter my secret password"
             )
         )
     }
