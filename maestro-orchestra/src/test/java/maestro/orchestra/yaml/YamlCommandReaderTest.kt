@@ -3,15 +3,26 @@ package maestro.orchestra.yaml
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.FileSystems
 import java.nio.file.Paths
+import maestro.TapRepeat
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.AssertConditionCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
+import maestro.orchestra.Condition
+import maestro.orchestra.ElementSelector
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.MaestroOnFlowComplete
 import maestro.orchestra.MaestroOnFlowStart
 import maestro.orchestra.ScrollCommand
+import maestro.orchestra.SetLocationCommand
+import maestro.orchestra.StopAppCommand
+import maestro.orchestra.TakeScreenshotCommand
+import maestro.orchestra.TapOnElementCommand
+import maestro.orchestra.TapOnPointV2Command
+import maestro.orchestra.WaitForAnimationToEndCommand
+import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
 import maestro.orchestra.yaml.junit.YamlExceptionExtension
@@ -276,6 +287,75 @@ internal class YamlCommandReaderTest {
             ),
             LaunchAppCommand(
                 appId = "com.example.app"
+            )
+        )
+    }
+
+    @Test
+    fun labels(
+        @YamlFile("023_labels.yaml") commands: List<Command>,
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(
+                config=MaestroConfig(
+                    appId="com.example.app"
+                )
+            ),
+            TapOnElementCommand(
+                selector = ElementSelector(idRegex = "foo"),
+                retryIfNoChange = true,
+                waitUntilVisible = false,
+                longPress = false,
+                label = "Tap on the important button"
+            ),
+            TapOnElementCommand(
+                selector = ElementSelector(idRegex = "foo"),
+                retryIfNoChange = true,
+                waitUntilVisible = false,
+                longPress = false,
+                repeat = TapRepeat(
+                    repeat = 2,
+                    delay = 100L
+                ),
+                label = "Tap on the important button twice more"
+            ),
+            TapOnElementCommand(
+                selector = ElementSelector(idRegex = "foo"),
+                retryIfNoChange = true,
+                waitUntilVisible = false,
+                longPress = true,
+                label = "Press and hold the important button"
+            ),
+            TapOnPointV2Command(
+                point = "50%,50%",
+                retryIfNoChange = true,
+                longPress = false,
+                label = "Tap on the middle of the screen"
+            ),
+            AssertConditionCommand(
+                condition = Condition(visible = ElementSelector(idRegex = "bar")),
+                label = "Check that the important number is visible"
+            ),
+            AssertConditionCommand(
+                condition = Condition(notVisible = ElementSelector(idRegex = "bar2")),
+                label = "Check that the secret number is invisible"
+            ),
+            TakeScreenshotCommand(
+                path = "baz",
+                label = "Snap this for later evaluation"
+            ),
+            StopAppCommand(
+                appId = "com.some.other",
+                label = "Stop that other app from running"
+            ),
+            SetLocationCommand(
+                latitude = 12.5266,
+                longitude = 78.2150,
+                label = "Set Location to Test Laboratory"
+            ),
+            WaitForAnimationToEndCommand(
+                timeout = 4000,
+                label = "Wait for the thing to stop spinning"
             )
         )
     }
