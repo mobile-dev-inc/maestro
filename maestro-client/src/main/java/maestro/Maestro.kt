@@ -20,7 +20,6 @@
 package maestro
 
 import com.github.romankh3.image.comparison.ImageComparison
-import com.google.protobuf.duration
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.drivers.WebDriver
@@ -563,27 +562,6 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun isUnicodeInputSupported(): Boolean {
         return driver.isUnicodeInputSupported()
-    }
-
-    fun assertOutgoingRequest(
-        path: String? = null,
-        assertHeaderIsPresent: List<String> = emptyList(),
-        assertHeadersAndValues: Map<String, String> = emptyMap(),
-        assertHttpMethod: String? = null,
-        assertRequestBodyContains: String? = null,
-    ): Boolean {
-        val events = AssertOutgoingRequestService.getMockEvents(sessionId)
-        if (events.isEmpty()) return false
-
-        val rules = OutgoingRequestRules(
-            path = path,
-            headersPresent = assertHeaderIsPresent,
-            headersAndValues = assertHeadersAndValues,
-            httpMethodIs = assertHttpMethod,
-            requestBodyContains = assertRequestBodyContains,
-        )
-        val matched = AssertOutgoingRequestService.match(events, rules)
-        return matched.isNotEmpty()
     }
 
     companion object {

@@ -30,15 +30,12 @@ import maestro.cli.command.RecordCommand
 import maestro.cli.command.StudioCommand
 import maestro.cli.command.TestCommand
 import maestro.cli.command.UploadCommand
-import maestro.cli.command.mockserver.MockServerCommand
-import maestro.cli.command.network.NetworkCommand
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
-import maestro.debuglog.error
 import org.slf4j.LoggerFactory
 import picocli.CommandLine
 import picocli.CommandLine.Command
@@ -59,10 +56,8 @@ import kotlin.system.exitProcess
         DownloadSamplesCommand::class,
         LoginCommand::class,
         LogoutCommand::class,
-        NetworkCommand::class,
         BugReportCommand::class,
         StudioCommand::class,
-        MockServerCommand::class
     ]
 )
 class App {

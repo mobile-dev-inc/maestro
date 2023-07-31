@@ -47,12 +47,29 @@ class ApiClient(
 
     private val BASE_RETRY_DELAY_MS = 3000L
 
+    val domain: String
+        get() {
+            val regex = "https?://[^.]+.([a-zA-Z0-9.-]*).*".toRegex()
+            val matchResult = regex.matchEntire(baseUrl)
+            val domain = matchResult?.groups?.get(1)?.value
+            return domain ?: "mobile.dev"
+        }
+
     fun sendErrorReport(exception: Exception, commandLine: String) {
         post<Unit>(
             path = "/maestro/error",
             body = mapOf(
                 "exception" to exception,
                 "commandLine" to commandLine
+            )
+        )
+    }
+
+    fun sendScreenReport(maxDepth: Int) {
+        post<Unit>(
+            path = "/maestro/screen",
+            body = mapOf(
+                "maxDepth" to maxDepth
             )
         )
     }
@@ -208,7 +225,7 @@ class ApiClient(
 
     fun upload(
         authToken: String,
-        appFile: Path,
+        appFile: Path?,
         workspaceZip: Path,
         uploadName: String?,
         mappingFile: Path?,
@@ -220,13 +237,15 @@ class ApiClient(
         env: Map<String, String>? = null,
         androidApiLevel: Int?,
         iOSVersion: String? = null,
+        appBinaryId: String? = null,
         includeTags: List<String> = emptyList(),
         excludeTags: List<String> = emptyList(),
         maxRetryCount: Int = 3,
         completedRetries: Int = 0,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): UploadResponse {
-        if (!appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
+        if (appBinaryId == null && appFile == null) throw CliError("Missing required parameter for option '--app-file' or '--app-binary-id'")
+        if (appFile != null && !appFile.exists()) throw CliError("App file does not exist: ${appFile.absolutePathString()}")
         if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
 
         val requestPart = mutableMapOf<String, Any>()
@@ -242,14 +261,18 @@ class ApiClient(
         requestPart["agent"] = getAgent()
         androidApiLevel?.let { requestPart["androidApiLevel"] = it }
         iOSVersion?.let { requestPart["iOSVersion"] = it }
+        appBinaryId?.let { requestPart["appBinaryId"] = it }
         if (includeTags.isNotEmpty()) requestPart["includeTags"] = includeTags
         if (excludeTags.isNotEmpty()) requestPart["excludeTags"] = excludeTags
 
         val bodyBuilder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("app_binary", "app.zip", appFile.toFile().asRequestBody("application/zip".toMediaType()).observable(progressListener))
             .addFormDataPart("workspace", "workspace.zip", workspaceZip.toFile().asRequestBody("application/zip".toMediaType()))
             .addFormDataPart("request", JSON.writeValueAsString(requestPart))
+
+        if (appFile != null) {
+            bodyBuilder.addFormDataPart("app_binary", "app.zip", appFile.toFile().asRequestBody("application/zip".toMediaType()).observable(progressListener))
+        }
 
         if (mappingFile != null) {
             bodyBuilder.addFormDataPart("mapping", "mapping.txt", mappingFile.toFile().asRequestBody("text/plain".toMediaType()))
@@ -266,24 +289,25 @@ class ApiClient(
             Thread.sleep(BASE_RETRY_DELAY_MS + (2000 * completedRetries))
 
             return upload(
-                authToken,
-                appFile,
-                workspaceZip,
-                uploadName,
-                mappingFile,
-                repoOwner,
-                repoName,
-                branch,
-                commitSha,
-                pullRequestId,
-                env,
-                androidApiLevel,
-                iOSVersion,
-                includeTags,
-                excludeTags,
-                maxRetryCount,
-                completedRetries + 1,
-                progressListener,
+                authToken = authToken,
+                appFile = appFile,
+                workspaceZip = workspaceZip,
+                uploadName = uploadName,
+                mappingFile = mappingFile,
+                repoOwner = repoOwner,
+                repoName = repoName,
+                branch = branch,
+                commitSha = commitSha,
+                pullRequestId = pullRequestId,
+                env = env,
+                androidApiLevel = androidApiLevel,
+                iOSVersion = iOSVersion,
+                includeTags = includeTags,
+                excludeTags = excludeTags,
+                maxRetryCount = maxRetryCount,
+                completedRetries = completedRetries + 1,
+                progressListener = progressListener,
+                appBinaryId = appBinaryId
             )
         }
 
@@ -315,56 +339,9 @@ class ApiClient(
             val uploadId = analysisRequest["id"] as String
             val teamId = analysisRequest["teamId"] as String
             val appId = responseBody["targetId"] as String
+            val appBinaryIdResponse = responseBody["appBinaryId"] as? String
 
-            return UploadResponse(teamId, appId, uploadId)
-        }
-    }
-
-    fun deployMaestroMockServerWorkspace(
-        authToken: String,
-        workspaceZip: Path,
-        maxRetryCount: Int = 3,
-        completedRetries: Int = 0,
-        progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
-    ): String {
-        if (!workspaceZip.exists()) throw CliError("Workspace zip does not exist: ${workspaceZip.absolutePathString()}")
-
-        val requestPart = mutableMapOf<String, Any>()
-        requestPart["agent"] = getAgent()
-
-        val bodyBuilder = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("workspace", "workspace.zip", workspaceZip.toFile().asRequestBody("application/zip".toMediaType()))
-
-        val body = bodyBuilder.build()
-
-        val request = Request.Builder()
-            .header("Authorization", "Bearer $authToken")
-            .url("$baseUrl/mms-deploy")
-            .post(body)
-            .build()
-
-        val response = client.newCall(request).execute()
-
-        response.use {
-            if (!response.isSuccessful) {
-                if (response.code >= 500 && completedRetries < maxRetryCount) {
-                    PrintUtils.message("Request failed, retrying...")
-                    Thread.sleep(BASE_RETRY_DELAY_MS + (2000 * completedRetries))
-
-                    return deployMaestroMockServerWorkspace(
-                        authToken,
-                        workspaceZip,
-                        maxRetryCount,
-                        completedRetries + 1,
-                        progressListener,
-                    )
-                } else {
-                    throw CliError("Mock server deploy request failed (${response.code}): ${response.body?.string()}")
-                }
-            }
-
-            return response.body.toString()
+            return UploadResponse(teamId, appId, uploadId, appBinaryIdResponse)
         }
     }
 
@@ -422,6 +399,7 @@ data class UploadResponse(
     val teamId: String,
     val appId: String,
     val uploadId: String,
+    val appBinaryId: String?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

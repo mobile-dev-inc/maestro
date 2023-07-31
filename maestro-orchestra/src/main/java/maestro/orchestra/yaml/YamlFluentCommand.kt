@@ -24,7 +24,6 @@ import maestro.KeyCode
 import maestro.Point
 import maestro.TapRepeat
 import maestro.orchestra.AssertConditionCommand
-import maestro.orchestra.AssertOutgoingRequestsCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
 import maestro.orchestra.Condition
@@ -39,7 +38,7 @@ import maestro.orchestra.InputRandomType
 import maestro.orchestra.InputTextCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MockNetworkCommand
+import maestro.orchestra.MaestroConfig
 import maestro.orchestra.OpenLinkCommand
 import maestro.orchestra.PasteTextCommand
 import maestro.orchestra.PressKeyCommand
@@ -96,10 +95,8 @@ data class YamlFluentCommand(
     val runScript: YamlRunScript? = null,
     val waitForAnimationToEnd: YamlWaitForAnimationToEndCommand? = null,
     val evalScript: String? = null,
-    val mockNetwork: String? = null,
     val scrollUntilVisible: YamlScrollUntilVisible? = null,
     val travel: YamlTravelCommand? = null,
-    val assertOutgoingRequest: YamlAssertOutgoingRequestsCommand? = null,
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
 ) {
@@ -210,16 +207,8 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            mockNetwork != null -> listOf(
-                MaestroCommand(
-                    MockNetworkCommand(
-                        mockNetwork,
-                    )
-                )
-            )
             scrollUntilVisible != null -> listOf(scrollUntilVisibleCommand(scrollUntilVisible))
             travel != null -> listOf(travelCommand(travel))
-            assertOutgoingRequest != null -> listOf(assertOutgoingRequestsCommand(assertOutgoingRequest))
             startRecording != null -> listOf(MaestroCommand(StartRecordingCommand(startRecording.path)))
             stopRecording != null -> listOf(MaestroCommand(StopRecordingCommand()))
             doubleTapOn != null -> {
@@ -252,23 +241,16 @@ data class YamlFluentCommand(
             }
             ?: runFlow(flowPath, runFlow)
 
+        val config = runFlow.file?.let {
+            readConfig(flowPath, runFlow.file)
+        }
+
         return MaestroCommand(
             RunFlowCommand(
                 commands = commands,
                 condition = runFlow.`when`?.toCondition(),
                 sourceDescription = runFlow.file,
-            )
-        )
-    }
-
-    private fun assertOutgoingRequestsCommand(command: YamlAssertOutgoingRequestsCommand): MaestroCommand {
-        return MaestroCommand(
-            AssertOutgoingRequestsCommand(
-                path = command.path,
-                headersPresent = command.headersPresent,
-                headersAndValues = command.headersAndValues,
-                httpMethodIs = command.httpMethodIs,
-                requestBodyContains = command.requestBodyContains,
+                config
             )
         )
     }
@@ -338,6 +320,11 @@ data class YamlFluentCommand(
         val runFlowPath = resolvePath(flowPath, command.file)
         return YamlCommandReader.readCommands(runFlowPath)
             .withEnv(command.env)
+    }
+
+    private fun readConfig(flowPath: Path, commandFile: String): MaestroConfig? {
+        val runFlowPath = resolvePath(flowPath, commandFile)
+        return YamlCommandReader.readConfig(runFlowPath).toCommand(runFlowPath).applyConfigurationCommand?.config
     }
 
     private fun resolvePath(flowPath: Path, requestedPath: String): Path {

@@ -27,10 +27,9 @@ import maestro.FindElementResult
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.ScreenRecording
-import maestro.js.Js
+import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
-import maestro.networkproxy.NetworkProxy
-import maestro.networkproxy.yaml.YamlMappingRuleParser
+import maestro.js.RhinoJsEngine
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
@@ -40,6 +39,7 @@ import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
+import okhttp3.OkHttpClient
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -52,7 +52,7 @@ class Orchestra(
     private val screenshotsDir: File? = null,
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
-    private val networkProxy: NetworkProxy = NetworkProxy(port = 8085),
+    private val httpClient: OkHttpClient? = null,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
@@ -60,8 +60,9 @@ class Orchestra(
     private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandReset: (MaestroCommand) -> Unit = {},
     private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
-    private val jsEngine: JsEngine = JsEngine(),
 ) {
+
+    private lateinit var jsEngine: JsEngine
 
     private var copiedText: String? = null
 
@@ -80,11 +81,12 @@ class Orchestra(
         commands: List<MaestroCommand>,
         initState: OrchestraAppState? = null,
     ): Boolean {
-        jsEngine.init()
-
         timeMsOfLastInteraction = System.currentTimeMillis()
 
         val config = YamlCommandReader.getConfig(commands)
+
+        initJsEngine(config)
+
         val state = initState ?: config?.initFlow?.let {
             runInitFlow(it) ?: return false
         }
@@ -95,7 +97,41 @@ class Orchestra(
         }
 
         onFlowStart(commands)
-        return executeCommands(commands, config)
+
+        executeDefineVariablesCommands(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
+        config?.onFlowStart?.commands?.let {
+            executeCommands(
+                commands = it,
+                config = config,
+                shouldReinitJsEngine = false,
+            )
+        }
+
+        try {
+            val flowSuccess = executeCommands(
+                commands = filteredCommands,
+                config = config,
+                shouldReinitJsEngine = false,
+            ).also {
+                // close existing screen recording, if left open.
+                screenRecording?.close()
+            }
+
+            return flowSuccess
+        } catch (e: Throwable) {
+            throw e
+        } finally {
+            config?.onFlowComplete?.commands?.let {
+                executeCommands(
+                    commands = it,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                )
+            }
+        }
     }
 
     /**
@@ -128,9 +164,12 @@ class Orchestra(
 
     fun executeCommands(
         commands: List<MaestroCommand>,
-        config: MaestroConfig? = null
+        config: MaestroConfig? = null,
+        shouldReinitJsEngine: Boolean = true,
     ): Boolean {
-        jsEngine.init()
+        if (shouldReinitJsEngine) {
+            initJsEngine(config)
+        }
 
         commands
             .forEachIndexed { index, command ->
@@ -168,6 +207,19 @@ class Orchestra(
                 }
             }
         return true
+    }
+
+    @Synchronized
+    private fun initJsEngine(config: MaestroConfig?) {
+        if (this::jsEngine.isInitialized) {
+            jsEngine.close()
+        }
+        val shouldUseGraalJs = config?.ext?.get("jsEngine") == "graaljs" || System.getenv("MAESTRO_USE_GRAALJS") == "true"
+        jsEngine = if (shouldUseGraalJs) {
+            httpClient?.let { GraalJsEngine(it) } ?: GraalJsEngine()
+        } else {
+            httpClient?.let { RhinoJsEngine(it) } ?: RhinoJsEngine()
+        }
     }
 
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
@@ -212,9 +264,7 @@ class Orchestra(
             is EvalScriptCommand -> evalScriptCommand(command)
             is ApplyConfigurationCommand -> false
             is WaitForAnimationToEndCommand -> waitForAnimationToEndCommand(command)
-            is MockNetworkCommand -> mockNetworkCommand(command)
             is TravelCommand -> travelCommand(command)
-            is AssertOutgoingRequestsCommand -> assertOutgoingRequestsCommand(command)
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
             else -> true
@@ -223,19 +273,6 @@ class Orchestra(
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
         }
-    }
-
-    private fun assertOutgoingRequestsCommand(command: AssertOutgoingRequestsCommand): Boolean {
-        val matched = maestro.assertOutgoingRequest(
-            path = command.path,
-            assertHeaderIsPresent = command.headersPresent,
-            assertHttpMethod = command.httpMethodIs,
-            assertRequestBodyContains = command.requestBodyContains,
-            assertHeadersAndValues = command.headersAndValues,
-        )
-
-        if (!matched) throw MaestroException.OutgoingRequestAssertionFailure("Outgoing request assertion failed: ${command.description()}")
-        return true
     }
 
     private fun travelCommand(command: TravelCommand): Boolean {
@@ -300,8 +337,7 @@ class Orchestra(
 
     private fun defineVariablesCommand(command: DefineVariablesCommand): Boolean {
         command.env.forEach { (name, value) ->
-            val cleanValue = Js.sanitizeJs(value)
-            jsEngine.evaluateScript("var $name = '$cleanValue'")
+            jsEngine.putEnv(name, value)
         }
 
         return false
@@ -363,21 +399,6 @@ class Orchestra(
         return true
     }
 
-    private fun mockNetworkCommand(command: MockNetworkCommand): Boolean {
-        maestro.setProxy(
-            port = networkProxy.port,
-        )
-
-        val rules = YamlMappingRuleParser.readRules(File(command.path).toPath())
-        if (!networkProxy.isStarted()) {
-            networkProxy.start(rules)
-        } else {
-            networkProxy.replaceRules(rules)
-        }
-
-        return false
-    }
-
     private fun repeatCommand(command: RepeatCommand, maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val maxRuns = command.times?.toDoubleOrNull()?.toInt() ?: Int.MAX_VALUE
 
@@ -400,7 +421,7 @@ class Orchestra(
                 command.commands.forEach { resetCommand(it) }
             }
 
-            val mutated = runSubFlow(command.commands, config)
+            val mutated = runSubFlow(command.commands, config, null)
             mutatiing = mutatiing || mutated
             counter++
 
@@ -438,7 +459,7 @@ class Orchestra(
 
     private fun runFlowCommand(command: RunFlowCommand, config: MaestroConfig?): Boolean {
         return if (evaluateCondition(command.condition)) {
-            runSubFlow(command.commands, config)
+            runSubFlow(command.commands, config, command.config)
         } else {
             throw CommandSkipped
         }
@@ -513,7 +534,7 @@ class Orchestra(
         return true
     }
 
-    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
+    private fun executeSubflowCommands(commands: List<MaestroCommand>, config: MaestroConfig?): Boolean {
         jsEngine.enterScope()
 
         return try {
@@ -550,6 +571,24 @@ class Orchestra(
                 .any { it }
         } finally {
             jsEngine.leaveScope()
+        }
+    }
+
+    private fun runSubFlow(commands: List<MaestroCommand>, config: MaestroConfig?, subflowConfig: MaestroConfig?): Boolean {
+        executeDefineVariablesCommands(commands, config)
+        // filter out DefineVariablesCommand to not execute it twice
+        val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
+
+        subflowConfig?.onFlowStart?.commands?.let {
+            executeSubflowCommands(it, config)
+        }
+
+        try {
+            return executeSubflowCommands(filteredCommands, config)
+        } finally {
+            subflowConfig?.onFlowComplete?.commands?.let {
+                executeSubflowCommands(it, config)
+            }
         }
     }
 
@@ -947,7 +986,7 @@ class Orchestra(
         copiedText = resolveText(result.element.treeNode.attributes)
             ?: throw MaestroException.UnableToCopyTextFromElement("Element does not contain text to copy: ${result.element}")
 
-        jsEngine.evaluateScript("maestro.copiedText = '${Js.sanitizeJs(copiedText ?: "")}'")
+        jsEngine.setCopiedText(copiedText)
 
         return true
     }
@@ -965,6 +1004,16 @@ class Orchestra(
     private fun pasteText(): Boolean {
         copiedText?.let { maestro.inputText(it) }
         return true
+    }
+
+    private fun executeDefineVariablesCommands(commands: List<MaestroCommand>, config: MaestroConfig?) {
+        commands.filter { it.asCommand() is DefineVariablesCommand }.takeIf { it.isNotEmpty() }?.let {
+            executeCommands(
+                commands = it,
+                config = config,
+                shouldReinitJsEngine = false
+            )
+        }
     }
 
     private object CommandSkipped : Exception()

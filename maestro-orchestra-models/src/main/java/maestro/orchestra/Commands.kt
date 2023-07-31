@@ -41,7 +41,7 @@ sealed interface Command {
 sealed interface CompositeCommand : Command {
 
     fun subCommands(): List<MaestroCommand>
-
+    fun config(): MaestroConfig?
 }
 
 data class SwipeCommand(
@@ -563,10 +563,15 @@ data class RunFlowCommand(
     val commands: List<MaestroCommand>,
     val condition: Condition? = null,
     val sourceDescription: String? = null,
+    val config: MaestroConfig?,
 ) : CompositeCommand {
 
     override fun subCommands(): List<MaestroCommand> {
         return commands
+    }
+
+    override fun config(): MaestroConfig? {
+        return config
     }
 
     override fun description(): String {
@@ -586,6 +591,7 @@ data class RunFlowCommand(
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
             condition = condition?.evaluateScripts(jsEngine),
+            config = config?.evaluateScripts(jsEngine),
         )
     }
 
@@ -613,6 +619,10 @@ data class RepeatCommand(
 
     override fun subCommands(): List<MaestroCommand> {
         return commands
+    }
+
+    override fun config(): MaestroConfig? {
+        return null
     }
 
     override fun description(): String {
@@ -710,22 +720,6 @@ data class EvalScriptCommand(
 
 }
 
-data class MockNetworkCommand(
-    val path: String,
-) : Command {
-
-    override fun description(): String {
-        return "Mock network using $path"
-    }
-
-    override fun evaluateScripts(jsEngine: JsEngine): Command {
-        return copy(
-            path = path.evaluateScripts(jsEngine),
-        )
-    }
-
-}
-
 data class TravelCommand(
     val points: List<GeoPoint>,
     val speedMPS: Double? = null,
@@ -762,23 +756,6 @@ data class TravelCommand(
     }
 
 }
-
-data class AssertOutgoingRequestsCommand(
-    val path: String? = null,
-    val headersPresent: List<String> = emptyList(),
-    val headersAndValues: Map<String, String> = emptyMap(),
-    val httpMethodIs: String? = null,
-    val requestBodyContains: String? = null,
-) : Command {
-    override fun description(): String {
-        return "Assert outgoing requests to $path"
-    }
-
-    override fun evaluateScripts(jsEngine: JsEngine): Command {
-        return this
-    }
-}
-
 
 data class StartRecordingCommand(val path: String) : Command {
 

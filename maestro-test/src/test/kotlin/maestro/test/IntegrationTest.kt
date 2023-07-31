@@ -2776,6 +2776,168 @@ class IntegrationTest {
         driver.assertEventCount(Event.Tap(Point(50, 50)), 2)
     }
 
+    @Test
+    fun `Case 102 - GraalJs config`() {
+        // given
+        val commands = readCommands("102_graaljs")
+        val driver = driver { }
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.InputText("foo"),
+                Event.InputText("bar"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 103 - execute onFlowStart and onFlowComplete hooks`() {
+        // given
+        val commands = readCommands("103_on_flow_start_complete_hooks")
+        val driver = driver {
+        }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // Then
+        assertThat(receivedLogs).containsExactly(
+            "setup",
+            "teardown",
+        ).inOrder()
+        driver.assertEvents(
+            listOf(
+                Event.InputText("test1"),
+                Event.Tap(Point(100, 200)),
+                Event.InputText("test2"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 104 - execute onFlowStart and onFlowComplete hooks when flow failed`() {
+        // Given
+        val commands = readCommands("104_on_flow_start_complete_hooks_flow_failed")
+
+        val driver = driver {
+            element {
+                id = "another_id"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+
+        // When & Then
+        assertThrows<MaestroException.AssertionFailure> {
+            Maestro(driver).use {
+                orchestra(it).runFlow(commands)
+            }
+        }
+        driver.assertEvents(
+            listOf(
+                Event.InputText("test1"),
+                Event.InputText("test2"),
+            )
+        )
+    }
+
+    @Test
+    fun `Case 105 - execute onFlowStart and onFlowComplete when js output is set`() {
+        // Given
+        val commands = readCommands("105_on_flow_start_complete_when_js_output_set")
+
+        val driver = driver {
+        }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // Then
+        assertThat(receivedLogs).containsExactly(
+            "setup",
+            "teardown",
+        ).inOrder()
+    }
+
+    @Test
+    fun `Case 106 - execute onFlowStart and onFlowComplete when js output is set with subflows`() {
+        // Given
+        val commands = readCommands("106_on_flow_start_complete_when_js_output_set_subflows")
+
+        val driver = driver {
+        }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // Then
+        assertThat(receivedLogs).containsExactly(
+            "subflow",
+            "setup subflow",
+            "teardown subflow",
+        ).inOrder()
+    }
+
+    @Test
+    fun `Case 107 - execute defineVariablesCommand before onFlowStart and onFlowComplete are executed`() {
+        // Given
+        val commands = readCommands("107_define_variables_command_before_hooks")
+
+        val driver = driver {
+        }
+        driver.addInstalledApp("com.example.app")
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // Then
+        assertThat(receivedLogs).containsExactly(
+            "com.example.app",
+        ).inOrder()
+        driver.assertEvents(
+            listOf(
+                Event.LaunchApp("com.example.app")
+            )
+        )
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(

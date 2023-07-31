@@ -1,5 +1,62 @@
 # Changelog
 
+## 1.30.4 - 2023-07-19
+
+- Fix: correctly resolve external parameters for onStart/Complete hooks
+- Fix: reuse JSEngine for all executeCommands (hooks, main commands, subflows) actions
+
+## 1.30.3 - 2023-07-17
+
+- Update: Maestro Studio revamp improvements
+  - wrapped element names in sidebar 
+  - sidebar text always visible
+  - add "hintText" and "accesbilityText" in sidebar
+  - improve sidebar search
+  - fixed highlight issues in search
+  - various other small improvements
+
+## 1.30.2 - 2023-07-14
+
+- Revert connection improvements (from 1.30.1)
+
+## 1.30.1 - 2023-07-14
+
+- Fix: Allow running `maestro studio` and `maestro test` simultaneusly
+- Fix: Connection improvements
+
+## 1.30.0 - 2023-07-13
+
+- Feature: onFlowStart / onFlowComplete hooks
+- Feature: Maestro Studio revamp
+  - improved design
+  - search components panel
+  - improved drag-and-drop
+- Feature: Introduce `--app-binary-id` parameter for Maestro Cloud upload action to be able to re-use a previously uploaded app for different flows
+- Feature: Implement Experimental GraalJsEngine (ECMAScript 2022 compliant)
+- Fix: Save xctest xcodebuild logs output to system temp dir
+- Fix: Close existing screen recording if it was left open.
+  - Thanks, @carlosmuvi, for the contribution!
+- Fix: Execute sequential Flows even if no other Flows are present
+- Fix: Various XCTestClient connection improvements
+- Deprecate: `assertOutgoingRequestsCommand`
+- Deprecate: Network Mocking feature
+- Deprecate: Maestro Mock Server feature
+
+## 1.29.0 - 2023-06-19
+
+- Feature: Add test duration measurement and display
+- Feature: New screen recording commands
+  - Thanks, @tokou, for the contribution!
+- Feature: Add support for sequential execution
+- Feature: Add support for double taps + multiple taps in tapOn
+- Feature: Add support for custom Android driver startup timeout
+  - Thanks, @arildojr7, for the contribution!
+- Fix: Validate workspace prior to upload to Maestro Cloud
+- Fix: Resolve Android scrollUntilVisible flakiness
+- Fix: Resolve inputText flakiness
+- Fix: iOS url arguments
+  - Thanks, @tokou, for the contribution!
+
 ## 1.28.0 - 2023-05-18
 
 - Feature: runScript command now support conditional execution
