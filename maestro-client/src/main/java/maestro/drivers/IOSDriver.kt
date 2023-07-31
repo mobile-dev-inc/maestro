@@ -194,7 +194,7 @@ class IOSDriver(
                     "is ${hierarchyResult.depth}. If you are using React native, consider migrating to the new " +
                     "architecture where view flattening is available. For more information on the " +
                     "migration process, please visit: https://reactnative.dev/docs/new-architecture-intro"
-            Insights.report(Insight(message, Insight.Level.INFO))
+            Insights.report(Insight(message, Insight.Level.INFO, Insight.Visibility.VISIBLE))
         }
         val hierarchy = hierarchyResult?.axElement ?: return TreeNode()
         return mapViewHierarchy(hierarchy)

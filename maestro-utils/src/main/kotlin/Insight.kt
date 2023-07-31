@@ -15,10 +15,19 @@ object Insights {
     }
 }
 
-data class Insight(val message: String, val level: Level) {
+data class Insight(
+    val message: String,
+    val level: Level,
+    val visibility: Visibility
+) {
     enum class Level {
         WARNING,
         INFO,
         NONE
+    }
+
+    enum class Visibility {
+        VISIBLE,
+        NOT_VISIBLE
     }
 }

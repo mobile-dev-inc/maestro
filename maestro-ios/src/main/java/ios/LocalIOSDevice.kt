@@ -54,7 +54,8 @@ class LocalIOSDevice(
                         Insight(
                             message = "Retrieving the hierarchy is taking longer than usual. This might be due to a " +
                                     "deep hierarchy in the current view. Please wait a bit more to complete the operation.",
-                            level = Insight.Level.WARNING
+                            level = Insight.Level.WARNING,
+                            visibility = Insight.Visibility.VISIBLE
                         )
                     )
                 }
