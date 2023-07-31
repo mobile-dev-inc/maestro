@@ -139,7 +139,7 @@ class CloudCommand : Callable<Int> {
     @Option(hidden = true, names = ["--fail-on-cancellation"], description = ["Fail the command if the upload is marked as cancelled"])
     private var failOnCancellation: Boolean = false
 
-    @Option(names = ["--disable-notifications"], description = ["Do not send the notifications configured in config.yaml"])
+    @Option(hidden = true, names = ["--disable-notifications"], description = ["Do not send the notifications configured in config.yaml"])
     private var disableNotifications = false
 
     override fun call(): Int {
