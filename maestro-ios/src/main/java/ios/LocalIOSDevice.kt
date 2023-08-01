@@ -47,14 +47,14 @@ class LocalIOSDevice(
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         var isViewHierarchyInProgress = true
-        executor.schedule(
+        val future = executor.schedule(
             {
                 if (isViewHierarchyInProgress) {
                     Insights.report(
                         Insight(
                             message = "Retrieving the hierarchy is taking longer than usual. This might be due to a " +
                                     "deep hierarchy in the current view. Please wait a bit more to complete the operation.",
-                            level = Insight.Level.WARNING
+                            level = Insight.Level.WARNING,
                         )
                     )
                 }
@@ -62,6 +62,9 @@ class LocalIOSDevice(
         )
         val result = xcTestDevice.viewHierarchy()
         isViewHierarchyInProgress = false
+        if (!future.isDone) {
+            future.cancel(false)
+        }
         return result
     }
 

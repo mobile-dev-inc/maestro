@@ -195,6 +195,8 @@ class IOSDriver(
                     "architecture where view flattening is available. For more information on the " +
                     "migration process, please visit: https://reactnative.dev/docs/new-architecture-intro"
             Insights.report(Insight(message, Insight.Level.INFO))
+        } else {
+            Insights.report(Insight("", Insight.Level.NONE))
         }
         val hierarchy = hierarchyResult?.axElement ?: return TreeNode()
         return mapViewHierarchy(hierarchy)

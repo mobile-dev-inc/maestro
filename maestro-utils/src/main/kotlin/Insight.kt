@@ -15,7 +15,10 @@ object Insights {
     }
 }
 
-data class Insight(val message: String, val level: Level) {
+data class Insight(
+    val message: String,
+    val level: Level
+) {
     enum class Level {
         WARNING,
         INFO,
