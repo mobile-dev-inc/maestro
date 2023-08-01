@@ -17,10 +17,9 @@ object InsightService {
     private var currentInsights: List<Insight>? = null
 
     fun routes(routing: Route) {
+        registerInsightUpdateCallback()
+
         routing.get("/api/banner-message") {
-            Insights.onInsightsUpdated {
-                currentInsights = it
-            }
 
             if (currentInsights != null) {
                 if (!currentInsights.isNullOrEmpty()) {
@@ -45,6 +44,12 @@ object InsightService {
             } else {
                 call.respondText("")
             }
+        }
+    }
+
+    private fun registerInsightUpdateCallback() {
+        Insights.onInsightsUpdated {
+            currentInsights = it
         }
     }
 }
