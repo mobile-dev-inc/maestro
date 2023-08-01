@@ -51,7 +51,7 @@ class PrintHierarchyCommand : Runnable {
             Insights.onInsightsUpdated {
                 val message = StringBuilder()
                 message.append("Warning!".yellow() + ": ")
-                it.first().message.chunkStringByWordCount(12).forEach { chunkedMessage ->
+                it.message.chunkStringByWordCount(12).forEach { chunkedMessage ->
                     message.append("$chunkedMessage ")
                 }
                 println(message.toString())

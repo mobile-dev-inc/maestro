@@ -37,6 +37,7 @@ import maestro.orchestra.geo.Traveller
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
+import maestro.utils.Insight
 import maestro.utils.Insights
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
@@ -191,11 +192,11 @@ class Orchestra(
                     )
                 updateMetadata(command, metadata)
 
-                Insights.onInsightsUpdated { insights ->
+                Insights.onInsightsUpdated { insight ->
                     updateMetadata(
                         command,
                         getMetadata(command).copy(
-                            insightsMessages = insights.map { it.message }
+                            insight = insight
                         )
                     )
                 }
@@ -1031,7 +1032,7 @@ class Orchestra(
         val numberOfRuns: Int? = null,
         val evaluatedCommand: MaestroCommand? = null,
         val logMessages: List<String> = emptyList(),
-        val insightsMessages: List<String> = emptyList(),
+        val insight: Insight = Insight("", Insight.Level.NONE),
     )
 
     enum class ErrorResolution {

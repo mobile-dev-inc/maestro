@@ -2,23 +2,15 @@ package maestro.utils
 
 object Insights {
 
-    private val insights = mutableSetOf<Insight>()
-    private var onInsightsUpdated: (List<Insight>) -> Unit = {}
+    private var onInsightsUpdated: (Insight) -> Unit = {}
+    private var insight: Insight = Insight("", Insight.Level.NONE)
 
     fun report(insight: Insight) {
-        insights.add(insight)
-        onInsightsUpdated(insights.toList())
+        this.insight = insight
+        onInsightsUpdated(insight)
     }
 
-    fun list(): Set<Insight> {
-        return insights
-    }
-
-    fun clear() {
-        insights.clear()
-    }
-
-    fun onInsightsUpdated(callback: (List<Insight>) -> Unit) {
+    fun onInsightsUpdated(callback: (Insight) -> Unit) {
         onInsightsUpdated = callback
     }
 }
@@ -26,6 +18,7 @@ object Insights {
 data class Insight(val message: String, val level: Level) {
     enum class Level {
         WARNING,
-        INSIGHT
+        INFO,
+        NONE
     }
 }
