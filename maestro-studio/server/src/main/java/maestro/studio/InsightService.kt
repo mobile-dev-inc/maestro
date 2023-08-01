@@ -6,6 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.*
+import maestro.studio.BannerMessage.*
 import maestro.utils.Insight
 import maestro.utils.Insights
 import kotlin.coroutines.resume
@@ -13,23 +14,45 @@ import kotlin.coroutines.suspendCoroutine
 
 object InsightService {
 
-    private var insight: Insight? = null
+    private var currentInsights: List<Insight>? = null
 
     fun routes(routing: Route) {
         routing.get("/api/banner-message") {
             Insights.onInsightsUpdated {
-                insight = it.first { insight -> insight.visibility == Insight.Visibility.VISIBLE }
+                currentInsights = it
             }
 
-            if (insight != null) {
-                val response = jacksonObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(insight)
-                call.respondText(response)
+            if (currentInsights != null) {
+                if (!currentInsights.isNullOrEmpty()) {
+                    currentInsights?.forEach {
+                        val bannerMessage = BannerMessage(
+                            it.message,
+                            Level.valueOf(it.level.toString()).toString().lowercase()
+                        )
+                        val response = jacksonObjectMapper()
+                            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(bannerMessage)
+                        call.respondText(response)
+                    }
+                } else {
+                    val response = jacksonObjectMapper()
+                        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(BannerMessage("", Level.NONE.toString().lowercase()))
+                    call.respondText(response)
+                }
             } else {
                 call.respondText("")
             }
         }
+    }
+}
+
+data class BannerMessage(val message: String, val level: String) {
+    enum class Level {
+        WARNING,
+        NONE,
+        INFO
     }
 }

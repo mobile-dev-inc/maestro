@@ -17,17 +17,11 @@ object Insights {
 
 data class Insight(
     val message: String,
-    val level: Level,
-    val visibility: Visibility
+    val level: Level
 ) {
     enum class Level {
         WARNING,
         INFO,
         NONE
-    }
-
-    enum class Visibility {
-        VISIBLE,
-        NOT_VISIBLE
     }
 }
