@@ -1,7 +1,6 @@
 package ios
 
 import com.github.michaelbull.result.*
-import hierarchy.AXElement
 import hierarchy.XCUIElement
 import ios.device.DeviceInfo
 import ios.idb.IdbIOSDevice
@@ -24,7 +23,6 @@ class LocalIOSDevice(
     private val simctlIOSDevice: SimctlIOSDevice,
 ) : IOSDevice {
 
-    private var isViewHierarchyInProgress = false
     private val executor by lazy { Executors.newSingleThreadScheduledExecutor() }
 
     override fun open() {
@@ -48,7 +46,7 @@ class LocalIOSDevice(
     }
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
-        isViewHierarchyInProgress = true
+        var isViewHierarchyInProgress = true
         executor.schedule(
             {
                 if (isViewHierarchyInProgress) {
