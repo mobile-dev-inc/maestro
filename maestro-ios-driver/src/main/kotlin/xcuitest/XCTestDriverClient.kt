@@ -152,9 +152,9 @@ class XCTestDriverClient(
 
     fun inputText(
         text: String,
-        appId: String?,
+        appIds: Set<String>,
     ): Response {
-        return executeJsonRequestUNCHECKED("inputText", InputTextRequest(text, appId))
+        return executeJsonRequestUNCHECKED("inputText", InputTextRequest(text, appIds))
     }
 
     fun tap(

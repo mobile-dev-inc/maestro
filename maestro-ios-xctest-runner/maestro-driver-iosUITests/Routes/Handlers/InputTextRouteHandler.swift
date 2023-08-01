@@ -24,7 +24,8 @@ struct InputTextRouteHandler : HTTPHandler {
         do {
             let start = Date()
             
-            await waitUntilKeyboardIsPresented(appId: requestBody.appId)
+            let appId = RunningApp.getForegroundAppId(requestBody.appIds ?? [])
+            await waitUntilKeyboardIsPresented(appId: appId)
 
             // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
             // characters after the first on are often skipped, so we'll input it with lower typing frequency
