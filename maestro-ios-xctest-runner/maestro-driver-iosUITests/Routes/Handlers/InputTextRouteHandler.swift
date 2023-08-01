@@ -24,7 +24,7 @@ struct InputTextRouteHandler : HTTPHandler {
         do {
             let start = Date()
             
-            let appId = RunningApp.getForegroundAppId(requestBody.appIds ?? [])
+            let appId = RunningApp.getForegroundAppId(requestBody.appIds)
             await waitUntilKeyboardIsPresented(appId: appId)
 
             // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
