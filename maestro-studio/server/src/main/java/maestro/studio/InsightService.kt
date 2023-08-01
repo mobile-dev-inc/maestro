@@ -14,42 +14,35 @@ import kotlin.coroutines.suspendCoroutine
 
 object InsightService {
 
-    private var currentInsights: List<Insight>? = null
+    private var currentInsight: Insight = Insight("", Insight.Level.NONE)
 
     fun routes(routing: Route) {
         registerInsightUpdateCallback()
 
         routing.get("/api/banner-message") {
-
-            if (currentInsights != null) {
-                if (!currentInsights.isNullOrEmpty()) {
-                    currentInsights?.forEach {
-                        val bannerMessage = BannerMessage(
-                            it.message,
-                            Level.valueOf(it.level.toString()).toString().lowercase()
-                        )
-                        val response = jacksonObjectMapper()
-                            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(bannerMessage)
-                        call.respondText(response)
-                    }
-                } else {
-                    val response = jacksonObjectMapper()
-                        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(BannerMessage("", Level.NONE.toString().lowercase()))
-                    call.respondText(response)
-                }
+            if (currentInsight.level != Insight.Level.NONE) {
+                val bannerMessage = BannerMessage(
+                    currentInsight.message,
+                    Level.valueOf(currentInsight.level.toString()).toString().lowercase()
+                )
+                val response = jacksonObjectMapper()
+                    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(bannerMessage)
+                call.respondText(response)
             } else {
-                call.respondText("")
+                val response = jacksonObjectMapper()
+                    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(BannerMessage("", Level.NONE.toString().lowercase()))
+                call.respondText(response)
             }
         }
     }
 
     private fun registerInsightUpdateCallback() {
         Insights.onInsightsUpdated {
-            currentInsights = it
+            currentInsight = it
         }
     }
 }
