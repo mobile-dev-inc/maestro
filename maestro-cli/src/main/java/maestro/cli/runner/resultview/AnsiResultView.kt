@@ -185,9 +185,10 @@ class AnsiResultView(
     }
 
     private fun Ansi.printInsight(indent: Int, insight: Insight) {
+        val level = insight.level.toString().lowercase().replaceFirstChar(Char::uppercase)
         renderLineStart(indent + 1)
         render("   ")   // Space that a status symbol would normally occupy
-        render("@|yellow Warning:|@\n")
+        render("@|yellow $level:|@\n")
 
         insight.message.chunkStringByWordCount(12).forEach { chunkedMessage ->
             renderLineStart(indent + 2)

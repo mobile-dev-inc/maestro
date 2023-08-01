@@ -50,7 +50,8 @@ class PrintHierarchyCommand : Runnable {
         MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId) { session ->
             Insights.onInsightsUpdated {
                 val message = StringBuilder()
-                message.append("Warning!".yellow() + ": ")
+                val level = it.level.toString().lowercase().replaceFirstChar(Char::uppercase)
+                message.append(level.yellow() + ": ")
                 it.message.chunkStringByWordCount(12).forEach { chunkedMessage ->
                     message.append("$chunkedMessage ")
                 }
