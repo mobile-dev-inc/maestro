@@ -1,4 +1,4 @@
 - config:
-    initFlow:
+    onFlowStart:
       - launchApp: com.example
 - launchApp: com.example

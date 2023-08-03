@@ -66,12 +66,6 @@ class AnsiResultView(
             render("Running on ${state.device.description}\n")
         }
         render("\n")
-        if (state.initCommands.isNotEmpty()) {
-            render(" ║\n")
-            render(" ║  > Init Flow\n")
-            render(" ║\n")
-            renderCommands(state.initCommands)
-        }
         if (state.onFlowStartCommands.isNotEmpty()) {
             render(" ║\n")
             render(" ║  > On Flow Start\n")

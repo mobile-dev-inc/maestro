@@ -1,17 +1,16 @@
 package maestro.orchestra.yaml
 
 import com.google.common.truth.Truth.assertThat
+import maestro.MaestroException
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
-import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.MaestroOnFlowComplete
 import maestro.orchestra.MaestroOnFlowStart
 import maestro.orchestra.ScrollCommand
-import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
 import maestro.orchestra.yaml.junit.YamlExceptionExtension
@@ -84,25 +83,9 @@ internal class YamlCommandReaderTest {
 
     @Test
     fun initFlow(
-        @YamlFile("007_initFlow.yaml") commands: List<Command>,
+        @YamlFile("007_initFlow.yaml") e: MaestroException.DeprecatedCommand,
     ) {
-        assertThat(commands).containsExactly(
-            ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
-                initFlow = MaestroInitFlow(
-                    appId = "com.example.app",
-                    commands = commands(
-                        LaunchAppCommand(
-                            appId = "com.example.app",
-                            clearState = true,
-                        )
-                    ),
-                )
-            )),
-            LaunchAppCommand(
-                appId = "com.example.app",
-            ),
-        )
+        assertThat(e.message).contains("initFlow command is deprecated, please use onFlowStart instead")
     }
 
     @Test
@@ -141,35 +124,8 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun initFlow_file(
-        @YamlFile("011_initFlow_file.yaml") commands: List<Command>,
-    ) {
-        assertThat(commands).containsExactly(
-            ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
-                initFlow = MaestroInitFlow(
-                    appId = "com.example.app",
-                    commands = commands(
-                        ApplyConfigurationCommand(
-                            config = MaestroConfig(
-                                appId = "com.example.app",
-                            )
-                        ),
-                        LaunchAppCommand(
-                            appId = "com.example.app",
-                        )
-                    ),
-                ),
-            )),
-            LaunchAppCommand(
-                appId = "com.example.app",
-            ),
-        )
-    }
-
-    @Test
     fun initFlow_emptyString(
-        @YamlFile("012_initFlow_emptyString.yaml") commands: List<Command>,
+        @YamlFile("012_onFlowStart_emptyString.yaml") commands: List<Command>,
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
@@ -179,20 +135,6 @@ internal class YamlCommandReaderTest {
                 appId = "com.example.app",
             ),
         )
-    }
-
-    @Test
-    fun initFlow_invalidFile(
-        @YamlFile("013_initFlow_invalidFile.yaml") e: InvalidInitFlowFile,
-    ) {
-        /* check if parsing the file results in the exception parameter type */
-    }
-
-    @Test
-    fun initFlow_recursive(
-        @YamlFile("014_initFlow_recursive.yaml") e: InvalidInitFlowFile,
-    ) {
-        /* check if parsing the file results in the exception parameter type */
     }
 
     @Test
@@ -270,26 +212,13 @@ internal class YamlCommandReaderTest {
         assertThat(resource.scheme).isEqualTo("file")
 
         val commands = FileSystems.newFileSystem(Paths.get(resource), null).use { fs ->
-            YamlCommandReader.readCommands(fs.getPath("flow.yaml"))
+            YamlCommandReader.readCommands(fs.getPath("flow/flow.yaml"))
         }
 
         assertThat(commands).isEqualTo(commands(
             ApplyConfigurationCommand(
                 config = MaestroConfig(
                     appId = "com.example.app",
-                    initFlow = MaestroInitFlow(
-                        appId = "com.example.app",
-                        commands = commands(
-                            ApplyConfigurationCommand(
-                                config = MaestroConfig(
-                                    appId = "com.example.app",
-                                )
-                            ),
-                            LaunchAppCommand(
-                                appId = "com.example.app"
-                            ),
-                        )
-                    )
                 )
             ),
             LaunchAppCommand(

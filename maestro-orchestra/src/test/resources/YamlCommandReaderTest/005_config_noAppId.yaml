@@ -1,3 +1,4 @@
-initFlow: []
+onFlowStart:
+  - launchApp
 ---
 - launchApp

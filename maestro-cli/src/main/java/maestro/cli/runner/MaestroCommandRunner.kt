@@ -49,11 +49,9 @@ object MaestroCommandRunner {
         device: Device?,
         view: ResultView,
         commands: List<MaestroCommand>,
-        cachedAppState: OrchestraAppState?,
         debug: FlowDebugMetadata
     ): Result {
         val config = YamlCommandReader.getConfig(commands)
-        val initFlow = config?.initFlow
         val onFlowComplete = config?.onFlowComplete
         val onFlowStart = config?.onFlowStart
 
@@ -93,11 +91,6 @@ object MaestroCommandRunner {
             view.setState(
                 UiState.Running(
                     device = device,
-                    initCommands = toCommandStates(
-                        initFlow?.commands ?: emptyList(),
-                        commandStatuses,
-                        commandMetadata
-                    ),
                     onFlowStartCommands = toCommandStates(
                         onFlowStart?.commands ?: emptyList(),
                         commandStatuses,
@@ -183,19 +176,9 @@ object MaestroCommandRunner {
             },
         )
 
-        // TODO: deprecate initFlow
-        val cachedState = if (cachedAppState == null) {
-            initFlow?.let {
-                orchestra.runInitFlow(it) ?: return Result(flowSuccess = false, cachedAppState = null)
-            }
-        } else {
-            initFlow?.commands?.forEach { commandStatuses[it] = CommandStatus.COMPLETED }
-            cachedAppState
-        }
+        val flowSuccess = orchestra.runFlow(commands)
 
-        val flowSuccess = orchestra.runFlow(commands, cachedState)
-
-        return Result(flowSuccess = flowSuccess, cachedAppState = cachedState)
+        return Result(flowSuccess = flowSuccess)
     }
 
     private fun toCommandStates(
@@ -230,7 +213,6 @@ object MaestroCommandRunner {
 
     data class Result(
         val flowSuccess: Boolean,
-        val cachedAppState: OrchestraAppState?
     )
 }
 
