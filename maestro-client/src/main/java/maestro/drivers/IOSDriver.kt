@@ -44,9 +44,7 @@ import maestro.TreeNode
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
-import maestro.utils.FileUtils
-import maestro.utils.MaestroTimer
-import maestro.utils.ScreenshotUtils
+import maestro.utils.*
 import okio.Sink
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
@@ -61,7 +59,6 @@ class IOSDriver(
     private val iosDevice: IOSDevice,
 ) : Driver {
 
-    private val executor by lazy { Executors.newSingleThreadExecutor() }
     private val deviceInfo by lazy {
         iosDevice.deviceInfo().expect {}
     }
@@ -192,6 +189,15 @@ class IOSDriver(
     fun viewHierarchy(): TreeNode {
         val hierarchyResult = iosDevice.viewHierarchy().get()
         LOGGER.info("Depth of the screen is ${hierarchyResult?.depth ?: 0}")
+        if (hierarchyResult?.depth != null && hierarchyResult.depth > WARNING_MAX_DEPTH) {
+            val message = "The view hierarchy has been calculated. The current depth of the hierarchy " +
+                    "is ${hierarchyResult.depth}. If you are using React native, consider migrating to the new " +
+                    "architecture where view flattening is available. For more information on the " +
+                    "migration process, please visit: https://reactnative.dev/docs/new-architecture-intro"
+            Insights.report(Insight(message, Insight.Level.INFO))
+        } else {
+            Insights.report(Insight("", Insight.Level.NONE))
+        }
         val hierarchy = hierarchyResult?.axElement ?: return TreeNode()
         return mapViewHierarchy(hierarchy)
     }
@@ -423,33 +429,25 @@ class IOSDriver(
     override fun backPress() {}
 
     override fun hideKeyboard() {
-        val future = executor.submit {
-            dismissKeyboardIntroduction()
+        dismissKeyboardIntroduction()
 
-            if (isKeyboardHidden()) return@submit
+        if (isKeyboardHidden()) return
 
-            swipe(
-                start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
-                end = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.47)),
-                durationMs = 50,
-            )
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.47)),
+            durationMs = 50,
+        )
 
-            if (isKeyboardHidden()) return@submit
+        if (isKeyboardHidden()) return
 
-            swipe(
-                start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
-                end = Point(widthPercentToPoint(0.47), heightPercentToPoint(0.5)),
-                durationMs = 50,
-            )
+        swipe(
+            start = Point(widthPercentToPoint(0.5), heightPercentToPoint(0.5)),
+            end = Point(widthPercentToPoint(0.47), heightPercentToPoint(0.5)),
+            durationMs = 50,
+        )
 
-            waitForAppToSettle(null, null)
-        }
-        try {
-            future.get(5, TimeUnit.SECONDS)
-        } catch (_: Exception) {
-            // swallow the timeout and exceptions
-            future.cancel(true)
-        }
+        waitForAppToSettle(null, null)
     }
 
     private fun isKeyboardHidden(): Boolean {
@@ -567,6 +565,8 @@ class IOSDriver(
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40
         private const val ELEMENT_TYPE_TOGGLE = 41
+
+        private const val WARNING_MAX_DEPTH = 61
 
         private val CHECKABLE_ELEMENTS = setOf(
             ELEMENT_TYPE_CHECKBOX,

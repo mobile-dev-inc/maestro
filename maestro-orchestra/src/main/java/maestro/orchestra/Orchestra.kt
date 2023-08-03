@@ -37,6 +37,8 @@ import maestro.orchestra.geo.Traveller
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.toSwipeDirection
+import maestro.utils.Insight
+import maestro.utils.Insights
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
 import okhttp3.OkHttpClient
@@ -102,35 +104,41 @@ class Orchestra(
         // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
-        config?.onFlowStart?.commands?.let {
-            executeCommands(
-                commands = it,
-                config = config,
-                shouldReinitJsEngine = false,
-            )
-        }
-
+        var flowSuccess = false
+        var exception: Throwable? = null
         try {
-            val flowSuccess = executeCommands(
-                commands = filteredCommands,
-                config = config,
-                shouldReinitJsEngine = false,
-            ).also {
-                // close existing screen recording, if left open.
-                screenRecording?.close()
-            }
-
-            return flowSuccess
-        } catch (e: Throwable) {
-            throw e
-        } finally {
-            config?.onFlowComplete?.commands?.let {
+            val onStartSuccess = config?.onFlowStart?.commands?.let {
                 executeCommands(
                     commands = it,
                     config = config,
                     shouldReinitJsEngine = false,
                 )
+            } ?: true
+
+            if (onStartSuccess) {
+                flowSuccess = executeCommands(
+                    commands = filteredCommands,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                ).also {
+                    // close existing screen recording, if left open.
+                    screenRecording?.close()
+                }
             }
+        } catch (e: Throwable) {
+            exception = e
+        } finally {
+            val onCompleteSuccess = config?.onFlowComplete?.commands?.let {
+                executeCommands(
+                    commands = it,
+                    config = config,
+                    shouldReinitJsEngine = false,
+                )
+            } ?: true
+
+            exception?.let { throw it }
+
+            return onCompleteSuccess && flowSuccess
         }
     }
 
@@ -190,6 +198,14 @@ class Orchestra(
                     )
                 updateMetadata(command, metadata)
 
+                Insights.onInsightsUpdated { insight ->
+                    updateMetadata(
+                        command,
+                        getMetadata(command).copy(
+                            insight = insight
+                        )
+                    )
+                }
                 try {
                     executeCommand(evaluatedCommand, config)
                     onCommandComplete(index, command)
@@ -579,16 +595,26 @@ class Orchestra(
         // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
-        subflowConfig?.onFlowStart?.commands?.let {
-            executeSubflowCommands(it, config)
-        }
-
+        var exception: Throwable? = null
+        var flowSuccess = false
         try {
-            return executeSubflowCommands(filteredCommands, config)
-        } finally {
-            subflowConfig?.onFlowComplete?.commands?.let {
+            val onStartSuccess = subflowConfig?.onFlowStart?.commands?.let {
                 executeSubflowCommands(it, config)
+            } ?: true
+
+            if (onStartSuccess) {
+                flowSuccess = executeSubflowCommands(filteredCommands, config)
             }
+        } catch (e: Throwable) {
+            exception = e
+        } finally {
+            val onCompleteSuccess = subflowConfig?.onFlowComplete?.commands?.let {
+                executeSubflowCommands(it, config)
+            } ?: true
+
+            exception?.let { throw it }
+
+            return onCompleteSuccess && flowSuccess
         }
     }
 
@@ -1021,7 +1047,8 @@ class Orchestra(
     data class CommandMetadata(
         val numberOfRuns: Int? = null,
         val evaluatedCommand: MaestroCommand? = null,
-        val logMessages: List<String> = emptyList()
+        val logMessages: List<String> = emptyList(),
+        val insight: Insight = Insight("", Insight.Level.NONE),
     )
 
     enum class ErrorResolution {
@@ -1034,7 +1061,6 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
-        private const val MAX_LAUNCH_ARGUMENT_PAIRS_ALLOWED = 1
     }
 }
 
