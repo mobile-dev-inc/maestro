@@ -322,7 +322,6 @@ object MaestroSessionManager {
         val iosDriver = IOSDriver(
             LocalIOSDevice(
                 deviceId = deviceId,
-                idbIOSDevice = idbIOSDevice,
                 xcTestDevice = xcTestDevice,
                 simctlIOSDevice = simctlIOSDevice,
             )
