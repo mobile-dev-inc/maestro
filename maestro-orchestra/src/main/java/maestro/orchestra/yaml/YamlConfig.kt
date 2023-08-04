@@ -32,7 +32,7 @@ data class YamlConfig(
 
     fun toCommand(flowPath: Path): MaestroCommand {
         if (initFlow != null) {
-            throw MaestroException.DeprecatedCommand("initFlow command is deprecated, please use " +
+            throw MaestroException.DeprecatedCommand("initFlow command used at: $flowPath is deprecated, please use " +
                     "onFlowStart/onFlowComplete hooks instead. Have a look at the documentation here: " +
                     "https://maestro.mobile.dev/advanced/onflowstart-onflowcomplete-hooks")
         }
