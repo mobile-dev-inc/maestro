@@ -202,10 +202,6 @@ class WebDriver(val isStudio: Boolean) : Driver {
         // Do nothing
     }
 
-    override fun pushAppState(appId: String, stateFile: File) {
-        // Do nothing (for now)
-    }
-
     override fun tap(point: Point) {
         val driver = ensureOpen()
         val pixelsScrolled = scrollToPoint(point)

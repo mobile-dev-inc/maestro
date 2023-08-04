@@ -84,6 +84,13 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
+    fun initFlow(
+        @YamlFile("007_initFlow.yaml") e: MaestroException.DeprecatedCommand,
+    ) {
+        /* check if parsing the file results in the exception parameter type */
+    }
+
+    @Test
     fun config_unknownKeys(
         @YamlFile("008_config_unknownKeys.yaml") commands: List<Command>,
     ) {
@@ -116,6 +123,13 @@ internal class YamlCommandReaderTest {
         @YamlFile("010_invalidCommand_string.yaml") e: SyntaxError,
     ) {
         assertThat(e.message).contains("Invalid command: \"invalid\"")
+    }
+
+    @Test
+    fun initFlow_file(
+        @YamlFile("011_initFlow_file.yaml") e: MaestroException.DeprecatedCommand,
+    ) {
+        /* check if parsing the file results in the exception parameter type */
     }
 
     @Test

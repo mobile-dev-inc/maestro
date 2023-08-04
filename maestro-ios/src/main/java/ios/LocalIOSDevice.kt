@@ -7,7 +7,6 @@ import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
 import ios.xctest.XCTestIOSDevice
 import okio.Sink
-import java.io.File
 import java.io.InputStream
 import java.util.UUID
 import hierarchy.ViewHierarchy
@@ -104,10 +103,6 @@ class LocalIOSDevice(
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
         return simctlIOSDevice.uninstall(id)
-    }
-
-    override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pushAppState(id, file)
     }
 
     override fun clearAppState(id: String): Result<Unit, Throwable> {

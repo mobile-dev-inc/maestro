@@ -45,8 +45,6 @@ interface Driver {
 
     fun clearKeychain()
 
-    fun pushAppState(appId: String, stateFile: File)
-
     fun tap(point: Point)
 
     fun longPress(point: Point)

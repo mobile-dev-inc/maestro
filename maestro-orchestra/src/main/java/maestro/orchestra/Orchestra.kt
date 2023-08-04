@@ -95,7 +95,6 @@ class Orchestra(
 
         if (state != null) {
             maestro.clearAppState(state.appId)
-            maestro.pushAppState(state.appId, state.file)
         }
 
         onFlowStart(commands)
@@ -151,7 +150,6 @@ class Orchestra(
     ): OrchestraAppState? {
         val success = runFlow(
             initFlow.commands,
-            initState = null,
         )
         if (!success) return null
 

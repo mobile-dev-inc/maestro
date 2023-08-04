@@ -46,7 +46,6 @@ class FakeDriver : Driver {
     private var layout: FakeLayoutElement = FakeLayoutElement()
     private var installedApps = mutableSetOf<String>()
 
-    private var pushedState: String? = null
     private val events = mutableListOf<Event>()
 
     private var copiedText: String? = null
@@ -126,14 +125,6 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events.add(Event.ClearKeychain)
-    }
-
-    override fun pushAppState(appId: String, stateFile: File) {
-        ensureOpen()
-
-        pushedState = stateFile.readText()
-
-        events.add(Event.PushAppState(appId, stateFile))
     }
 
     override fun tap(point: Point) {
@@ -351,13 +342,6 @@ class FakeDriver : Driver {
         }
     }
 
-    fun assertPushedAppState(expected: List<UserInteraction>) {
-        val expectedJson = MAPPER.writeValueAsString(expected)
-
-        assertThat(pushedState).isNotNull()
-        assertThat(pushedState!!).isEqualTo(expectedJson)
-    }
-
     fun assertCurrentTextInput(expected: String) {
         assertThat(currentText).isEqualTo(expected)
     }
@@ -433,11 +417,6 @@ class FakeDriver : Driver {
 
         data class ClearState(
             val appId: String
-        ) : Event()
-
-        data class PushAppState(
-            val appId: String,
-            val stateFile: File,
         ) : Event()
 
         data class OpenLink(
