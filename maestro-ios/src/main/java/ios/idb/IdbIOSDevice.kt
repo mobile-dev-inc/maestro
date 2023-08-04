@@ -20,19 +20,16 @@
 package ios.idb
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.runCatching
 import com.google.protobuf.ByteString
 import hierarchy.ViewHierarchy
-import hierarchy.XCUIElement
 import idb.CompanionServiceGrpc
 import idb.HIDEventKt
 import idb.Idb
 import idb.Idb.RecordResponse
-import idb.accessibilityInfoRequest
 import idb.clearKeychainRequest
 import idb.fileContainer
 import idb.hIDEvent
@@ -105,14 +102,6 @@ class IdbIOSDevice(
                 widthPoints = screenDimensions.widthPoints.toInt(),
                 heightPoints = screenDimensions.heightPoints.toInt(),
             )
-        }
-    }
-
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
-        return runWithRestartRecovery {
-            val accessibilityResponse = blockingStub.accessibilityInfo(accessibilityInfoRequest {})
-            val accessibilityNode: XCUIElement = mapper.readValue(accessibilityResponse.json)
-            accessibilityNode
         }
     }
 

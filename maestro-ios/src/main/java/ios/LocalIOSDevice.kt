@@ -1,7 +1,6 @@
 package ios
 
 import com.github.michaelbull.result.*
-import hierarchy.XCUIElement
 import ios.device.DeviceInfo
 import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
@@ -31,17 +30,6 @@ class LocalIOSDevice(
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return xcTestDevice.deviceInfo()
-    }
-
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
-        return xcTestDevice.contentDescriptor()
-            .recoverIf(
-                { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
-                {
-                    idbIOSDevice.contentDescriptor()
-                        .getOrThrow()
-                }
-            )
     }
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
