@@ -18,7 +18,6 @@ dependencies {
     implementation project(':maestro-utils')
     implementation project(':maestro-ios-driver')
 
-    implementation(libs.google.protobuf.kotlin)
     implementation(libs.kotlin.result)
     implementation(libs.slf4j)
     implementation(libs.square.okio)
