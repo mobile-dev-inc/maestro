@@ -106,10 +106,6 @@ class LocalIOSDevice(
         return simctlIOSDevice.uninstall(id)
     }
 
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pullAppState(id, file)
-    }
-
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
         return idbIOSDevice.pushAppState(id, file)
     }

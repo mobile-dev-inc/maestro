@@ -162,7 +162,6 @@ class Orchestra(
         } else {
             Files.createTempFile(stateDir.toPath(), null, ".state")
         }
-        maestro.pullAppState(initFlow.appId, stateFile.toFile())
 
         return OrchestraAppState(
             appId = initFlow.appId,

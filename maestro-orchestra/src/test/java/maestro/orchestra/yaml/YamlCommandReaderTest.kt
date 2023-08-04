@@ -1,6 +1,7 @@
 package maestro.orchestra.yaml
 
 import com.google.common.truth.Truth.assertThat
+import maestro.MaestroException
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.Command
@@ -83,29 +84,6 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun initFlow(
-        @YamlFile("007_initFlow.yaml") commands: List<Command>,
-    ) {
-        assertThat(commands).containsExactly(
-            ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
-                initFlow = MaestroInitFlow(
-                    appId = "com.example.app",
-                    commands = commands(
-                        LaunchAppCommand(
-                            appId = "com.example.app",
-                            clearState = true,
-                        )
-                    ),
-                )
-            )),
-            LaunchAppCommand(
-                appId = "com.example.app",
-            ),
-        )
-    }
-
-    @Test
     fun config_unknownKeys(
         @YamlFile("008_config_unknownKeys.yaml") commands: List<Command>,
     ) {
@@ -141,33 +119,6 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun initFlow_file(
-        @YamlFile("011_initFlow_file.yaml") commands: List<Command>,
-    ) {
-        assertThat(commands).containsExactly(
-            ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
-                initFlow = MaestroInitFlow(
-                    appId = "com.example.app",
-                    commands = commands(
-                        ApplyConfigurationCommand(
-                            config = MaestroConfig(
-                                appId = "com.example.app",
-                            )
-                        ),
-                        LaunchAppCommand(
-                            appId = "com.example.app",
-                        )
-                    ),
-                ),
-            )),
-            LaunchAppCommand(
-                appId = "com.example.app",
-            ),
-        )
-    }
-
-    @Test
     fun initFlow_emptyString(
         @YamlFile("012_initFlow_emptyString.yaml") commands: List<Command>,
     ) {
@@ -183,14 +134,14 @@ internal class YamlCommandReaderTest {
 
     @Test
     fun initFlow_invalidFile(
-        @YamlFile("013_initFlow_invalidFile.yaml") e: InvalidInitFlowFile,
+        @YamlFile("013_initFlow_invalidFile.yaml") e: MaestroException.DeprecatedCommand,
     ) {
         /* check if parsing the file results in the exception parameter type */
     }
 
     @Test
     fun initFlow_recursive(
-        @YamlFile("014_initFlow_recursive.yaml") e: InvalidInitFlowFile,
+        @YamlFile("014_initFlow_recursive.yaml") e: MaestroException.DeprecatedCommand,
     ) {
         /* check if parsing the file results in the exception parameter type */
     }
@@ -276,20 +227,7 @@ internal class YamlCommandReaderTest {
         assertThat(commands).isEqualTo(commands(
             ApplyConfigurationCommand(
                 config = MaestroConfig(
-                    appId = "com.example.app",
-                    initFlow = MaestroInitFlow(
-                        appId = "com.example.app",
-                        commands = commands(
-                            ApplyConfigurationCommand(
-                                config = MaestroConfig(
-                                    appId = "com.example.app",
-                                )
-                            ),
-                            LaunchAppCommand(
-                                appId = "com.example.app"
-                            ),
-                        )
-                    )
+                    appId = "com.example.app"
                 )
             ),
             LaunchAppCommand(

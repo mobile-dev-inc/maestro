@@ -128,15 +128,6 @@ class FakeDriver : Driver {
         events.add(Event.ClearKeychain)
     }
 
-    override fun pullAppState(appId: String, outFile: File) {
-        ensureOpen()
-
-        val userInteractions = events.filterIsInstance<UserInteraction>()
-        outFile.writeBytes(MAPPER.writeValueAsBytes(userInteractions))
-
-        events.add(Event.PullAppState(appId, outFile))
-    }
-
     override fun pushAppState(appId: String, stateFile: File) {
         ensureOpen()
 
@@ -442,11 +433,6 @@ class FakeDriver : Driver {
 
         data class ClearState(
             val appId: String
-        ) : Event()
-
-        data class PullAppState(
-            val appId: String,
-            val outFile: File,
         ) : Event()
 
         data class PushAppState(

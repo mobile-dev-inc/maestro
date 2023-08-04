@@ -77,10 +77,6 @@ class SimctlIOSDevice(
         }
     }
 
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        TODO("Not yet implemented")
-    }
-
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
         TODO("Not yet implemented")
     }

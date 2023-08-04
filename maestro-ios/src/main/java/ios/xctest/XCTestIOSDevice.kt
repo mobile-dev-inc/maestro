@@ -191,10 +191,6 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        error("Not supported")
-    }
-
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
         error("Not supported")
     }

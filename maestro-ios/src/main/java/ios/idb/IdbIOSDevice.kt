@@ -251,21 +251,6 @@ class IdbIOSDevice(
         }
     }
 
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        return runWithRestartRecovery {
-            val observer = BlockingStreamObserver<Idb.PullResponse>()
-            asyncStub.pull(pullRequest {
-                container = fileContainer {
-                    kind = Idb.FileContainer.Kind.APPLICATION
-                    bundleId = id
-                }
-                srcPath = "/"
-                dstPath = file.absolutePath
-            }, observer)
-            observer.awaitResult()
-        }
-    }
-
     override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
         return runWithRestartRecovery {
             val observer = BlockingStreamObserver<Idb.PushResponse>()
