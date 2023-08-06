@@ -13,14 +13,10 @@ export default function SelectedElementViewer({
   const containerElementRef = useRef<HTMLDivElement>(null);
   const deviceRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setSizeAndPosition();
-  }, []);
-
   /**
    * Set The element size and position based on Element selected
    */
-  const setSizeAndPosition = () => {
+  useEffect(() => {
     if (deviceRef.current && uiElement.bounds) {
       // Set the wrapper height to be used & increase height if element is big
       let currentWrapperHeight = defaultWrapperSize;
@@ -55,7 +51,7 @@ export default function SelectedElementViewer({
         maxTopValue
       )}px`;
     }
-  };
+  }, [deviceScreen.height, deviceScreen.width, uiElement.bounds]);
 
   return (
     <div
