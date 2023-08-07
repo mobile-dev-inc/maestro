@@ -224,10 +224,10 @@ export default function ActionModal({
   }, [commandList, updateTabs]);
 
   /**
-   * Add Keyboard Actions
+   * Keyboard Actions
    */
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
       switch (e.code) {
         case "ArrowRight":
           e.preventDefault();
@@ -276,23 +276,29 @@ export default function ActionModal({
           }
           break;
       }
-    };
+    },
+    [
+      copyCommand,
+      onEdit,
+      onRun,
+      selectedCommand,
+      selectedTab,
+      updateSelectedCommand,
+      updateTabs,
+    ]
+  );
+
+  /**
+   * Add Keyboard Actions
+   */
+  useEffect(() => {
     if (open) {
       window.addEventListener("keydown", handleKeyPress);
       return () => {
         window.removeEventListener("keydown", handleKeyPress);
       };
     }
-  }, [
-    open,
-    updateTabs,
-    selectedTab,
-    selectedCommand,
-    copyCommand,
-    onRun,
-    onEdit,
-    updateSelectedCommand,
-  ]);
+  }, [handleKeyPress, open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -358,6 +364,7 @@ export default function ActionModal({
                                     JSON.stringify(selectedCommand) ===
                                     JSON.stringify(item)
                                   }
+                                  setSelectedCommand={setSelectedCommand}
                                   isBeingCopied={
                                     item.content === commandBeingCopied
                                   }
@@ -393,6 +400,7 @@ interface ActionCommandListItemProps {
   selected?: boolean;
   command: CommandExample;
   isBeingCopied: boolean;
+  setSelectedCommand: (example: CommandExample) => void;
   copyCommand: (command: string) => void;
   onEdit: (example: CommandExample) => void;
   onRun: (example: CommandExample) => void;
@@ -402,6 +410,7 @@ const ActionCommandListItem = ({
   selected = false,
   command,
   isBeingCopied,
+  setSelectedCommand,
   copyCommand,
   onRun,
   onEdit,
@@ -420,9 +429,10 @@ const ActionCommandListItem = ({
   return (
     <div
       ref={commandItemRef}
-      onClick={() => onRun(command)}
+      onClick={() => setSelectedCommand(command)}
+      onDoubleClick={() => onRun(command)}
       className={clsx(
-        `relative border rounded-md flex gap-2 overflow-hidden`,
+        `relative border rounded-md flex gap-2 overflow-hidden cursor-pointer`,
         selected
           ? "border-purple-500 ring-4 ring-offset-0 ring-purple-100/20"
           : "border-slate-200 dark:border-slate-800"
