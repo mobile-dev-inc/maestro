@@ -1,4 +1,6 @@
+import clsx from "clsx";
 import { useEffect, useRef, useState, ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
 interface AspectRatioContainerProps
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -14,6 +16,7 @@ interface AspectRatioContainerProps
 const DeviceWrapperAspectRatio = ({
   aspectRatio,
   children,
+  className,
   ...rest
 }: AspectRatioContainerProps) => {
   const [width, setWidth] = useState<number>(0);
@@ -35,9 +38,12 @@ const DeviceWrapperAspectRatio = ({
   }, [aspectRatio]);
 
   return (
-    <div ref={containerRef} className="relative flex-grow">
+    <div
+      ref={containerRef}
+      className={twMerge(clsx("relative flex-1", className))}
+    >
       <div
-        className="h-full max-w-full mx-auto grid place-items-center"
+        className="h-full max-w-full absolute top-0 left-0 right-0 bottom-0 mx-auto grid place-items-center"
         style={{ width }}
         {...rest}
       >
