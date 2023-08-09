@@ -457,7 +457,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return if (element == null) {
             null
         } else {
-            return FindElementResult(element, viewHierarchy)
+            return FindElementResult(element, ViewHierarchy(element.treeNode))
         }
     }
 
