@@ -49,6 +49,7 @@ const InteractPage = () => {
         try {
           const deviceScreen = await API.getDeviceScreen();
           setDeviceScreen(deviceScreen);
+          await wait(250);
         } catch (e) {
           console.error(e);
           await wait(1000);
