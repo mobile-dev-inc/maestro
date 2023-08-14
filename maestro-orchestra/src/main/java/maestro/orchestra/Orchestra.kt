@@ -47,6 +47,11 @@ import okio.sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
+import java.util.Date
+import java.util.UUID
+import javax.imageio.ImageIO
+import kotlin.math.abs
+import kotlin.system.exitProcess
 
 class Orchestra(
     private val maestro: Maestro,
@@ -282,6 +287,7 @@ class Orchestra(
             is TravelCommand -> travelCommand(command)
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
+            is AssertSnapshotCommand -> assertSnapshotCommand(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -618,14 +624,72 @@ class Orchestra(
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
-        val pathStr = command.path + ".png"
+        takeScreenshot(command.path)
+        return false
+    }
+
+    private fun takeScreenshot(path: String): File {
+        val pathStr = path + ".png"
         val file = screenshotsDir
             ?.let { File(it, pathStr) }
             ?: File(pathStr)
 
         maestro.takeScreenshot(file)
+        return file
+    }
 
+    private fun assertSnapshotCommand(command: AssertSnapshotCommand): Boolean {
+        val tempFile = takeScreenshot(System.getProperty("java.io.tmpdir") + UUID.randomUUID().toString())
+        val thresholdPercent = command.threshold ?: "100%"
+        var threshold = 0.0
+
+        if (thresholdPercent.contains("%")) {
+            threshold = thresholdPercent
+                .replace("%", "")
+                .toDouble()
+                .div(100)
+
+            if (threshold !in 0.0..1.0) {
+                throw MaestroException.InvalidCommand("Invalid threshold: $thresholdPercent")
+            }
+        } else {
+            throw MaestroException.InvalidCommand("Threshold value should be a percentage.")
+        }
+
+        val result = compareImages(tempFile, File(command.path), threshold)
+        tempFile.delete()
+        if (!result) {
+            throw MaestroException.AssertionFailure(
+                "Assertion is false: ${command.description()}",
+                maestro.viewHierarchy().root,
+            )
+        }
         return false
+    }
+
+    private fun compareImages(image1: File, image2: File, threshold: Double): Boolean {
+        val image1 = ImageIO.read(image1)
+        val image2 = ImageIO.read(image2)
+        if (image1.width != image2.width || image1.height != image2.height) {
+            return false
+        }
+        val maxDifferencePermitted = (1-threshold)*(image1.width*image2.height)
+
+        var differenceCount = 0
+
+        for (x in 0 until image1.width) {
+            for (y in 0 until image1.height) {
+                val pixel1 = image1.getRGB(x, y)
+                val pixel2 = image2.getRGB(x, y)
+
+                val difference = abs(pixel1 - pixel2)
+                if (difference > 0) {
+                    differenceCount++
+                }
+            }
+        }
+
+        return differenceCount <= maxDifferencePermitted
     }
 
     private fun startRecordingCommand(command: StartRecordingCommand): Boolean {

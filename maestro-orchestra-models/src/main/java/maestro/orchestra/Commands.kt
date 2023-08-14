@@ -476,6 +476,22 @@ data class TakeScreenshotCommand(
     }
 }
 
+data class AssertSnapshotCommand(
+    val path: String,
+    val threshold: String? = null,
+) : Command {
+
+    override fun description(): String {
+        return "Assert that current screen matches $path"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): AssertSnapshotCommand {
+        return copy(
+            path = path.evaluateScripts(jsEngine)
+        )
+    }
+}
+
 data class StopAppCommand(
     val appId: String,
 ) : Command {

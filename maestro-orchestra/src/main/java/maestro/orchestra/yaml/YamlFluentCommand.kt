@@ -24,6 +24,7 @@ import maestro.KeyCode
 import maestro.Point
 import maestro.TapRepeat
 import maestro.orchestra.AssertConditionCommand
+import maestro.orchestra.AssertSnapshotCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
 import maestro.orchestra.Condition
@@ -99,6 +100,7 @@ data class YamlFluentCommand(
     val travel: YamlTravelCommand? = null,
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
+    val assertSnapshot: YamlAssertSnapshot? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -217,6 +219,7 @@ data class YamlFluentCommand(
                 val tapRepeat = TapRepeat(2, delay)
                 listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
             }
+            assertSnapshot != null -> listOf(assertSnapshot(assertSnapshot))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -374,6 +377,15 @@ data class YamlFluentCommand(
                 stopApp = command.stopApp,
                 permissions = command.permissions,
                 launchArguments = command.arguments,
+            )
+        )
+    }
+
+    private fun assertSnapshot(command: YamlAssertSnapshot): MaestroCommand {
+        return MaestroCommand(
+            AssertSnapshotCommand(
+                path = command.path,
+                threshold = command.threshold,
             )
         )
     }
