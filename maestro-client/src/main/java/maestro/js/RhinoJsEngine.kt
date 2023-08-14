@@ -11,6 +11,8 @@ class RhinoJsEngine(
         .readTimeout(5, TimeUnit.MINUTES)
         .writeTimeout(5, TimeUnit.MINUTES)
         .protocols(listOf(Protocol.HTTP_1_1))
+        .followRedirects(System.getenv("MAESTRO_FOLLOW_REDIRECTS")?.equals("true")?: true)
+        .followSslRedirects(System.getenv("MAESTRO_FOLLOW_REDIRECTS")?.equals("true")?: true)
         .build(),
 ) : JsEngine {
 
