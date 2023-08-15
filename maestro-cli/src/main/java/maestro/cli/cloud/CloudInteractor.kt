@@ -171,17 +171,7 @@ class CloudInteractor(
         var retryCounter = 0
         do {
             val upload = try {
-//                client.uploadStatus(authToken, uploadId)
-                 UploadStatus(
-                    uploadId = UUID.randomUUID(),
-                    status = UploadStatus.Status.CANCELED,
-                    completed = true,
-                    flows = listOf(
-                        UploadStatus.FlowResult("My Flow 1", UploadStatus.Status.CANCELED, emptyList()),
-                        UploadStatus.FlowResult("My Flow 2", UploadStatus.Status.CANCELED, emptyList()),
-                        UploadStatus.FlowResult("My Flow 3", UploadStatus.Status.CANCELED, emptyList()),
-                    )
-                )
+                client.uploadStatus(authToken, uploadId)
             } catch (e: ApiClient.ApiException) {
                 if (e.statusCode == 429) {
                     // back off through extending sleep duration with 25%
