@@ -23,6 +23,7 @@ import okio.sink
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
 import java.io.File
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolute
 
@@ -94,7 +95,7 @@ class CloudInteractor(
             }
 
             val (teamId, appId, uploadId, appBinaryIdResponse) = client.upload(
-                authToken =  authToken,
+                authToken = authToken,
                 appFile = appFileToSend?.toPath(),
                 workspaceZip = workspaceZip,
                 uploadName = uploadName,
@@ -123,7 +124,16 @@ class CloudInteractor(
 
                 return 0
             } else {
-                PrintUtils.message("Visit the web console for more details about the upload: ${uploadUrl(uploadId, teamId, appId, client.domain)}")
+                PrintUtils.message(
+                    "Visit the web console for more details about the upload: ${
+                        uploadUrl(
+                            uploadId,
+                            teamId,
+                            appId,
+                            client.domain
+                        )
+                    }"
+                )
 
                 if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
                 PrintUtils.message("Waiting for analyses to complete...")
@@ -161,7 +171,17 @@ class CloudInteractor(
         var retryCounter = 0
         do {
             val upload = try {
-                client.uploadStatus(authToken, uploadId)
+//                client.uploadStatus(authToken, uploadId)
+                 UploadStatus(
+                    uploadId = UUID.randomUUID(),
+                    status = UploadStatus.Status.CANCELED,
+                    completed = true,
+                    flows = listOf(
+                        UploadStatus.FlowResult("My Flow 1", UploadStatus.Status.CANCELED, emptyList()),
+                        UploadStatus.FlowResult("My Flow 2", UploadStatus.Status.CANCELED, emptyList()),
+                        UploadStatus.FlowResult("My Flow 3", UploadStatus.Status.CANCELED, emptyList()),
+                    )
+                )
             } catch (e: ApiClient.ApiException) {
                 if (e.statusCode == 429) {
                     // back off through extending sleep duration with 25%
@@ -218,13 +238,13 @@ class CloudInteractor(
 
 
         return if (failOnTimeout) {
-            PrintUtils.err("Process will exit as FAILURE (code 1)")
-            PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-timeout=false`")
+            PrintUtils.message("Process will exit with code 1 (FAIL)")
+            PrintUtils.message("* To change exit code on Timeout, run maestro with this option: `maestro cloud --fail-on-timeout=<true|false>`")
 
             1
         } else {
-            PrintUtils.warn("Process will exit as SUCCESS (code 0)")
-            PrintUtils.warn("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-timeout=true`")
+            PrintUtils.message("Process will exit with code 0 (SUCCESS)")
+            PrintUtils.message("* To change exit code on Timeout, run maestro with this option: `maestro cloud --fail-on-timeout=<true|false>`")
 
             0
         }
@@ -250,12 +270,12 @@ class CloudInteractor(
             )
         )
 
-        val isStatusCancelled = upload.status == UploadStatus.Status.CANCELED && failOnCancellation
-        val isCancelledAndShouldFail = upload.status == UploadStatus.Status.CANCELED && failOnCancellation
-        val containsFailure = upload.flows.find { it.status == UploadStatus.Status.ERROR } != null // status can be cancelled but also contain flow with failure
-        val isStatusFailure = upload.status == UploadStatus.Status.ERROR
+        val isCancelled = upload.status == UploadStatus.Status.CANCELED
+        val isFailure = upload.status == UploadStatus.Status.ERROR
+        val containsFailure =
+            upload.flows.find { it.status == UploadStatus.Status.ERROR } != null // status can be cancelled but also contain flow with failure
 
-        val passed = !(isStatusFailure && containsFailure && isCancelledAndShouldFail)
+        val passed = !isFailure && !containsFailure && !(isCancelled && failOnCancellation)
 
         val reportOutputSink = reportFormat.fileExtension
             ?.let { extension ->
@@ -268,24 +288,19 @@ class CloudInteractor(
             saveReport(reportFormat, passed, upload, reportOutputSink, testSuiteName)
         }
 
-        if (upload.status == UploadStatus.Status.CANCELED) {
-            PrintUtils.warn("Some of your flows were CANCELLED (Internal Maestro Cloud Error)")
-        }
 
-        return if (!passed) {
-
-            if (isStatusCancelled && !isCancelledAndShouldFail) {
-                PrintUtils.warn("Process will exit with code 1 but has a CANCELLED flow")
-                PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-cancellation=true`")
-            }
-
-            1
-        } else {
-            if (isCancelledAndShouldFail) {
-                PrintUtils.warn("Process will exit with code 0, due to flow CANCELLATION)")
-                PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-cancellation=false`")
+        return if (passed) {
+            PrintUtils.message("Process will exit with code 0 (SUCCESS)")
+            if (isCancelled) {
+                PrintUtils.message("* To change exit code on Cancellation, run maestro with this option: `maestro cloud --fail-on-cancellation=<true|false>`")
             }
             0
+        } else {
+            PrintUtils.message("Process will exit with code 1 (FAIL)")
+            if (isCancelled && !containsFailure) {
+                PrintUtils.message("* To change exit code on Cancellation, run maestro with this option: `maestro cloud --fail-on-cancellation=<true|false>`")
+            }
+            1
         }
     }
 

@@ -32,6 +32,7 @@ import picocli.CommandLine.Option
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit
 
 @CommandLine.Command(
     name = "cloud",
@@ -157,7 +158,7 @@ class CloudCommand : Callable<Int> {
         return CloudInteractor(
             client = ApiClient(apiUrl),
             failOnTimeout = failOnTimeout,
-            waitTimeoutMs = 1, // TODO - Modify this
+            waitTimeoutMs = TimeUnit.MINUTES.toMillis(resultWaitTimeout.toLong())
         ).upload(
             async = async,
             flowFile = flowsFile,
