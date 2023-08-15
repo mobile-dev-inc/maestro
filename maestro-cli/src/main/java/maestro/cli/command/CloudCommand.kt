@@ -139,8 +139,14 @@ class CloudCommand : Callable<Int> {
     @Option(hidden = true, names = ["--fail-on-cancellation"], description = ["Fail the command if the upload is marked as cancelled"])
     private var failOnCancellation: Boolean = false
 
+    @Option(hidden = true, names = ["--fail-on-timeout"], description = ["Fail the command if the upload times outs"])
+    private var failOnTimeout: Boolean = true
+
     @Option(hidden = true, names = ["--disable-notifications"], description = ["Do not send the notifications configured in config.yaml"])
     private var disableNotifications = false
+
+    @Option(hidden = true, names = ["--result-wait-timeout"], description = ["Minutes to wait until all flows complete"])
+    private var resultWaitTimeout = 60
 
     override fun call(): Int {
 
@@ -150,7 +156,8 @@ class CloudCommand : Callable<Int> {
         // Upload
         return CloudInteractor(
             client = ApiClient(apiUrl),
-            failOnTimeout = failOnCancellation,
+            failOnTimeout = failOnTimeout,
+            waitTimeoutMs = 1, // TODO - Modify this
         ).upload(
             async = async,
             flowFile = flowsFile,

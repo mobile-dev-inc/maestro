@@ -32,7 +32,7 @@ class CloudInteractor(
     private val waitTimeoutMs: Long = TimeUnit.MINUTES.toMillis(30),
     private val minPollIntervalMs: Long = TimeUnit.SECONDS.toMillis(10),
     private val maxPollingRetries: Int = 3,
-    private val failOnTimeout: Boolean = false,
+    private val failOnTimeout: Boolean = true,
 ) {
 
     fun upload(
@@ -208,15 +208,23 @@ class CloudInteractor(
             Thread.sleep(pollingInterval)
         } while (System.currentTimeMillis() - startTime < waitTimeoutMs)
 
-        PrintUtils.warn("Upload did not complete in time due to an issue on mobile.dev side. Follow the results of your upload below:")
-        println(uploadUrl(uploadId, teamId, appId, client.domain))
+        val consoleUrl = uploadUrl(uploadId, teamId, appId, client.domain)
+        val displayedMin = TimeUnit.MILLISECONDS.toMinutes(waitTimeoutMs)
+
+        PrintUtils.warn("Waiting for flows to complete has timed out ($displayedMin minutes)")
+        PrintUtils.warn("* To extend the timeout, run maestro with this option `maestro cloud --result-wait-timeout=<timeout in minutes>`")
+
+        PrintUtils.warn("* Follow the results of your upload here:\n$consoleUrl")
+
 
         return if (failOnTimeout) {
-            PrintUtils.err("FAIL")
+            PrintUtils.err("Process will exit as FAILURE (code 1)")
+            PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-timeout=false`")
 
             1
         } else {
-            PrintUtils.warn("SKIPPED")
+            PrintUtils.warn("Process will exit as SUCCESS (code 0)")
+            PrintUtils.warn("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-timeout=true`")
 
             0
         }
@@ -242,9 +250,12 @@ class CloudInteractor(
             )
         )
 
-        val passed = if (upload.status == UploadStatus.Status.CANCELED && failOnCancellation) {
-            false
-        } else upload.status != UploadStatus.Status.ERROR
+        val isStatusCancelled = upload.status == UploadStatus.Status.CANCELED && failOnCancellation
+        val isCancelledAndShouldFail = upload.status == UploadStatus.Status.CANCELED && failOnCancellation
+        val containsFailure = upload.flows.find { it.status == UploadStatus.Status.ERROR } != null // status can be cancelled but also contain flow with failure
+        val isStatusFailure = upload.status == UploadStatus.Status.ERROR
+
+        val passed = !(isStatusFailure && containsFailure && isCancelledAndShouldFail)
 
         val reportOutputSink = reportFormat.fileExtension
             ?.let { extension ->
@@ -257,9 +268,23 @@ class CloudInteractor(
             saveReport(reportFormat, passed, upload, reportOutputSink, testSuiteName)
         }
 
+        if (upload.status == UploadStatus.Status.CANCELED) {
+            PrintUtils.warn("Some of your flows were CANCELLED (Internal Maestro Cloud Error)")
+        }
+
         return if (!passed) {
+
+            if (isStatusCancelled && !isCancelledAndShouldFail) {
+                PrintUtils.warn("Process will exit with code 1 but has a CANCELLED flow")
+                PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-cancellation=true`")
+            }
+
             1
         } else {
+            if (isCancelledAndShouldFail) {
+                PrintUtils.warn("Process will exit with code 0, due to flow CANCELLATION)")
+                PrintUtils.err("* To modify this behaviour, run maestro with this option: `maestro cloud --fail-on-cancellation=false`")
+            }
             0
         }
     }
