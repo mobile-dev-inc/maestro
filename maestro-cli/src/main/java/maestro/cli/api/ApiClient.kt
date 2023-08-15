@@ -242,6 +242,7 @@ class ApiClient(
         excludeTags: List<String> = emptyList(),
         maxRetryCount: Int = 3,
         completedRetries: Int = 0,
+        disableNotifications: Boolean,
         progressListener: (totalBytes: Long, bytesWritten: Long) -> Unit = { _, _ -> },
     ): UploadResponse {
         if (appBinaryId == null && appFile == null) throw CliError("Missing required parameter for option '--app-file' or '--app-binary-id'")
@@ -264,6 +265,7 @@ class ApiClient(
         appBinaryId?.let { requestPart["appBinaryId"] = it }
         if (includeTags.isNotEmpty()) requestPart["includeTags"] = includeTags
         if (excludeTags.isNotEmpty()) requestPart["excludeTags"] = excludeTags
+        if (disableNotifications) requestPart["disableNotifications"] = true
 
         val bodyBuilder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -307,7 +309,8 @@ class ApiClient(
                 maxRetryCount = maxRetryCount,
                 completedRetries = completedRetries + 1,
                 progressListener = progressListener,
-                appBinaryId = appBinaryId
+                appBinaryId = appBinaryId,
+                disableNotifications = disableNotifications,
             )
         }
 
@@ -325,10 +328,12 @@ class ApiClient(
 
         response.use {
             if (!response.isSuccessful) {
+                val errorMessage = response.body?.string().takeIf { it?.isNotEmpty() == true } ?: "Unknown"
+
                 if (response.code >= 500) {
-                    return retry("Upload failed with status code ${response.code}")
+                    return retry("Upload failed with status code ${response.code}: $errorMessage")
                 } else {
-                    throw CliError("Upload request failed (${response.code}): ${response.body?.string()}")
+                    throw CliError("Upload request failed (${response.code}): $errorMessage")
                 }
             }
 

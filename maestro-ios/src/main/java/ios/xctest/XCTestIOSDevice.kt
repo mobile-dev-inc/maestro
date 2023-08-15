@@ -7,7 +7,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.Error
 import hierarchy.ViewHierarchy
-import hierarchy.XCUIElement
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
@@ -18,7 +17,6 @@ import okio.buffer
 import xcuitest.XCTestDriverClient
 import xcuitest.api.GetRunningAppIdResponse
 import xcuitest.api.IsScreenStaticResponse
-import java.io.File
 import java.io.InputStream
 import java.util.UUID
 
@@ -55,15 +53,6 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
-        val appId = activeAppId() ?: error("Unable to obtain active app id")
-
-        return when (val result = getViewHierarchy(appId)) {
-            is Ok -> result
-            is Err -> Err(result.error)
-        }
-    }
-
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
         val installedApps = getInstalledApps()
         val result = runCatching {
@@ -73,33 +62,6 @@ class XCTestIOSDevice(
             viewHierarchy
         }
         return result
-    }
-
-    private fun getViewHierarchy(appId: String): Result<XCUIElement, Throwable> {
-        return try {
-            client.subTree(appId).use {
-                it.body.use { body ->
-                    if (it.isSuccessful) {
-                        val xcUiElement = body?.let { response ->
-                            mapper.readValue(String(response.bytes()), XCUIElement::class.java)
-                        } ?: error("View Hierarchy not available, response body is null")
-                        Ok(xcUiElement)
-                    } else {
-                        val err = body?.let { response ->
-                            val errorResponse = String(response.bytes()).trim()
-                            val error = mapper.readValue(errorResponse, Error::class.java)
-                            when (error.errorCode) {
-                                VIEW_HIERARCHY_SNAPSHOT_ERROR_CODE -> Err(IllegalArgumentSnapshotFailure())
-                                else -> Err(UnknownFailure(errorResponse))
-                            }
-                        } ?: Err(UnknownFailure("Error body for view hierarchy request not available"))
-                        err
-                    }
-                }
-            }
-        } catch (exception: Throwable) {
-            Err(exception)
-        }
     }
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
@@ -188,14 +150,6 @@ class XCTestIOSDevice(
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
-        error("Not supported")
-    }
-
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        error("Not supported")
-    }
-
-    override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
         error("Not supported")
     }
 

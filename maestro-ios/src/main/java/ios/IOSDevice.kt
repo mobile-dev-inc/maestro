@@ -22,7 +22,6 @@ package ios
 import com.github.michaelbull.result.Result
 import hierarchy.AXElement
 import hierarchy.ViewHierarchy
-import hierarchy.XCUIElement
 import ios.device.DeviceInfo
 import okio.Sink
 import java.io.File
@@ -36,8 +35,6 @@ interface IOSDevice : AutoCloseable {
     fun open()
 
     fun deviceInfo(): Result<DeviceInfo, Throwable>
-
-    fun contentDescriptor(): Result<XCUIElement, Throwable>
 
     fun viewHierarchy(): Result<ViewHierarchy, Throwable>
 
@@ -75,22 +72,6 @@ interface IOSDevice : AutoCloseable {
      * @param id = bundle id of the app to uninstall
      */
     fun uninstall(id: String): Result<Unit, Throwable>
-
-    /**
-     * Pulls files from app container
-     *
-     * @param id bundle id of the app
-     * @param file output directory
-     */
-    fun pullAppState(id: String, file: File): Result<Unit, Throwable>
-
-    /**
-     * Pushes files to app container
-     *
-     * @param id bundle id of the app
-     * @param file file or directory (if directory, it pushes contents of that directory)
-     */
-    fun pushAppState(id: String, file: File): Result<Unit, Throwable>
 
     /**
      * Clears state of a given application.

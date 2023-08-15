@@ -1,13 +1,10 @@
 package ios
 
 import com.github.michaelbull.result.*
-import hierarchy.XCUIElement
 import ios.device.DeviceInfo
-import ios.idb.IdbIOSDevice
 import ios.simctl.SimctlIOSDevice
 import ios.xctest.XCTestIOSDevice
 import okio.Sink
-import java.io.File
 import java.io.InputStream
 import java.util.UUID
 import hierarchy.ViewHierarchy
@@ -18,7 +15,6 @@ import java.util.concurrent.TimeUnit
 
 class LocalIOSDevice(
     override val deviceId: String?,
-    private val idbIOSDevice: IdbIOSDevice,
     private val xcTestDevice: XCTestIOSDevice,
     private val simctlIOSDevice: SimctlIOSDevice,
 ) : IOSDevice {
@@ -26,23 +22,11 @@ class LocalIOSDevice(
     private val executor by lazy { Executors.newSingleThreadScheduledExecutor() }
 
     override fun open() {
-        idbIOSDevice.open()
         xcTestDevice.open()
     }
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return xcTestDevice.deviceInfo()
-    }
-
-    override fun contentDescriptor(): Result<XCUIElement, Throwable> {
-        return xcTestDevice.contentDescriptor()
-            .recoverIf(
-                { it is XCTestIOSDevice.IllegalArgumentSnapshotFailure },
-                {
-                    idbIOSDevice.contentDescriptor()
-                        .getOrThrow()
-                }
-            )
     }
 
     override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
@@ -106,14 +90,6 @@ class LocalIOSDevice(
         return simctlIOSDevice.uninstall(id)
     }
 
-    override fun pullAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pullAppState(id, file)
-    }
-
-    override fun pushAppState(id: String, file: File): Result<Unit, Throwable> {
-        return idbIOSDevice.pushAppState(id, file)
-    }
-
     override fun clearAppState(id: String): Result<Unit, Throwable> {
         return simctlIOSDevice.clearAppState(id)
     }
@@ -151,11 +127,10 @@ class LocalIOSDevice(
     }
 
     override fun isShutdown(): Boolean {
-        return idbIOSDevice.isShutdown() && xcTestDevice.isShutdown()
+        return xcTestDevice.isShutdown()
     }
 
     override fun close() {
-        idbIOSDevice.close()
         xcTestDevice.close()
         simctlIOSDevice.close()
     }

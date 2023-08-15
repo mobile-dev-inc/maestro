@@ -1,5 +1,5 @@
 import { DeviceScreen, UIElement } from "../../helpers/models";
-import React, { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import useMouse, { MousePosition } from "@react-hook/mouse-position";
 
 type AnnotationState = "default" | "hidden" | "hovered" | "selected";
@@ -24,7 +24,7 @@ const Annotation = ({
   const w = `${(width / deviceWidth) * 100}%`;
   const h = `${(height / deviceHeight) * 100}%`;
 
-  let className = "border border-dashed border-pink-400/20";
+  let className = "border border-dashed border-pink-400/60";
   let style: CSSProperties = {};
 
   if (state === "hovered") {
@@ -151,8 +151,8 @@ export const AnnotatedScreenshot = ({
 }: {
   deviceScreen: DeviceScreen;
   selectedElement: UIElement | null;
-  onElementSelected: (element: UIElement | null) => void;
-  hoveredElement: UIElement | null;
+  onElementSelected?: (element: UIElement | null) => void;
+  hoveredElement?: UIElement | null;
   onHover: (element: UIElement | null, mouse: MousePosition | null) => void;
   annotationsEnabled?: boolean;
 }) => {
@@ -193,9 +193,9 @@ export const AnnotatedScreenshot = ({
         state={state}
         onClick={() => {
           if (selectedElement) {
-            onElementSelected(null);
+            onElementSelected && onElementSelected(null);
           } else {
-            onElementSelected(element);
+            onElementSelected && onElementSelected(element);
           }
         }}
       />
@@ -237,7 +237,7 @@ export const AnnotatedScreenshot = ({
         aspectRatio: deviceScreen.width / deviceScreen.height,
       }}
       onClick={() => {
-        if (selectedElement) onElementSelected(null);
+        if (selectedElement) onElementSelected && onElementSelected(null);
       }}
     >
       <img

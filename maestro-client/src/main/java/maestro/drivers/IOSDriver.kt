@@ -19,16 +19,11 @@
 
 package maestro.drivers
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
-import hierarchy.IdbElementNode
-import hierarchy.XCUIElement
-import hierarchy.XCUIElementNode
 import ios.IOSDevice
 import maestro.Capability
 import maestro.DeviceInfo
@@ -123,29 +118,6 @@ class IOSDriver(
         iosDevice.clearKeychain().expect {}
     }
 
-    override fun pullAppState(appId: String, outFile: File) {
-        if (!outFile.exists()) outFile.createNewFile()
-        val tmpDir = Files.createTempDirectory("maestro_state_")
-
-        iosDevice.pullAppState(appId, tmpDir.toFile()).getOrThrow {
-            MaestroException.UnableToPullState("Unable to pull state for $appId. ${it.message}")
-        }
-
-        FileUtils.zipDir(tmpDir, outFile.toPath())
-        FileUtils.deleteDir(tmpDir)
-    }
-
-    override fun pushAppState(appId: String, stateFile: File) {
-        val tmpDir = Files.createTempDirectory("maestro_state_")
-        FileUtils.unzip(stateFile.toPath(), tmpDir)
-
-        iosDevice.pushAppState(appId, tmpDir.toFile()).getOrThrow {
-            MaestroException.UnableToPushState("Unable to push state for $appId. ${it.message}")
-        }
-
-        FileUtils.deleteDir(tmpDir)
-    }
-
     override fun tap(point: Point) {
         iosDevice.tap(point.x, point.y).expect {}
     }
@@ -180,10 +152,7 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        return when (val contentDescriptorResult = iosDevice.contentDescriptor()) {
-            is Ok -> mapHierarchy(contentDescriptorResult.value)
-            is Err -> TreeNode()
-        }
+        return viewHierarchy()
     }
 
     fun viewHierarchy(): TreeNode {
@@ -191,7 +160,8 @@ class IOSDriver(
         LOGGER.info("Depth of the screen is ${hierarchyResult?.depth ?: 0}")
         if (hierarchyResult?.depth != null && hierarchyResult.depth > WARNING_MAX_DEPTH) {
             val message = "The view hierarchy has been calculated. The current depth of the hierarchy " +
-                    "is ${hierarchyResult.depth}. If you are using React native, consider migrating to the new " +
+                    "is ${hierarchyResult.depth}. This might affect the execution time of your test. " +
+                    "If you are using React native, consider migrating to the new " +
                     "architecture where view flattening is available. For more information on the " +
                     "migration process, please visit: https://reactnative.dev/docs/new-architecture-intro"
             Insights.report(Insight(message, Insight.Level.INFO))
@@ -234,82 +204,6 @@ class IOSDriver(
 
     override fun isUnicodeInputSupported(): Boolean {
         return true
-    }
-
-    private fun mapHierarchy(xcUiElement: XCUIElement): TreeNode {
-        return when (xcUiElement) {
-            is XCUIElementNode -> parseXCUIElementNode(xcUiElement)
-            is IdbElementNode -> parseIdbElementNode(xcUiElement)
-            else -> error("Illegal instance for parsing hierarchy")
-        }
-    }
-
-    private fun parseIdbElementNode(xcUiElement: IdbElementNode) = TreeNode(
-        children = xcUiElement.children.map {
-            val attributes = mutableMapOf<String, String>()
-
-            (it.title
-                ?: it.axLabel
-                ?: it.axValue
-                )?.let { title ->
-                    attributes["text"] = title
-                }
-
-            (it.axUniqueId)?.let { resourceId ->
-                attributes["resource-id"] = resourceId
-            }
-
-            it.frame.let { frame ->
-                val left = frame.x.toInt()
-                val top = frame.y.toInt()
-                val right = left + frame.width.toInt()
-                val bottom = top + frame.height.toInt()
-
-                attributes["bounds"] = "[$left,$top][$right,$bottom]"
-            }
-
-            TreeNode(
-                attributes = attributes,
-                enabled = it.enabled,
-            )
-        }
-    )
-
-    private fun parseXCUIElementNode(xcUiElement: XCUIElementNode): TreeNode {
-        val attributes = mutableMapOf<String, String>()
-        val text = xcUiElement.title?.ifEmpty {
-            xcUiElement.value
-        }
-        attributes["accessibilityText"] = xcUiElement.label
-        attributes["text"] = text ?: ""
-        attributes["hintText"] = xcUiElement.placeholderValue ?: ""
-        attributes["resource-id"] = xcUiElement.identifier
-        val right = xcUiElement.frame.x + xcUiElement.frame.width
-        val bottom = xcUiElement.frame.y + xcUiElement.frame.height
-        attributes["bounds"] = "[${xcUiElement.frame.x.toInt()},${xcUiElement.frame.y.toInt()}][${right.toInt()},${bottom.toInt()}]"
-        attributes["enabled"] = xcUiElement.enabled.toString()
-        attributes["focused"] = xcUiElement.hasFocus.toString()
-        attributes["selected"] = xcUiElement.selected.toString()
-
-        val checked = xcUiElement.elementType in CHECKABLE_ELEMENTS && xcUiElement.value == "1"
-        attributes["checked"] = checked.toString()
-
-        val children = mutableListOf<TreeNode>()
-        val childNodes = xcUiElement.children
-        if (childNodes != null) {
-            (0 until childNodes.size).forEach { i ->
-                children += mapHierarchy(childNodes[i])
-            }
-        }
-
-        return TreeNode(
-            attributes = attributes,
-            children = children,
-            enabled = xcUiElement.enabled,
-            focused = xcUiElement.hasFocus,
-            selected = xcUiElement.selected,
-            checked = checked,
-        )
     }
 
     override fun scrollVertical() {
