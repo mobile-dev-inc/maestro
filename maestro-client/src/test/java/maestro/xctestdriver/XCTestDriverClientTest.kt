@@ -76,7 +76,39 @@ class XCTestDriverClientTest {
         mockXCTestInstaller.assertInstallationRetries(0)
         mockWebServer.shutdown()
     }
-    
+
+    @Test
+    fun `it should return the 200 response as is without retrying`() {
+        // given
+        val mockWebServer = MockWebServer()
+        val mockResponse = MockResponse().apply {
+            setResponseCode(200)
+            setBody("This is a valid response")
+        }
+        mockWebServer.enqueue(mockResponse)
+        mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
+        val httpUrl = mockWebServer.url("/deviceInfo")
+
+        // when
+        val simulator = MockXCTestInstaller.Simulator()
+        val mockXCTestInstaller = MockXCTestInstaller(simulator)
+        val xcTestDriverClient = XCTestDriverClient(
+            mockXCTestInstaller,
+            IOSDriverLogger(XCTestDriverClient::class.java),
+            XCTestClient("localhost", 22087)
+        )
+        val response = xcTestDriverClient.deviceInfo(httpUrl)
+
+        // then
+        val body = response.body?.string()
+        val code = response.code
+        assertThat(code).isEqualTo(200)
+        assertThat(body).isNotNull()
+        assertThat(body).isEqualTo("This is a valid response")
+        mockXCTestInstaller.assertInstallationRetries(0)
+        mockWebServer.shutdown()
+    }
+
     companion object {
         @JvmStatic
         fun enqueueTimes(): List<Int> {
