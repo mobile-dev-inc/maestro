@@ -5,24 +5,20 @@ import hierarchy.Error
 import hierarchy.ViewHierarchy
 import maestro.api.GetRunningAppRequest
 import maestro.logger.Logger
-import okhttp3.Interceptor
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import xcuitest.api.EraseTextRequest
-import xcuitest.api.InputTextRequest
-import xcuitest.api.PressButtonRequest
-import xcuitest.api.PressKeyRequest
-import xcuitest.api.SetPermissionsRequest
-import xcuitest.api.SwipeRequest
-import xcuitest.api.TouchRequest
-import xcuitest.api.ViewHierarchyRequest
+import xcuitest.api.*
+import xcuitest.api.NetworkException.Companion.toUserNetworkException
 import xcuitest.installer.XCTestInstaller
 import java.io.IOException
+import java.net.ConnectException
+import xcuitest.api.NetworkErrorHandler
+import xcuitest.api.NetworkErrorHandler.Companion.RETRY_RESPONSE_CODE
+import xcuitest.api.NetworkErrorHandler.Companion.getRetrialResponse
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 
@@ -36,6 +32,9 @@ class XCTestDriverClient(
     }
 
     private var isShuttingDown = false
+    private var retry = 0
+
+    private val networkErrorHandler by lazy { NetworkErrorHandler(installer) }
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -168,8 +167,8 @@ class XCTestDriverClient(
         return executeJsonRequestUNCHECKED("eraseText", EraseTextRequest(charactersToErase, appIds))
     }
 
-    fun deviceInfo(): Response {
-        return executeJsonRequestUNCHECKED("deviceInfo", Unit)
+    fun deviceInfo(httpUrl: HttpUrl = client.xctestAPIBuilder("deviceInfo").build()): Response {
+        return executeJsonRequestUNCHECKED(httpUrl, Unit)
     }
 
     fun isChannelAlive(): Boolean {
@@ -192,6 +191,20 @@ class XCTestDriverClient(
         val requestBuilder = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .url(client.xctestAPIBuilder(pathSegment).build())
+            .post(bodyData)
+
+        return okHttpClient
+            .newCall(requestBuilder.build())
+            .execute()
+    }
+
+    private fun executeJsonRequestUNCHECKED(httpUrl: HttpUrl, body: Any): Response {
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
+
+        val requestBuilder = Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .url(httpUrl)
             .post(bodyData)
 
         return okHttpClient
@@ -225,34 +238,62 @@ class XCTestDriverClient(
     }
 
     private fun OkHttpClient.Builder.addRetryInterceptor() = addInterceptor(Interceptor { chain ->
-        var exception: IOException? = null
-        var response: Response? = null
-
-        repeat(3) {
-            try {
-                response?.close()
-                response = chain.proceed(chain.request())
-                if (response?.isSuccessful == true) {
-                    return@Interceptor response!!
+        val response = try {
+             chain.proceed(chain.request())
+        } catch (ioException: IOException) {
+            val networkException = mapNetworkException(ioException)
+            if (networkException.shouldRetryDriverInstallation()) {
+                if (retry < MAX_CONNECT_ERROR_RETRY) {
+                    println("ℹ️ Retrying connection to the XCUITest server for ${retry + 1}...")
+                    installer.start()?.let {
+                        client = it
+                    }
+                    retry++
+                    return@Interceptor chain.call().clone().execute()
                 }
-            } catch (e: IOException) {
-                installer.start()?.let {
-                    client = it
-                }
-                exception = e
             }
-            Thread.sleep(300)
+            val userNetworkException = networkException.toUserNetworkException()
+            val json = mapper.writeValueAsString(userNetworkException)
+            val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
+
+
+            println("⚠️ Error: ${networkException.toUserNetworkException().userFriendlyMessage}")
+            retry = 0
+            return@Interceptor Response.Builder()
+                .request(chain.request())
+                .protocol(Protocol.HTTP_1_1)
+                .message(userNetworkException.userFriendlyMessage)
+                .body(responseBody)
+                .code(400)
+                .build()
         }
 
-        response ?: exception?.let { throw it }
-            ?: throw XCTestDriverUnreachable("Failed to reach out XCUITest Server after 3 attempts")
+        return@Interceptor when (response.code) {
+            RETRY_RESPONSE_CODE -> {
+                networkErrorHandler.reinitializedXCTestClient()?.let { client = it }
+                networkErrorHandler.retryConnection(chain.call(), response)
+            }
+            else -> {
+                networkErrorHandler.resetRetryCount()
+                response
+            }
+        }
     })
+
+    private fun NetworkException.shouldRetryDriverInstallation(): Boolean {
+        return when (this) {
+            is NetworkException.ConnectionException,
+            is NetworkException.TimeoutException,
+            is NetworkException.UnknownNetworkException -> true
+            is NetworkException.UnknownHostException -> false
+        }
+    }
 
     private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
         val request = it.request()
         try {
             it.proceed(request)
-        } catch (connectException: IOException) {
+        } catch (ioException: IOException) {
             // Fake an Ok response when shutting down and receiving an error
             // to prevent a stack trace in the cli when running maestro studio.
 
@@ -270,19 +311,25 @@ class XCTestDriverClient(
                     .code(200)
                     .build()
             } else {
-                val message = "Failed request for XCTest server"
-                val responseBody = """
-                    { "exceptionMessage": "${connectException.localizedMessage}, "stackTrace": "${connectException.stackTraceToString()} }
-                """.trimIndent().toResponseBody("application/json; charset=utf-8".toMediaType())
-
-                Response.Builder()
-                    .request(it.request())
-                    .protocol(Protocol.HTTP_1_1)
-                    .message(message)
-                    .body(responseBody)
-                    .code(400)
-                    .build()
+                val networkException = mapNetworkException(ioException)
+                return@Interceptor networkException.getRetrialResponse(request)
             }
         }
     })
+
+    private fun mapNetworkException(e: IOException): NetworkException {
+        return when (e) {
+            is SocketTimeoutException -> NetworkException.TimeoutException("Socket timeout")
+            is ConnectException -> NetworkException.ConnectionException("Connection error")
+            is UnknownHostException -> NetworkException.UnknownHostException("Unknown host")
+            else -> {
+                logger.info("Exception ${e.cause} is not mapped io exception")
+                NetworkException.UnknownNetworkException(e.message ?: e.stackTraceToString())
+            }
+        }
+    }
+
+    companion object {
+        private const val MAX_CONNECT_ERROR_RETRY = 3
+    }
 }
