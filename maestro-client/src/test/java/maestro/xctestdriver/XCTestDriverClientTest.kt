@@ -4,13 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
 import maestro.debuglog.IOSDriverLogger
 import maestro.ios.MockXCTestInstaller
-import maestro.utils.enqueueBadResponses
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 import xcuitest.XCTestClient
 import xcuitest.XCTestDriverClient
 import xcuitest.api.NetworkException
@@ -18,12 +15,11 @@ import java.net.InetAddress
 
 class XCTestDriverClientTest {
 
-    @ParameterizedTest
-    @MethodSource("enqueueTimes")
-    fun `it should fail with proper message in case 3 retries fail`(enqueueTime: Int) {
+    @Test
+    fun `it should return correct message in case of TimeoutException with 3 retries`() {
         // given
         val mockWebServer = MockWebServer()
-        enqueueBadResponses(mockWebServer, enqueueTime)
+        // do not enqueue any response
         mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
         val httpUrl = mockWebServer.url("/deviceInfo")
 
@@ -141,7 +137,7 @@ class XCTestDriverClientTest {
         val networkErrorModel = response.body?.use {
             mapper.readValue(it.bytes(), NetworkException.NetworkErrorModel::class.java)
         } ?: throw IllegalStateException("No NetworkError model found for response body")
-        assertThat(response.code).isEqualTo(400)
+        assertThat(response.code).isEqualTo(502)
         assertThat(networkErrorModel.userFriendlyMessage).contains(
             "The host for the XCUITest server is unknown."
         )
@@ -149,10 +145,40 @@ class XCTestDriverClientTest {
         mockWebServer.shutdown()
     }
 
-    companion object {
-        @JvmStatic
-        fun enqueueTimes(): List<Int> {
-            return listOf(0, 1, 2, 3)
-        }
+    @Test
+    fun `it should return correct message in case of ConnectExceptions with 3 retries`() {
+        // given
+        val mockWebServer = MockWebServer()
+        mockWebServer.enqueue(
+            MockResponse()
+                .setSocketPolicy(SocketPolicy.DISCONNECT_DURING_REQUEST_BODY)
+        )
+        mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
+        val httpUrl = mockWebServer.url("/deviceInfo")
+        mockWebServer.shutdown()
+        val mapper = jacksonObjectMapper()
+
+        // when
+        val simulator = MockXCTestInstaller.Simulator(
+            installationRetryCount = 0,
+            shouldInstall = false
+        )
+        val mockXCTestInstaller = MockXCTestInstaller(simulator)
+        val xcTestDriverClient = XCTestDriverClient(
+            mockXCTestInstaller,
+            IOSDriverLogger(XCTestDriverClient::class.java),
+            XCTestClient("localhost", 22087)
+        )
+        val response = xcTestDriverClient.deviceInfo(httpUrl)
+
+        // then
+        assertThat(response.code).isEqualTo(502)
+        val networkErrorModel = response.body?.use {
+            mapper.readValue(it.bytes(), NetworkException.NetworkErrorModel::class.java)
+        } ?: throw IllegalStateException("No NetworkError model found for response body")
+        assertThat(networkErrorModel.userFriendlyMessage).contains(
+            "Unable to establish a connection to the XCUITest server."
+        )
+        mockXCTestInstaller.assertInstallationRetries(3)
     }
 }

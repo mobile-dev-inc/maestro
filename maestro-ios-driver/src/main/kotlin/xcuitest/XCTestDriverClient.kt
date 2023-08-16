@@ -32,7 +32,6 @@ class XCTestDriverClient(
     }
 
     private var isShuttingDown = false
-    private var retry = 0
 
     private val networkErrorHandler by lazy { NetworkErrorHandler(installer) }
 
@@ -258,15 +257,6 @@ class XCTestDriverClient(
         }
     })
 
-    private fun NetworkException.shouldRetryDriverInstallation(): Boolean {
-        return when (this) {
-            is NetworkException.ConnectionException,
-            is NetworkException.TimeoutException,
-            is NetworkException.UnknownNetworkException -> true
-            is NetworkException.UnknownHostException -> false
-        }
-    }
-
     private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
         val request = it.request()
         try {
@@ -305,9 +295,5 @@ class XCTestDriverClient(
                 NetworkException.UnknownNetworkException(e.message ?: e.stackTraceToString())
             }
         }
-    }
-
-    companion object {
-        private const val MAX_CONNECT_ERROR_RETRY = 3
     }
 }

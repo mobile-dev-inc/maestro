@@ -18,6 +18,7 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
     companion object {
         const val RETRY_RESPONSE_CODE = 503
         private const val NO_RETRY_RESPONSE_CODE = 502
+        private const val MAX_RETRY = 3
         private val mapper = jacksonObjectMapper()
 
         fun NetworkException.getRetrialResponse(request: Request): Response {
@@ -64,13 +65,13 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
             call.clone().execute()
         } else {
             PrintUtils.log("⚠️ Error: ${response.message}")
-            retry = 0
+            resetRetryCount()
             response
         }
     }
 
     fun retryConnection(chain: Interceptor.Chain, networkException: NetworkException): Response {
-        return if (networkException.shouldRetryDriverInstallation() && retry < 3) {
+        return if (networkException.shouldRetryDriverInstallation() && retry < MAX_RETRY) {
             xcTestInstaller.start()?.let {
                 client = it
             }
@@ -82,13 +83,13 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
             val json = mapper.writeValueAsString(userNetworkException)
             val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
             PrintUtils.log("⚠️ Error: ${userNetworkException.userFriendlyMessage}")
-            retry = 0
+            resetRetryCount()
             return Response.Builder()
                 .request(chain.request())
                 .protocol(Protocol.HTTP_1_1)
                 .message(userNetworkException.userFriendlyMessage)
                 .body(responseBody)
-                .code(400)
+                .code(NO_RETRY_RESPONSE_CODE)
                 .build()
         }
     }
