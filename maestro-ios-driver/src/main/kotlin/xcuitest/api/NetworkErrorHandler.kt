@@ -1,11 +1,8 @@
 package xcuitest.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import okhttp3.Call
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import util.PrintUtils
 import xcuitest.XCTestClient
@@ -72,12 +69,32 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
         }
     }
 
-    fun resetRetryCount() {
-        retry = 0
+    fun retryConnection(chain: Interceptor.Chain, networkException: NetworkException): Response {
+        return if (networkException.shouldRetryDriverInstallation() && retry < 3) {
+            xcTestInstaller.start()?.let {
+                client = it
+            }
+            retry++
+            PrintUtils.log("ℹ️ Retrying connection to the XCUITest server for ${retry}...")
+            chain.call().clone().execute()
+        } else {
+            val userNetworkException = networkException.toUserNetworkException()
+            val json = mapper.writeValueAsString(userNetworkException)
+            val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
+            PrintUtils.log("⚠️ Error: ${userNetworkException.userFriendlyMessage}")
+            retry = 0
+            return Response.Builder()
+                .request(chain.request())
+                .protocol(Protocol.HTTP_1_1)
+                .message(userNetworkException.userFriendlyMessage)
+                .body(responseBody)
+                .code(400)
+                .build()
+        }
     }
 
-    fun retryWithoutConnection() {
-
+    fun resetRetryCount() {
+        retry = 0
     }
 
     fun reinitializedXCTestClient(): XCTestClient? {

@@ -242,30 +242,8 @@ class XCTestDriverClient(
              chain.proceed(chain.request())
         } catch (ioException: IOException) {
             val networkException = mapNetworkException(ioException)
-            if (networkException.shouldRetryDriverInstallation()) {
-                if (retry < MAX_CONNECT_ERROR_RETRY) {
-                    println("ℹ️ Retrying connection to the XCUITest server for ${retry + 1}...")
-                    installer.start()?.let {
-                        client = it
-                    }
-                    retry++
-                    return@Interceptor chain.call().clone().execute()
-                }
-            }
-            val userNetworkException = networkException.toUserNetworkException()
-            val json = mapper.writeValueAsString(userNetworkException)
-            val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
-
-
-            println("⚠️ Error: ${networkException.toUserNetworkException().userFriendlyMessage}")
-            retry = 0
-            return@Interceptor Response.Builder()
-                .request(chain.request())
-                .protocol(Protocol.HTTP_1_1)
-                .message(userNetworkException.userFriendlyMessage)
-                .body(responseBody)
-                .code(400)
-                .build()
+            networkErrorHandler.reinitializedXCTestClient()?.let { client = it }
+            return@Interceptor networkErrorHandler.retryConnection(chain, networkException)
         }
 
         return@Interceptor when (response.code) {
