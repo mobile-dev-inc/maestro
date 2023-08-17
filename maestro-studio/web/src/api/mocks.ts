@@ -1,4 +1,4 @@
-import { delay, http } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { DeviceScreen, MockEvent, ReplCommand } from "../helpers/models";
 import { sampleElements } from "../helpers/sampleElements";
 import { wait } from "./api";
@@ -12,14 +12,14 @@ export const mockDeviceScreen: DeviceScreen = {
 };
 
 let nextId = 0;
-let version = 0;
 let commands: ReplCommand[] = [];
 
-const replResponse = () => {
+const controllers: ReadableStreamDefaultController[] = [];
+
+const replResponse = (init?: ResponseInit) => {
   return new Response(JSON.stringify({
-    version,
     commands,
-  }));
+  }), init);
 };
 
 const runCommands = async (ids: string[]) => {
@@ -27,7 +27,7 @@ const runCommands = async (ids: string[]) => {
     const command = commands.find((c) => c.id === id);
     if (command) command.status = "pending";
   }
-  version++;
+  notifyControllers();
   for (const id of ids) {
     await runCommand(id);
   }
@@ -38,10 +38,10 @@ const runCommand = async (id: string) => {
   if (!command) return;
   await wait(200);
   command.status = "running";
-  version++;
+  notifyControllers()
   await wait(500);
   command.status = "success";
-  version++;
+  notifyControllers()
 };
 
 const createCommand = (yaml: string) => {
@@ -52,18 +52,34 @@ const createCommand = (yaml: string) => {
   };
   commands.push(command);
   runCommand(command.id);
-  version++;
+  notifyControllers();
 };
 
+const textEncoder = new TextEncoder();
+
+const notifyControllers = () => {
+  controllers.forEach(notifyController);
+}
+
+const notifyController = (controller: ReadableStreamDefaultController) => {
+  controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({
+    commands,
+  })}\n\n`));
+}
+
 const handlers = [
-  http.get("/api/repl/sse", async ({ request }) => {
-    const currentVersionParam = new URL(request.url).searchParams.get("currentVersion");
-    if (currentVersionParam === null) return new Response(null, { status: 400 })
-    const requestVersion = parseInt(currentVersionParam);
-    while (requestVersion >= version) {
-      await wait(200);
-    }
-    return replResponse();
+  http.get("/api/repl/sse", async () => {
+    const stream = new ReadableStream({
+      async start(controller) {
+        controllers.push(controller);
+        notifyController(controller);
+      },
+    })
+    return new HttpResponse(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream'
+      }
+    });
   }),
   http.post<any, any>("/api/repl/command", async ({ request }) => {
     const { yaml, ids }: { yaml?: string; ids?: string[] } = await request.json();
@@ -82,7 +98,7 @@ const handlers = [
   http.delete<any, any>("/api/repl/command", async ({ request }) => {
     const { ids }: { ids: string[] } = await request.json();
     commands = commands.filter((c) => !ids.includes(c.id));
-    version++;
+    notifyControllers();
     return replResponse();
   }),
   http.post<any, any>("/api/repl/command/reorder", async ({ request }) => {
@@ -99,7 +115,7 @@ const handlers = [
     });
     await wait(30);
     commands = newCommands;
-    version++;
+    notifyControllers();
     return replResponse();
   }),
   http.get("/api/device-screen", async () => {
