@@ -35,6 +35,12 @@ class StudioCommand : Callable<Int> {
     )
     private var debugOutput: String? = null
 
+    @CommandLine.Option(
+        names = ["--auto-browser"],
+        description = ["Configures automatically start browser, default is true"]
+    )
+    private var autoBrowser: Boolean? = true
+
     override fun call(): Int {
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
@@ -65,7 +71,7 @@ class StudioCommand : Callable<Int> {
 
     private fun tryOpenUrl(studioUrl: String) {
         try {
-            if (Desktop.isDesktopSupported()) {
+            if (Desktop.isDesktopSupported() && autoBrowser) {
                 Desktop.getDesktop().browse(URI(studioUrl))
             }
         } catch (ignore: Exception) {

@@ -88,6 +88,12 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
+        names = ["--auto-browser"],
+        description = ["Configures automatically start browser, default is true"]
+    )
+    private var autoBrowser: Boolean? = true
+
+    @Option(
         names = ["--include-tags"],
         description = ["List of tags that will remove the Flows that does not have the provided tags"],
         split = ",",
@@ -151,6 +157,7 @@ class TestCommand : Callable<Int> {
                     device = device,
                     reporter = ReporterFactory.buildReporter(format, testSuiteName),
                     includeTags = includeTags,
+                    autoBrowser = autoBrowser,
                     excludeTags = excludeTags,
                 ).runTestSuite(
                     input = flowFile,
