@@ -1,12 +1,6 @@
-import {
-  BannerMessage,
-  DeviceScreen,
-  FormattedFlow,
-  MockEvent,
-  Repl,
-  ReplCommand,
-} from "../helpers/models";
+import { BannerMessage, DeviceScreen, FormattedFlow, MockEvent, Repl, ReplCommand, } from "../helpers/models";
 import useSWR, { mutate, SWRConfiguration, SWRResponse } from "swr";
+import useSWRSubscription from 'swr/subscription';
 
 export type ReplResponse = {
   repl?: Repl;
@@ -49,7 +43,17 @@ const makeRequest = async <T>(
 };
 
 const useRepl = (): ReplResponse => {
-  const { data: repl, error } = useSWR<Repl>("/api/repl/watch");
+  const { data: repl, error } = useSWRSubscription<Repl, any, string>('/api/repl/sse', (key, { next }) => {
+    const eventSource = new EventSource(key);
+    eventSource.onmessage = e => {
+      const repl: Repl = JSON.parse(e.data)
+      next(null, repl)
+    }
+    eventSource.onerror = error => {
+      next(error)
+    }
+    return () => eventSource.close()
+  })
   return { repl, error };
 };
 
@@ -69,7 +73,7 @@ export const API = {
     return makeRequest("GET", `/api/device-screen`);
   },
   useBannerMessage: (
-    config?: SWRConfiguration<DeviceScreen>
+    config?: SWRConfiguration<BannerMessage>
   ): SWRResponse<BannerMessage> => {
     return useSWR(
       "/api/banner-message",
@@ -91,7 +95,7 @@ export const API = {
     reorderCommands: async (ids: string[]) => {
       makeRequest("POST", "/api/repl/command/reorder", { ids });
       mutate<Repl>(
-        "/api/repl/watch",
+        "/api/repl/sse",
         (repl) => {
           if (!repl) return undefined;
           const newCommands: ReplCommand[] = [];
@@ -118,21 +122,3 @@ export const API = {
     );
   },
 };
-
-const startReplLongPoll = async () => {
-  let replVersion = -1;
-  while (true) {
-    try {
-      const repl: Repl = await makeRequest(
-        "GET",
-        `/api/repl/watch?currentVersion=${replVersion}`
-      );
-      mutate("/api/repl/watch", repl, { revalidate: false });
-      replVersion = repl.version;
-    } catch (e) {
-      await wait(1000);
-    }
-  }
-};
-
-startReplLongPoll();
