@@ -10,7 +10,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import xcuitest.api.*
-import xcuitest.api.NetworkException.Companion.toUserNetworkException
 import xcuitest.installer.XCTestInstaller
 import java.io.IOException
 import java.net.ConnectException
@@ -53,7 +52,7 @@ class XCTestDriverClient(
         .connectTimeout(40, TimeUnit.SECONDS)
         .readTimeout(100, TimeUnit.SECONDS)
         .addRetryInterceptor()
-        .addReturnOkOnShutdownInterceptor()
+        .addRetryAndShutdownInterceptor()
         .build()
 
     class XCTestDriverUnreachable(message: String) : IOException(message)
@@ -257,7 +256,7 @@ class XCTestDriverClient(
         }
     })
 
-    private fun OkHttpClient.Builder.addReturnOkOnShutdownInterceptor() = addNetworkInterceptor(Interceptor {
+    private fun OkHttpClient.Builder.addRetryAndShutdownInterceptor() = addNetworkInterceptor(Interceptor {
         val request = it.request()
         try {
             it.proceed(request)
