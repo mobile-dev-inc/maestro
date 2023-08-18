@@ -88,10 +88,10 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
-        names = ["--auto-browser"],
+        names = ["--nowindow"],
         description = ["Configures automatically start browser, default is true"]
     )
-    private var autoBrowser: Boolean? = true
+    private var nowindow: Boolean? = true
 
     @Option(
         names = ["--include-tags"],
@@ -127,6 +127,13 @@ class TestCommand : Callable<Int> {
             )
         }
 
+        if (nowindow !is Boolean) {
+            throw CommandLine.ParameterException(
+                commandSpec.commandLine(),
+                "--nowindow type must be Boolean"
+            )
+        }
+
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
@@ -157,7 +164,6 @@ class TestCommand : Callable<Int> {
                     device = device,
                     reporter = ReporterFactory.buildReporter(format, testSuiteName),
                     includeTags = includeTags,
-                    autoBrowser = autoBrowser,
                     excludeTags = excludeTags,
                 ).runTestSuite(
                     input = flowFile,

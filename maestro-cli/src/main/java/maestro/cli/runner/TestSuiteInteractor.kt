@@ -34,6 +34,7 @@ class TestSuiteInteractor(
     private val device: Device? = null,
     private val reporter: TestSuiteReporter,
     private val includeTags: List<String> = emptyList(),
+    private val nowindow: Boolean? = true,
     private val excludeTags: List<String> = emptyList(),
 ) {
 
