@@ -265,7 +265,7 @@ class CloudInteractor(
         val containsFailure =
             upload.flows.find { it.status == UploadStatus.Status.ERROR } != null // status can be cancelled but also contain flow with failure
 
-        val passed = !isFailure && !containsFailure && !(isCancelled && failOnCancellation)
+        val failed = isFailure || containsFailure || isCancelled && failOnCancellation
 
         val reportOutputSink = reportFormat.fileExtension
             ?.let { extension ->
@@ -275,11 +275,11 @@ class CloudInteractor(
             }
 
         if (reportOutputSink != null) {
-            saveReport(reportFormat, passed, upload, reportOutputSink, testSuiteName)
+            saveReport(reportFormat, !failed, upload, reportOutputSink, testSuiteName)
         }
 
 
-        return if (passed) {
+        return if (!failed) {
             PrintUtils.message("Process will exit with code 0 (SUCCESS)")
             if (isCancelled) {
                 PrintUtils.message("* To change exit code on Cancellation, run maestro with this option: `maestro cloud --fail-on-cancellation=<true|false>`")
