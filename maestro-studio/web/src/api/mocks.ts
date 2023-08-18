@@ -4,6 +4,43 @@ import { sampleElements } from "../helpers/sampleElements";
 import { wait } from "./api";
 import { setupWorker } from 'msw/browser';
 
+class SseController {
+
+  private data?: string;
+  private controllers: ReadableStreamDefaultController[] = [];
+
+  newResponse(): HttpResponse {
+    const _this = this;
+    const stream = new ReadableStream({
+      async start(controller) {
+        _this.controllers.push(controller);
+        _this.notifyController(controller);
+      },
+    });
+    return new HttpResponse(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream'
+      }
+    });
+  }
+
+  sendEvent(data: string) {
+    this.data = data;
+    this.notifyControllers();
+  }
+
+  private notifyControllers() {
+    this.controllers.forEach(controller => {
+      this.notifyController(controller);
+    });
+  }
+
+  private notifyController(controller: ReadableStreamDefaultController) {
+    if (!this.data) return;
+    controller.enqueue(textEncoder.encode(`data: ${this.data}\n\n`));
+  }
+}
+
 export const mockDeviceScreen: DeviceScreen = {
   screenshot: "/sample-screenshot.png",
   width: 1080,
@@ -14,7 +51,11 @@ export const mockDeviceScreen: DeviceScreen = {
 let nextId = 0;
 let commands: ReplCommand[] = [];
 
-const controllers: ReadableStreamDefaultController[] = [];
+const replSseController = new SseController();
+
+const refreshRepl = () => replSseController.sendEvent(JSON.stringify({ commands }));
+
+refreshRepl()
 
 const replResponse = (init?: ResponseInit) => {
   return new Response(JSON.stringify({
@@ -27,7 +68,7 @@ const runCommands = async (ids: string[]) => {
     const command = commands.find((c) => c.id === id);
     if (command) command.status = "pending";
   }
-  notifyControllers();
+  refreshRepl();
   for (const id of ids) {
     await runCommand(id);
   }
@@ -38,10 +79,10 @@ const runCommand = async (id: string) => {
   if (!command) return;
   await wait(200);
   command.status = "running";
-  notifyControllers()
+  refreshRepl()
   await wait(500);
   command.status = "success";
-  notifyControllers()
+  refreshRepl()
 };
 
 const createCommand = (yaml: string) => {
@@ -52,34 +93,14 @@ const createCommand = (yaml: string) => {
   };
   commands.push(command);
   runCommand(command.id);
-  notifyControllers();
+  refreshRepl();
 };
 
 const textEncoder = new TextEncoder();
 
-const notifyControllers = () => {
-  controllers.forEach(notifyController);
-}
-
-const notifyController = (controller: ReadableStreamDefaultController) => {
-  controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({
-    commands,
-  })}\n\n`));
-}
-
 const handlers = [
   http.get("/api/repl/sse", async () => {
-    const stream = new ReadableStream({
-      async start(controller) {
-        controllers.push(controller);
-        notifyController(controller);
-      },
-    })
-    return new HttpResponse(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream'
-      }
-    });
+    return replSseController.newResponse();
   }),
   http.post<any, any>("/api/repl/command", async ({ request }) => {
     const { yaml, ids }: { yaml?: string; ids?: string[] } = await request.json();
@@ -98,7 +119,7 @@ const handlers = [
   http.delete<any, any>("/api/repl/command", async ({ request }) => {
     const { ids }: { ids: string[] } = await request.json();
     commands = commands.filter((c) => !ids.includes(c.id));
-    notifyControllers();
+    refreshRepl();
     return replResponse();
   }),
   http.post<any, any>("/api/repl/command/reorder", async ({ request }) => {
@@ -115,7 +136,7 @@ const handlers = [
     });
     await wait(30);
     commands = newCommands;
-    notifyControllers();
+    refreshRepl();
     return replResponse();
   }),
   http.get("/api/device-screen", async () => {

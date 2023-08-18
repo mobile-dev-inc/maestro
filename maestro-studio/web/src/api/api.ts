@@ -1,6 +1,6 @@
 import { BannerMessage, DeviceScreen, FormattedFlow, MockEvent, Repl, ReplCommand, } from "../helpers/models";
 import useSWR, { mutate, SWRConfiguration, SWRResponse } from "swr";
-import useSWRSubscription from 'swr/subscription';
+import useSWRSubscription, { SWRSubscriptionResponse } from 'swr/subscription';
 
 export type ReplResponse = {
   repl?: Repl;
@@ -42,11 +42,11 @@ const makeRequest = async <T>(
   return await response.json();
 };
 
-const useRepl = (): ReplResponse => {
-  const { data: repl, error } = useSWRSubscription<Repl, any, string>('/api/repl/sse', (key, { next }) => {
+const useSse = <T>(url: string): SWRSubscriptionResponse<T> => {
+  return useSWRSubscription<T, any, string>(url, (key, { next }) => {
     const eventSource = new EventSource(key);
     eventSource.onmessage = e => {
-      const repl: Repl = JSON.parse(e.data)
+      const repl: T = JSON.parse(e.data)
       next(null, repl)
     }
     eventSource.onerror = error => {
@@ -54,6 +54,10 @@ const useRepl = (): ReplResponse => {
     }
     return () => eventSource.close()
   })
+}
+
+const useRepl = (): ReplResponse => {
+  const { data: repl, error } = useSse<Repl>('/api/repl/sse')
   return { repl, error };
 };
 
