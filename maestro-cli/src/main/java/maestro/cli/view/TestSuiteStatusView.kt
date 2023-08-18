@@ -53,7 +53,7 @@ object TestSuiteStatusView {
             )
 
             if (canceledFlows.isNotEmpty()) {
-                PrintUtils.warn("${canceledFlows.size} ${flowWord(canceledFlows.size)} Cancelled (Internal Maestro Cloud Error)")
+                PrintUtils.warn("${canceledFlows.size} ${flowWord(canceledFlows.size)} Canceled (Internal Maestro Cloud Error)")
             }
 
         } else {
@@ -69,11 +69,11 @@ object TestSuiteStatusView {
                 )
 
                 if (canceledFlows.isNotEmpty()) {
-                    PrintUtils.warn("${canceledFlows.size} ${flowWord(canceledFlows.size)} Cancelled (Internal Maestro Cloud Error)")
+                    PrintUtils.warn("${canceledFlows.size} ${flowWord(canceledFlows.size)} Canceled (Internal Maestro Cloud Error)")
                 }
             } else {
                 println()
-                PrintUtils.err("Upload was Cancelled (Internal Maestro Cloud Error)")
+                PrintUtils.err("Upload was canceled (Internal Maestro Cloud Error)")
             }
         }
         println()
