@@ -288,7 +288,7 @@ class CloudInteractor(
         } else {
             PrintUtils.message("Process will exit with code 1 (FAIL)")
             if (isCancelled && !containsFailure) {
-                PrintUtils.message("* To change exit code on Cancellation, run maestro with this option: `maestro cloud --fail-on-cancellation=<true|false>`")
+                PrintUtils.message("* To change exit code on cancellation, run maestro with this option: `maestro cloud --fail-on-cancellation=<true|false>`")
             }
             1
         }

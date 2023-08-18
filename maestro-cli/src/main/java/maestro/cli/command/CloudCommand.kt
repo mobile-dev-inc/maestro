@@ -146,7 +146,7 @@ class CloudCommand : Callable<Int> {
     @Option(hidden = true, names = ["--disable-notifications"], description = ["Do not send the notifications configured in config.yaml"])
     private var disableNotifications = false
 
-    @Option(hidden = true, names = ["--result-wait-timeout"], description = ["Minutes to wait until all flows complete"])
+    @Option(hidden = true, names = ["--timeout"], description = ["Minutes to wait until all flows complete"])
     private var resultWaitTimeout = 60
 
     override fun call(): Int {
