@@ -1,10 +1,9 @@
 package xcuitest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import hierarchy.Error
 import hierarchy.ViewHierarchy
 import maestro.api.GetRunningAppRequest
-import maestro.logger.Logger
+import logger.Logger
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -15,7 +14,6 @@ import java.io.IOException
 import java.net.ConnectException
 import xcuitest.api.NetworkErrorHandler
 import xcuitest.api.NetworkErrorHandler.Companion.RETRY_RESPONSE_CODE
-import xcuitest.api.NetworkErrorHandler.Companion.getRetrialResponse
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -32,7 +30,7 @@ class XCTestDriverClient(
 
     private var isShuttingDown = false
 
-    private val networkErrorHandler by lazy { NetworkErrorHandler(installer) }
+    private val networkErrorHandler by lazy { NetworkErrorHandler(installer, logger) }
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -214,11 +212,11 @@ class XCTestDriverClient(
         val response = executeJsonRequestUNCHECKED(url, body)
 
         if (!response.isSuccessful) {
-            val error = response.body.use { responseBody ->
-                responseBody?.let { mapper.readValue(it.bytes(), Error::class.java) }
+            val responseBodyAsString = response.body?.bytes()?.let {
+                String(it)
             }
-
-            error("Request for $url failed, status code ${response.code}, error response: $error")
+            val code = response.code
+            error("Request for $url failed, status code ${code}, body: $responseBodyAsString")
         }
 
         return response
@@ -240,14 +238,16 @@ class XCTestDriverClient(
              chain.proceed(chain.request())
         } catch (ioException: IOException) {
             val networkException = mapNetworkException(ioException)
-            networkErrorHandler.reinitializedXCTestClient()?.let { client = it }
-            return@Interceptor networkErrorHandler.retryConnection(chain, networkException)
+            return@Interceptor networkErrorHandler.retryConnection(chain, networkException) {
+                client = it
+            }
         }
 
         return@Interceptor when (response.code) {
             RETRY_RESPONSE_CODE -> {
-                networkErrorHandler.reinitializedXCTestClient()?.let { client = it }
-                networkErrorHandler.retryConnection(chain.call(), response)
+                networkErrorHandler.retryConnection(chain.call(), response) {
+                    client = it
+                }
             }
             else -> {
                 networkErrorHandler.resetRetryCount()
@@ -279,7 +279,7 @@ class XCTestDriverClient(
                     .build()
             } else {
                 val networkException = mapNetworkException(ioException)
-                return@Interceptor networkException.getRetrialResponse(request)
+                return@Interceptor networkErrorHandler.getRetrialResponse(networkException, request)
             }
         }
     })
@@ -290,7 +290,7 @@ class XCTestDriverClient(
             is ConnectException -> NetworkException.ConnectionException("Connection error")
             is UnknownHostException -> NetworkException.UnknownHostException("Unknown host")
             else -> {
-                logger.info("Exception ${e.cause} is not mapped io exception")
+                logger.info("Exception $e is not mapped io exception")
                 NetworkException.UnknownNetworkException(e.message ?: e.stackTraceToString())
             }
         }

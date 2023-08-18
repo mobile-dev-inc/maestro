@@ -1,6 +1,7 @@
 package xcuitest.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import logger.Logger
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -8,11 +9,14 @@ import util.PrintUtils
 import xcuitest.XCTestClient
 import xcuitest.api.NetworkException.Companion.toUserNetworkException
 import xcuitest.installer.XCTestInstaller
+import kotlin.math.log
 
-class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
+class NetworkErrorHandler(
+    private val xcTestInstaller: XCTestInstaller,
+    private val logger: Logger
+) {
 
 
-    private lateinit var client: XCTestClient
     private var retry = 0
 
     companion object {
@@ -20,68 +24,90 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
         private const val NO_RETRY_RESPONSE_CODE = 502
         private const val MAX_RETRY = 3
         private val mapper = jacksonObjectMapper()
+    }
 
-        fun NetworkException.getRetrialResponse(request: Request): Response {
-            val userNetworkModel = toUserNetworkException()
-            val json = mapper.writeValueAsString(userNetworkModel)
-            val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
-            return if (shouldRetryDriverInstallation()) {
-                Response.Builder()
-                    .request(request)
-                    .protocol(Protocol.HTTP_1_1)
-                    .message(userNetworkModel.userFriendlyMessage)
-                    .body(responseBody)
-                    .code(RETRY_RESPONSE_CODE)
-                    .build()
-            } else {
-                Response.Builder()
-                    .request(request)
-                    .protocol(Protocol.HTTP_1_1)
-                    .message(userNetworkModel.userFriendlyMessage)
-                    .body(responseBody)
-                    .code(NO_RETRY_RESPONSE_CODE)
-                    .build()
-            }
-        }
-
-        private fun NetworkException.shouldRetryDriverInstallation(): Boolean {
-            return when (this) {
-                is NetworkException.ConnectionException,
-                is NetworkException.TimeoutException,
-                is NetworkException.UnknownNetworkException -> true
-                is NetworkException.UnknownHostException -> false
-            }
+    fun getRetrialResponse(networkException: NetworkException, request: Request): Response {
+        val userNetworkModel = networkException.toUserNetworkException()
+        val json = mapper.writeValueAsString(userNetworkModel)
+        val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
+        return if (networkException.shouldRetryDriverInstallation()) {
+            logger.info("Got Network exception: $networkException")
+            logger.info("Retrying the installation of driver from network layer by returning fake response code $RETRY_RESPONSE_CODE")
+            Response.Builder()
+                .request(request)
+                .protocol(Protocol.HTTP_1_1)
+                .message(userNetworkModel.userFriendlyMessage)
+                .body(responseBody)
+                .code(RETRY_RESPONSE_CODE)
+                .build()
+        } else {
+            logger.info("Not retrying the installation of driver from network layer")
+            logger.info("Network exception $networkException and mapped user network exception $userNetworkModel")
+            Response.Builder()
+                .request(request)
+                .protocol(Protocol.HTTP_1_1)
+                .message(userNetworkModel.userFriendlyMessage)
+                .body(responseBody)
+                .code(NO_RETRY_RESPONSE_CODE)
+                .build()
         }
     }
 
-    fun retryConnection(call: Call, response: Response): Response {
-        return if (retry < 3) {
+    private fun NetworkException.shouldRetryDriverInstallation(): Boolean {
+        return when (this) {
+            is NetworkException.ConnectionException,
+            is NetworkException.TimeoutException,
+            is NetworkException.UnknownNetworkException -> true
+            is NetworkException.UnknownHostException -> false
+        }
+    }
+
+    fun retryConnection(
+        call: Call,
+        response: Response,
+        reInitializeInstaller: (XCTestClient) -> Unit
+    ): Response {
+        return if (retry < MAX_RETRY) {
             xcTestInstaller.start()?.let {
-                client = it
+                reInitializeInstaller(it)
             }
             response.close()
             retry++
+            logger.info("ℹ️ Retrying connection to the XCUITest server for ${retry}...")
             PrintUtils.log("ℹ️ Retrying connection to the XCUITest server for ${retry}...")
             call.clone().execute()
         } else {
+            logger.error("⚠️ Error: ${response.message}")
             PrintUtils.log("⚠️ Error: ${response.message}")
             resetRetryCount()
-            response
+            return Response.Builder()
+                .request(call.request())
+                .protocol(Protocol.HTTP_1_1)
+                .message(response.message)
+                .body(response.body)
+                .code(NO_RETRY_RESPONSE_CODE)
+                .build()
         }
     }
 
-    fun retryConnection(chain: Interceptor.Chain, networkException: NetworkException): Response {
+    fun retryConnection(
+        chain: Interceptor.Chain,
+        networkException: NetworkException,
+        reInitializeInstaller: (XCTestClient) -> Unit
+    ): Response {
         return if (networkException.shouldRetryDriverInstallation() && retry < MAX_RETRY) {
             xcTestInstaller.start()?.let {
-                client = it
+                reInitializeInstaller(it)
             }
             retry++
+            logger.info("ℹ️ Retrying connection to the XCUITest server for ${retry}...")
             PrintUtils.log("ℹ️ Retrying connection to the XCUITest server for ${retry}...")
             chain.call().clone().execute()
         } else {
             val userNetworkException = networkException.toUserNetworkException()
             val json = mapper.writeValueAsString(userNetworkException)
             val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
+            logger.error("⚠️ Error: ${userNetworkException.userFriendlyMessage}")
             PrintUtils.log("⚠️ Error: ${userNetworkException.userFriendlyMessage}")
             resetRetryCount()
             return Response.Builder()
@@ -96,11 +122,5 @@ class NetworkErrorHandler(private val xcTestInstaller: XCTestInstaller) {
 
     fun resetRetryCount() {
         retry = 0
-    }
-
-    fun reinitializedXCTestClient(): XCTestClient? {
-        if (!::client.isInitialized) return null
-
-        return client
     }
 }
