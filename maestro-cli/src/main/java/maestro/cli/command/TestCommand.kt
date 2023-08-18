@@ -127,7 +127,7 @@ class TestCommand : Callable<Int> {
             )
         }
 
-        if (nowindow !is Boolean || nowindow !is null) {
+        if (nowindow !is Boolean || nowindow != null) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
                 "--nowindow type can be Boolean. Default is true"
