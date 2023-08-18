@@ -61,21 +61,15 @@ const useRepl = (): ReplResponse => {
   return { repl, error };
 };
 
+const useDeviceScreen = (): { deviceScreen?: DeviceScreen, error?: any } => {
+  const { data: deviceScreen, error } = useSse<DeviceScreen>('/api/device-screen/sse')
+  return { deviceScreen, error };
+};
+
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export const API = {
-  useDeviceScreen: (
-    config?: SWRConfiguration<DeviceScreen>
-  ): SWRResponse<DeviceScreen> => {
-    return useSWR(
-      "/api/device-screen",
-      (url) => makeRequest("GET", url),
-      config
-    );
-  },
-  getDeviceScreen: async (): Promise<DeviceScreen> => {
-    return makeRequest("GET", `/api/device-screen`);
-  },
+  useDeviceScreen,
   useBannerMessage: (
     config?: SWRConfiguration<BannerMessage>
   ): SWRResponse<BannerMessage> => {

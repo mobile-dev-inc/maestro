@@ -1,5 +1,5 @@
 import { delay, http, HttpResponse } from "msw";
-import { DeviceScreen, MockEvent, ReplCommand } from "../helpers/models";
+import { MockEvent, ReplCommand } from "../helpers/models";
 import { sampleElements } from "../helpers/sampleElements";
 import { wait } from "./api";
 import { setupWorker } from 'msw/browser';
@@ -41,17 +41,18 @@ class SseController {
   }
 }
 
-export const mockDeviceScreen: DeviceScreen = {
-  screenshot: "/sample-screenshot.png",
-  width: 1080,
-  height: 2340,
-  elements: sampleElements,
-};
-
 let nextId = 0;
 let commands: ReplCommand[] = [];
 
 const replSseController = new SseController();
+const deviceScreenSseController = new SseController();
+
+deviceScreenSseController.sendEvent(JSON.stringify({
+  screenshot: "/sample-screenshot.png",
+  width: 1080,
+  height: 2340,
+  elements: sampleElements,
+}))
 
 const refreshRepl = () => replSseController.sendEvent(JSON.stringify({ commands }));
 
@@ -139,9 +140,8 @@ const handlers = [
     refreshRepl();
     return replResponse();
   }),
-  http.get("/api/device-screen", async () => {
-    await delay(500)
-    return new Response(JSON.stringify(mockDeviceScreen))
+  http.get("/api/device-screen/sse", async () => {
+    return deviceScreenSseController.newResponse()
   }),
   http.post<any, any>("/api/repl/command/format", async ({ request }) => {
     const { ids }: { ids: string[] } = await request.json();
