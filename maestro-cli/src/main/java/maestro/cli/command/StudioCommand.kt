@@ -39,7 +39,7 @@ class StudioCommand : Callable<Int> {
         names = ["--nowindow"],
         description = ["Configures automatically start browser, default is true"]
     )
-    private var nowindow: Boolean? = true
+    private var nowindow: Boolean? = null
 
     override fun call(): Int {
         if (parent?.platform != null) {
@@ -71,7 +71,7 @@ class StudioCommand : Callable<Int> {
 
     private fun tryOpenUrl(studioUrl: String) {
         try {
-            if (Desktop.isDesktopSupported() && nowindow) {
+            if (Desktop.isDesktopSupported() && nowindow != false) {
                 Desktop.getDesktop().browse(URI(studioUrl))
             }
         } catch (ignore: Exception) {
