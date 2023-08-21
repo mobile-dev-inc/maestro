@@ -27,7 +27,7 @@ class LocalXCTestInstaller(
     // When this flag is set, maestro will not install, run, stop or remove the xctest runner.
     // Make sure to launch the test runner from Xcode whenever maestro needs it.
     private val useXcodeTestRunner = !System.getenv("USE_XCODE_TEST_RUNNER").isNullOrEmpty()
-    private val tempDir = "${System.getenv("TMPDIR")}/$deviceId"
+    private val tempDir = "${System.getProperty("java.io.tmpdir")}/$deviceId"
 
     private var xcTestProcess: Process? = null
 
