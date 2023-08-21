@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { Button } from "../design-system/button";
 import { Input } from "../design-system/input";
-import { DeviceScreen, UIElement } from "../../helpers/models";
+import { UIElement } from "../../helpers/models";
 import clsx from "clsx";
 import Draggable from "react-draggable";
 import { useDeviceContext } from "../../context/DeviceContext";
@@ -14,22 +14,10 @@ const compare = (a: string | undefined, b: string | undefined) => {
 };
 
 interface ElementsPanelProps {
-  // deviceScreen: DeviceScreen;
-  // onElementSelected: (element: UIElement | null) => void;
-  // hoveredElement: UIElement | null;
-  // setHoveredElement: (element: UIElement | null) => void;
   closePanel: () => void;
-  // onHint: (hint: string | null) => void;
 }
 
-export default function ElementsPanel({
-  // deviceScreen,
-  // onElementSelected,
-  // hoveredElement,
-  // setHoveredElement,
-  closePanel,
-}: // onHint,
-ElementsPanelProps) {
+export default function ElementsPanel({ closePanel }: ElementsPanelProps) {
   const {
     deviceScreen,
     hoveredElement,
