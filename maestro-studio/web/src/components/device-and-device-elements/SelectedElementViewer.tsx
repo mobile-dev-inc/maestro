@@ -2,11 +2,14 @@ import { useEffect, useRef } from "react";
 import InteractableDevice from "./InteractableDevice";
 import { UIElement } from "../../helpers/models";
 import { useDeviceContext } from "../../context/DeviceContext";
+import { Button } from "../design-system/button";
 
 export default function SelectedElementViewer({
   uiElement,
+  copyId,
 }: {
   uiElement: UIElement | null;
+  copyId: () => void;
 }) {
   const { deviceScreen } = useDeviceContext();
   const defaultWrapperSize = 320;
@@ -71,6 +74,32 @@ export default function SelectedElementViewer({
       className="hidden md:block"
       style={{ width: defaultWrapperSize + "px" }}
     >
+      {uiElement?.resourceId && (
+        <>
+          <p className="text-sm mb-1">Element Id:</p>
+          <div className="bg-gray-100 px-3 py-2 rounded-lg mb-4 flex gap-2">
+            <p
+              className="text-sm font-semibold flex-grow py-1.5"
+              style={{ lineBreak: "anywhere" }}
+            >
+              {uiElement?.resourceId}
+            </p>
+            {copyId && (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  copyId();
+                }}
+                tabIndex={-1}
+                variant="tertiary"
+                size="sm"
+                icon="RiFileCopyLine"
+              />
+            )}
+          </div>
+        </>
+      )}
       <div
         style={{
           minWidth: defaultWrapperSize + "px",
