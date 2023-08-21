@@ -10,6 +10,7 @@ import { CommandExample } from "../../helpers/commandExample";
 import ElementsPanel from "../device-and-device-elements/ElementsPanel";
 import DeviceWrapperAspectRatio from "../device-and-device-elements/DeviceWrapperAspectRatio";
 import { useDeviceContext } from "../../context/DeviceContext";
+import { Spinner } from "../design-system/spinner";
 
 const InteractPageLayout = () => {
   const { isLoading, deviceScreen, footerHint, setInspectedElement } =
@@ -37,7 +38,12 @@ const InteractPageLayout = () => {
     setInspectedElement(null);
   };
 
-  if (isLoading) return <>"Loading...."</>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner size="32" />
+      </div>
+    );
 
   if (!deviceScreen) return null;
 
