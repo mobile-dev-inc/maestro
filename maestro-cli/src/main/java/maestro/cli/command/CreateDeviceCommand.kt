@@ -14,25 +14,28 @@ import java.util.concurrent.Callable
 @CommandLine.Command(
     name = "create-device",
     description = [
-        "Create an iOS Simulator or Android Emulator"
+        "Creates an iOS Simulator or Android Emulator similar to the ones on Maestro Cloud",
+        "Device types: iPhone11 (iOS), Pixel 6 (Android)"
     ]
 )
 class CreateDeviceCommand : Callable<Int> {
 
-    @CommandLine.Option(order = 0, names = ["--platform"], description = ["Platforms: android, ios"])
+    @CommandLine.Option(
+        order = 0,
+        names = ["--platform"],
+        description = ["Platforms: android, ios"],
+        required = true
+    )
     private lateinit var platform: String
 
     @CommandLine.Option(
         order = 0,
+        required = true,
         names = ["--os-version"],
-        description = ["OS version i.e 15, 16 (iOS) / 29, 30, 31, 33 (Android)"]
+        description = ["OS version i.e 15, 16 (iOS) / 28, 29, 30, 31, 33 (Android)"]
     )
     private lateinit var osVersion: String
-
-
-    // show that only one device type is supported at the moment
-    // throw device type error if missing
-    // Link to documentation when runtime version is not available
+    
 
     override fun call(): Int {
         TestDebugReporter.install(null)
