@@ -98,13 +98,6 @@ export default function ActionModal({
     setCommandList(newCommandList);
   }, [query, fuse, unfilteredExamples]);
 
-  const copyId = useCallback(() => {
-    if (inspectedElement?.resourceId) {
-      copy(inspectedElement?.resourceId);
-      setInspectedElement(null);
-    }
-  }, [inspectedElement, setInspectedElement]);
-
   const updateSelectedCommand = useCallback(
     ({
       val,
@@ -280,17 +273,6 @@ export default function ActionModal({
             }
           }
           break;
-        case "KeyI":
-          if (
-            (isMac && e.metaKey) ||
-            (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey)
-          ) {
-            e.preventDefault();
-            if (typeof selectedCommand?.content === "string") {
-              copyId();
-            }
-          }
-          break;
         case "Tab":
           e.preventDefault();
           if (document.activeElement !== inputElementRef.current) {
@@ -304,7 +286,6 @@ export default function ActionModal({
       copyCommand,
       onEdit,
       onRun,
-      copyId,
       selectedCommand,
       selectedTab,
       updateSelectedCommand,
@@ -340,10 +321,10 @@ export default function ActionModal({
       onOpenChange={() => setInspectedElement(null)}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-5xl w-[95vw]">
+      <DialogContent className="sm:max-w-6xl w-[95vw]">
         <KeyboardShortcutsHeader />
         <div className="flex gap-20 p-8 items-stretch">
-          <SelectedElementViewer uiElement={inspectedElement} copyId={copyId} />
+          <SelectedElementViewer uiElement={inspectedElement} />
           <div className="flex-grow min-w-0">
             <DialogHeader className="pb-4">
               <DialogTitle className="text-left">
@@ -552,19 +533,6 @@ const KeyboardShortcutsHeader = () => {
             <KeyboardKey>Ctrl</KeyboardKey>
           )}
           <KeyboardKey>C</KeyboardKey>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <p>Copy element Id:</p>
-        <div className="flex gap-1">
-          {isMac ? (
-            <KeyboardKey>
-              <Icon iconName="RiCommandLine" size="16" />
-            </KeyboardKey>
-          ) : (
-            <KeyboardKey>Ctrl</KeyboardKey>
-          )}
-          <KeyboardKey>I</KeyboardKey>
         </div>
       </div>
       <div className="flex gap-2">

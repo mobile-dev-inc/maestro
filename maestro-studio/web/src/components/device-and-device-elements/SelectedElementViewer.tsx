@@ -3,13 +3,12 @@ import InteractableDevice from "./InteractableDevice";
 import { UIElement } from "../../helpers/models";
 import { useDeviceContext } from "../../context/DeviceContext";
 import { Button } from "../design-system/button";
+import copy from "copy-to-clipboard";
 
 export default function SelectedElementViewer({
   uiElement,
-  copyId,
 }: {
   uiElement: UIElement | null;
-  copyId: () => void;
 }) {
   const { deviceScreen } = useDeviceContext();
   const defaultWrapperSize = 320;
@@ -74,32 +73,8 @@ export default function SelectedElementViewer({
       className="hidden md:block"
       style={{ width: defaultWrapperSize + "px" }}
     >
-      {uiElement?.resourceId && (
-        <>
-          <p className="text-sm mb-1">Element Id:</p>
-          <div className="bg-gray-100 px-3 py-2 rounded-lg mb-4 flex gap-2">
-            <p
-              className="text-sm font-semibold flex-grow py-1.5"
-              style={{ lineBreak: "anywhere" }}
-            >
-              {uiElement?.resourceId}
-            </p>
-            {copyId && (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  copyId();
-                }}
-                tabIndex={-1}
-                variant="tertiary"
-                size="sm"
-                icon="RiFileCopyLine"
-              />
-            )}
-          </div>
-        </>
-      )}
+      <ElementHighInfo label="id" value={uiElement?.resourceId} />
+      <ElementHighInfo label="text" value={uiElement?.text} />
       <div
         style={{
           minWidth: defaultWrapperSize + "px",
@@ -118,3 +93,47 @@ export default function SelectedElementViewer({
     </div>
   );
 }
+
+const ElementHighInfo = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string;
+}) => {
+  const { setInspectedElement } = useDeviceContext();
+
+  const copyValue = () => {
+    if (value) {
+      copy(value);
+      setInspectedElement(null);
+    }
+  };
+
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gray-100 pl-3 py-1 pr-1 rounded-lg mb-2 flex gap-3 items-center">
+      <p className="text-sm py-1 min-w-[40px]">{label}:</p>
+      <p
+        className="text-sm font-semibold flex-grow py-1 truncate"
+        style={{ lineBreak: "anywhere" }}
+      >
+        {value}
+      </p>
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          copyValue();
+        }}
+        tabIndex={-1}
+        variant="quaternary"
+        size="sm"
+        icon="RiFileCopyLine"
+      />
+    </div>
+  );
+};
