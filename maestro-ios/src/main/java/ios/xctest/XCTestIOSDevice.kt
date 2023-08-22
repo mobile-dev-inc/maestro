@@ -2,15 +2,13 @@ package ios.xctest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
-import hierarchy.Error
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
 import ios.IOSScreenRecording
 import ios.device.DeviceInfo
-import maestro.logger.Logger
+import logger.Logger
 import maestro.utils.DepthTracker
 import okio.Sink
 import okio.buffer
@@ -58,7 +56,7 @@ class XCTestIOSDevice(
         val result = runCatching {
             val viewHierarchy = client.viewHierarchy(installedApps)
             DepthTracker.trackDepth(viewHierarchy.depth)
-            logger.info("Using new viewHierarchy call to get view hierarchy. Depth received: ${viewHierarchy.depth}")
+            logger.info("Depth received: ${viewHierarchy.depth}")
             viewHierarchy
         }
         return result
