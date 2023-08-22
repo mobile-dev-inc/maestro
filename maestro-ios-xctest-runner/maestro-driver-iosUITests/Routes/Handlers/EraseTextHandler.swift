@@ -21,13 +21,24 @@ struct EraseTextHandler: HTTPHandler {
         
         let appId = RunningApp.getForegroundAppId(requestBody.appIds)
         await waitUntilKeyboardIsPresented(appId: appId)
-
-        let deleteText = String(repeating: XCUIKeyboardKey.delete.rawValue, count: requestBody.charactersToErase)
-        var eventPath = PointerEventPath.pathForTextInput()
-        eventPath.type(text: deleteText, typingSpeed: typingFrequency)
-        let eventRecord = EventRecord(orientation: .portrait)
-        _ = eventRecord.add(eventPath)
-        try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord)
+        
+        // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
+        // caret might jump onto the beginning of the text field
+        let warmupDeleteText = XCUIKeyboardKey.delete.rawValue
+        var warmupEventPath = PointerEventPath.pathForTextInput()
+        warmupEventPath.type(text: warmupDeleteText, typingSpeed: 1)
+        let eventRecord1 = EventRecord(orientation: .portrait)
+        _ = eventRecord1.add(warmupEventPath)
+        try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord1)
+        
+        if (requestBody.charactersToErase > 1) {
+            let deleteText = String(repeating: XCUIKeyboardKey.delete.rawValue, count: requestBody.charactersToErase - 1)
+            var eventPath = PointerEventPath.pathForTextInput()
+            eventPath.type(text: deleteText, typingSpeed: typingFrequency)
+            let eventRecord2 = EventRecord(orientation: .portrait)
+            _ = eventRecord2.add(eventPath)
+            try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord2)
+        }
 
         return HTTPResponse(statusCode: .ok)
     }
