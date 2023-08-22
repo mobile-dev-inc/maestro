@@ -35,7 +35,7 @@ class CreateDeviceCommand : Callable<Int> {
         description = ["OS version i.e 15, 16 (iOS) / 28, 29, 30, 31, 33 (Android)"]
     )
     private lateinit var osVersion: String
-    
+
 
     override fun call(): Int {
         TestDebugReporter.install(null)
@@ -65,7 +65,7 @@ class CreateDeviceCommand : Callable<Int> {
 
                     when (e) {
                         is DeviceCreateException.InvalidRuntimeException -> {
-                            PrintUtils.err("Required runtime to create the simulator is not installed: $version")
+                            PrintUtils.err("Required runtime to create the simulator is not installed: $runtime")
                             PrintUtils.err("To install additional iOS runtimes checkout this guide:\n* https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes")
                         }
 
