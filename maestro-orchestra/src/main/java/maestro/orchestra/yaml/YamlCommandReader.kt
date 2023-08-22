@@ -29,14 +29,12 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.nio.file.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.inputStream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.WorkspaceConfig
-import maestro.orchestra.error.NoInputException
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.util.Env.withEnv
 
@@ -63,12 +61,10 @@ object YamlCommandReader {
         return config
     }
 
-    fun readWorkspaceConfig(configPath: Path): WorkspaceConfig = try {
-        mapParsingErrors(configPath) {
-            MAPPER.readValue(configPath.inputStream(), WorkspaceConfig::class.java)
-        }
-    } catch (ignored: NoInputException) {
-        WorkspaceConfig()
+    fun readWorkspaceConfig(configPath: Path): WorkspaceConfig = mapParsingErrors(configPath) {
+        val config = configPath.readText()
+        if (config.isBlank()) return@mapParsingErrors WorkspaceConfig()
+        MAPPER.readValue(config, WorkspaceConfig::class.java)
     }
 
     // Files to watch for changes. Includes any referenced files.
