@@ -16,13 +16,12 @@ class NetworkErrorHandler(
     private val logger: Logger
 ) {
 
-
     private var retry = 0
 
     companion object {
         const val RETRY_RESPONSE_CODE = 503
         private const val NO_RETRY_RESPONSE_CODE = 502
-        private const val MAX_RETRY = 3
+        private const val MAX_RETRY = 5
         private val mapper = jacksonObjectMapper()
     }
 
@@ -30,8 +29,8 @@ class NetworkErrorHandler(
         val userNetworkModel = networkException.toUserNetworkException()
         val json = mapper.writeValueAsString(userNetworkModel)
         val responseBody = json.toResponseBody("application/json; charset=utf-8".toMediaType())
+        logger.info("Got Network exception in network layer: $networkException")
         return if (networkException.shouldRetryDriverInstallation()) {
-            logger.info("Got Network exception: $networkException")
             logger.info("Retrying the installation of driver from network layer by returning fake response code $RETRY_RESPONSE_CODE")
             Response.Builder()
                 .request(request)
@@ -95,6 +94,7 @@ class NetworkErrorHandler(
         networkException: NetworkException,
         reInitializeInstaller: (XCTestClient) -> Unit
     ): Response {
+        logger.info("Got Network exception in application layer: $networkException")
         return if (networkException.shouldRetryDriverInstallation() && retry < MAX_RETRY) {
             xcTestInstaller.start()?.let {
                 reInitializeInstaller(it)
