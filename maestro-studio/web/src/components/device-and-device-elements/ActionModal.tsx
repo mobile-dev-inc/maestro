@@ -266,7 +266,7 @@ export default function ActionModal({
             (isMac && e.metaKey) || // If mac - Command is pressed
             (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey) // Or If not mac - Only control key is pressed
           ) {
-            // If no text is selected)
+            // If no text is selected
             if (window && window.getSelection()?.toString() === "") {
               e.preventDefault();
               if (typeof selectedCommand?.content === "string") {
