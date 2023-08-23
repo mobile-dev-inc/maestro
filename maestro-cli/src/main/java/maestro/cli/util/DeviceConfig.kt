@@ -9,13 +9,16 @@ internal object IosDeviceConfig {
         16 to "iOS-16-2"
     )
 
-    fun generateDeviceName(version: Int) = "Maestro_iPhone_11_$version"
+    val defaultVersion = 15
+
+    fun generateDeviceName(version: Int) = "Maestro_iPhone11_$version"
 }
 
 internal object AndroidDeviceConfig {
     val device = "pixel_6"
     val tag = "google_apis"
     val versions = listOf(33, 31, 30, 29, 28)
+    val defaultVersion = 30
     val systemImages = mapOf(
         28 to "system-images;android-28;google_apis;x86_64",
         29 to "system-images;android-29;google_apis;x86_64",
