@@ -34,6 +34,13 @@ class StartDeviceCommand : Callable<Int> {
     )
     private lateinit var osVersion: String
 
+    @CommandLine.Option(
+        order = 1,
+        names = ["--force-create"],
+        description = ["Will override existing device if it already exists"],
+    )
+    private var forceCreate: Boolean = false
+
 
     private fun printUsage() {
         val messages = listOf(
@@ -57,13 +64,13 @@ class StartDeviceCommand : Callable<Int> {
 
         // default OS version
         if (!::osVersion.isInitialized) {
-            osVersion = when(platform) {
+            osVersion = when (platform) {
                 "ios" -> IosDeviceConfig.defaultVersion.toString()
                 "android" -> AndroidDeviceConfig.defaultVersion.toString()
                 else -> ""
             }
         }
-        
+
         when (platform.lowercase()) {
             "ios" -> {
                 val version = osVersion.toIntOrNull()
@@ -81,10 +88,26 @@ class StartDeviceCommand : Callable<Int> {
                 val deviceName = IosDeviceConfig.generateDeviceName(version!!)
                 val device = IosDeviceConfig.device
 
-                PrintUtils.message("Attempting to create iOS simulator: $deviceName ...")
+                // check connected device
+                if (DeviceService.isDeviceConnected(deviceName, Platform.IOS) != null) {
+                    PrintUtils.message("A device with name $deviceName is already connected")
+                    return 1
+                }
+
+                // check existing device
+                val existingDeviceId = DeviceService.isDeviceAvailableToLaunch(deviceName, Platform.IOS)?.let {
+                    if (forceCreate) {
+                        DeviceService.deleteIosDevice(it.modelId)
+                        null
+                    } else it.modelId
+                }
+
+                if (existingDeviceId != null) PrintUtils.message("Using existing device $deviceName (${existingDeviceId}).\nTo override the instance use: --force-create=true")
+                else PrintUtils.message("Attempting to create iOS simulator: $deviceName ")
+
 
                 val deviceUUID = try {
-                    DeviceService.createIosDevice(deviceName, device, runtime)
+                    existingDeviceId ?: DeviceService.createIosDevice(deviceName, device, runtime)
                 } catch (e: DeviceCreateException) {
 
                     when (e) {
@@ -94,7 +117,7 @@ class StartDeviceCommand : Callable<Int> {
                         }
 
                         is DeviceCreateException.InvalidDeviceTypeException -> {
-                            PrintUtils.err("Device type $device either not supported or not found.")
+                            PrintUtils.err("Device type $device is either not supported or not found.")
                         }
 
                         is DeviceCreateException.UnableToCreateException -> {
@@ -105,8 +128,7 @@ class StartDeviceCommand : Callable<Int> {
                     return 1
                 }
 
-
-                PrintUtils.message("Created simulator with UUID: $deviceUUID")
+                if (existingDeviceId == null) PrintUtils.message("Created simulator $deviceName ($deviceUUID)")
 
                 PrintUtils.message("Launching simulator...")
                 val launchDevice = Device.AvailableForLaunch(
@@ -115,8 +137,6 @@ class StartDeviceCommand : Callable<Int> {
                     platform = Platform.IOS
                 )
                 DeviceService.startDevice(launchDevice)
-
-
             }
 
             "android" -> {
