@@ -115,10 +115,10 @@ const ElementHighInfo = ({
   }
 
   return (
-    <div className="bg-gray-100 pl-3 py-1 pr-1 rounded-lg mb-2 flex gap-3 items-center">
-      <p className="text-sm py-1 min-w-[40px]">{label}:</p>
+    <div className="bg-gray-100 pl-3 py-1 pr-1 rounded-lg mb-2 flex gap-3 items-start">
+      <p className="text-sm py-1 min-w-[32px]">{label}:</p>
       <p
-        className="text-sm font-semibold flex-grow py-1 truncate"
+        className="text-sm font-semibold flex-grow py-1"
         style={{ lineBreak: "anywhere" }}
       >
         {value}
