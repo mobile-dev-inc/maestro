@@ -12,34 +12,58 @@ import picocli.CommandLine
 import java.util.concurrent.Callable
 
 @CommandLine.Command(
-    name = "create-device",
+    name = "start-device",
     description = [
-        "Creates an iOS Simulator or Android Emulator similar to the ones on Maestro Cloud",
-        "Device types: iPhone11 (iOS), Pixel 6 (Android)"
+        "Starts or creates an iOS Simulator or Android Emulator similar to the ones on Maestro Cloud",
+        "Supported device types: iPhone11 (iOS), Pixel 6 (Android)",
     ]
 )
-class CreateDeviceCommand : Callable<Int> {
+class StartDeviceCommand : Callable<Int> {
 
     @CommandLine.Option(
         order = 0,
         names = ["--platform"],
         description = ["Platforms: android, ios"],
-        required = true
     )
     private lateinit var platform: String
 
     @CommandLine.Option(
-        order = 0,
-        required = true,
+        order = 1,
         names = ["--os-version"],
-        description = ["OS version i.e 15, 16 (iOS) / 28, 29, 30, 31, 33 (Android)"]
+        description = ["OS version to use:", "iOS: 15, 16", "Android: 28, 29, 30, 31, 33"],
     )
     private lateinit var osVersion: String
 
 
+    private fun printUsage() {
+        val messages = listOf(
+            "Usage: maestro start-device --os-version=<osVersion> --platform=<platform>\n",
+            "Starts or creates an iOS Simulator or Android Emulator similar to the ones on Maestro Cloud",
+            "Supported device types: iPhone11 (iOS), Pixel 6 (Android)",
+            "Supported os versions:\n* iOS: 15, 16\n* Android: 28, 29, 30, 31, 33",
+        )
+        PrintUtils.message(messages.joinToString(separator = "\n"))
+    }
+
     override fun call(): Int {
         TestDebugReporter.install(null)
 
+        // platform
+        if (!::platform.isInitialized) {
+            printUsage()
+            PrintUtils.message("Please specify device platform (android, ios):")
+            platform = readlnOrNull()?.lowercase() ?: ""
+        }
+
+        // default OS version
+        if (!::osVersion.isInitialized) {
+            osVersion = when(platform) {
+                "ios" -> IosDeviceConfig.defaultVersion.toString()
+                "android" -> AndroidDeviceConfig.defaultVersion.toString()
+                else -> ""
+            }
+        }
+        
         when (platform.lowercase()) {
             "ios" -> {
                 val version = osVersion.toIntOrNull()
