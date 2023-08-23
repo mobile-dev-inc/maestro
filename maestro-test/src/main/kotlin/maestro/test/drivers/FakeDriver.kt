@@ -88,6 +88,10 @@ class FakeDriver : Driver {
         )
     }
 
+    override fun addMedia() {
+        TODO("Not yet implemented")
+    }
+
     override fun launchApp(
         appId: String,
         launchArguments: Map<String, Any>,

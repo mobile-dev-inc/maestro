@@ -85,6 +85,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.clearAppState(appId)
     }
 
+    fun addMedia() {
+        driver.addMedia()
+    }
+
     fun setPermissions(appId: String, permissions: Map<String, String>) {
         driver.setPermissions(appId, permissions)
     }

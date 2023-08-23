@@ -54,6 +54,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return "Chromium Desktop Browser (Experimental)"
     }
 
+    override fun addMedia() {
+        TODO("Not yet implemented")
+    }
+
     override fun open() {
         System.setProperty("webdriver.chrome.silentOutput", "true");
         System.setProperty(ChromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY, "true");

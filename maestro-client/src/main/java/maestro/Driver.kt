@@ -91,5 +91,7 @@ interface Driver {
 
     fun capabilities(): List<Capability>
 
+    fun addMedia()
+
     fun setPermissions(appId: String, permissions: Map<String, String>)
 }

@@ -1,6 +1,7 @@
 package dev.mobile.maestro
 
 import android.app.UiAutomation
+import android.content.ContentValues
 import android.content.Context
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.provider.MediaStore
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.KeyEvent.KEYCODE_1
@@ -48,17 +50,7 @@ import androidx.test.uiautomator.UiDeviceExt.clickExt
 import com.google.protobuf.ByteString
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
-import maestro_android.MaestroAndroid
-import maestro_android.MaestroDriverGrpc
-import maestro_android.checkWindowUpdatingResponse
-import maestro_android.deviceInfo
-import maestro_android.eraseAllTextResponse
-import maestro_android.inputTextResponse
-import maestro_android.launchAppResponse
-import maestro_android.screenshotResponse
-import maestro_android.setLocationResponse
-import maestro_android.tapResponse
-import maestro_android.viewHierarchyResponse
+import maestro_android.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
@@ -133,6 +125,39 @@ class Service(
 
         responseObserver.onNext(launchAppResponse { })
         responseObserver.onCompleted()
+    }
+
+    override fun addMedia(
+        request: MaestroAndroid.AddMediaRequest,
+        responseObserver: StreamObserver<MaestroAndroid.AddMediaResponse>
+    ) {
+        Log.d("Maestro", "In adding media")
+        val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val contentValues = ContentValues()
+        contentValues.apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "test_file")
+            put(MediaStore.MediaColumns.MIME_TYPE, FileType.PNG.mimeType)
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val resolver = context.contentResolver
+        val uriAfterInsert = resolver.insert(uri, contentValues)
+        val resolvedUri = checkNotNull(uriAfterInsert)
+        val bitmap = uiAutomation.takeScreenshot()
+
+        Log.d("Maestro", "Resolved URI $resolvedUri")
+        resolver.openOutputStream(resolvedUri)?.use {
+            Log.d("Maestro", "Writing bitmap")
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            it.flush()
+        }
+        responseObserver.onNext(addMediaResponse {  })
+        responseObserver.onCompleted()
+    }
+
+    enum class FileType(val ext: String, val mimeType: String) {
+        JPG("jpg", "image/jpg"),
+        JPEG("jpeg", "image/jpeg"),
+        PNG("png", "image/png")
     }
 
     override fun deviceInfo(

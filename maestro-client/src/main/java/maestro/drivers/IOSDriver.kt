@@ -155,6 +155,9 @@ class IOSDriver(
         return viewHierarchy()
     }
 
+    override fun addMedia() {
+        TODO("Not yet implemented")
+    }
     fun viewHierarchy(): TreeNode {
         LOGGER.info("Requesting view hierarchy of the screen")
         val hierarchyResult = iosDevice.viewHierarchy().expect {  }

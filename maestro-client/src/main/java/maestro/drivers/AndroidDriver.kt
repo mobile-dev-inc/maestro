@@ -43,16 +43,7 @@ import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
-import maestro_android.MaestroDriverGrpc
-import maestro_android.checkWindowUpdatingRequest
-import maestro_android.deviceInfoRequest
-import maestro_android.eraseAllTextRequest
-import maestro_android.inputTextRequest
-import maestro_android.launchAppRequest
-import maestro_android.screenshotRequest
-import maestro_android.setLocationRequest
-import maestro_android.tapRequest
-import maestro_android.viewHierarchyRequest
+import maestro_android.*
 import net.dongliu.apk.parser.ApkFile
 import okio.Sink
 import okio.buffer
@@ -147,6 +138,10 @@ class AndroidDriver(
         }
 
         throw TimeoutException("Maestro Android driver did not start up in time")
+    }
+
+    override fun addMedia() {
+        blockingStub.addMedia(addMediaRequest {  }) ?: throw IllegalStateException()
     }
 
     override fun close() {
