@@ -242,8 +242,8 @@ export default function ActionModal({
         case "Enter":
           e.preventDefault();
           if (
-            (isMac && e.metaKey) ||
-            (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey)
+            (isMac && e.metaKey) || // If mac - Command is pressed
+            (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey) // Or If not mac - Only control key is pressed
           ) {
             selectedCommand && onRun(selectedCommand);
           } else {
@@ -253,8 +253,8 @@ export default function ActionModal({
         case "KeyD":
           e.preventDefault();
           if (
-            (isMac && e.metaKey) ||
-            (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey)
+            (isMac && e.metaKey) || // If mac - Command is pressed
+            (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey) // Or If not mac - Only control key is pressed
           ) {
             const documentation = selectedCommand?.documentation;
             if (!documentation) return;
@@ -263,9 +263,9 @@ export default function ActionModal({
           break;
         case "KeyC":
           if (
-            ((isMac && e.metaKey) ||
-              (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey)) &&
-            (!window || (window && window.getSelection()?.toString() === "")) // No text is selected
+            ((isMac && e.metaKey) || // If mac - Command is pressed
+              (!isMac && e.ctrlKey && !e.altKey && !e.shiftKey)) && // Or If not mac - Only control key is pressed
+            (!window || (window && window.getSelection()?.toString() === "")) // And window exist and no text is selected
           ) {
             e.preventDefault();
             if (typeof selectedCommand?.content === "string") {
