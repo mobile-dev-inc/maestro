@@ -178,6 +178,45 @@ object DeviceService {
         }
     }
 
+    /**
+     * @return true if ios simulator or android emulator is currently connected
+     */
+    fun isDeviceConnected(deviceName: String, platform: Platform): Device.Connected? {
+        return if (platform == Platform.IOS) {
+            listIOSDevices()
+                .filterIsInstance(Device.Connected::class.java)
+                .find { it.description.contains(deviceName, ignoreCase = true) }
+        } else {
+            Dadb.list()
+                .mapNotNull {
+                    runCatching { it.shell("getprop ro.kernel.qemu.avd_name").output }.getOrNull() // Gets AVD name
+                }
+                .map {
+                    Device.Connected(
+                        instanceId = it,
+                        description = it,
+                        platform = Platform.ANDROID,
+                    )
+                }
+                .find { it.description.contains(deviceName, ignoreCase = true) }
+        }
+    }
+
+    /**
+     * @return true if ios simulator or android emulator is available to launch
+     */
+    fun isDeviceAvailableToLaunch(deviceName: String, platform: Platform): Device.AvailableForLaunch? {
+        return if (platform == Platform.IOS) {
+            listIOSDevices()
+                .filterIsInstance(Device.AvailableForLaunch::class.java)
+                .find { it.description.contains(deviceName, ignoreCase = true) }
+        } else {
+            listAndroidDevices()
+                .filterIsInstance(Device.AvailableForLaunch::class.java)
+                .find { it.description.contains(deviceName, ignoreCase = true) }
+        }
+    }
+
 
     /**
      * Creates an iOS simulator
@@ -236,9 +275,9 @@ object DeviceService {
      * @param tag google apis or playstore tag i.e. google_apis or google_apis_playstore
      * @param abi x86_64, x86 etc..
      */
-    fun createAndroidDevice(deviceName: String, device: String, systemImage: String, tag: String, abi: String): String {
+    fun createAndroidDevice(deviceName: String, device: String, systemImage: String, tag: String, abi: String, force: Boolean = false): String {
         val avd = requireAvdManagerBinary()
-        val command = listOf(
+        val command = mutableListOf(
             avd.absolutePath,
             "create", "avd",
             "--name", deviceName,
@@ -246,8 +285,9 @@ object DeviceService {
             "--tag", tag,
             "--abi", abi,
             "--device", device,
-            "--force"
         )
+
+        if (force) command.add("--force")
 
         val process = ProcessBuilder(*command.toTypedArray()).start()
 
@@ -296,6 +336,9 @@ object DeviceService {
         return false
     }
 
+    /**
+     * Uses the Android SDK manager to install android image
+     */
     fun installAndroidSystemImage(image: String): Boolean {
         try {
             val command = listOf(
@@ -328,6 +371,23 @@ object DeviceService {
             requireSdkManagerBinary().absolutePath,
             "\"$pkg\""
         ).joinToString(separator = " ")
+    }
+
+    fun deleteIosDevice(uuid: String): Boolean {
+        val command = listOf(
+            "xcrun",
+            "simctl",
+            "delete",
+            uuid
+        )
+
+        val process = ProcessBuilder(*command.toTypedArray()).start()
+
+        if (!process.waitFor(1, TimeUnit.MINUTES)) {
+            throw TimeoutException()
+        }
+
+        return process.exitValue() == 0
     }
 
     private fun requireEmulatorBinary(): File {

@@ -35,7 +35,7 @@ class StartDeviceCommand : Callable<Int> {
     private lateinit var osVersion: String
 
     @CommandLine.Option(
-        order = 1,
+        order = 3,
         names = ["--force-create"],
         description = ["Will override existing device if it already exists"],
     )
@@ -107,7 +107,7 @@ class StartDeviceCommand : Callable<Int> {
 
 
                 val deviceUUID = try {
-                    existingDeviceId ?: DeviceService.createIosDevice(deviceName, device, runtime)
+                    existingDeviceId ?: DeviceService.createIosDevice(deviceName, device, runtime).toString()
                 } catch (e: DeviceCreateException) {
 
                     when (e) {
@@ -127,6 +127,7 @@ class StartDeviceCommand : Callable<Int> {
 
                     return 1
                 }
+
 
                 if (existingDeviceId == null) PrintUtils.message("Created simulator $deviceName ($deviceUUID)")
 
@@ -152,9 +153,19 @@ class StartDeviceCommand : Callable<Int> {
                     return 1
                 }
 
+                val name = AndroidDeviceConfig.generateDeviceName(version!!)
+
+                // check connected device
+                if (DeviceService.isDeviceConnected(name, Platform.ANDROID) != null) {
+                    PrintUtils.message("A device with name $name is already connected")
+                    return 1
+                }
+
+                // existing device
+                val existingDevice = if (forceCreate) null else DeviceService.isDeviceAvailableToLaunch(name, Platform.ANDROID)?.modelId
 
                 // dependencies
-                if (!DeviceService.isAndroidSystemImageInstalled(systemImage)) {
+                if (existingDevice == null && !DeviceService.isAndroidSystemImageInstalled(systemImage)) {
                     PrintUtils.err("The required system image $systemImage is not installed.")
 
                     PrintUtils.message("Would you like to install it? y/n")
@@ -177,37 +188,34 @@ class StartDeviceCommand : Callable<Int> {
                     }
                 }
 
+                if (existingDevice != null) PrintUtils.message("Using existing device $name.\nTo override the instance use: --force-create=true")
+                else PrintUtils.message("Attempting to create Android emulator: $name ")
 
-                // emulator
-                try {
-                    val name = AndroidDeviceConfig.generateDeviceName(version!!)
-                    PrintUtils.message("Attempting to create Android emulator: $name ...")
-                    DeviceService.createAndroidDevice(
+                val deviceLaunchId = try {
+                    existingDevice ?: DeviceService.createAndroidDevice(
                         deviceName = name,
                         device = AndroidDeviceConfig.device,
                         systemImage = systemImage,
                         tag = AndroidDeviceConfig.tag,
-                        abi = AndroidDeviceConfig.abi
+                        abi = AndroidDeviceConfig.abi,
+                        force = forceCreate
                     )
-                    PrintUtils.message("Created Android emulator: $name ($systemImage)")
-
-                    PrintUtils.message("Will launch emulator...")
-
-                    val launchDevice = Device.AvailableForLaunch(
-                        modelId = name,
-                        description = name,
-                        platform = Platform.ANDROID
-                    )
-
-                    DeviceService.startDevice(launchDevice)
-
-                    return 0
-
-                } catch (e: DeviceCreateException.UnableToCreateException) {
+                } catch (e: DeviceCreateException) {
                     PrintUtils.err("Failed to create emulator ${e.message}")
+                    return 1
                 }
 
-                return 1
+                if (existingDevice == null) PrintUtils.message("Created Android emulator: $name ($systemImage)")
+
+                PrintUtils.message("Launching emulator...")
+
+                val launchDevice = Device.AvailableForLaunch(
+                    modelId = deviceLaunchId,
+                    description = deviceLaunchId,
+                    platform = Platform.ANDROID
+                )
+
+                DeviceService.startDevice(launchDevice)
             }
 
             else -> {
