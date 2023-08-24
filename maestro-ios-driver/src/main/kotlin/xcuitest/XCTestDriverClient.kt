@@ -8,6 +8,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import xcuitest.api.*
 import xcuitest.installer.XCTestInstaller
 import java.io.IOException
@@ -31,24 +32,29 @@ class XCTestDriverClient(
     private var isShuttingDown = false
 
     private val networkErrorHandler by lazy { NetworkErrorHandler(installer, logger) }
+    private val httpInterceptor = HttpLoggingInterceptor()
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
             isShuttingDown = true
         })
+        httpInterceptor.level = HttpLoggingInterceptor.Level.BODY
     }
 
     fun restartXCTestRunnerService() {
         logger.info("[Start] Uninstalling xctest ui runner app")
         installer.uninstall()
         logger.info("[Done] Uninstalling xctest ui runner app")
+        logger.info("[Start] Installing xctest ui runner app")
         client = installer.start()
             ?: throw XCTestDriverUnreachable("Failed to reach XCUITest Server in restart")
+        logger.info("[Done] Installing xctest ui runner app")
     }
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(40, TimeUnit.SECONDS)
         .readTimeout(100, TimeUnit.SECONDS)
+        .addInterceptor(httpInterceptor)
         .addRetryInterceptor()
         .addRetryAndShutdownInterceptor()
         .build()
