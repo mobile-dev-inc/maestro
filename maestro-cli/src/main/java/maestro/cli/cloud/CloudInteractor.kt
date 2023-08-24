@@ -176,7 +176,7 @@ class CloudInteractor(
         val version = when(platform) {
             Platform.ANDROID -> "${androidApiLevel ?: 30}" // todo change with constant from DeviceConfigAndroid
             Platform.IOS -> "${iOSVersion ?: 15}" // todo change with constant from DeviceConfigIos
-            else -> "n/a"
+            else -> return
         }
 
         val line3 = "To create a similar device locally, run: `maestro start-device --platform=${platform.toString().lowercase()} --os-version=$version`"
