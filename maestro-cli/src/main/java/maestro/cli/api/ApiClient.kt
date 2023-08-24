@@ -8,20 +8,15 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import maestro.cli.CliError
+import maestro.cli.device.Platform
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.update.Updates
 import maestro.cli.util.CiUtils
 import maestro.cli.util.PrintUtils
-import okhttp3.Interceptor
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import okio.Buffer
 import okio.BufferedSink
 import okio.ForwardingSink
@@ -29,10 +24,11 @@ import okio.IOException
 import okio.buffer
 import java.io.File
 import java.nio.file.Path
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
+import kotlin.io.use
 
 class ApiClient(
     private val baseUrl: String,
@@ -345,8 +341,13 @@ class ApiClient(
             val teamId = analysisRequest["teamId"] as String
             val appId = responseBody["targetId"] as String
             val appBinaryIdResponse = responseBody["appBinaryId"] as? String
+            val deviceInfoStr = responseBody["deviceInfo"] as? String
 
-            return UploadResponse(teamId, appId, uploadId, appBinaryIdResponse)
+            val deviceInfo = runCatching {
+                if (responseBody["deviceInfo"] != null) JSON.readValue(deviceInfoStr, DeviceInfo::class.java) else null
+            }.getOrNull()
+
+            return UploadResponse(teamId, appId, uploadId, appBinaryIdResponse, deviceInfo)
         }
     }
 
@@ -404,7 +405,15 @@ data class UploadResponse(
     val teamId: String,
     val appId: String,
     val uploadId: String,
-    val appBinaryId: String?
+    val appBinaryId: String?,
+    val deviceInfo: DeviceInfo?
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DeviceInfo(
+    val platform: String,
+    val displayInfo: String,
+    val isDefaultOsVersion: Boolean
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
