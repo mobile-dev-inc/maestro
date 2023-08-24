@@ -18,9 +18,11 @@ object PickDeviceInteractor {
                 var result: Device = pickedDevice
 
                 if (result is Device.AvailableForLaunch) {
-
-                    if (result.platform == Platform.ANDROID) PrintUtils.message("Launching Android device...")
-                    else if (result.platform == Platform.IOS) PrintUtils.message("Launching iOS simulator...")
+                    when (result.platform) {
+                        Platform.ANDROID -> PrintUtils.message("Launching Android device...")
+                        Platform.IOS -> PrintUtils.message("Launching iOS simulator...")
+                        Platform.WEB -> PrintUtils.message("Launching ${result.description}")
+                    }
 
                     result = DeviceService.startDevice(result)
                 }
@@ -59,6 +61,14 @@ object PickDeviceInteractor {
         }
 
         val options = PickDeviceView.requestDeviceOptions()
+        if (options.platform == Platform.WEB) {
+            return Device.AvailableForLaunch(
+                platform = Platform.WEB,
+                description = "Chromium Desktop Browser (Experimental)",
+                modelId = "chromium"
+            )
+        }
+
         return DeviceCreateUtil.getOrCreateDevice(options.platform, options.osVersion, options.forceCreate)
     }
 

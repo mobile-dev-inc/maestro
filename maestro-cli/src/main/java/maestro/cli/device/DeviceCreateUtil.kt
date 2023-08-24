@@ -56,7 +56,7 @@ internal object DeviceCreateUtil {
         } catch (e: IllegalStateException) {
             val error = e.message ?: ""
             if (error.contains("Invalid runtime")) {
-                val msg = "Required runtime to create the simulator is not installed: $runtime\n" +
+                val msg = "Required runtime to create the simulator is not installed: $runtime\n\n" +
                         "To install additional iOS runtimes checkout this guide:\n" +
                         "* https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes"
                 throw CliError(msg)
@@ -118,7 +118,7 @@ internal object DeviceCreateUtil {
             }
         }
 
-        if (existingDevice != null) PrintUtils.message("Using existing device $name.\nTo override the instance use: --force-create=true")
+        if (existingDevice != null) PrintUtils.message("Using existing device $name.")
         else PrintUtils.message("Attempting to create Android emulator: $name ")
 
         val deviceLaunchId = try {
