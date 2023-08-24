@@ -5,9 +5,9 @@ import maestro.cli.util.DeviceConfigAndroid
 import maestro.cli.util.DeviceConfigIos
 import maestro.cli.util.PrintUtils
 
-object DeviceCreateUtil {
+internal object DeviceCreateUtil {
 
-    fun getOrCreateDevice(platform: Platform, osVersion: Int?, forceCreate: Boolean): Device {
+    fun getOrCreateDevice(platform: Platform, osVersion: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
         return when (platform) {
             Platform.ANDROID -> {
                 getOrCreateAndroidDevice(osVersion, forceCreate)
@@ -17,7 +17,7 @@ object DeviceCreateUtil {
                 getOrCreateIosDevice(osVersion, forceCreate)
             }
 
-            else -> throw IllegalArgumentException("Unsupported platform $platform")
+            else -> throw CliError("Unsupported platform $platform. Please one of: android, ios")
         }
     }
 

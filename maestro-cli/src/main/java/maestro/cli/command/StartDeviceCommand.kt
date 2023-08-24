@@ -1,7 +1,9 @@
 package maestro.cli.command
 
-import maestro.cli.device.DeviceService
+import maestro.cli.CliError
 import maestro.cli.device.DeviceCreateUtil
+import maestro.cli.device.DeviceService
+import maestro.cli.device.Platform
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.util.DeviceConfigAndroid
 import maestro.cli.util.DeviceConfigIos
@@ -21,6 +23,7 @@ class StartDeviceCommand : Callable<Int> {
     @CommandLine.Option(
         order = 0,
         names = ["--platform"],
+        required = true,
         description = ["Platforms: android, ios"],
     )
     private lateinit var platform: String
@@ -40,54 +43,24 @@ class StartDeviceCommand : Callable<Int> {
     private var forceCreate: Boolean = false
 
 
-    private fun printUsage() {
-        val messages = listOf(
-            "Usage: maestro start-device --os-version=<osVersion> --platform=<platform>\n",
-            "Starts or creates an iOS Simulator or Android Emulator similar to the ones on Maestro Cloud",
-            "Supported device types: iPhone11 (iOS), Pixel 6 (Android)",
-            "Supported os versions:\n* iOS: 15, 16\n* Android: 28, 29, 30, 31, 33",
-        )
-        PrintUtils.message(messages.joinToString(separator = "\n"))
-    }
-
     override fun call(): Int {
         TestDebugReporter.install(null)
 
-        // platform
-        if (!::platform.isInitialized) {
-            printUsage()
-            PrintUtils.message("Please specify device platform (android, ios):")
-            platform = readlnOrNull()?.lowercase() ?: ""
-        }
+        val p = Platform.fromString(platform) ?: throw CliError("Invalid platform. Please specify one of: android, ios")
 
         // default OS version
         if (!::osVersion.isInitialized) {
-            osVersion = when (platform) {
-                "ios" -> DeviceConfigIos.defaultVersion.toString()
-                "android" -> DeviceConfigAndroid.defaultVersion.toString()
+            osVersion = when (p) {
+                Platform.IOS -> DeviceConfigIos.defaultVersion.toString()
+                Platform.ANDROID -> DeviceConfigAndroid.defaultVersion.toString()
                 else -> ""
             }
         }
+        val o = osVersion.toIntOrNull()
 
-        when (platform.lowercase()) {
-            "ios" -> {
-                DeviceCreateUtil.getOrCreateIosDevice(osVersion.toIntOrNull(), forceCreate).let {
-                    PrintUtils.message("Launching simulator...")
-                    DeviceService.startDevice(it)
-                }
-            }
-
-            "android" -> {
-                DeviceCreateUtil.getOrCreateAndroidDevice(osVersion.toIntOrNull(), forceCreate).let {
-                    PrintUtils.message("Launching emulator...")
-                    DeviceService.startDevice(it)
-                }
-            }
-
-            else -> {
-                PrintUtils.err("Invalid platform. Please specify one of: android, ios")
-                return 1
-            }
+        DeviceCreateUtil.getOrCreateDevice(p, o, forceCreate).let {
+            PrintUtils.message(if (p == Platform.IOS) "Launching simulator..." else "Launching emulator...")
+            DeviceService.startDevice(it)
         }
 
 
