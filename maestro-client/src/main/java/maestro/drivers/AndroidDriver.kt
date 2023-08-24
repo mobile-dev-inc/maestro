@@ -54,10 +54,7 @@ import maestro_android.setLocationRequest
 import maestro_android.tapRequest
 import maestro_android.viewHierarchyRequest
 import net.dongliu.apk.parser.ApkFile
-import okio.Sink
-import okio.buffer
-import okio.sink
-import okio.source
+import okio.*
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -69,6 +66,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.io.use
 
 class AndroidDriver(
     private val dadb: Dadb,
@@ -567,6 +565,10 @@ class AndroidDriver(
                 setPermissionInternal(appId, permissionName, permissionValue)
             }
         }
+    }
+
+    override fun addMedia(source: Source) {
+        TODO("Not yet implemented")
     }
 
     private fun setAllPermissions(appId: String, permissionValue: String) {

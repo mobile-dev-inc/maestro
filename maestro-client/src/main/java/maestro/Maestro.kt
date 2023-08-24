@@ -29,6 +29,7 @@ import maestro.utils.SocketUtils
 import okio.Sink
 import okio.buffer
 import okio.sink
+import okio.source
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
@@ -456,6 +457,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         driver.openLink(link, appId, autoVerify, browser)
         waitForAppToSettle()
+    }
+
+    fun addMedia(file: String) {
+        val source = File(file).source()
+        driver.addMedia(source)
     }
 
     override fun close() {

@@ -34,6 +34,7 @@ import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import okio.Sink
+import okio.Source
 import okio.buffer
 import java.awt.image.BufferedImage
 import java.io.File
@@ -372,6 +373,12 @@ class FakeDriver : Driver {
         events.add(Event.SetPermissions(appId, permissions))
     }
 
+    override fun addMedia(source: Source) {
+        ensureOpen()
+
+        events.add(Event.AddMedia)
+    }
+
     sealed class Event {
 
         data class Tap(
@@ -454,6 +461,8 @@ class FakeDriver : Driver {
             val appId: String,
             val permissions: Map<String, String>,
         ) : Event()
+
+        object AddMedia : Event()
 
         object StartRecording : Event()
 

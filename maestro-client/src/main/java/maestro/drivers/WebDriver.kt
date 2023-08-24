@@ -14,6 +14,7 @@ import maestro.UiElement
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import okio.Sink
+import okio.Source
 import okio.buffer
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
@@ -367,6 +368,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         // no-op for web
+    }
+
+    override fun addMedia(source: Source) {
+        TODO("Not yet implemented")
     }
 
     companion object {

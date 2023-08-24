@@ -20,6 +20,7 @@
 package maestro
 
 import okio.Sink
+import okio.Source
 import java.io.File
 import java.util.UUID
 
@@ -92,4 +93,6 @@ interface Driver {
     fun capabilities(): List<Capability>
 
     fun setPermissions(appId: String, permissions: Map<String, String>)
+
+    fun addMedia(source: Source)
 }

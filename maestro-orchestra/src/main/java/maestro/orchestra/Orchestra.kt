@@ -282,6 +282,7 @@ class Orchestra(
             is TravelCommand -> travelCommand(command)
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
+            is AddMediaCommand -> addMediaCommand(command.path)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -297,6 +298,11 @@ class Orchestra(
             speedMPS = command.speedMPS ?: 4.0,
         )
 
+        return true
+    }
+
+    private fun addMediaCommand(path: String): Boolean {
+        maestro.addMedia(path)
         return true
     }
 

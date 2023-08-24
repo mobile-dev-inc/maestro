@@ -2965,6 +2965,21 @@ class IntegrationTest {
         ).inOrder()
     }
 
+    @Test
+    fun `Case 110 - addMedia command emits add media event with correct path`() {
+        // given
+        val commands = readCommands("110_add_media_device")
+        val driver  = driver {}
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(listOf(Event.AddMedia))
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(

@@ -770,6 +770,19 @@ data class StartRecordingCommand(val path: String) : Command {
     }
 }
 
+data class AddMediaCommand(val path: String): Command {
+
+    override fun description(): String {
+        return "Adding media on: $path to the device"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            path = path.evaluateScripts(jsEngine)
+        )
+    }
+}
+
 class StopRecordingCommand : Command {
 
     override fun description(): String {

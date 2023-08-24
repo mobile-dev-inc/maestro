@@ -41,6 +41,7 @@ import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.ViewHierarchy
 import maestro.utils.*
 import okio.Sink
+import okio.Source
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
@@ -439,6 +440,10 @@ class IOSDriver(
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         iosDevice.setPermissions(appId, permissions)
+    }
+
+    override fun addMedia(source: Source) {
+        TODO("Not yet implemented")
     }
 
     private fun isScreenStatic(): Boolean {
