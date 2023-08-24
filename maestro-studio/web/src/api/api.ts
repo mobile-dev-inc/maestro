@@ -144,4 +144,29 @@ export const API = {
       config
     );
   },
+  generateCommandWithAI: async (
+    screen: any,
+    userInput: string,
+    token: string | null | undefined,
+    signal?: AbortSignal
+  ): Promise<any> => {
+    const response = await fetch(
+      "https://api.mobile.dev/mai/generate-command",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ screen, userInput }),
+        signal,
+      }
+    );
+    if (!response.ok) {
+      const body = await response.text();
+      throw new HttpError(response.status, body);
+    }
+    return await response.json();
+  },
 };
