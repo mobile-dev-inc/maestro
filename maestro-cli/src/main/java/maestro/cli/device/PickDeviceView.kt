@@ -23,12 +23,12 @@ object PickDeviceView {
     }
 
     fun requestDeviceOptions(): DeviceStartOptions {
-        PrintUtils.message("Please specify device platform (android, ios):")
+        PrintUtils.message("Please specify a device platform [android, ios]:")
         val platform = readlnOrNull()?.lowercase()?.let {
             when(it) {
                 "android" -> Platform.ANDROID
                 "ios" -> Platform.IOS
-                else -> throw CliError("Unsupported platform $it")
+                else -> throw CliError("Unsupported platform: $it")
             }
         } ?: throw CliError("Please specify a platform")
 

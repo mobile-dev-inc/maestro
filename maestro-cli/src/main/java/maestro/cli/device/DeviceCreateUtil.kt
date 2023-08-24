@@ -21,7 +21,7 @@ internal object DeviceCreateUtil {
         }
     }
 
-    fun getOrCreateIosDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
+    private fun getOrCreateIosDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
         if (version !in DeviceConfigIos.versions) {
             throw CliError("Provided iOS version is not supported. Please use one of ${DeviceConfigIos.versions}")
         }
@@ -77,7 +77,7 @@ internal object DeviceCreateUtil {
 
     }
 
-    fun getOrCreateAndroidDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
+    private fun getOrCreateAndroidDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
         if (version !in DeviceConfigAndroid.versions) {
             throw CliError("Provided Android version is not supported. Please use one of ${DeviceConfigAndroid.versions}")
         }
