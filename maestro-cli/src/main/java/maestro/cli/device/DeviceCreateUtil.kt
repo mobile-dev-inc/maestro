@@ -47,7 +47,7 @@ internal object DeviceCreateUtil {
             } else it.modelId
         }
 
-        if (existingDeviceId != null) PrintUtils.message("Using existing device $deviceName (${existingDeviceId}).\nTo override the instance use: --force-create=true")
+        if (existingDeviceId != null) PrintUtils.message("Using existing device $deviceName (${existingDeviceId}).")
         else PrintUtils.message("Attempting to create iOS simulator: $deviceName ")
 
 
