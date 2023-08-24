@@ -9,6 +9,7 @@ import ReplHeader from "./ReplHeader";
 import CommandInput from "./CommandInput";
 import CommandList from "./CommandList";
 import { EnterKey } from "../design-system/utils/images";
+import { useDeviceContext } from "../../context/DeviceContext";
 
 const getFlowText = (selected: ReplCommand[]): string => {
   return selected
@@ -16,13 +17,8 @@ const getFlowText = (selected: ReplCommand[]): string => {
     .join("");
 };
 
-const ReplView = ({
-  input,
-  onInput,
-}: {
-  input: string;
-  onInput: (input: string) => void;
-}) => {
+const ReplView = () => {
+  const { currentCommandValue, setCurrentCommandValue } = useDeviceContext();
   const listRef = useRef<HTMLElement>();
   const [replError, setReplError] = useState<string | null>(null);
   const [_selected, setSelected] = useState<string[]>([]);
@@ -59,11 +55,11 @@ const ReplView = ({
   const selectedIds = selectedCommands.map((c) => c.id);
 
   const runCommand = async () => {
-    if (!input) return;
+    if (!currentCommandValue) return;
     setReplError(null);
     try {
-      await API.repl.runCommand(input);
-      onInput("");
+      await API.repl.runCommand(currentCommandValue);
+      setCurrentCommandValue("");
     } catch (e: any) {
       setReplError(e.message || "Failed to run command");
     }
@@ -144,15 +140,15 @@ const ReplView = ({
           <CommandInput
             setValue={(value) => {
               setReplError(null);
-              onInput(value);
+              setCurrentCommandValue(value);
             }}
-            value={input}
+            value={currentCommandValue}
             error={replError}
             placeholder="Enter a command"
             onSubmit={runCommand}
           />
           <Button
-            disabled={!input || !!replError}
+            disabled={!currentCommandValue || !!replError}
             type="submit"
             leftIcon="RiCommandLine"
             size="sm"

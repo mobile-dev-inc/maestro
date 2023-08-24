@@ -17,6 +17,8 @@ interface DeviceContextType {
   deviceScreen: DeviceScreen | undefined;
   footerHint: string | null;
   setFooterHint: (id: string | null) => void;
+  currentCommandValue: string;
+  setCurrentCommandValue: (id: string) => void;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -38,6 +40,7 @@ export const DeviceProvider: React.FC<DeviceProviderProps> = ({
     defaultInspectedElement
   );
   const [footerHint, setFooterHint] = useState<string | null>(null);
+  const [currentCommandValue, setCurrentCommandValue] = useState<string>("");
 
   useEffect(() => {
     if (deviceScreen || error) {
@@ -56,6 +59,8 @@ export const DeviceProvider: React.FC<DeviceProviderProps> = ({
         footerHint,
         setFooterHint,
         deviceScreen,
+        currentCommandValue,
+        setCurrentCommandValue,
       }}
     >
       {children}
