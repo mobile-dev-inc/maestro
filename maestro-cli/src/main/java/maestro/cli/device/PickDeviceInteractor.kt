@@ -60,7 +60,6 @@ object PickDeviceInteractor {
 
         val options = PickDeviceView.requestDeviceOptions()
         return DeviceCreateUtil.getOrCreateDevice(options.platform, options.osVersion, options.forceCreate)
-            ?: throw CliError("Unable to start device")
     }
 
     private fun pickRunningDevice(devices: List<Device>): Device {

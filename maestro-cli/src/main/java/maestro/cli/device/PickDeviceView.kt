@@ -35,14 +35,12 @@ object PickDeviceView {
         val version = platform.let {
             when (it) {
                 Platform.IOS -> {
-                    val versions = DeviceConfigIos.versions.joinToString(separator = ", ")
-                    PrintUtils.message("Please specify iOS version ($versions): Press ENTER for default (${DeviceConfigIos.defaultVersion})")
+                    PrintUtils.message("Please specify iOS version ${DeviceConfigIos.versions}: Press ENTER for default (${DeviceConfigIos.defaultVersion})")
                     readlnOrNull()?.toIntOrNull() ?: DeviceConfigIos.defaultVersion
                 }
 
                 Platform.ANDROID -> {
-                    val versions = DeviceConfigAndroid.versions.joinToString(separator = ", ")
-                    PrintUtils.message("Please specify Android version ($versions): Press ENTER for default (${DeviceConfigAndroid.defaultVersion})")
+                    PrintUtils.message("Please specify Android version ${DeviceConfigAndroid.versions}: Press ENTER for default (${DeviceConfigAndroid.defaultVersion})")
                     readlnOrNull()?.toIntOrNull() ?: DeviceConfigAndroid.defaultVersion
                 }
 

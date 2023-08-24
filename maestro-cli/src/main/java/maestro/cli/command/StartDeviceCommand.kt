@@ -71,14 +71,14 @@ class StartDeviceCommand : Callable<Int> {
 
         when (platform.lowercase()) {
             "ios" -> {
-                DeviceCreateUtil.getOrCreateIosDevice(osVersion.toIntOrNull(), forceCreate)?.let {
+                DeviceCreateUtil.getOrCreateIosDevice(osVersion.toIntOrNull(), forceCreate).let {
                     PrintUtils.message("Launching simulator...")
                     DeviceService.startDevice(it)
                 }
             }
 
             "android" -> {
-                DeviceCreateUtil.getOrCreateAndroidDevice(osVersion.toIntOrNull(), forceCreate)?.let {
+                DeviceCreateUtil.getOrCreateAndroidDevice(osVersion.toIntOrNull(), forceCreate).let {
                     PrintUtils.message("Launching emulator...")
                     DeviceService.startDevice(it)
                 }

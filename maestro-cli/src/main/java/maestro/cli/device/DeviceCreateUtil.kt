@@ -1,12 +1,13 @@
 package maestro.cli.device
 
+import maestro.cli.CliError
 import maestro.cli.util.DeviceConfigAndroid
 import maestro.cli.util.DeviceConfigIos
 import maestro.cli.util.PrintUtils
 
 object DeviceCreateUtil {
 
-    fun getOrCreateDevice(platform: Platform, osVersion: Int?, forceCreate: Boolean): Device? {
+    fun getOrCreateDevice(platform: Platform, osVersion: Int?, forceCreate: Boolean): Device {
         return when (platform) {
             Platform.ANDROID -> {
                 getOrCreateAndroidDevice(osVersion, forceCreate)
@@ -20,16 +21,14 @@ object DeviceCreateUtil {
         }
     }
 
-    fun getOrCreateIosDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch? {
+    fun getOrCreateIosDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
         if (version !in DeviceConfigIos.versions) {
-            PrintUtils.err("Provided iOS version is not supported. Please use one of ${DeviceConfigIos.versions}")
-            return null
+            throw CliError("Provided iOS version is not supported. Please use one of ${DeviceConfigIos.versions}")
         }
 
         val runtime = DeviceConfigIos.runtimes[version]
         if (runtime == null) {
-            PrintUtils.err("Provided iOS runtime is not supported $runtime")
-            return null
+            throw CliError("Provided iOS runtime is not supported $runtime")
         }
 
         val deviceName = DeviceConfigIos.generateDeviceName(version!!)
@@ -37,8 +36,7 @@ object DeviceCreateUtil {
 
         // check connected device
         if (DeviceService.isDeviceConnected(deviceName, Platform.IOS) != null) {
-            PrintUtils.warn("A device with name $deviceName is already connected")
-            return null
+            throw CliError("A device with name $deviceName is already connected")
         }
 
         // check existing device
@@ -58,15 +56,15 @@ object DeviceCreateUtil {
         } catch (e: IllegalStateException) {
             val error = e.message ?: ""
             if (error.contains("Invalid runtime")) {
-                PrintUtils.err("Required runtime to create the simulator is not installed: $runtime")
-                PrintUtils.err("To install additional iOS runtimes checkout this guide:\n* https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes")
+                val msg = "Required runtime to create the simulator is not installed: $runtime\n" +
+                        "To install additional iOS runtimes checkout this guide:\n" +
+                        "* https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes"
+                throw CliError(msg)
             } else if (error.contains("Invalid device type")) {
-                PrintUtils.err("Device type $device is either not supported or not found.")
+                throw CliError("Device type $device is either not supported or not found.")
             } else {
-                PrintUtils.err(error)
+                throw CliError(error)
             }
-
-            return null
         }
 
         if (existingDeviceId == null) PrintUtils.message("Created simulator $deviceName ($deviceUUID)")
@@ -79,24 +77,19 @@ object DeviceCreateUtil {
 
     }
 
-    fun getOrCreateAndroidDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch? {
+    fun getOrCreateAndroidDevice(version: Int?, forceCreate: Boolean): Device.AvailableForLaunch {
         if (version !in DeviceConfigAndroid.versions) {
-            PrintUtils.err("Provided Android version is not supported. Please use one of ${DeviceConfigAndroid.versions}")
-            return null
+            throw CliError("Provided Android version is not supported. Please use one of ${DeviceConfigAndroid.versions}")
         }
 
         val systemImage = DeviceConfigAndroid.systemImages[version]
-        if (systemImage == null) {
-            PrintUtils.err("Provided system image is not supported. Please use one of ${DeviceConfigAndroid.versions}")
-            return null
-        }
+            ?: throw CliError("Provided system image is not supported. Please use one of ${DeviceConfigAndroid.versions}")
 
         val name = DeviceConfigAndroid.generateDeviceName(version!!)
 
         // check connected device
         if (DeviceService.isDeviceConnected(name, Platform.ANDROID) != null) {
-            PrintUtils.warn("A device with name $name is already connected")
-            return null
+            throw CliError("A device with name $name is already connected")
         }
 
         // existing device
@@ -112,18 +105,16 @@ object DeviceCreateUtil {
             if (r == "y" || r == "yes") {
                 PrintUtils.message("Attempting to install $systemImage via Android SDK Manager...\n")
                 if (!DeviceService.installAndroidSystemImage(systemImage)) {
-                    PrintUtils.err("Was unable to install required dependencies.")
-                    return null
+                    throw CliError("Was unable to install required dependencies.")
                 }
             } else {
-                PrintUtils.warn(
+                throw CliError(
                     "To install the system image manually, you can run this command:\n${
                         DeviceService.getAndroidSystemImageInstallCommand(
                             systemImage
                         )
                     }"
                 )
-                return null
             }
         }
 
@@ -140,8 +131,7 @@ object DeviceCreateUtil {
                 force = forceCreate
             )
         } catch (e: IllegalStateException) {
-            PrintUtils.err("${e.message}")
-            return null
+            throw CliError("${e.message}")
         }
 
         if (existingDevice == null) PrintUtils.message("Created Android emulator: $name ($systemImage)")
