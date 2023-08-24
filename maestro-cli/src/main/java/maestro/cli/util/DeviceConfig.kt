@@ -1,6 +1,6 @@
 package maestro.cli.util
 
-internal object IosDeviceConfig {
+internal object DeviceConfigIos {
 
     val device: String = "iPhone-11"
     val versions = listOf(15, 16)
@@ -14,7 +14,7 @@ internal object IosDeviceConfig {
     fun generateDeviceName(version: Int) = "Maestro_iPhone11_$version"
 }
 
-internal object AndroidDeviceConfig {
+internal object DeviceConfigAndroid {
     val device = "pixel_6"
     val tag = "google_apis"
     val versions = listOf(33, 31, 30, 29, 28)

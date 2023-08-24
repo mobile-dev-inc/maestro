@@ -1,5 +1,10 @@
 package maestro.cli.device
 
+import maestro.cli.CliError
+import maestro.cli.model.DeviceStartOptions
+import maestro.cli.util.DeviceConfigAndroid
+import maestro.cli.util.DeviceConfigIos
+import maestro.cli.util.PrintUtils
 import org.fusesource.jansi.Ansi.ansi
 
 object PickDeviceView {
@@ -15,6 +20,41 @@ object PickDeviceView {
         printEnterNumberPrompt()
 
         return pickIndex(devices)
+    }
+
+    fun requestDeviceOptions(): DeviceStartOptions {
+        PrintUtils.message("Please specify device platform (android, ios):")
+        val platform = readlnOrNull()?.lowercase()?.let {
+            when(it) {
+                "android" -> Platform.ANDROID
+                "ios" -> Platform.IOS
+                else -> throw CliError("Unsupported platform $it")
+            }
+        } ?: throw CliError("Please specify a platform")
+
+        val version = platform.let {
+            when (it) {
+                Platform.IOS -> {
+                    val versions = DeviceConfigIos.versions.joinToString(separator = ", ")
+                    PrintUtils.message("Please specify iOS version ($versions): Press ENTER for default (${DeviceConfigIos.defaultVersion})")
+                    readlnOrNull()?.toIntOrNull() ?: DeviceConfigIos.defaultVersion
+                }
+
+                Platform.ANDROID -> {
+                    val versions = DeviceConfigAndroid.versions.joinToString(separator = ", ")
+                    PrintUtils.message("Please specify Android version ($versions): Press ENTER for default (${DeviceConfigAndroid.defaultVersion})")
+                    readlnOrNull()?.toIntOrNull() ?: DeviceConfigAndroid.defaultVersion
+                }
+
+                else -> throw CliError("Unsupported platform")
+            }
+        }
+
+        return DeviceStartOptions(
+            platform = platform,
+            osVersion = version,
+            forceCreate = false
+        )
     }
 
     fun pickRunningDevice(devices: List<Device>): Device {

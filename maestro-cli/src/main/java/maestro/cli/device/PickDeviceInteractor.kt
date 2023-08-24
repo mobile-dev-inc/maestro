@@ -1,6 +1,7 @@
 package maestro.cli.device
 
 import maestro.cli.CliError
+import maestro.cli.util.PrintUtils
 
 object PickDeviceInteractor {
 
@@ -17,6 +18,10 @@ object PickDeviceInteractor {
                 var result: Device = pickedDevice
 
                 if (result is Device.AvailableForLaunch) {
+
+                    if (result.platform == Platform.ANDROID) PrintUtils.message("Launching Android device...")
+                    else if (result.platform == Platform.IOS) PrintUtils.message("Launching iOS simulator...")
+
                     result = DeviceService.startDevice(result)
                 }
 
@@ -47,13 +52,15 @@ object PickDeviceInteractor {
     }
 
     private fun startDevice(): Device {
-        val availableDevices = DeviceService.listAvailableForLaunchDevices()
-
-        if (availableDevices.isEmpty()) {
-            throw CliError("No devices available. To proceed, either install Android SDK or Xcode.")
+        PrintUtils.message("No devices found. Would you like to start a new one? y/n")
+        val proceed = readlnOrNull()?.lowercase()?.trim()
+        if (proceed == "no" || proceed == "n") {
+            throw CliError("Please either start a device manually or via Maestro to proceed running your flows")
         }
 
-        return PickDeviceView.pickDeviceToStart(availableDevices)
+        val options = PickDeviceView.requestDeviceOptions()
+        return DeviceCreateUtil.getOrCreateDevice(options.platform, options.osVersion, options.forceCreate)
+            ?: throw CliError("Unable to start device")
     }
 
     private fun pickRunningDevice(devices: List<Device>): Device {

@@ -2,7 +2,6 @@ package maestro.cli.device
 
 import dadb.Dadb
 import maestro.cli.CliError
-import maestro.cli.model.DeviceCreateException.*
 import maestro.cli.util.EnvUtils
 import maestro.utils.MaestroTimer
 import okio.buffer
@@ -236,7 +235,6 @@ object DeviceService {
         )
 
         val process = ProcessBuilder(*command.toTypedArray()).start()
-
         if (!process.waitFor(5, TimeUnit.MINUTES)) {
             throw TimeoutException()
         }
@@ -247,20 +245,13 @@ object DeviceService {
                 .buffer()
                 .readUtf8()
 
-            if (processOutput.contains("Invalid runtime")) {
-                throw InvalidRuntimeException()
-            } else if (processOutput.contains("Invalid device type")) {
-                throw InvalidDeviceTypeException()
-            } else throw UnableToCreateException(processOutput)
-
+            throw IllegalStateException(processOutput)
         } else {
-
             val output = String(process.inputStream.readBytes()).trim()
-
             return try {
                 UUID.fromString(output)
             } catch (ignore: IllegalArgumentException) {
-                throw UnableToCreateException("Unable to create device. No UUID was generated")
+                throw IllegalStateException("Unable to create device. No UUID was generated")
             }
 
         }
@@ -275,7 +266,14 @@ object DeviceService {
      * @param tag google apis or playstore tag i.e. google_apis or google_apis_playstore
      * @param abi x86_64, x86 etc..
      */
-    fun createAndroidDevice(deviceName: String, device: String, systemImage: String, tag: String, abi: String, force: Boolean = false): String {
+    fun createAndroidDevice(
+        deviceName: String,
+        device: String,
+        systemImage: String,
+        tag: String,
+        abi: String,
+        force: Boolean = false
+    ): String {
         val avd = requireAvdManagerBinary()
         val command = mutableListOf(
             avd.absolutePath,
@@ -301,7 +299,7 @@ object DeviceService {
                 .buffer()
                 .readUtf8()
 
-            throw UnableToCreateException(processOutput)
+            throw IllegalStateException("Failed to start android emulator: $processOutput")
         }
 
         return deviceName
