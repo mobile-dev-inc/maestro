@@ -23,6 +23,7 @@ import kotlin.reflect.KClass
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
     private val logger: Logger,
+    private val httpInterceptor: HttpLoggingInterceptor? = null
 ) {
     private lateinit var client: XCTestClient
     constructor(installer: XCTestInstaller, logger: Logger, client: XCTestClient): this(installer, logger) {
@@ -32,13 +33,12 @@ class XCTestDriverClient(
     private var isShuttingDown = false
 
     private val networkErrorHandler by lazy { NetworkErrorHandler(installer, logger) }
-    private val httpInterceptor = HttpLoggingInterceptor()
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
             isShuttingDown = true
         })
-        httpInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
     fun restartXCTestRunnerService() {
@@ -54,7 +54,11 @@ class XCTestDriverClient(
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(40, TimeUnit.SECONDS)
         .readTimeout(100, TimeUnit.SECONDS)
-        .addInterceptor(httpInterceptor)
+        .apply {
+            httpInterceptor?.let {
+                this.addInterceptor(it)
+            }
+        }
         .addRetryInterceptor()
         .addRetryAndShutdownInterceptor()
         .build()
