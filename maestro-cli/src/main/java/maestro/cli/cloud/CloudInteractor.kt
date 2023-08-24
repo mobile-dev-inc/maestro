@@ -123,16 +123,19 @@ class CloudInteractor(
             println()
 
             if (async) {
-                PrintUtils.message("✅ Upload successful! View the results of your upload below:")
-                PrintUtils.message(uploadUrl(uploadId, teamId, appId, client.domain))
+                PrintUtils.message("✅ Upload successful!")
 
                 if (deviceInfo != null) printDeviceInfo(deviceInfo, iOSVersion, androidApiLevel)
+                PrintUtils.message("View the results of your upload below:")
+                PrintUtils.message(uploadUrl(uploadId, teamId, appId, client.domain))
+
                 if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
-
-
 
                 return 0
             } else {
+
+                if (deviceInfo != null) printDeviceInfo(deviceInfo, iOSVersion, androidApiLevel)
+
                 PrintUtils.message(
                     "Visit the web console for more details about the upload: ${
                         uploadUrl(
@@ -145,9 +148,6 @@ class CloudInteractor(
                 )
 
                 if (appBinaryIdResponse != null) PrintUtils.message("App binary id: $appBinaryIdResponse")
-
-                if (deviceInfo != null) printDeviceInfo(deviceInfo, iOSVersion, androidApiLevel)
-
 
                 PrintUtils.message("Waiting for analyses to complete...")
                 println()
