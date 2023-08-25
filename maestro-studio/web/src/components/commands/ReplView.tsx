@@ -4,11 +4,9 @@ import { Icon } from "../design-system/icon";
 import { FormattedFlow, ReplCommand } from "../../helpers/models";
 import { SaveFlowModal } from "./SaveFlowModal";
 import { useConfirmationDialog } from "../common/ConfirmationDialog";
-import { Button } from "../design-system/button";
 import ReplHeader from "./ReplHeader";
-import CommandInput from "./CommandInput";
 import CommandList from "./CommandList";
-import { EnterKey } from "../design-system/utils/images";
+import CommandCreator from "./CommandCreator";
 import { useDeviceContext } from "../../context/DeviceContext";
 
 const getFlowText = (selected: ReplCommand[]): string => {
@@ -130,34 +128,11 @@ const ReplView = () => {
             </p>
           </div>
         )}
-        <form
-          className="mb-8 gap-2 flex flex-col relative"
-          onSubmit={(e: React.FormEvent) => {
-            e.preventDefault();
-            runCommand();
-          }}
-        >
-          <CommandInput
-            setValue={(value) => {
-              setReplError(null);
-              setCurrentCommandValue(value);
-            }}
-            value={currentCommandValue}
-            error={replError}
-            placeholder="Enter a command"
-            onSubmit={runCommand}
-          />
-          <Button
-            disabled={!currentCommandValue || !!replError}
-            type="submit"
-            leftIcon="RiCommandLine"
-            size="sm"
-            className="absolute bottom-2 right-2 text-lg font-medium"
-          >
-            +
-            <EnterKey className="w-4" />
-          </Button>
-        </form>
+        <CommandCreator
+          onSubmit={runCommand}
+          error={replError}
+          setError={setReplError}
+        />
       </div>
       {formattedFlow && (
         <SaveFlowModal

@@ -41,7 +41,7 @@ const inputVariants = cva(
         false: "",
       },
       error: {
-        true: "text-red-500 ring-red-100 border-red-400 focus-within:ring-red-100 focus-within:border-red-400",
+        true: "text-red-500 ring-red-100 dark:ring-red-100/20 dark:text-red-500 border-red-400 hover:border-red-400 dark:border-red-400 dark:hover:border-red-400 focus:ring-red-100 dark:focus:ring-red-100/20 focus:border-red-400 focus:hover:border-red-400",
         false: "",
       },
       disabled: {
@@ -67,7 +67,7 @@ const textareaVariants = cva(
         false: "",
       },
       error: {
-        true: "text-red-500 ring-red-100 dark:ring-red-100/20 dark:text-red-500 border-red-400 dark:border-red-400 hover:border-red-400 dark:hover:border-red-400 focus:ring-red-100 dark:focus:ring-red-100/20 focus:border-red-400 focus:hover:border-red-400",
+        true: "text-red-500 ring-red-100 dark:ring-red-100/20 dark:text-red-500 border-red-400 hover:border-red-400 dark:border-red-400 dark:hover:border-red-400 focus:ring-red-100 dark:focus:ring-red-100/20 focus:border-red-400 focus:hover:border-red-400",
         false: "",
       },
     },
@@ -340,67 +340,86 @@ const Input = forwardRef(
   }
 );
 
-function TextArea({
-  size = "md",
-  success,
-  error,
-  className,
-  textAreaClassName,
-  resize,
-  onChange,
-  showResizeIcon = true,
-  ...rest
-}: TextareaProps) {
-  const textAreaRef = React.useRef<HTMLTextAreaElement | null>(null);
+const TextArea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  (
+    {
+      size = "md",
+      success,
+      error,
+      className,
+      textAreaClassName,
+      resize,
+      onChange,
+      showResizeIcon = true,
+      ...rest
+    },
+    ref?: Exclude<React.Ref<HTMLTextAreaElement>, string>
+  ) => {
+    const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
-    if (resize === "automatic" && textAreaRef.current) {
-      textAreaRef.current.style.height = "auto";
-      textAreaRef.current.style.height = `${
-        textAreaRef.current.scrollHeight + 2
-      }px`;
-    }
-  }, [resize, rest.value]);
+    // Use the forwarded ref if provided, otherwise use local ref
+    React.useImperativeHandle(ref, () => {
+      if (textAreaRef.current) {
+        return textAreaRef.current;
+      } else {
+        throw new Error("TextArea ref is not yet available.");
+      }
+    });
 
-  const handleEvent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const target = e.target as HTMLTextAreaElement;
+    React.useEffect(() => {
+      if (
+        resize === "automatic" &&
+        typeof textAreaRef !== "function" &&
+        textAreaRef.current
+      ) {
+        textAreaRef.current.style.height = "auto";
+        textAreaRef.current.style.height = `${
+          textAreaRef.current.scrollHeight + 2
+        }px`;
+      }
+    }, [textAreaRef, resize, rest.value]);
 
-    if (resize === "automatic" && target) {
-      target.style.height = "auto";
-      target.style.height = `${target.scrollHeight + 2}px`;
-    }
+    const handleEvent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const target = e.target as HTMLTextAreaElement;
 
-    if (e.type === "change" && onChange) {
-      onChange(e as React.ChangeEvent<HTMLTextAreaElement>);
-    }
-  };
+      if (resize === "automatic" && target) {
+        target.style.height = "auto";
+        target.style.height = `${target.scrollHeight + 2}px`;
+      }
 
-  return (
-    <div className={twMerge(clsx("relative", className))}>
-      <textarea
-        ref={textAreaRef}
-        className={twMerge(
-          clsx(
-            textareaVariants({
-              size,
-              success: !!success,
-              error: !!error,
-              className: clsx(
-                (resize === "none" || resize === "automatic") && "resize-none",
-                textAreaClassName
-              ),
-            })
-          )
+      if (e.type === "change" && onChange) {
+        onChange(e as React.ChangeEvent<HTMLTextAreaElement>);
+      }
+    };
+
+    return (
+      <div className={twMerge(clsx("relative", className))}>
+        <textarea
+          ref={textAreaRef}
+          className={twMerge(
+            clsx(
+              textareaVariants({
+                size,
+                success: !!success,
+                error: !!error,
+                className: clsx(
+                  (resize === "none" || resize === "automatic") &&
+                    "resize-none",
+                  textAreaClassName
+                ),
+              })
+            )
+          )}
+          onChange={handleEvent}
+          {...rest}
+        />
+        {resize !== "none" && showResizeIcon && (
+          <TextAreaResizer className="pointer-events-none absolute bottom-0.5 right-0.5 h-4 w-4 text-gray-600" />
         )}
-        onChange={handleEvent}
-        {...rest}
-      />
-      {resize !== "none" && showResizeIcon && (
-        <TextAreaResizer className="pointer-events-none absolute bottom-0.5 right-0.5 h-4 w-4 text-gray-600" />
-      )}
-    </div>
-  );
-}
+      </div>
+    );
+  }
+);
 
 function InputHint({
   hint,
