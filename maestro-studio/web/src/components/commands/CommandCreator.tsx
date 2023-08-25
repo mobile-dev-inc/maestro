@@ -130,7 +130,6 @@ const AiInput = () => {
     setFormStates({ isLoading: true, error: null });
     try {
       const viewHeir = await API.lastViewHeirarchy();
-      console.log({ viewHeir });
       const response = await API.generateCommandWithAI(
         viewHeir,
         userInput,
@@ -140,7 +139,6 @@ const AiInput = () => {
       setFormStates({ isLoading: false, error: null });
       setCurrentCommandValue(`- ${response.command}`);
     } catch (error) {
-      console.log({ error, status: _.get(error, "status") });
       let errorMessage;
       if (_.get(error, "name") === "AbortError") {
         errorMessage = "Request was aborted!";
