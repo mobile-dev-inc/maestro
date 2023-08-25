@@ -3,7 +3,6 @@ import { API } from "../../api/api";
 import { Icon } from "../design-system/icon";
 import { FormattedFlow, ReplCommand } from "../../helpers/models";
 import { SaveFlowModal } from "./SaveFlowModal";
-import { useConfirmationDialog } from "../common/ConfirmationDialog";
 import ReplHeader from "./ReplHeader";
 import CommandList from "./CommandList";
 import CommandCreator from "./CommandCreator";
@@ -25,10 +24,6 @@ const ReplView = () => {
   const { error, repl } = API.repl.useRepl();
   const listSize = repl?.commands.length || 0;
   const previousListSize = useRef(0);
-
-  const [showConfirmationDialog, Dialog] = useConfirmationDialog(() =>
-    API.repl.deleteCommands(selectedIds)
-  );
 
   // Scroll to bottom when new commands are added
   useEffect(() => {
@@ -76,7 +71,7 @@ const ReplView = () => {
     API.repl.formatFlow(selectedIds).then(setFormattedFlow);
   };
   const onDelete = () => {
-    showConfirmationDialog();
+    API.repl.deleteCommands(selectedIds);
   };
 
   const flowText = getFlowText(selectedCommands);
@@ -90,7 +85,7 @@ const ReplView = () => {
               <ReplHeader
                 onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
                 onDeselectAll={() => setSelected([])}
-                selected={selectedIds.length}
+                selectedLength={selectedIds.length}
                 allSelected={selectedIds.length === repl.commands.length}
                 copyText={flowText}
                 onPlay={onPlay}
@@ -142,14 +137,6 @@ const ReplView = () => {
           }}
         />
       )}
-      <Dialog
-        title={`Delete (${selectedIds.length}) command${
-          selectedIds.length === 1 ? "" : "s"
-        }?`}
-        content={`Click confirm to delete the selected command${
-          selectedIds.length === 1 ? "" : "s"
-        }.`}
-      />
     </>
   );
 };
