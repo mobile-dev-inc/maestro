@@ -12,5 +12,6 @@ interface XCTestInstaller: AutoCloseable {
 
 enum class Source {
     RETRY,
-    DRIVER_OPEN
+    DRIVER_OPEN,
+    DEVICE_CHECKS
 }
