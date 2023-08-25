@@ -137,7 +137,7 @@ const AiInput = () => {
         abortControllerRef.current.signal
       );
       setFormStates({ isLoading: false, error: null });
-      setCurrentCommandValue(`- ${response.command}`);
+      setCurrentCommandValue(response.command);
     } catch (error) {
       let errorMessage;
       if (_.get(error, "name") === "AbortError") {
