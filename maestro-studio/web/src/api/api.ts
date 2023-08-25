@@ -144,6 +144,9 @@ export const API = {
       config
     );
   },
+  lastViewHeirarchy: async () => {
+    return makeRequest("GET", "/api/last-view-hierarchy");
+  },
   generateCommandWithAI: async (
     screen: any,
     userInput: string,

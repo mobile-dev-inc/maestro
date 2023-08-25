@@ -109,7 +109,7 @@ const DefaultInput = () => {
 const AiInput = () => {
   const { token } = useAuth();
   const abortControllerRef = useRef<any>(null);
-  const { deviceScreen, setCurrentCommandValue } = useDeviceContext();
+  const { setCurrentCommandValue } = useDeviceContext();
   const aiInputRef = useRef<HTMLInputElement>(null);
   const [userInput, setUserInput] = useState<string>("");
   const [formStates, setFormStates] = useState<{
@@ -129,8 +129,10 @@ const AiInput = () => {
     e.preventDefault();
     setFormStates({ isLoading: true, error: null });
     try {
+      const viewHeir = await API.lastViewHeirarchy();
+      console.log({ viewHeir });
       const response = await API.generateCommandWithAI(
-        deviceScreen,
+        viewHeir,
         userInput,
         token,
         abortControllerRef.current.signal
