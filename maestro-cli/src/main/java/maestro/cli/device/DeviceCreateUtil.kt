@@ -17,7 +17,7 @@ internal object DeviceCreateUtil {
                 getOrCreateIosDevice(osVersion, forceCreate)
             }
 
-            else -> throw CliError("Unsupported platform $platform. Please one of: android, ios")
+            else -> throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
         }
     }
 
