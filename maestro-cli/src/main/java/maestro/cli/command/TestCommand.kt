@@ -88,10 +88,10 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
-        names = ["--nowindow"],
+        names = ["--window"],
         description = ["Configures automatically start browser, default is true"]
     )
-    private var nowindow: Boolean? = null
+    private var window: Boolean? = null
 
     @Option(
         names = ["--include-tags"],
@@ -127,10 +127,10 @@ class TestCommand : Callable<Int> {
             )
         }
 
-        if (nowindow !is Boolean || nowindow != null) {
+        if (window !is Boolean || window != null) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
-                "--nowindow type can be Boolean. Default is true"
+                "--window type can be Boolean. Default is true"
             )
         }
         if (parent?.platform != null) {
