@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   BannerMessage,
   DeviceScreen,
@@ -50,10 +51,18 @@ const makeRequest = async <T>(
     const responseBody = await response.text();
     throw new HttpError(response.status, responseBody);
   }
+  const contentLength = response.headers.get("Content-Length");
+  if (contentLength === "0") {
+    return null as any as T;
+  }
   if (type === "text") {
     return (await response.text()) as any as T;
   }
-  return (await response.json()) as T;
+  try {
+    return (await response.json()) as T;
+  } catch (error: any) {
+    throw new Error("Failed to parse JSON: " + _.get(error, "message"));
+  }
 };
 
 const useSse = <T>(url: string): SWRSubscriptionResponse<T> => {
@@ -85,12 +94,21 @@ const useDeviceScreen = (): { deviceScreen?: DeviceScreen; error?: any } => {
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export const API = {
-  useAuth: (
+  useAuthToken: (
     config?: SWRConfiguration<string | null>
   ): SWRResponse<string | null> => {
     return useSWR(
       "/api/auth-token",
       () => makeRequest("GET", "/api/auth-token", undefined, "text"),
+      config
+    );
+  },
+  useAuth: (
+    config?: SWRConfiguration<string | null>
+  ): SWRResponse<string | null> => {
+    return useSWR(
+      "/api/auth-token",
+      () => makeRequest("GET", "/api/auth"),
       config
     );
   },
@@ -146,6 +164,12 @@ export const API = {
   },
   lastViewHeirarchy: async () => {
     return makeRequest("GET", "/api/last-view-hierarchy");
+  },
+  saveOpenAiToken: async (token: string) => {
+    return makeRequest("POST", "/api/auth/openai-token", { token: token });
+  },
+  deleteOpenAiToken: async () => {
+    return makeRequest("DELETE", "/api/auth/openai-token");
   },
   generateCommandWithAI: async (
     screen: any,
