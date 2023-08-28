@@ -88,10 +88,10 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
-        names = ["--window"],
-        description = ["Configures automatically start browser, default is true"]
+        names = ["-nw"],
+        description = ["Configures automatically start browser, default is false"]
     )
-    private var window: Boolean? = null
+    private var noWindow: Boolean? = null
 
     @Option(
         names = ["--include-tags"],
@@ -127,12 +127,13 @@ class TestCommand : Callable<Int> {
             )
         }
 
-        if (window !is Boolean || window != null) {
+        if (noWindow !is Boolean || noWindow != null) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
-                "--window type can be Boolean. Default is true"
+                "-nw type can be Boolean. Default is false"
             )
         }
+        
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }

@@ -36,10 +36,10 @@ class StudioCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @CommandLine.Option(
-        names = ["--window"],
-        description = ["Configures automatically start browser, default is true"]
+        names = ["-nw"],
+        description = ["Configures automatically start browser, default is false"]
     )
-    private var window: Boolean? = null
+    private var noWindow: Boolean? = null
 
     override fun call(): Int {
         if (parent?.platform != null) {
@@ -71,7 +71,7 @@ class StudioCommand : Callable<Int> {
 
     private fun tryOpenUrl(studioUrl: String) {
         try {
-            if (Desktop.isDesktopSupported() && window != false) {
+            if (Desktop.isDesktopSupported() && noWindow != true) {
                 Desktop.getDesktop().browse(URI(studioUrl))
             }
         } catch (ignore: Exception) {
