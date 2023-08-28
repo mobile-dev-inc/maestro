@@ -167,9 +167,10 @@ const AiInput = () => {
     }
   };
 
-  // Function to handle backspace when the input is empty
+  // Function to handle backspace when the input is empty or escape key
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && userInput === "") {
+    if ((e.key === "Backspace" && userInput === "") || e.key === "Escape") {
+      setUserInput("");
       setCurrentCommandValue("");
     }
   };
