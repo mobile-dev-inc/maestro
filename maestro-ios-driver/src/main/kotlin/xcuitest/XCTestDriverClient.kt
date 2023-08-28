@@ -8,12 +8,14 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import xcuitest.api.*
 import xcuitest.installer.XCTestInstaller
 import java.io.IOException
 import java.net.ConnectException
 import xcuitest.api.NetworkErrorHandler
 import xcuitest.api.NetworkErrorHandler.Companion.RETRY_RESPONSE_CODE
+import xcuitest.installer.Source
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -22,6 +24,7 @@ import kotlin.reflect.KClass
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
     private val logger: Logger,
+    private val httpInterceptor: HttpLoggingInterceptor? = null
 ) {
     private lateinit var client: XCTestClient
     constructor(installer: XCTestInstaller, logger: Logger, client: XCTestClient): this(installer, logger) {
@@ -36,19 +39,27 @@ class XCTestDriverClient(
         Runtime.getRuntime().addShutdownHook(Thread {
             isShuttingDown = true
         })
+        httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
     fun restartXCTestRunnerService() {
         logger.info("[Start] Uninstalling xctest ui runner app")
         installer.uninstall()
         logger.info("[Done] Uninstalling xctest ui runner app")
-        client = installer.start()
+        logger.info("[Start] Installing xctest ui runner app")
+        client = installer.start(Source.DRIVER_OPEN)
             ?: throw XCTestDriverUnreachable("Failed to reach XCUITest Server in restart")
+        logger.info("[Done] Installing xctest ui runner app")
     }
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(40, TimeUnit.SECONDS)
         .readTimeout(100, TimeUnit.SECONDS)
+        .apply {
+            httpInterceptor?.let {
+                this.addInterceptor(it)
+            }
+        }
         .addRetryInterceptor()
         .addRetryAndShutdownInterceptor()
         .build()
