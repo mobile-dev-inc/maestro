@@ -1,0 +1,6 @@
+appId: com.example.id
+---
+- addMedia:
+  - "./src/test/resources/media/abc.png"
+  - "./src/test/resources/media/abc.png"
+  - "./src/test/resources/media/abc.png"

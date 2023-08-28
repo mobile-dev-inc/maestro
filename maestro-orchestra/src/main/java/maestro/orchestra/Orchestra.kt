@@ -301,7 +301,7 @@ class Orchestra(
         return true
     }
 
-    private fun addMediaCommand(path: String): Boolean {
+    private fun addMediaCommand(path: List<String>): Boolean {
         maestro.addMedia(path)
         return true
     }

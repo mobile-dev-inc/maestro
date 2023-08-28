@@ -2980,6 +2980,21 @@ class IntegrationTest {
         driver.assertEvents(listOf(Event.AddMedia))
     }
 
+    @Test
+    fun `Case 111 - addMedia command allows adding multiple media`() {
+        // given
+        val commands = readCommands("111_add_multiple_media")
+        val driver = driver {  }
+
+        // when
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(listOf(Event.AddMedia, Event.AddMedia, Event.AddMedia))
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(

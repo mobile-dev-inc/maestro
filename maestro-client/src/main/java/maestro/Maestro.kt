@@ -459,9 +459,11 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitForAppToSettle()
     }
 
-    fun addMedia(file: String) {
-        val source = File(file).source()
-        driver.addMedia(source)
+    fun addMedia(file: List<String>) {
+        file.forEach {
+            val source = File(it).source()
+            driver.addMedia(source)
+        }
     }
 
     override fun close() {
