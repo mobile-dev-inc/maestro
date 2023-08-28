@@ -88,12 +88,6 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
-        names = ["-nw"],
-        description = ["Configures automatically start browser, default is false"]
-    )
-    private var noWindow: Boolean? = null
-
-    @Option(
         names = ["--include-tags"],
         description = ["List of tags that will remove the Flows that does not have the provided tags"],
         split = ",",
@@ -120,20 +114,6 @@ class TestCommand : Callable<Int> {
     }
 
     override fun call(): Int {
-        if (!flowFile.exists()) {
-            throw CommandLine.ParameterException(
-                commandSpec.commandLine(),
-                "File not found: $flowFile"
-            )
-        }
-
-        if (noWindow !is Boolean || noWindow != null) {
-            throw CommandLine.ParameterException(
-                commandSpec.commandLine(),
-                "-nw type can be Boolean. Default is false"
-            )
-        }
-        
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
@@ -152,7 +132,7 @@ class TestCommand : Callable<Int> {
 
         TestDebugReporter.install(debugOutputPathAsString = debugOutput)
         val path = TestDebugReporter.getDebugOutputPath()
-        
+
         return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->
             val maestro = session.maestro
             val device = session.device

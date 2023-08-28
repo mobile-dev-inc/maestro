@@ -26,8 +26,6 @@ class TestSuiteInteractor(
     private val maestro: Maestro,
     private val device: Device? = null,
     private val reporter: TestSuiteReporter,
-    private val includeTags: List<String> = emptyList(),
-    private val excludeTags: List<String> = emptyList(),
 ) {
 
     private val logger = LoggerFactory.getLogger(TestSuiteInteractor::class.java)

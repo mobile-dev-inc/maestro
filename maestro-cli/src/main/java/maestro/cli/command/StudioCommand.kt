@@ -36,8 +36,8 @@ class StudioCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @CommandLine.Option(
-        names = ["-nw"],
-        description = ["Configures automatically start browser, default is false"]
+        names = ["--no-window"],
+        description = ["When set, a browser window will not be automatically opened"]
     )
     private var noWindow: Boolean? = null
 
