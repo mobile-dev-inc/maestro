@@ -57,7 +57,7 @@ object PickDeviceInteractor {
         PrintUtils.message("No devices found. Would you like to start a new one? y/n")
         val proceed = readlnOrNull()?.lowercase()?.trim()
         if (proceed == "no" || proceed == "n") {
-            throw CliError("Please either start a device manually or via Maestro to proceed running your flows")
+            throw CliError("Please either start a device manually or via running maestro start-device to proceed running your flows")
         }
 
         val options = PickDeviceView.requestDeviceOptions()
