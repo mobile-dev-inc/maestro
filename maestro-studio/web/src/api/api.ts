@@ -171,12 +171,19 @@ export const API = {
   deleteOpenAiToken: async () => {
     return makeRequest("DELETE", "/api/auth/openai-token");
   },
-  generateCommandWithAI: async (
-    screen: any,
-    userInput: string,
-    token: string | null | undefined,
-    signal?: AbortSignal
-  ): Promise<any> => {
+  generateCommandWithAI: async ({
+    screen,
+    userInput,
+    token,
+    openAiToken,
+    signal,
+  }: {
+    screen: any;
+    userInput: string;
+    token: string | null | undefined;
+    openAiToken: string | null | undefined;
+    signal?: AbortSignal;
+  }): Promise<any> => {
     const response = await fetch(
       "https://api.mobile.dev/mai/generate-command",
       {
@@ -186,7 +193,7 @@ export const API = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ screen, userInput }),
+        body: JSON.stringify({ screen, userInput, openAiToken }),
         signal,
       }
     );

@@ -132,14 +132,22 @@ const AiInput = () => {
     setFormStates({ isLoading: true, error: null });
     try {
       const viewHeir = await API.lastViewHeirarchy();
-      const response = await API.generateCommandWithAI(
-        viewHeir,
+      const response = await API.generateCommandWithAI({
+        screen: viewHeir,
         userInput,
-        authToken,
-        abortControllerRef.current.signal
-      );
-      setFormStates({ isLoading: false, error: null });
-      setCurrentCommandValue(_.get(response, "command", ""));
+        token: authToken,
+        signal: abortControllerRef.current.signal,
+        openAiToken: openAiToken,
+      });
+      if (_.get(response, "command")) {
+        setFormStates({ isLoading: false, error: null });
+        setCurrentCommandValue(_.get(response, "command", ""));
+      } else {
+        setFormStates({
+          isLoading: false,
+          error: "AI was not able to generate a command.",
+        });
+      }
     } catch (error) {
       let errorMessage;
       if (_.get(error, "name") === "AbortError") {
@@ -230,12 +238,13 @@ const AiInput = () => {
       {openAiToken && (
         <div className="mt-2 bg-blue-100 px-4 py-2 rounded-lg flex flex-col md:flex-row gap-2 md:items-center">
           <p className="text-sm font-medium flex-grow">
-            Your open api: {openAiToken}
+            Your openai API key: {openAiToken}
           </p>
           <div className="flex gap-2">
             <Button
-              variant="secondary"
               onClick={() => setShowApiKeyModal(true)}
+              variant="secondary"
+              className="min-w-[85px]"
             >
               Update API
             </Button>
@@ -243,6 +252,7 @@ const AiInput = () => {
               onClick={deleteOpenAiToken}
               variant="secondary-red"
               leftIcon="RiDeleteBin2Line"
+              className="min-w-[88px]"
             >
               Remove API
             </Button>
