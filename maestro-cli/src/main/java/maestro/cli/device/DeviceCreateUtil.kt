@@ -105,7 +105,13 @@ internal object DeviceCreateUtil {
             if (r == "y" || r == "yes") {
                 PrintUtils.message("Attempting to install $systemImage via Android SDK Manager...\n")
                 if (!DeviceService.installAndroidSystemImage(systemImage)) {
-                    throw CliError("Was unable to install required dependencies.")
+                    throw CliError(
+                        "Unable to install required dependencies. You can install the system image manually by running this command:\n${
+                            DeviceService.getAndroidSystemImageInstallCommand(
+                                systemImage
+                            )
+                        }"
+                    )
                 }
             } else {
                 throw CliError(
