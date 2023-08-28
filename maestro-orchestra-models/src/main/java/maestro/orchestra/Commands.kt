@@ -770,15 +770,15 @@ data class StartRecordingCommand(val path: String) : Command {
     }
 }
 
-data class AddMediaCommand(val path: List<String>): Command {
+data class AddMediaCommand(val mediaPaths: List<String>): Command {
 
     override fun description(): String {
-        return "Adding media files: $path to the device"
+        return "Adding media files: $mediaPaths to the device"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
-            path = path.map { it.evaluateScripts(jsEngine) }
+            mediaPaths = mediaPaths.map { it.evaluateScripts(jsEngine) }
         )
     }
 }

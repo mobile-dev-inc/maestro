@@ -198,8 +198,11 @@ data class YamlFluentCommand(
     }
 
     private fun addMediaCommand(addMedia: YamlAddMedia): AddMediaCommand {
-        val path = addMedia.files ?: throw SyntaxError("Invalid addMedia command: No media file provided")
-        return AddMediaCommand(path)
+        if (addMedia.files == null || addMedia.files.any { it == null }) {
+            throw SyntaxError("Invalid addMedia command: media files cannot be empty")
+        }
+        val mediaPaths = addMedia.files.filterNotNull()
+        return AddMediaCommand(mediaPaths)
     }
 
     private fun runFlowCommand(
