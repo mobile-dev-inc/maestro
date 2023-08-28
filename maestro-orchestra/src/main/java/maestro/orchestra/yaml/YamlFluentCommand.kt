@@ -28,9 +28,13 @@ import maestro.Point
 import maestro.TapRepeat
 import maestro.orchestra.*
 import maestro.orchestra.error.InvalidFlowFile
+import maestro.orchestra.error.MediaFileNotFound
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.util.Env.withEnv
+import java.io.File
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
@@ -201,7 +205,19 @@ data class YamlFluentCommand(
         if (addMedia.files == null || addMedia.files.any { it == null }) {
             throw SyntaxError("Invalid addMedia command: media files cannot be empty")
         }
+
         val mediaPaths = addMedia.files.filterNotNull()
+
+        mediaPaths.forEachIndexed { index, path ->
+            if (!File(path).exists()) {
+                if (path.isEmpty()) {
+                    throw MediaFileNotFound("Media file path at $index is invalid", path)
+                } else {
+                    throw MediaFileNotFound("Media file at $path not found", path)
+                }
+            }
+        }
+
         return AddMediaCommand(mediaPaths)
     }
 
