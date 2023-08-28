@@ -2,6 +2,7 @@ import React, {
   HtmlHTMLAttributes,
   InputHTMLAttributes,
   LabelHTMLAttributes,
+  ReactNode,
   TextareaHTMLAttributes,
   forwardRef,
 } from "react";
@@ -138,7 +139,7 @@ interface InputWrapperProps extends LabelHTMLAttributes<HTMLLabelElement> {
   size?: "sm" | "md" | "lg" | "xl";
   disabled?: boolean;
   success?: boolean | string | null;
-  error?: boolean | string | null;
+  error?: boolean | ReactNode | string | null;
 }
 
 interface InpurLabelProps extends HtmlHTMLAttributes<HTMLElement> {
@@ -158,7 +159,7 @@ interface InputProps
   rightIcon?: keyof typeof IconList;
   rightIconClassName?: string;
   success?: boolean | string | null;
-  error?: boolean | string | null;
+  error?: boolean | ReactNode | string | null;
   inputClassName?: string;
 }
 
@@ -166,7 +167,7 @@ interface TextareaProps
   extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
   size?: "sm" | "md" | "lg" | "xl";
   success?: boolean | string | null;
-  error?: boolean | string | null;
+  error?: boolean | ReactNode | string | null;
   resize?: "automatic" | "vertical" | "none";
   showResizeIcon?: boolean;
   textAreaClassName?: string;
@@ -178,7 +179,7 @@ interface InputHintProps extends HtmlHTMLAttributes<HTMLElement> {
   disabled?: boolean;
   hint?: string;
   success?: boolean | string | null;
-  error?: boolean | string | null;
+  error?: boolean | ReactNode | string | null;
 }
 
 function InputWrapper({
@@ -431,10 +432,14 @@ function InputHint({
   error,
   ...rest
 }: InputHintProps) {
-  if (hint || typeof success === "string" || typeof error === "string") {
-    let hintText: string | undefined = hint;
+  if (
+    hint ||
+    typeof success === "string" ||
+    (error && typeof error !== "boolean")
+  ) {
+    let hintText: string | ReactNode | undefined = hint;
     typeof success === "string" && (hintText = success);
-    typeof error === "string" && (hintText = error);
+    error && typeof error !== "boolean" && (hintText = error);
     return (
       <div
         className={twMerge(

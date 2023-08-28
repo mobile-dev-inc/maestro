@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import _ from "lodash";
 import { useAuth } from "../../context/AuthContext";
 import { useDeviceContext } from "../../context/DeviceContext";
@@ -9,6 +9,7 @@ import { AiSparkles, EnterKey } from "../design-system/utils/images";
 import CommandInput from "./CommandInput";
 import { API } from "../../api/api";
 import { Spinner } from "../design-system/spinner";
+import ChatGptApiKeyModal from "../common/ChatGptApiKeyModal";
 
 type CommandCreatorProps = {
   onSubmit: () => void;
@@ -24,7 +25,7 @@ export default function CommandCreator({
   error,
   setError,
 }: CommandCreatorProps) {
-  const { isAuthenticated } = useAuth();
+  const { authToken } = useAuth();
   const { currentCommandValue, setCurrentCommandValue } = useDeviceContext();
 
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
@@ -32,10 +33,10 @@ export default function CommandCreator({
 
   useEffect(() => {
     const enableAI = currentCommandValue[0] === " ";
-    if (enableAI && !isAuthenticated) {
+    if (enableAI && !authToken) {
       setShowAuthModal(true);
     }
-  }, [isAuthenticated, currentCommandValue]);
+  }, [authToken, currentCommandValue]);
 
   const handleSetValue = (value: string) => {
     setError(null);
@@ -107,18 +108,19 @@ const DefaultInput = () => {
  * AI Input Form
  ************************************************/
 const AiInput = () => {
-  const { token } = useAuth();
   const abortControllerRef = useRef<any>(null);
+  const { authToken, openAiToken, deleteOpenAiToken } = useAuth();
   const { setCurrentCommandValue } = useDeviceContext();
   const aiInputRef = useRef<HTMLInputElement>(null);
   const [userInput, setUserInput] = useState<string>("");
   const [formStates, setFormStates] = useState<{
     isLoading: boolean;
-    error: string | null;
+    error: string | ReactNode | null;
   }>({
     isLoading: false,
     error: null,
   });
+  const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false);
 
   useEffect(() => {
     aiInputRef.current?.focus();
@@ -133,17 +135,27 @@ const AiInput = () => {
       const response = await API.generateCommandWithAI(
         viewHeir,
         userInput,
-        token,
+        authToken,
         abortControllerRef.current.signal
       );
       setFormStates({ isLoading: false, error: null });
-      setCurrentCommandValue(response.command);
+      setCurrentCommandValue(_.get(response, "command", ""));
     } catch (error) {
       let errorMessage;
       if (_.get(error, "name") === "AbortError") {
         errorMessage = "Request was aborted!";
       } else if (_.get(error, "status") === "429") {
-        errorMessage = "Exceeded the rate limit";
+        errorMessage = (
+          <>
+            Exceeded the rate limit.{" "}
+            <span
+              className="underline cursor-pointer"
+              onClick={() => setShowApiKeyModal(true)}
+            >
+              Add your own Key
+            </span>
+          </>
+        );
       } else {
         errorMessage =
           _.get(error, "message") || "An unexpected error occurred!";
@@ -186,29 +198,57 @@ const AiInput = () => {
   }
 
   return (
-    <form className="relative" onSubmit={handleFormSubmit}>
-      <InputWrapper error={formStates.error}>
-        <Input
-          ref={aiInputRef}
-          value={userInput}
-          onKeyDown={handleKeyDown}
-          onChange={(e) => {
-            setUserInput(e.target.value);
-          }}
-          leftElement={<AiSparkles className="w-[18px] text-orange-500" />}
-          placeholder="Ask AI to generate command"
-        />
-        <InputHint />
-      </InputWrapper>
-      <Button
-        disabled={userInput === ""}
-        type="submit"
-        size="sm"
-        className="absolute top-1.5 right-2 p-0 w-[28px] h-[28px]"
-      >
-        <EnterKey className="w-4" />
-      </Button>
-    </form>
+    <>
+      <ChatGptApiKeyModal
+        open={showApiKeyModal}
+        onOpenChange={(val) => setShowApiKeyModal(val)}
+      />
+      <form className="relative" onSubmit={handleFormSubmit}>
+        <InputWrapper error={formStates.error}>
+          <Input
+            ref={aiInputRef}
+            value={userInput}
+            onKeyDown={handleKeyDown}
+            onChange={(e) => {
+              setUserInput(e.target.value);
+            }}
+            leftElement={<AiSparkles className="w-[18px] text-orange-500" />}
+            placeholder="Ask AI to generate command"
+          />
+          <InputHint />
+        </InputWrapper>
+        <Button
+          disabled={userInput === ""}
+          type="submit"
+          size="sm"
+          className="absolute top-1.5 right-2 p-0 w-[28px] h-[28px]"
+        >
+          <EnterKey className="w-4" />
+        </Button>
+      </form>
+      {openAiToken && (
+        <div className="mt-2 bg-blue-100 px-4 py-2 rounded-lg flex flex-col md:flex-row gap-2 md:items-center">
+          <p className="text-sm font-medium flex-grow">
+            Your open api: {openAiToken}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setShowApiKeyModal(true)}
+            >
+              Update API
+            </Button>
+            <Button
+              onClick={deleteOpenAiToken}
+              variant="secondary-red"
+              leftIcon="RiDeleteBin2Line"
+            >
+              Remove API
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

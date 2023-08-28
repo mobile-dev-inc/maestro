@@ -1,25 +1,35 @@
 import React, { ReactNode, createContext, useContext } from "react";
 import { API } from "../api/api";
+import _ from "lodash";
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 interface AuthState {
-  isAuthenticated: boolean;
-  token: string | null | undefined;
+  authToken: string | null | undefined;
+  openAiToken: string | null | undefined;
+  refetchAuth: () => void;
+  deleteOpenAiToken: () => void;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { data: token } = API.useAuth();
+  const { data, mutate: refetchAuth } = API.useAuth();
+
+  const deleteOpenAiToken = async () => {
+    await API.deleteOpenAiToken();
+    refetchAuth();
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!token,
-        token: token,
+        authToken: _.get(data, "authToken", undefined),
+        openAiToken: _.get(data, "openAiToken", undefined),
+        refetchAuth,
+        deleteOpenAiToken,
       }}
     >
       {children}
