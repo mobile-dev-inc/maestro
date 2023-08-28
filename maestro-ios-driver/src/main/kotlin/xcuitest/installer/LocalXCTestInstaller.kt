@@ -46,10 +46,9 @@ class LocalXCTestInstaller(
     }
 
     private fun stop() {
+        logger.info("[Start] Stop XCUITest runner")
         if (xcTestProcess?.isAlive == true) {
-            logger.info("[Start] Stop XCUITest runner")
             xcTestProcess?.destroy()
-            logger.info("[Done] Stop XCUITest runner")
         }
 
         val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
@@ -58,9 +57,10 @@ class LocalXCTestInstaller(
                 .start()
                 .waitFor()
         }
+        logger.info("[Done] Stop XCUITest runner")
     }
 
-    override fun start(): XCTestClient? {
+    override fun start(source: Source): XCTestClient? {
         if (useXcodeTestRunner) {
             repeat(20) {
                 if (ensureOpen()) {
@@ -73,6 +73,8 @@ class LocalXCTestInstaller(
         }
 
         stop()
+
+        logger.info("Starting xctest runner with source $source")
 
         repeat(3) { i ->
             logger.info("[Start] Install XCUITest runner on $deviceId")
@@ -144,9 +146,10 @@ class LocalXCTestInstaller(
         logger.info("[Done] Writing xctest run file")
 
         if (processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
+            logger.info("UI Test runner already running, stopping it")
             stop()
         } else {
-            logger.info("Not able to find ui test runner app, going to install now")
+            logger.info("Not able to find ui test runner app running, going to install now")
 
             logger.info("[Start] Writing maestro-driver-iosUITests-Runner app")
             extractZipToApp("maestro-driver-iosUITests-Runner", UI_TEST_RUNNER_PATH)
