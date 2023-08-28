@@ -94,5 +94,5 @@ interface Driver {
 
     fun setPermissions(appId: String, permissions: Map<String, String>)
 
-    fun addMedia(source: Source)
+    fun addMedia(namedSource: NamedSource)
 }

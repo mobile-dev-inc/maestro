@@ -370,7 +370,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         // no-op for web
     }
 
-    override fun addMedia(source: Source) {
+    override fun addMedia(namedSource: NamedSource) {
         TODO("Not yet implemented")
     }
 

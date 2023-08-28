@@ -25,20 +25,9 @@ import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
 import ios.IOSDevice
-import maestro.Capability
-import maestro.DeviceInfo
-import maestro.Driver
-import maestro.Filters
-import maestro.KeyCode
-import maestro.MaestroException
-import maestro.Platform
-import maestro.Point
-import maestro.ScreenRecording
-import maestro.SwipeDirection
-import maestro.TreeNode
+import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
-import maestro.ViewHierarchy
 import maestro.utils.*
 import okio.Sink
 import okio.Source
@@ -442,7 +431,7 @@ class IOSDriver(
         iosDevice.setPermissions(appId, permissions)
     }
 
-    override fun addMedia(source: Source) {
+    override fun addMedia(namedSource: NamedSource) {
         TODO("Not yet implemented")
     }
 
