@@ -7,6 +7,7 @@ import maestro.cli.device.Platform
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.util.DeviceConfigAndroid
 import maestro.cli.util.DeviceConfigIos
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.PrintUtils
 import picocli.CommandLine
 import java.util.concurrent.Callable
@@ -45,6 +46,10 @@ class StartDeviceCommand : Callable<Int> {
 
     override fun call(): Int {
         TestDebugReporter.install(null)
+
+        if (EnvUtils.isWSL()) {
+            throw CliError("This command is not support in Windows WSL. You can launch your emulator manually.")
+        }
 
         val p = Platform.fromString(platform) ?: throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
 

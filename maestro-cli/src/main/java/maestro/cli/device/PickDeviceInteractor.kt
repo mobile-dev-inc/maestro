@@ -1,6 +1,7 @@
 package maestro.cli.device
 
 import maestro.cli.CliError
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.PrintUtils
 
 object PickDeviceInteractor {
@@ -54,6 +55,10 @@ object PickDeviceInteractor {
     }
 
     private fun startDevice(): Device {
+        if (EnvUtils.isWSL()) {
+            throw CliError("No running emulator found. Start an emulator manually and try again.\nFor setup info checkout: https://maestro.mobile.dev/getting-started/installing-maestro/windows")
+        }
+
         PrintUtils.message("No devices found. Would you like to start a new one? y/n")
         val proceed = readlnOrNull()?.lowercase()?.trim()
         if (proceed == "no" || proceed == "n") {
