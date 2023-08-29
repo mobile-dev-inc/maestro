@@ -22,7 +22,7 @@ object DeviceService {
             Platform.IOS -> {
                 try {
                     LocalSimulatorUtils.launchSimulator(device.modelId)
-                    LocalSimulatorUtils.awaitLaunch(device.modelId)
+                    LocalSimulatorUtils.awaitLaunch(device.modelId, 50000)
                 } catch (e: SimctlError) {
                     logger.error("Failed to launch simulator", e)
                     throw CliError(e.message)
