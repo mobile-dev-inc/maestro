@@ -48,7 +48,7 @@ class StartDeviceCommand : Callable<Int> {
         TestDebugReporter.install(null)
 
         if (EnvUtils.isWSL()) {
-            throw CliError("This command is not support in Windows WSL. You can launch your emulator manually.")
+            throw CliError("This command is not supported in Windows WSL. You can launch your emulator manually.")
         }
 
         val p = Platform.fromString(platform) ?: throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
