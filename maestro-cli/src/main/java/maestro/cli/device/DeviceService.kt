@@ -397,21 +397,15 @@ object DeviceService {
         ?: throw CliError("Could not find emulator binary at either of the following paths:\n$firstChoice\n$secondChoice")
     }
 
-    private fun requireAvdManagerBinary(): File {
-        val androidHome = EnvUtils.androidHome()
-            ?: throw CliError("Could not detect Android home environment variable is not set. Ensure that either ANDROID_HOME or ANDROID_SDK_ROOT is set.")
-        val firstChoice = File(androidHome, "cmdline-tools/latest/bin/avdmanager")
-        val secondChoice = File(androidHome, "tools/bin/avdmanager")
-        return firstChoice.takeIf { it.exists() } ?: secondChoice.takeIf { it.exists() }
-        ?: throw CliError("Could not find avdmanager binary at either of the following paths:\n$firstChoice\n$secondChoice")
-    }
+    private fun requireAvdManagerBinary(): File = requireCmdLineTool("avdmanager")
 
-    private fun requireSdkManagerBinary(): File {
+    private fun requireSdkManagerBinary(): File = requireCmdLineTool("sdkmanager")
+
+    private fun requireCmdLineTool(tool: String): File {
         val androidHome = EnvUtils.androidHome()
             ?: throw CliError("Could not detect Android home environment variable is not set. Ensure that either ANDROID_HOME or ANDROID_SDK_ROOT is set.")
-        val firstChoice = File(androidHome, "cmdline-tools/latest/bin/sdkmanager")
-        val secondChoice = File(androidHome, "tools/bin/sdkmanager")
-        return firstChoice.takeIf { it.exists() } ?: secondChoice.takeIf { it.exists() }
-        ?: throw CliError("Could not find avdmanager binary at either of the following paths:\n$firstChoice\n$secondChoice")
+        val path = File(androidHome, "cmdline-tools/latest/bin/$tool")
+        return path.takeIf { it.exists() }
+            ?: throw CliError("Missing required component $tool from cmdline-tools. To install:\n1) Open Android Studio SDK manager \n2) Install Android SDK Command-Line Tools.\n* https://developer.android.com/studio/intro/update#sdk-manager")
     }
 }
