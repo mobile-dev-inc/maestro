@@ -324,11 +324,11 @@ class FakeDriver : Driver {
     }
 
     fun assertAllEvent(condition: ((event: Event) -> Boolean)) {
-        assertThat(events.all { condition(it) }).isTrue()
+        assertThat(events.filter { it !is Event.DeleteMedia }.all { condition(it) }).isTrue()
     }
 
     fun assertNoInteraction() {
-        if (events.isNotEmpty()) {
+        if (!(events.contains(Event.DeleteMedia) && events.size == 1)) {
             throw AssertionError("Expected no interaction, but got: $events")
         }
     }
@@ -367,6 +367,12 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events.add(Event.AddMedia)
+    }
+
+    override fun removeMedia() {
+        ensureOpen()
+
+        events.add(Event.DeleteMedia)
     }
 
     sealed class Event {
@@ -453,6 +459,8 @@ class FakeDriver : Driver {
         ) : Event()
 
         object AddMedia : Event()
+
+        object DeleteMedia: Event()
 
         object StartRecording : Event()
 

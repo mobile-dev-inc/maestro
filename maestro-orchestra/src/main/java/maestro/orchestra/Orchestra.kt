@@ -27,6 +27,7 @@ import maestro.FindElementResult
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.ScreenRecording
+import maestro.device.DeviceConfigManager
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
 import maestro.js.RhinoJsEngine
@@ -55,6 +56,7 @@ class Orchestra(
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
     private val httpClient: OkHttpClient? = null,
+    private val deviceConfigManager: DeviceConfigManager = DeviceConfigManager(maestro),
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
@@ -127,6 +129,7 @@ class Orchestra(
         } catch (e: Throwable) {
             exception = e
         } finally {
+            deviceConfigManager.resetMedia()
             val onCompleteSuccess = config?.onFlowComplete?.commands?.let {
                 executeCommands(
                     commands = it,

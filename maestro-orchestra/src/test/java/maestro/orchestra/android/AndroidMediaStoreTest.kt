@@ -27,6 +27,6 @@ class AndroidMediaStoreTest {
 
         // then
         val exists = dadb.fileExists("/sdcard/Pictures/android.png")
-        assertThat(exists).isTrue()
+        assertThat(exists).isFalse()
     }
 }

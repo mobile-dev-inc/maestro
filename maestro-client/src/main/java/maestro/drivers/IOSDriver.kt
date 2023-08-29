@@ -435,6 +435,10 @@ class IOSDriver(
         TODO("Not yet implemented")
     }
 
+    override fun removeMedia() {
+        TODO("Not yet implemented")
+    }
+
     private fun isScreenStatic(): Boolean {
         return iosDevice.isScreenStatic().expect {}
     }

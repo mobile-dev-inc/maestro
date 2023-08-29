@@ -467,6 +467,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         }
     }
 
+    fun removeMedia() {
+        driver.removeMedia()
+    }
+
     override fun close() {
         driver.close()
     }

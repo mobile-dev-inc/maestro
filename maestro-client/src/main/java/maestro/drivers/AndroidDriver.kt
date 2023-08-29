@@ -571,6 +571,10 @@ class AndroidDriver(
         responseObserver.awaitResult()
     }
 
+    override fun removeMedia() {
+        runCatching { dadb.shell("rm -rf /sdcard/Pictures/*") }
+    }
+
     private fun setAllPermissions(appId: String, permissionValue: String) {
         val permissionsResult = runCatching {
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
