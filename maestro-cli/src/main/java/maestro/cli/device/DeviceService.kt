@@ -2,7 +2,7 @@ package maestro.cli.device
 
 import dadb.Dadb
 import maestro.cli.CliError
-import maestro.cli.util.EnvUtils
+import maestro.cli.util.AndroidEnvUtils
 import maestro.utils.MaestroTimer
 import okio.buffer
 import okio.source
@@ -386,24 +386,9 @@ object DeviceService {
         return process.exitValue() == 0
     }
 
-    private fun requireEmulatorBinary(): File {
-        val androidHome = EnvUtils.androidHome()
-            ?: throw CliError("Could not detect Android home environment variable is not set. Ensure that either ANDROID_HOME or ANDROID_SDK_ROOT is set.")
-        val firstChoice = File(androidHome, "emulator/emulator")
-        val secondChoice = File(androidHome, "tools/emulator")
-        return firstChoice.takeIf { it.exists() } ?: secondChoice.takeIf { it.exists() }
-        ?: throw CliError("Could not find emulator binary at either of the following paths:\n$firstChoice\n$secondChoice")
-    }
+    private fun requireEmulatorBinary(): File = AndroidEnvUtils.requireEmulatorBinary()
 
-    private fun requireAvdManagerBinary(): File = requireCmdLineTool("avdmanager")
+    private fun requireAvdManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("avdmanager")
 
-    private fun requireSdkManagerBinary(): File = requireCmdLineTool("sdkmanager")
-
-    private fun requireCmdLineTool(tool: String): File {
-        val androidHome = EnvUtils.androidHome()
-            ?: throw CliError("Could not detect Android home environment variable is not set. Ensure that either ANDROID_HOME or ANDROID_SDK_ROOT is set.")
-        val path = File(androidHome, "cmdline-tools/latest/bin/$tool")
-        return path.takeIf { it.exists() }
-            ?: throw CliError("Missing required component $tool from cmdline-tools. To install:\n1) Open Android Studio SDK manager \n2) Install Android SDK Command-Line Tools.\n* https://developer.android.com/studio/intro/update#sdk-manager")
-    }
+    private fun requireSdkManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("sdkmanager")
 }
