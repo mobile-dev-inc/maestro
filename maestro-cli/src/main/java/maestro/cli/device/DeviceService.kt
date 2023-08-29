@@ -310,12 +310,11 @@ object DeviceService {
      * @return true is Android system image is already installed
      */
     fun isAndroidSystemImageInstalled(image: String): Boolean {
+        val command = listOf(
+            requireSdkManagerBinary().absolutePath,
+            "--list_installed"
+        )
         try {
-            val command = listOf(
-                requireSdkManagerBinary().absolutePath,
-                "--list_installed"
-            )
-
             val process = ProcessBuilder(*command.toTypedArray()).start()
             if (!process.waitFor(1, TimeUnit.MINUTES)) {
                 throw TimeoutException()
@@ -338,12 +337,11 @@ object DeviceService {
      * Uses the Android SDK manager to install android image
      */
     fun installAndroidSystemImage(image: String): Boolean {
+        val command = listOf(
+            requireSdkManagerBinary().absolutePath,
+            image
+        )
         try {
-            val command = listOf(
-                requireSdkManagerBinary().absolutePath,
-                image
-            )
-
             val process = ProcessBuilder(*command.toTypedArray())
                 .inheritIO()
                 .start()
