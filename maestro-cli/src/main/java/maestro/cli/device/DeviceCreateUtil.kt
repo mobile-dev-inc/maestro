@@ -86,7 +86,7 @@ internal object DeviceCreateUtil {
         val config = try {
             DeviceConfigAndroid.createConfig(version!!, architecture)
         } catch (e: IllegalStateException) {
-            throw CliError(e.message ?: "Unable to create device android config")
+            throw CliError(e.message ?: "Unable to create android device config")
         }
 
         val systemImage = config.systemImage
