@@ -3,6 +3,7 @@ package maestro.cli.device
 import dadb.Dadb
 import maestro.cli.CliError
 import maestro.cli.util.AndroidEnvUtils
+import maestro.cli.util.AvdDevice
 import maestro.utils.MaestroTimer
 import okio.buffer
 import okio.source
@@ -303,6 +304,33 @@ object DeviceService {
         }
 
         return deviceName
+    }
+
+    fun getAvailablePixelDevices(): List<AvdDevice> {
+        val avd = requireAvdManagerBinary()
+        val command = mutableListOf(
+            avd.absolutePath,
+             "list", "device"
+        )
+
+        val process = ProcessBuilder(*command.toTypedArray()).start()
+
+        if (!process.waitFor(1, TimeUnit.MINUTES)) {
+            throw TimeoutException()
+        }
+
+        if (process.exitValue() != 0) {
+            val processOutput = process.errorStream
+                .source()
+                .buffer()
+                .readUtf8()
+
+            throw IllegalStateException("Failed to list avd devices emulator: $processOutput")
+        }
+
+        return runCatching {
+            AndroidEnvUtils.parsePixelDevices(String(process.inputStream.readBytes()).trim())
+        }.getOrNull() ?: emptyList()
     }
 
 

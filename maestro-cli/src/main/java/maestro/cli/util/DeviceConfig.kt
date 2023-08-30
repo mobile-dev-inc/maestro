@@ -25,9 +25,8 @@ data class DeviceConfigAndroid(
         val versions = listOf(33, 31, 30, 29, 28)
         val defaultVersion = 30
 
-        fun createConfig(version: Int, architecture: MACOS_ARCHITECTURE): DeviceConfigAndroid {
-            val name = "Maestro_Pixel6_$version"
-            val device = "pixel_6"
+        fun createConfig(version: Int, device: AvdDevice, architecture: MACOS_ARCHITECTURE): DeviceConfigAndroid {
+            val name = "Maestro_${device.name.replace(" ", "_")}_API_$version"
             val tag = "google_apis"
             val systemImage = when (architecture) {
                 MACOS_ARCHITECTURE.x86_64 -> "x86_64"
@@ -44,11 +43,19 @@ data class DeviceConfigAndroid(
 
             return DeviceConfigAndroid(
                 deviceName = name,
-                device = device,
+                device = device.nameId,
                 tag = tag,
                 systemImage = systemImage,
                 abi = abi
             )
+        }
+
+        fun choosePixelDevice(devices: List<AvdDevice>): AvdDevice? {
+            return devices.find { it.nameId == "pixel_6" } ?:
+            devices.find { it.nameId == "pixel_6_pro" } ?:
+            devices.find { it.nameId == "pixel_5" } ?:
+            devices.find { it.nameId == "pixel_4" } ?:
+            devices.find { it.nameId == "pixel" }
         }
     }
 }

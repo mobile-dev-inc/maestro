@@ -83,6 +83,16 @@ object AndroidEnvUtils {
         }.getOrNull() ?: false
     }
 
+    /**
+     * @return parses a string from 'avdmanager list device' and returns the pixel devices
+     */
+    fun parsePixelDevices(input: String): List<AvdDevice> {
+        val pattern = "id: (\\d+) or \"(pixel.*?)\"\\n.*?Name: (.*?)\\n".toRegex()
+        return pattern.findAll(input)
+            .map { matchResult -> AvdDevice(matchResult.groupValues[1], matchResult.groupValues[2], matchResult.groupValues[3]) }
+            .toList()
+    }
+
     fun requireEmulatorBinary(): File {
         val androidHome = EnvUtils.androidHome()
             ?: throw CliError("Could not detect Android home environment variable is not set. Ensure that either ANDROID_HOME or ANDROID_SDK_ROOT is set.")
@@ -92,3 +102,5 @@ object AndroidEnvUtils {
         ?: throw CliError("Could not find emulator binary at either of the following paths:\n$firstChoice\n$secondChoice")
     }
 }
+
+data class AvdDevice(val numericId: String, val nameId: String, val name: String)

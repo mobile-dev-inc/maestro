@@ -2,8 +2,6 @@ package maestro.cli.device
 
 import maestro.cli.CliError
 import maestro.cli.util.*
-import maestro.cli.util.DeviceConfigAndroid
-import maestro.cli.util.DeviceConfigIos
 
 internal object DeviceCreateUtil {
 
@@ -83,23 +81,26 @@ internal object DeviceCreateUtil {
         }
 
         val architecture = EnvUtils.getMacOSArchitecture()
+        val pixels = DeviceService.getAvailablePixelDevices()
+        val pixel = DeviceConfigAndroid.choosePixelDevice(pixels) ?: AvdDevice("-1", "Pixel 6", "pixel_6")
+
         val config = try {
-            DeviceConfigAndroid.createConfig(version!!, architecture)
+            DeviceConfigAndroid.createConfig(version!!, pixel, architecture)
         } catch (e: IllegalStateException) {
             throw CliError(e.message ?: "Unable to create android device config")
         }
 
         val systemImage = config.systemImage
-        val name = config.deviceName
+        val deviceName = config.deviceName
 
         // check connected device
-        if (DeviceService.isDeviceConnected(name, Platform.ANDROID) != null) {
-            throw CliError("A device with name $name is already connected")
+        if (DeviceService.isDeviceConnected(deviceName, Platform.ANDROID) != null) {
+            throw CliError("A device with name $deviceName is already connected")
         }
 
         // existing device
         val existingDevice =
-            if (forceCreate) null else DeviceService.isDeviceAvailableToLaunch(name, Platform.ANDROID)?.modelId
+            if (forceCreate) null else DeviceService.isDeviceAvailableToLaunch(deviceName, Platform.ANDROID)?.modelId
 
         // dependencies
         if (existingDevice == null && !DeviceService.isAndroidSystemImageInstalled(systemImage)) {
@@ -129,8 +130,8 @@ internal object DeviceCreateUtil {
             }
         }
 
-        if (existingDevice != null) PrintUtils.message("Using existing device $name.")
-        else PrintUtils.message("Attempting to create Android emulator: $name ")
+        if (existingDevice != null) PrintUtils.message("Using existing device $deviceName.")
+        else PrintUtils.message("Attempting to create Android emulator: $deviceName ")
 
         val deviceLaunchId = try {
             existingDevice ?: DeviceService.createAndroidDevice(
@@ -145,7 +146,7 @@ internal object DeviceCreateUtil {
             throw CliError("${e.message}")
         }
 
-        if (existingDevice == null) PrintUtils.message("Created Android emulator: $name ($systemImage)")
+        if (existingDevice == null) PrintUtils.message("Created Android emulator: $deviceName ($systemImage)")
 
         return Device.AvailableForLaunch(
             modelId = deviceLaunchId,
