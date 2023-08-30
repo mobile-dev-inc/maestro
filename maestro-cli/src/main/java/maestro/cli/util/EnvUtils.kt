@@ -64,7 +64,7 @@ object EnvUtils {
 
             when (reader.readLine()) {
                 "x86_64" -> MACOS_ARCHITECTURE.x86_64
-                "arm64" -> MACOS_ARCHITECTURE.ARM46
+                "arm64" -> MACOS_ARCHITECTURE.ARM64
                 else -> MACOS_ARCHITECTURE.UNKNOWN
             }
         }.getOrNull() ?: MACOS_ARCHITECTURE.UNKNOWN
@@ -73,6 +73,6 @@ object EnvUtils {
 
 enum class MACOS_ARCHITECTURE {
     x86_64,
-    ARM46,
+    ARM64,
     UNKNOWN
 }

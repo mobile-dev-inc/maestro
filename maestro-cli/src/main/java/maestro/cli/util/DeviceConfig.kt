@@ -31,14 +31,14 @@ data class DeviceConfigAndroid(
             val tag = "google_apis"
             val systemImage = when (architecture) {
                 MACOS_ARCHITECTURE.x86_64 -> "x86_64"
-                MACOS_ARCHITECTURE.ARM46 -> "arm64-v8a"
+                MACOS_ARCHITECTURE.ARM64 -> "arm64-v8a"
                 else -> throw IllegalStateException("Unsupported architecture $architecture")
             }.let {
                 "system-images;android-$version;google_apis;$it"
             }
             val abi = when (architecture) {
                 MACOS_ARCHITECTURE.x86_64 -> "x86_64"
-                MACOS_ARCHITECTURE.ARM46 -> "arm64-v8a"
+                MACOS_ARCHITECTURE.ARM64 -> "arm64-v8a"
                 else -> throw IllegalStateException("Unsupported architecture $architecture")
             }
 
