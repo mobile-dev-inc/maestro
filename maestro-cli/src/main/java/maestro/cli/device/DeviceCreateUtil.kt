@@ -1,9 +1,9 @@
 package maestro.cli.device
 
 import maestro.cli.CliError
+import maestro.cli.util.*
 import maestro.cli.util.DeviceConfigAndroid
 import maestro.cli.util.DeviceConfigIos
-import maestro.cli.util.PrintUtils
 
 internal object DeviceCreateUtil {
 
@@ -82,10 +82,15 @@ internal object DeviceCreateUtil {
             throw CliError("Provided Android version is not supported. Please use one of ${DeviceConfigAndroid.versions}")
         }
 
-        val systemImage = DeviceConfigAndroid.systemImages[version]
-            ?: throw CliError("Provided system image is not supported. Please use one of ${DeviceConfigAndroid.versions}")
+        val architecture = EnvUtils.getMacOSArchitecture()
+        val config = try {
+            DeviceConfigAndroid.createConfig(version!!, architecture)
+        } catch (e: IllegalStateException) {
+            throw CliError(e.message ?: "Unable to create device android config")
+        }
 
-        val name = DeviceConfigAndroid.generateDeviceName(version!!)
+        val systemImage = config.systemImage
+        val name = config.deviceName
 
         // check connected device
         if (DeviceService.isDeviceConnected(name, Platform.ANDROID) != null) {
@@ -129,11 +134,11 @@ internal object DeviceCreateUtil {
 
         val deviceLaunchId = try {
             existingDevice ?: DeviceService.createAndroidDevice(
-                deviceName = name,
-                device = DeviceConfigAndroid.device,
-                systemImage = systemImage,
-                tag = DeviceConfigAndroid.tag,
-                abi = DeviceConfigAndroid.abi,
+                deviceName = config.deviceName,
+                device = config.device,
+                systemImage = config.systemImage,
+                tag = config.tag,
+                abi = config.abi,
                 force = forceCreate
             )
         } catch (e: IllegalStateException) {

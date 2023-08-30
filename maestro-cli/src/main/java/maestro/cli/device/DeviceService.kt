@@ -264,7 +264,7 @@ object DeviceService {
      * @param device Device type as specified by the Android SDK i.e. "pixel_6"
      * @param systemImage Full system package i.e "system-images;android-28;google_apis;x86_64"
      * @param tag google apis or playstore tag i.e. google_apis or google_apis_playstore
-     * @param abi x86_64, x86 etc..
+     * @param abi x86_64, x86, arm64 etc..
      */
     fun createAndroidDevice(
         deviceName: String,

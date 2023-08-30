@@ -51,7 +51,8 @@ class StartDeviceCommand : Callable<Int> {
             throw CliError("This command is not supported in Windows WSL. You can launch your emulator manually.")
         }
 
-        val p = Platform.fromString(platform) ?: throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
+        val p = Platform.fromString(platform)
+            ?: throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
 
         // default OS version
         if (!::osVersion.isInitialized) {

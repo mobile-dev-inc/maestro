@@ -56,4 +56,23 @@ object EnvUtils {
         }.getOrNull()
     }
 
+    fun getMacOSArchitecture(): MACOS_ARCHITECTURE {
+        return runCatching {
+            val processBuilder = ProcessBuilder("uname", "-m")
+            val process = processBuilder.start()
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+
+            when (reader.readLine()) {
+                "x86_64" -> MACOS_ARCHITECTURE.x86_64
+                "arm64" -> MACOS_ARCHITECTURE.ARM46
+                else -> MACOS_ARCHITECTURE.UNKNOWN
+            }
+        }.getOrNull() ?: MACOS_ARCHITECTURE.UNKNOWN
+    }
+}
+
+enum class MACOS_ARCHITECTURE {
+    x86_64,
+    ARM46,
+    UNKNOWN
 }

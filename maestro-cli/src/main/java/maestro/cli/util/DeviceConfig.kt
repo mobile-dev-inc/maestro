@@ -14,19 +14,41 @@ internal object DeviceConfigIos {
     fun generateDeviceName(version: Int) = "Maestro_iPhone11_$version"
 }
 
-internal object DeviceConfigAndroid {
-    val device = "pixel_6"
-    val tag = "google_apis"
-    val versions = listOf(33, 31, 30, 29, 28)
-    val defaultVersion = 30
-    val systemImages = mapOf(
-        28 to "system-images;android-28;google_apis;x86_64",
-        29 to "system-images;android-29;google_apis;x86_64",
-        30 to "system-images;android-30;google_apis;x86_64",
-        31 to "system-images;android-31;google_apis;x86_64",
-        33 to "system-images;android-33;google_apis;x86_64"
-    )
-    val abi = "x86_64"
+data class DeviceConfigAndroid(
+    val deviceName: String,
+    val device: String,
+    val tag: String,
+    val systemImage: String,
+    val abi: String
+) {
+    companion object {
+        val versions = listOf(33, 31, 30, 29, 28)
+        val defaultVersion = 30
 
-    fun generateDeviceName(version: Int) = "Maestro_Pixel6_$version"
+        fun createConfig(version: Int, architecture: MACOS_ARCHITECTURE): DeviceConfigAndroid {
+            val name = "Maestro_Pixel6_$version"
+            val device = "pixel_6"
+            val tag = "google_apis"
+            val systemImage = when (architecture) {
+                MACOS_ARCHITECTURE.x86_64 -> "x86_64"
+                MACOS_ARCHITECTURE.ARM46 -> "arm64-v8a"
+                else -> throw IllegalStateException("Unsupported architecture $architecture")
+            }.let {
+                "system-images;android-$version;google_apis;$it"
+            }
+            val abi = when (architecture) {
+                MACOS_ARCHITECTURE.x86_64 -> "x86_64"
+                MACOS_ARCHITECTURE.ARM46 -> "arm64-v8a"
+                else -> throw IllegalStateException("Unsupported architecture $architecture")
+            }
+
+            return DeviceConfigAndroid(
+                deviceName = name,
+                device = device,
+                tag = tag,
+                systemImage = systemImage,
+                abi = abi
+            )
+        }
+    }
 }
