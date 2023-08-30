@@ -22,7 +22,7 @@ object DeviceService {
             Platform.IOS -> {
                 try {
                     LocalSimulatorUtils.launchSimulator(device.modelId)
-                    LocalSimulatorUtils.awaitLaunch(device.modelId, 50000)
+                    LocalSimulatorUtils.awaitLaunch(device.modelId, 60000)
                 } catch (e: SimctlError) {
                     logger.error("Failed to launch simulator", e)
                     throw CliError(e.message)
@@ -48,7 +48,7 @@ object DeviceService {
                     "full"
                 ).start()
 
-                val dadb = MaestroTimer.withTimeout(30000) {
+                val dadb = MaestroTimer.withTimeout(60000) {
                     try {
                         Dadb.discover()
                     } catch (ignored: Exception) {
