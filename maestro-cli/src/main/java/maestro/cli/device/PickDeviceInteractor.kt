@@ -60,7 +60,7 @@ object PickDeviceInteractor {
         }
 
         PrintUtils.message("No running devices found. Launch a device manually or select a number from the options below:\n")
-        PrintUtils.message("[1] List existing devices\n[2] Create or start a Maestro recommended device\n[3] Quit")
+        PrintUtils.message("[1] List existing devices\n[2] Start or create a Maestro recommended device\n[3] Quit")
         val input = readlnOrNull()?.lowercase()?.trim()
 
         when(input) {
