@@ -215,7 +215,10 @@ class Service(
 
             override fun onNext(value: MaestroAndroid.AddMediaRequest) {
                 if (outputStream == null) {
-                    outputStream = MediaStorage.getOutputStream(value.mediaName)
+                    outputStream = MediaStorage.getOutputStream(
+                        value.mediaName,
+                        value.mediaExt
+                    )
                 }
                 value.payload.data.writeTo(outputStream)
             }
@@ -416,6 +419,7 @@ class Service(
     enum class FileType(val ext: String, val mimeType: String) {
         JPG("jpg", "image/jpg"),
         JPEG("jpeg", "image/jpeg"),
-        PNG("png", "image/png")
+        PNG("png", "image/png"),
+        GIF("gif", "image/gif")
     }
 }

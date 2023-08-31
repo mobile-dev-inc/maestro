@@ -99,6 +99,7 @@ message CheckWindowUpdatingResponse {
 message AddMediaRequest {
   Payload payload = 1;
   string media_name = 2;
+  string media_ext = 3;
 }
 
 message AddMediaResponse { }

@@ -552,6 +552,9 @@ class AndroidDriver(
     override fun addMedia(namedSource: NamedSource) {
         val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
         val requestStream = asyncStub.addMedia(responseObserver)
+        val ext = requireNotNull(
+            MediaExt.values().firstOrNull { it.extName == namedSource.extension }
+        ) { "ext ${namedSource.extension} is not yet supported for add media" }
 
         val buffer = Buffer()
         val source = namedSource.source
@@ -562,6 +565,7 @@ class AndroidDriver(
                         data = ByteString.copyFrom(buffer.readByteArray())
                     }
                     this.mediaName = namedSource.name
+                    this.mediaExt = ext.extName
                 }
             )
             buffer.clear()
