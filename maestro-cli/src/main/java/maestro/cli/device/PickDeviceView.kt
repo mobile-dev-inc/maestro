@@ -16,7 +16,7 @@ object PickDeviceView {
     fun pickDeviceToStart(devices: List<Device>): Device {
         printIndexedDevices(devices)
 
-        println("No running devices detected. Choose a device to boot and run on.")
+        println("Choose a device to boot and run on.")
         printEnterNumberPrompt()
 
         return pickIndex(devices)

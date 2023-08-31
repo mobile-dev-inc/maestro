@@ -59,22 +59,36 @@ object PickDeviceInteractor {
             throw CliError("No running emulator found. Start an emulator manually and try again.\nFor setup info checkout: https://maestro.mobile.dev/getting-started/installing-maestro/windows")
         }
 
-        PrintUtils.message("No devices found. Would you like to start a new one? y/n")
-        val proceed = readlnOrNull()?.lowercase()?.trim()
-        if (proceed == "no" || proceed == "n") {
-            throw CliError("Please either start a device manually or via running maestro start-device to proceed running your flows")
-        }
+        PrintUtils.message("No running devices found. Launch a device manually or select a number from the options below:\n")
+        PrintUtils.message("[1] List existing devices\n[2] Create a Maestro recommended device\n[3] Quit")
+        val input = readlnOrNull()?.lowercase()?.trim()
 
-        val options = PickDeviceView.requestDeviceOptions()
-        if (options.platform == Platform.WEB) {
-            return Device.AvailableForLaunch(
-                platform = Platform.WEB,
-                description = "Chromium Desktop Browser (Experimental)",
-                modelId = "chromium"
-            )
-        }
+        when(input) {
+            "1" -> {
+                PrintUtils.clearConsole()
+                val availableDevices = DeviceService.listAvailableForLaunchDevices()
+                if (availableDevices.isEmpty()) {
+                    throw CliError("No devices available. To proceed, either install Android SDK or Xcode.")
+                }
 
-        return DeviceCreateUtil.getOrCreateDevice(options.platform, options.osVersion, options.forceCreate)
+                return PickDeviceView.pickDeviceToStart(availableDevices)
+            }
+            "2" -> {
+                PrintUtils.clearConsole()
+                val options = PickDeviceView.requestDeviceOptions()
+                if (options.platform == Platform.WEB) {
+                    return Device.AvailableForLaunch(
+                        platform = Platform.WEB,
+                        description = "Chromium Desktop Browser (Experimental)",
+                        modelId = "chromium"
+                    )
+                }
+                return DeviceCreateUtil.getOrCreateDevice(options.platform, options.osVersion, options.forceCreate)
+            }
+            else -> {
+                throw CliError("Please either start a device manually or via running maestro start-device to proceed running your flows")
+            }
+        }
     }
 
     private fun pickRunningDevice(devices: List<Device>): Device {
