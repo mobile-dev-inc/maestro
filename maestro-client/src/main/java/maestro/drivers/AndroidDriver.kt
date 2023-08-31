@@ -576,7 +576,10 @@ class AndroidDriver(
     }
 
     override fun removeMedia() {
-        runCatching { dadb.shell("rm -rf /sdcard/Pictures/*") }
+        runCatching {
+            dadb.shell("rm -rf /sdcard/Pictures/*")
+            dadb.shell("rm -rf /sdcard/Movies/*")
+        }
     }
 
     private fun setAllPermissions(appId: String, permissionValue: String) {

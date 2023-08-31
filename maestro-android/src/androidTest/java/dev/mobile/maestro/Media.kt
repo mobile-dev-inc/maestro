@@ -8,7 +8,14 @@ import java.io.OutputStream
 object MediaStorage {
 
     fun getOutputStream(mediaName: String, mediaExt: String): OutputStream? {
-        val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val uri = when (mediaExt) {
+            Service.FileType.JPG.ext,
+            Service.FileType.PNG.ext,
+            Service.FileType.GIF.ext,
+            Service.FileType.JPEG.ext -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            Service.FileType.MP4.ext -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            else -> throw IllegalStateException("mime type not yet supported")
+        }
         val ext = Service.FileType.values().first { it.ext == mediaExt }
         val contentValues = ContentValues()
         contentValues.apply {

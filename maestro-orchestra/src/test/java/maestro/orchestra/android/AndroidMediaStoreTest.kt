@@ -39,7 +39,8 @@ class AndroidMediaStoreTest {
                 mapOf("./src/test/resources/media/add_media_png.yaml" to "/sdcard/Pictures/android.png"),
                 mapOf("./src/test/resources/media/add_media_jpeg.yaml" to "/sdcard/Pictures/android_jpeg.jpeg"),
                 mapOf("./src/test/resources/media/add_media_jpg.yaml" to "/sdcard/Pictures/android_jpg.jpg"),
-                mapOf("./src/test/resources/media/add_media_gif.yaml" to "/sdcard/Pictures/android_gif.gif")
+                mapOf("./src/test/resources/media/add_media_gif.yaml" to "/sdcard/Pictures/android_gif.gif"),
+                mapOf("./src/test/resources/media/add_media_mp4.yaml" to "/sdcard/Movies/sample_video.mp4"),
             )
         }
     }

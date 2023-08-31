@@ -420,6 +420,7 @@ class Service(
         JPG("jpg", "image/jpg"),
         JPEG("jpeg", "image/jpeg"),
         PNG("png", "image/png"),
-        GIF("gif", "image/gif")
+        GIF("gif", "image/gif"),
+        MP4("mp4", "video/mp4")
     }
 }
