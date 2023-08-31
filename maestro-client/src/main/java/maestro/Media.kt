@@ -9,5 +9,6 @@ enum class MediaExt(val extName: String) {
     JPEG("jpeg"),
     JPG("jpg"),
     GIF("gif"),
-    MP4("mp4")
+    MP4("mp4"),
+    MP3("mp3")
 }

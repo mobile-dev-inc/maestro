@@ -579,6 +579,7 @@ class AndroidDriver(
         runCatching {
             dadb.shell("rm -rf /sdcard/Pictures/*")
             dadb.shell("rm -rf /sdcard/Movies/*")
+            dadb.shell("rm -rf /sdcard/Music/*")
         }
     }
 
