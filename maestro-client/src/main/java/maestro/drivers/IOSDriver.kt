@@ -432,11 +432,11 @@ class IOSDriver(
     }
 
     override fun addMedia(namedSource: NamedSource) {
-        TODO("Not yet implemented")
+        iosDevice.addMedia(namedSource.path)
     }
 
     override fun removeMedia() {
-        TODO("Not yet implemented")
+        runCatching { iosDevice.deleteMedia() }
     }
 
     private fun isScreenStatic(): Boolean {

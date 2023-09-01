@@ -13,4 +13,4 @@ appId: com.google.android.apps.photos
           optional: true
       - back
 # assert that photo is taken
-- assertVisible: "Photo taken on.*"
+- tapOn: "Photo taken on.*"

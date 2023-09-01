@@ -16,7 +16,7 @@ class AndroidMediaStoreTest {
 
     @ParameterizedTest
     @MethodSource("provideMediaFlows")
-    fun `it should add media and its visible in google photos`(mediaMap: Map<String, String>) {
+    fun `it should add media for android and its visible in google photos`(mediaMap: Map<String, String>) {
         // given
         val expectedMediaPath = mediaMap.values.first()
         val mediaFlow = mediaMap.keys.first()
