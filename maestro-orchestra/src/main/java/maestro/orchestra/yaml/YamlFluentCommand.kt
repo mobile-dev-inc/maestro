@@ -75,7 +75,11 @@ data class YamlFluentCommand(
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: String? = null,
-    val action: String? = null,
+    val back: YamlActionBack? = null,
+    val clearKeychain: YamlActionClearKeychain? = null,
+    val hideKeyboard: YamlActionHideKeyboard? = null,
+    val pasteText: YamlActionPasteText? = null,
+    val scroll: YamlActionScroll? = null,
     val inputText: YamlInputText? = null,
     val inputRandomText: YamlInputRandomText? = null,
     val inputRandomNumber: YamlInputRandomNumber? = null,
@@ -130,7 +134,7 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            assertTrue != null -> listOf(
+            assertTrue != null -> listOf( //TODO
                 MaestroCommand(
                     AssertConditionCommand(
                         Condition(
@@ -140,24 +144,19 @@ data class YamlFluentCommand(
                 )
             )
             inputText != null -> listOf(MaestroCommand(InputTextCommand(text = inputText.text, label = inputText.label)))
-            inputRandomText != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT, length = inputRandomText.length)))
-            inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length)))
-            inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS)))
-            inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME)))
+            inputRandomText != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT, length = inputRandomText.length, label = inputRandomText.label)))
+            inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length, label = inputRandomNumber.label)))
+            inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS, label = inputRandomEmail.label)))
+            inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME, label = inputRandomPersonName.label)))
             swipe != null -> listOf(swipeCommand(swipe))
-            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(openLink.link, openLink.autoVerify, openLink.browser)))
-            pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey"))))
+            openLink != null -> listOf(MaestroCommand(OpenLinkCommand(link = openLink.link, autoVerify = openLink.autoVerify, browser =  openLink.browser, label = openLink.label)))
+            pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey")))) //TODO
             eraseText != null -> listOf(eraseCommand(eraseText))
-            action != null -> listOf(
-                when (action) {
-                    "back" -> MaestroCommand(BackPressCommand())
-                    "hide keyboard" -> MaestroCommand(HideKeyboardCommand())
-                    "scroll" -> MaestroCommand(ScrollCommand())
-                    "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
-                    "pasteText" -> MaestroCommand(PasteTextCommand())
-                    else -> error("Unknown navigation target: $action")
-                }
-            )
+            back != null -> listOf(MaestroCommand(BackPressCommand(label = back.label)))
+            clearKeychain != null -> listOf(MaestroCommand(ClearKeychainCommand(label = clearKeychain.label)))
+            hideKeyboard != null -> listOf(MaestroCommand(HideKeyboardCommand(label = hideKeyboard.label)))
+            pasteText != null -> listOf(MaestroCommand(PasteTextCommand(label = pasteText.label)))
+            scroll != null -> listOf(MaestroCommand(ScrollCommand(label = scroll.label)))
             takeScreenshot != null -> listOf(MaestroCommand(TakeScreenshotCommand(path = takeScreenshot.path, label = takeScreenshot.label)))
             extendedWaitUntil != null -> listOf(extendedWait(extendedWaitUntil))
             stopApp != null -> listOf(
@@ -172,6 +171,7 @@ data class YamlFluentCommand(
                 MaestroCommand(
                     maestro.orchestra.ClearStateCommand(
                         appId = clearState.appId ?: appId,
+                        label = clearState.label
                     )
                 )
             )
@@ -209,7 +209,7 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            evalScript != null -> listOf(
+            evalScript != null -> listOf( //TODO
                 MaestroCommand(
                     EvalScriptCommand(
                         scriptString = evalScript,
@@ -218,8 +218,8 @@ data class YamlFluentCommand(
             )
             scrollUntilVisible != null -> listOf(scrollUntilVisibleCommand(scrollUntilVisible))
             travel != null -> listOf(travelCommand(travel))
-            startRecording != null -> listOf(MaestroCommand(StartRecordingCommand(startRecording.path)))
-            stopRecording != null -> listOf(MaestroCommand(StopRecordingCommand()))
+            startRecording != null -> listOf(MaestroCommand(StartRecordingCommand(startRecording.path, startRecording.label)))
+            stopRecording != null -> listOf(MaestroCommand(StopRecordingCommand(stopRecording.label)))
             doubleTapOn != null -> {
                 val yamlDelay = (doubleTapOn as? YamlElementSelector)?.delay?.toLong()
                 val delay = if (yamlDelay != null && yamlDelay >= 0) yamlDelay else TapOnElementCommand.DEFAULT_REPEAT_DELAY
@@ -285,6 +285,7 @@ data class YamlFluentCommand(
                         )
                     },
                 speedMPS = command.speed,
+                label = command.label,
             )
         )
     }
@@ -295,14 +296,15 @@ data class YamlFluentCommand(
             condition = repeat.`while`?.toCondition(),
             commands = repeat.commands
                 .flatMap { it.toCommands(flowPath, appId) },
+            label = repeat.label,
         )
     )
 
     private fun eraseCommand(eraseText: YamlEraseText): MaestroCommand {
         return if (eraseText.charactersToErase != null) {
-            MaestroCommand(EraseTextCommand(charactersToErase = eraseText.charactersToErase))
+            MaestroCommand(EraseTextCommand(charactersToErase = eraseText.charactersToErase, label = eraseText.label))
         } else {
-            MaestroCommand(EraseTextCommand(charactersToErase = null))
+            MaestroCommand(EraseTextCommand(charactersToErase = null, label = eraseText.label))
         }
     }
 
@@ -371,6 +373,7 @@ data class YamlFluentCommand(
             AssertConditionCommand(
                 condition = condition,
                 timeout = command.timeout,
+                label = command.label,
             )
         )
     }
@@ -384,6 +387,7 @@ data class YamlFluentCommand(
                 stopApp = command.stopApp,
                 permissions = command.permissions,
                 launchArguments = command.arguments,
+                label = command.label,
             )
         )
     }
@@ -431,7 +435,7 @@ data class YamlFluentCommand(
 
     private fun swipeCommand(swipe: YamlSwipe): MaestroCommand {
         when (swipe) {
-            is YamlSwipeDirection -> return MaestroCommand(SwipeCommand(direction = swipe.direction, duration = swipe.duration))
+            is YamlSwipeDirection -> return MaestroCommand(SwipeCommand(direction = swipe.direction, duration = swipe.duration, label = swipe.label))
             is YamlCoordinateSwipe -> {
                 val start = swipe.start
                 val end = swipe.end
@@ -450,11 +454,11 @@ data class YamlFluentCommand(
                     }
                 endPoint = Point(endPoints[0], endPoints[1])
 
-                return MaestroCommand(SwipeCommand(startPoint = startPoint, endPoint = endPoint, duration = swipe.duration))
+                return MaestroCommand(SwipeCommand(startPoint = startPoint, endPoint = endPoint, duration = swipe.duration, label = swipe.label))
             }
             is YamlRelativeCoordinateSwipe -> {
                 return MaestroCommand(
-                    SwipeCommand(startRelative = swipe.start, endRelative = swipe.end, duration = swipe.duration)
+                    SwipeCommand(startRelative = swipe.start, endRelative = swipe.end, duration = swipe.duration, label = swipe.label)
                 )
             }
             is YamlSwipeElement -> return swipeElementCommand(swipe)
@@ -472,7 +476,8 @@ data class YamlFluentCommand(
             swipeCommand = SwipeCommand(
                 direction = swipeElement.direction,
                 elementSelector = toElementSelector(swipeElement.from),
-                duration = swipeElement.duration
+                duration = swipeElement.duration,
+                label = swipeElement.label,
             )
         )
     }
@@ -527,7 +532,8 @@ data class YamlFluentCommand(
     ): MaestroCommand {
         return MaestroCommand(
             CopyTextFromCommand(
-                selector = toElementSelector(copyText)
+                selector = toElementSelector(copyText),
+                label = (copyText as YamlElementSelector).label
             )
         )
     }
@@ -557,6 +563,7 @@ data class YamlFluentCommand(
             visible = visible?.let { toElementSelector(it) },
             notVisible = notVisible?.let { toElementSelector(it) },
             scriptCondition = `true`?.trim(),
+            label = label
         )
     }
 
@@ -589,7 +596,7 @@ data class YamlFluentCommand(
                 )
 
                 "clearKeychain" -> YamlFluentCommand(
-                    action = "clearKeychain"
+                    clearKeychain = YamlActionClearKeychain(),
                 )
 
                 "eraseText" -> YamlFluentCommand(
@@ -613,19 +620,19 @@ data class YamlFluentCommand(
                 )
 
                 "back" -> YamlFluentCommand(
-                    action = "back"
+                    back = YamlActionBack(),
                 )
 
                 "hide keyboard", "hideKeyboard" -> YamlFluentCommand(
-                    action = "hide keyboard"
+                    hideKeyboard = YamlActionHideKeyboard(),
                 )
 
                 "pasteText" -> YamlFluentCommand(
-                    action = "pasteText"
+                    pasteText = YamlActionPasteText(),
                 )
 
                 "scroll" -> YamlFluentCommand(
-                    action = "scroll"
+                    scroll = YamlActionScroll(),
                 )
 
                 "waitForAnimationToEnd" -> YamlFluentCommand(

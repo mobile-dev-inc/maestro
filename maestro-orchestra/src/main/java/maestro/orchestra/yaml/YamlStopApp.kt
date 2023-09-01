@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 
 data class YamlStopApp(
     val appId: String? = null,
-    val label: String? = null
+    val label: String? = null,
 ) {
 
     companion object {
