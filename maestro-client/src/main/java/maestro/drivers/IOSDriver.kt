@@ -432,6 +432,12 @@ class IOSDriver(
     }
 
     override fun addMedia(namedSource: NamedSource) {
+        val mediaExt = MediaExt.values().firstOrNull { it.extName == namedSource.extension }
+        if (mediaExt == null || mediaExt == MediaExt.MP3) {
+            throw IllegalArgumentException(
+                "ext ${namedSource.extension} is not yet supported for add media"
+            )
+        }
         iosDevice.addMedia(namedSource.path)
     }
 
