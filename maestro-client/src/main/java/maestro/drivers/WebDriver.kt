@@ -10,11 +10,10 @@ import maestro.Point
 import maestro.ScreenRecording
 import maestro.SwipeDirection
 import maestro.TreeNode
-import maestro.UiElement
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import okio.Sink
-import okio.Source
+import maestro.NamedSource
 import okio.buffer
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
@@ -29,7 +28,6 @@ import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
-import java.io.File
 import java.time.Duration
 import java.util.Random
 import java.util.UUID
