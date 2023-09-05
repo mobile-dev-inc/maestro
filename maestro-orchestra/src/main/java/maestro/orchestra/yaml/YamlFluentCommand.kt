@@ -40,7 +40,7 @@ data class YamlFluentCommand(
     val longPressOn: YamlElementSelectorUnion? = null,
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
-    val assertTrue: String? = null,
+    val assertTrue: YamlAssertTrue? = null,
     val back: YamlActionBack? = null,
     val clearKeychain: YamlActionClearKeychain? = null,
     val hideKeyboard: YamlActionHideKeyboard? = null,
@@ -55,7 +55,7 @@ data class YamlFluentCommand(
     val swipe: YamlSwipe? = null,
     val openLink: YamlOpenLink? = null,
     val openBrowser: String? = null,
-    val pressKey: String? = null,
+    val pressKey: YamlPressKey? = null,
     val eraseText: YamlEraseText? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
@@ -67,7 +67,7 @@ data class YamlFluentCommand(
     val copyTextFrom: YamlElementSelectorUnion? = null,
     val runScript: YamlRunScript? = null,
     val waitForAnimationToEnd: YamlWaitForAnimationToEndCommand? = null,
-    val evalScript: String? = null,
+    val evalScript: YamlEvalScript? = null,
     val scrollUntilVisible: YamlScrollUntilVisible? = null,
     val travel: YamlTravelCommand? = null,
     val startRecording: YamlStartRecording? = null,
@@ -101,12 +101,13 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            assertTrue != null -> listOf( //TODO
+            assertTrue != null -> listOf(
                 MaestroCommand(
                     AssertConditionCommand(
                         Condition(
-                            scriptCondition = assertTrue,
-                        )
+                            scriptCondition = assertTrue.condition,
+                        ),
+                        label = assertTrue.label
                     )
                 )
             )
@@ -122,7 +123,7 @@ data class YamlFluentCommand(
             inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME, label = inputRandomPersonName.label)))
             swipe != null -> listOf(swipeCommand(swipe))
             openLink != null -> listOf(MaestroCommand(OpenLinkCommand(link = openLink.link, autoVerify = openLink.autoVerify, browser =  openLink.browser, label = openLink.label)))
-            pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey) ?: throw SyntaxError("Unknown key name: $pressKey")))) //TODO
+            pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey.key) ?: throw SyntaxError("Unknown key name: $pressKey"), label = pressKey.label)))
             eraseText != null -> listOf(eraseCommand(eraseText))
             back != null -> listOf(MaestroCommand(BackPressCommand(label = back.label)))
             clearKeychain != null -> listOf(MaestroCommand(ClearKeychainCommand(label = clearKeychain.label)))
@@ -181,10 +182,11 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            evalScript != null -> listOf( //TODO
+            evalScript != null -> listOf(
                 MaestroCommand(
                     EvalScriptCommand(
-                        scriptString = evalScript,
+                        scriptString = evalScript.script,
+                        label = evalScript.label
                     )
                 )
             )
