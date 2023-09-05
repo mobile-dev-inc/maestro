@@ -6,11 +6,6 @@ import Network
 
 @MainActor
 struct EraseTextHandler: HTTPHandler {
-    private enum Constants {
-        static let typingFrequency = 30
-        static let slowInputCharactersCount = 1
-    }
-
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: Self.self)
