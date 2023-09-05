@@ -21,6 +21,9 @@ appId: com.example.app
 - assertNotVisible:
     id: "bar2"
     label: "Check that the secret number is invisible"
+- assertTrue:
+    condition: ${5 == 5}
+    label: "Check that five is still what we think it is"
 
 # Inputs
 - inputText:
@@ -36,10 +39,13 @@ appId: com.example.app
 - inputRandomText:
       length: 20
       label: "Enter a random string"
+- pressKey:
+      key: "enter"
+      label: "Press the enter key"
 
 # Other
 - back:
-      label: "Go back to the previous screen"
+    label: "Go back to the previous screen"
 - clearKeychain:
     label: "Clear the keychain"
 - clearState:
@@ -54,6 +60,9 @@ appId: com.example.app
     visible: "Some important text"
     timeout: 1000
     label: "Wait until the important text is visible"
+- evalScript:
+    script: "return 5;"
+    label: "Get the number 5"
 - hideKeyboard:
     label: "Hide the keyboard"
 - launchApp:

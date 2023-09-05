@@ -3,6 +3,7 @@ package maestro.orchestra.yaml
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.FileSystems
 import java.nio.file.Paths
+import maestro.KeyCode
 import maestro.ScrollDirection
 import maestro.TapRepeat
 import maestro.orchestra.*
@@ -328,6 +329,12 @@ internal class YamlCommandReaderTest {
                 condition = Condition(notVisible = ElementSelector(idRegex = "bar2")),
                 label = "Check that the secret number is invisible"
             ),
+            AssertConditionCommand(
+                condition = Condition(
+                    scriptCondition = "\${5 == 5}"
+                ),
+                label = "Check that five is still what we think it is"
+            ),
 
 
             // Inputs
@@ -354,6 +361,10 @@ internal class YamlCommandReaderTest {
                 length = 20,
                 label = "Enter a random string"
             ),
+            PressKeyCommand(
+                code = KeyCode.ENTER,
+                label = "Press the enter key"
+            ),
 
             // Other
             BackPressCommand(
@@ -378,6 +389,10 @@ internal class YamlCommandReaderTest {
                 condition = Condition(visible = ElementSelector(textRegex="Some important text")),
                 timeout = "1000",
                 label = "Wait until the important text is visible"
+            ),
+            EvalScriptCommand(
+                scriptString = "return 5;",
+                label = "Get the number 5"
             ),
             HideKeyboardCommand(
                 label = "Hide the keyboard"
