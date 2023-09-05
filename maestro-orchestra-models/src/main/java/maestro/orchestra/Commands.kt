@@ -219,7 +219,7 @@ data class CopyTextFromCommand(
     }
 }
 
-class PasteTextCommand(
+data class PasteTextCommand(
     val label: String? = null,
 ) : Command {
 
@@ -852,7 +852,8 @@ data class AddMediaCommand(val mediaPaths: List<String>): Command {
     }
 }
 
-class StopRecordingCommand(
+
+data class StopRecordingCommand(
     val label: String? = null,
 ) : Command {
 

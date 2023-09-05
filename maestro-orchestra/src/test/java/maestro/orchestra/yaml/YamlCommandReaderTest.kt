@@ -5,28 +5,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Paths
 import maestro.ScrollDirection
 import maestro.TapRepeat
-import maestro.orchestra.ApplyConfigurationCommand
-import maestro.orchestra.AssertConditionCommand
-import maestro.orchestra.BackPressCommand
-import maestro.orchestra.Command
-import maestro.orchestra.Condition
-import maestro.orchestra.ElementSelector
-import maestro.orchestra.InputTextCommand
-import maestro.orchestra.LaunchAppCommand
-import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MaestroConfig
-import maestro.orchestra.MaestroOnFlowComplete
-import maestro.orchestra.MaestroOnFlowStart
-import maestro.orchestra.RunFlowCommand
-import maestro.orchestra.RunScriptCommand
-import maestro.orchestra.ScrollCommand
-import maestro.orchestra.ScrollUntilVisibleCommand
-import maestro.orchestra.SetLocationCommand
-import maestro.orchestra.StopAppCommand
-import maestro.orchestra.TakeScreenshotCommand
-import maestro.orchestra.TapOnElementCommand
-import maestro.orchestra.TapOnPointV2Command
-import maestro.orchestra.WaitForAnimationToEndCommand
+import maestro.orchestra.*
 import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
@@ -306,6 +285,8 @@ internal class YamlCommandReaderTest {
                     appId="com.example.app"
                 )
             ),
+
+            // Taps
             TapOnElementCommand(
                 selector = ElementSelector(idRegex = "foo"),
                 retryIfNoChange = true,
@@ -322,7 +303,7 @@ internal class YamlCommandReaderTest {
                     repeat = 2,
                     delay = 100L
                 ),
-                label = "Tap on the important button twice more"
+                label = "Tap on the important button twice"
             ),
             TapOnElementCommand(
                 selector = ElementSelector(idRegex = "foo"),
@@ -337,6 +318,8 @@ internal class YamlCommandReaderTest {
                 longPress = false,
                 label = "Tap on the middle of the screen"
             ),
+
+            //Assertions
             AssertConditionCommand(
                 condition = Condition(visible = ElementSelector(idRegex = "bar")),
                 label = "Check that the important number is visible"
@@ -345,22 +328,73 @@ internal class YamlCommandReaderTest {
                 condition = Condition(notVisible = ElementSelector(idRegex = "bar2")),
                 label = "Check that the secret number is invisible"
             ),
-            TakeScreenshotCommand(
-                path = "baz",
-                label = "Snap this for later evaluation"
+
+
+            // Inputs
+            InputTextCommand(
+                text = "correct horse battery staple",
+                label = "Enter my secret password"
             ),
-            StopAppCommand(
+            InputRandomCommand(
+                inputType = InputRandomType.TEXT_EMAIL_ADDRESS,
+                label = "Enter a random email address"
+            ),
+            InputRandomCommand(
+                inputType = InputRandomType.TEXT_PERSON_NAME,
+                length = 8,
+                label = "Enter a random person's name"
+            ),
+            InputRandomCommand(
+                inputType = InputRandomType.NUMBER,
+                length = 5,
+                label = "Enter a random number"
+            ),
+            InputRandomCommand(
+                inputType = InputRandomType.TEXT,
+                length = 20,
+                label = "Enter a random string"
+            ),
+
+            // Other
+            BackPressCommand(
+                label = "Go back to the previous screen"
+            ),
+            ClearKeychainCommand(
+                label = "Clear the keychain"
+            ),
+            ClearStateCommand(
+                appId = "com.example.app",
+                label = "Wipe the app state"
+            ),
+            CopyTextFromCommand(
+                selector = ElementSelector(idRegex = "foo"),
+                label = "Copy the important text"
+            ),
+            EraseTextCommand(
+                charactersToErase = 5,
+                label = "Erase the last 5 characters"
+            ),
+            AssertConditionCommand(
+                condition = Condition(visible = ElementSelector(textRegex="Some important text")),
+                timeout = "1000",
+                label = "Wait until the important text is visible"
+            ),
+            HideKeyboardCommand(
+                label = "Hide the keyboard"
+            ),
+            LaunchAppCommand(
                 appId = "com.some.other",
-                label = "Stop that other app from running"
+                clearState = true,
+                label = "Launch some other app"
             ),
-            SetLocationCommand(
-                latitude = 12.5266,
-                longitude = 78.2150,
-                label = "Set Location to Test Laboratory"
+            OpenLinkCommand(
+                link = "https://www.example.com",
+                autoVerify = false,
+                browser = false,
+                label = "Open the example website"
             ),
-            WaitForAnimationToEndCommand(
-                timeout = 4000,
-                label = "Wait for the thing to stop spinning"
+            PasteTextCommand(
+                label = "Paste the important text"
             ),
             RunFlowCommand(
                 config = null,
@@ -371,9 +405,14 @@ internal class YamlCommandReaderTest {
                 ),
                 label = "Check that five is still what we think it is"
             ),
-            InputTextCommand(
-                text = "correct horse battery staple",
-                label = "Enter my secret password"
+            RunScriptCommand(
+                script = "const myNumber = 1 + 1;",
+                condition = null,
+                sourceDescription = "023_runScript_test.js",
+                label = "Run some special calculations"
+            ),
+            ScrollCommand(
+                label = "Scroll down"
             ),
             ScrollUntilVisibleCommand(
                 selector = ElementSelector(textRegex = "Footer"),
@@ -383,12 +422,64 @@ internal class YamlCommandReaderTest {
                 visibilityPercentage = 100,
                 label = "Scroll to the bottom"
             ),
-            RunScriptCommand(
-                script = "const myNumber = 1 + 1;",
-                condition = null,
-                sourceDescription = "023_runScript_test.js",
-                label = "Run some special calculations"
-            )
+            SetLocationCommand(
+                latitude = 12.5266,
+                longitude = 78.2150,
+                label = "Set Location to Test Laboratory"
+            ),
+            StartRecordingCommand(
+                path = "recording.mp4",
+                label = "Start recording a video"
+            ),
+            StopAppCommand(
+                appId = "com.some.other",
+                label = "Stop that other app from running"
+            ),
+            StopRecordingCommand(
+                label = "Stop recording the video"
+            ),
+            TakeScreenshotCommand(
+                path = "baz",
+                label = "Snap this for later evaluation"
+            ),
+            TravelCommand(
+                points = listOf(
+                    TravelCommand.GeoPoint(0.0,0.0),
+                    TravelCommand.GeoPoint(0.1,0.0),
+                    TravelCommand.GeoPoint(0.1,0.1),
+                    TravelCommand.GeoPoint(0.0,0.1),
+                ),
+                speedMPS = 2000.0,
+                label = "Run around the north pole"
+            ),
+            WaitForAnimationToEndCommand(
+                timeout = 4000,
+                label = "Wait for the thing to stop spinning"
+            ),
+            RepeatCommand(
+                condition = Condition(visible = ElementSelector(textRegex = "Some important text")),
+                commands = listOf(
+                    MaestroCommand(
+                        command = TapOnElementCommand(
+                            selector = ElementSelector(idRegex = "foo"),
+                            retryIfNoChange = true,
+                            waitUntilVisible = false,
+                            longPress = false,
+                            label = "Tap on the important button"
+                        )
+                    ),
+                    MaestroCommand(
+                        command = TapOnElementCommand(
+                            selector = ElementSelector(idRegex = "bar"),
+                            retryIfNoChange = true,
+                            waitUntilVisible = false,
+                            longPress = false,
+                            label = "Tap on the other important button"
+                        )
+                    )
+                ),
+                label = "Tap the 2 buttons until the text goes away"
+            ),
         )
     }
 
