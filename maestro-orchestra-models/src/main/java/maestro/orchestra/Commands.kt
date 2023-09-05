@@ -217,7 +217,7 @@ data class CopyTextFromCommand(
     }
 }
 
-class PasteTextCommand(
+data class PasteTextCommand(
     val label: String? = null,
 ) : Command {
 
@@ -832,7 +832,7 @@ data class StartRecordingCommand(
     }
 }
 
-class StopRecordingCommand(
+data class StopRecordingCommand(
     val label: String? = null,
 ) : Command {
 
