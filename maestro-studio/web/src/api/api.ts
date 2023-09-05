@@ -5,7 +5,6 @@ import {
   BannerMessage,
   DeviceScreen,
   FormattedFlow,
-  Repl,
   ViewHierarchyType,
 } from "../helpers/models";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
@@ -95,8 +94,8 @@ export const API = {
       config
     );
   },
-  runCommand: async (yaml: string): Promise<void> => {
-    await makeRequest("POST", "/api/run-command", { yaml }, "text");
+  runCommand: async (yaml: string, dryRun?: boolean): Promise<void> => {
+    await makeRequest("POST", "/api/run-command", { yaml, dryRun });
   },
   formatFlow: async (commands: string[]): Promise<FormattedFlow> => {
     return makeRequest("POST", "/api/format-flow", { commands });

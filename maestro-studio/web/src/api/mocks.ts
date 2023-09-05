@@ -52,8 +52,10 @@ deviceScreenSseController.sendEvent(
 const textEncoder = new TextEncoder();
 
 const handlers = [
-  http.post<any, any>("/api/run-command", async () => {
-    await delay(1000)
+  http.post<any, any>("/api/run-command", async ({ request }) => {
+    const { yaml, dryRun }: { yaml: string, dryRun?: boolean } = await request.json();
+    if (yaml.includes("invalid")) return new Response("invalid command", { status: 400 })
+    if (!dryRun) await delay(1000)
     return new Response(null, { status: 200 })
   }),
   http.get("/api/device-screen/sse", async () => {

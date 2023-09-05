@@ -46,8 +46,8 @@ const ReplView = () => {
   // TODO handle invalid yaml
   const onCommandSubmit = async () => {
     if (!currentCommandValue) return;
-    setCurrentCommandValue('');
-    await runCommandYaml(currentCommandValue)
+    const success = await runCommandYaml(currentCommandValue);
+    if (success) setCurrentCommandValue('');
   };
 
   const onReorder = (newOrder: ReplCommand[]) => {

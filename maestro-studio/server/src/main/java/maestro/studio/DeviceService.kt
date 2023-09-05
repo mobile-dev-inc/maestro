@@ -28,6 +28,7 @@ import maestro.orchestra.yaml.YamlFluentCommand
 
 private data class RunCommandRequest(
     val yaml: String,
+    val dryRun: Boolean?,
 )
 
 private data class FormatCommandsRequest(
@@ -52,10 +53,17 @@ object DeviceService {
     fun routes(routing: Routing, maestro: Maestro) {
         routing.post("/api/run-command") {
             val request = call.parseBody<RunCommandRequest>()
-            val commands = YamlCommandReader.MAPPER.readValue(request.yaml, YamlFluentCommand::class.java).toCommands(
-                Paths.get(""), "")
-            executeCommands(maestro, commands)
-            call.respond(HttpStatusCode.OK)
+            try {
+                val commands = YamlCommandReader.MAPPER.readValue(request.yaml, YamlFluentCommand::class.java)
+                    .toCommands(Paths.get(""), "")
+                if (request.dryRun != true) {
+                    executeCommands(maestro, commands)
+                }
+                val response = jacksonObjectMapper().writeValueAsString(commands)
+                call.respond(response)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "Failed to run command")
+            }
         }
         routing.post("/api/format-flow") {
             val request = call.parseBody<FormatCommandsRequest>()

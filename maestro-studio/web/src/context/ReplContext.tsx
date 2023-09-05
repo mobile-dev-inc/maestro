@@ -94,12 +94,11 @@ export const useRepl = () => {
       return true;
     } catch (e: any) {
       setCommandStatus(command.id, 'error');
-      setErrorMessage(e.message || 'Failed to run command');
       return false;
     }
   };
 
-  const runCommands = async (commands: ReplCommand[]) => {
+  const runCommands = async (commands: ReplCommand[]): Promise<boolean> => {
     commands.forEach(command => setCommandStatus(command.id, 'pending'));
     let abort = false;
     for (const command of commands) {
@@ -110,31 +109,40 @@ export const useRepl = () => {
         if (!success) abort = true;
       }
     }
+    return !abort
   }
 
-  const addCommands = (yaml: string): ReplCommand[] => {
+  const parseCommands = (yaml: string): ReplCommand[] => {
     const parsed = YAML.parse(yaml);
     const yamls = Array.isArray(parsed) ? parsed.map(o => YAML.stringify(o)) : [YAML.stringify(parsed)];
-    const commands: ReplCommand[] = yamls.map(yaml => ({
+    return yamls.map(yaml => ({
       id: `${uuidv4()}`,
       status: 'pending',
       yaml,
     }));
+  }
+
+  const runCommandYaml = async (yaml: string): Promise<boolean> => {
+    const commands = parseCommands(yaml);
+    for (const command of commands) {
+      try {
+        // Dry run to validate yaml
+        await API.runCommand(command.yaml, true);
+      } catch (e: any) {
+        setErrorMessage(e.message || 'Failed to run command');
+        return false;
+      }
+    }
     setRepl(prevRepl => ({
       ...prevRepl,
       commands: [...prevRepl.commands, ...commands]
     }))
-    return commands
+    return await runCommands(commands);
   }
 
-  const runCommandYaml = async (yaml: string) => {
-    const commands = addCommands(yaml);
-    await runCommands(commands);
-  }
-
-  const runCommandIds = async (ids: string[]) => {
+  const runCommandIds = async (ids: string[]): Promise<boolean> => {
     const commands = repl.commands.filter(command => ids.includes(command.id));
-    await runCommands(commands);
+    return await runCommands(commands);
   }
 
   return {
