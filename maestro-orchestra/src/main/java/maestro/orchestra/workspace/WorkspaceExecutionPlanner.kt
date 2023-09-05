@@ -3,10 +3,13 @@ package maestro.orchestra.workspace
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
 import maestro.orchestra.WorkspaceConfig
+import maestro.orchestra.error.MediaFileNotFound
 import maestro.orchestra.error.ValidationError
 import maestro.orchestra.yaml.YamlCommandReader
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.*
 import kotlin.streams.toList
 
@@ -25,6 +28,7 @@ object WorkspaceExecutionPlanner {
 
         if (input.isRegularFile()) {
             validateFlowFile(input)
+            MediaCommandsValidator(input).validate(input)
             return ExecutionPlan(
                 flowsToRun = listOf(input),
             )
@@ -102,6 +106,10 @@ object WorkspaceExecutionPlanner {
             println("WARNING! deterministicOrder has been deprecated in favour of executionOrder and will be removed in a future version")
             normalFlows = normalFlows.sortedBy { it.name }
         }
+
+        // validation of media files for add media command
+        val mediaCommandsValidator = MediaCommandsValidator(input)
+        allFlows.forEach { mediaCommandsValidator.validate(it) }
 
         return ExecutionPlan(
             flowsToRun = normalFlows,

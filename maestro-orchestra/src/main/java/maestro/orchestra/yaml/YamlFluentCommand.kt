@@ -207,17 +207,6 @@ data class YamlFluentCommand(
         }
 
         val mediaPaths = addMedia.files.filterNotNull()
-
-        mediaPaths.forEachIndexed { index, path ->
-            if (!File(path).exists()) {
-                if (path.isEmpty()) {
-                    throw MediaFileNotFound("Media file path at $index is invalid", path)
-                } else {
-                    throw MediaFileNotFound("Media file at $path not found", path)
-                }
-            }
-        }
-
         return AddMediaCommand(mediaPaths)
     }
 
