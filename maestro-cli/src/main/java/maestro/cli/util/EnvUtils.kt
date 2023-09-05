@@ -79,7 +79,7 @@ object EnvUtils {
         val isArm64 = runCommand("sysctl", "hw.optional.arm64")
         val isX86_64 = runCommand("sysctl", "hw.optional.x86_64")
         return when {
-            isArm64 -> MACOS_ARCHITECTURE.x86_64
+            isArm64 -> MACOS_ARCHITECTURE.ARM64
             isX86_64 -> MACOS_ARCHITECTURE.x86_64
             else -> MACOS_ARCHITECTURE.UNKNOWN
         }
