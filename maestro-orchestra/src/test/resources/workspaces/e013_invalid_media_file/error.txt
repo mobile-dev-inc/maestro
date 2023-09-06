@@ -1,1 +1,2 @@
-Media file ../maestro-orchestra/src/test/resources/media/assets/android_file.png in flow file: Flow.yaml do not exist
+Failed to parse file: {PROJECT_DIR}/src/test/resources/workspaces/e013_invalid_media_file/workspace/Flow.yaml
+Media file ./assets/invalid_android.png in flow file: {PROJECT_DIR}/src/test/resources/workspaces/e013_invalid_media_file/workspace/Flow.yaml not found

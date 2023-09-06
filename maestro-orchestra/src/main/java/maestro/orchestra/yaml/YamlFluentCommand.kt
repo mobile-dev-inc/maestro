@@ -20,9 +20,6 @@
 package maestro.orchestra.yaml
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.core.JacksonException
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.core.JsonProcessingException
 import maestro.KeyCode
 import maestro.Point
 import maestro.TapRepeat
@@ -31,10 +28,8 @@ import maestro.orchestra.error.InvalidFlowFile
 import maestro.orchestra.error.MediaFileNotFound
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.util.Env.withEnv
-import java.io.File
-import java.nio.file.InvalidPathException
 import java.nio.file.Path
-import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
@@ -111,7 +106,7 @@ data class YamlFluentCommand(
             )
             addMedia != null -> listOf(
                 MaestroCommand(
-                    addMediaCommand = addMediaCommand(addMedia)
+                    addMediaCommand = addMediaCommand(addMedia, flowPath)
                 )
             )
             inputText != null -> listOf(MaestroCommand(InputTextCommand(inputText)))
@@ -201,13 +196,26 @@ data class YamlFluentCommand(
         }
     }
 
-    private fun addMediaCommand(addMedia: YamlAddMedia): AddMediaCommand {
+    private fun addMediaCommand(addMedia: YamlAddMedia, flowPath: Path): AddMediaCommand {
         if (addMedia.files == null || addMedia.files.any { it == null }) {
             throw SyntaxError("Invalid addMedia command: media files cannot be empty")
         }
 
-        val mediaPaths = addMedia.files.filterNotNull()
-        return AddMediaCommand(mediaPaths)
+        val mediaPaths = addMedia.files.filterNotNull().map {
+            val path = flowPath.fileSystem.getPath(it)
+
+            val resolvedPath = if (path.isAbsolute) {
+                path
+            } else {
+                flowPath.resolveSibling(path).toAbsolutePath()
+            }
+            if (!resolvedPath.exists()) {
+                throw MediaFileNotFound("Media file $path in flow file: $flowPath not found", path)
+            }
+            resolvedPath
+        }
+        val mediaAbsolutePathStrings = mediaPaths.mapNotNull { it.absolutePathString() }
+        return AddMediaCommand(mediaAbsolutePathStrings)
     }
 
     private fun runFlowCommand(

@@ -27,6 +27,7 @@ import maestro.TapRepeat
 import maestro.js.JsEngine
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.util.InputRandomTextHelper
+import java.nio.file.Path
 
 sealed interface Command {
 

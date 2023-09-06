@@ -1,7 +1,7 @@
 appId: com.example
 ---
 - addMedia:
-    - "../maestro-orchestra/src/test/resources/workspaces/e013_invalid_media_file/android.png"
+    - "../../e013_invalid_media_file/workspace/assets/android.png"
 - launchApp
 - tapOn: "Add to Cart"
 - assertVisible: "Added"

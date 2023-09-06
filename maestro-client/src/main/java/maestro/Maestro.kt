@@ -33,6 +33,7 @@ import okio.source
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
+import java.nio.file.Path
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 
