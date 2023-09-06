@@ -21,7 +21,7 @@ data class Condition(
     }
 
     fun description(): String {
-        if(label != null && label != ""){
+        if(label != null){
             return label
         }
 
