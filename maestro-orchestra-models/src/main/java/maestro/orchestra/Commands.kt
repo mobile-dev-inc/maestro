@@ -57,7 +57,7 @@ data class SwipeCommand(
 
     override fun description(): String {
         return when {
-            label != null && label != "" -> {
+            label != null -> {
                 label
             }
             elementSelector != null && direction != null -> {
@@ -303,7 +303,7 @@ data class AssertCommand(
 ) : Command {
 
     override fun description(): String {
-        if (label != null && label != ""){
+        if (label != null){
             return label
         }
         val timeoutStr = timeout?.let { " within $timeout ms" } ?: ""
@@ -384,7 +384,7 @@ data class LaunchAppCommand(
 ) : Command {
 
     override fun description(): String {
-        if (label != null && label != ""){
+        if (label != null){
             return label
         }
 
@@ -446,7 +446,7 @@ data class OpenLinkCommand(
 ) : Command {
 
     override fun description(): String {
-        return if (label != null && label != "") {
+        return if (label != null) {
             label
         } else if (browser == true) {
             if (autoVerify == true) "Open $link with auto verification in browser" else "Open $link in browser"
@@ -483,7 +483,7 @@ data class EraseTextCommand(
 ) : Command {
 
     override fun description(): String {
-        return if (label != null && label != "") {
+        return if (label != null) {
             label
         } else if (charactersToErase != null) {
             "Erase $charactersToErase characters"
@@ -677,7 +677,7 @@ data class RepeatCommand(
         val timesInt = times?.toIntOrNull() ?: 1
 
         return when {
-            label != null && label != "" -> {
+            label != null -> {
                 label
             }
             condition != null && timesInt > 1 -> {
