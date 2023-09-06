@@ -7,7 +7,6 @@ import maestro.KeyCode
 import maestro.ScrollDirection
 import maestro.TapRepeat
 import maestro.orchestra.*
-import maestro.orchestra.error.InvalidInitFlowFile
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.yaml.junit.YamlCommandsExtension
 import maestro.orchestra.yaml.junit.YamlExceptionExtension

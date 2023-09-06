@@ -266,7 +266,7 @@ data class TapOnPointCommand(
 ) : Command {
 
     override fun description(): String {
-         return label ?: "${tapOnDescription(longPress, repeat)} on point ($x, $y)"
+        return label ?: "${tapOnDescription(longPress, repeat)} on point ($x, $y)"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TapOnPointCommand {
@@ -346,7 +346,7 @@ data class AssertConditionCommand(
     fun timeoutMs() = timeout?.toLong()
 
     override fun description(): String {
-         return label ?: "Assert that ${condition.description()}"
+        return label ?: "Assert that ${condition.description()}"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
@@ -363,7 +363,7 @@ data class InputTextCommand(
 ) : Command {
 
     override fun description(): String {
-         return label ?: "Input text $text"
+        return label ?: "Input text $text"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
@@ -520,7 +520,7 @@ data class StopAppCommand(
 ) : Command {
 
     override fun description(): String {
-        return label ?: return "Stop $appId"
+        return label ?: "Stop $appId"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
