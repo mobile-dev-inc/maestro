@@ -31,6 +31,7 @@ import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
 import okio.Sink
 import okio.Source
+import okio.source
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
@@ -431,7 +432,13 @@ class IOSDriver(
         iosDevice.setPermissions(appId, permissions)
     }
 
-    override fun addMedia(namedSource: NamedSource) {
+    override fun addMedia(file: File) {
+        val namedSource = NamedSource(
+            file.name,
+            file.source(),
+            file.extension,
+            file.path
+        )
         val mediaExt = MediaExt.values().firstOrNull { it.extName == namedSource.extension }
         if (mediaExt == null || mediaExt == MediaExt.MP3) {
             throw IllegalArgumentException(

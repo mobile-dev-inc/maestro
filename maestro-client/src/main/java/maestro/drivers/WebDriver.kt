@@ -28,6 +28,7 @@ import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
+import java.io.File
 import java.time.Duration
 import java.util.Random
 import java.util.UUID
@@ -368,7 +369,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         // no-op for web
     }
 
-    override fun addMedia(namedSource: NamedSource) {
+    override fun addMedia(file: File) {
         // noop for web
     }
 

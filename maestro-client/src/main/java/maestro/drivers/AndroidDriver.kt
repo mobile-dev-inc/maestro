@@ -549,7 +549,13 @@ class AndroidDriver(
         }
     }
 
-    override fun addMedia(namedSource: NamedSource) {
+    override fun addMedia(file: File) {
+        val namedSource = NamedSource(
+            file.name,
+            file.source(),
+            file.extension,
+            file.path
+        )
         val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
         val requestStream = asyncStub.addMedia(responseObserver)
         val ext = requireNotNull(
