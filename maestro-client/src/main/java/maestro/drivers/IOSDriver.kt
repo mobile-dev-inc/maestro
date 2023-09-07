@@ -439,12 +439,10 @@ class IOSDriver(
             file.extension,
             file.path
         )
-        val mediaExt = MediaExt.values().firstOrNull { it.extName == namedSource.extension }
-        if (mediaExt == null || mediaExt == MediaExt.MP3) {
-            throw IllegalArgumentException(
-                "ext ${namedSource.extension} is not yet supported for add media"
+        MediaExt.values().firstOrNull { it.extName == namedSource.extension }
+            ?: throw IllegalArgumentException(
+                "Extension .${namedSource.extension} is not yet supported for add media"
             )
-        }
         iosDevice.addMedia(namedSource.path)
     }
 

@@ -558,9 +558,9 @@ class AndroidDriver(
         )
         val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
         val requestStream = asyncStub.addMedia(responseObserver)
-        val ext = requireNotNull(
-            MediaExt.values().firstOrNull { it.extName == namedSource.extension }
-        ) { "ext ${namedSource.extension} is not yet supported for add media" }
+        val ext = MediaExt.values().firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
+            "Extension .${namedSource.extension} is not yet supported for add media"
+        )
 
         val buffer = Buffer()
         val source = namedSource.source

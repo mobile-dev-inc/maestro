@@ -1,7 +1,7 @@
 appId: com.google.android.apps.photos
 ---
 - addMedia:
-    - "./src/test/resources/media/assets/android_gif.gif"
+    - "../assets/android_gif.gif"
 - launchApp:
     appId: com.google.android.apps.photos
 - runFlow:
