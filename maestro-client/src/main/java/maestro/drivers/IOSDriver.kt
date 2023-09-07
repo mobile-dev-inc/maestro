@@ -432,14 +432,18 @@ class IOSDriver(
         iosDevice.setPermissions(appId, permissions)
     }
 
-    override fun addMedia(file: File) {
+    override fun addMedia(mediaFiles: List<File>) {
+        mediaFiles.forEach { addMediaToDevice(it) }
+    }
+
+    private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
-            file.name,
-            file.source(),
-            file.extension,
-            file.path
+            mediaFile.name,
+            mediaFile.source(),
+            mediaFile.extension,
+            mediaFile.path
         )
-        MediaExt.values().firstOrNull { it.extName == namedSource.extension }
+        MediaExt.values().firstOrNull { mediaExt -> mediaExt.extName == namedSource.extension }
             ?: throw IllegalArgumentException(
                 "Extension .${namedSource.extension} is not yet supported for add media"
             )

@@ -462,10 +462,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     fun addMedia(fileNames: List<String>) {
-        fileNames.forEach {
-            val file = File(it)
-            driver.addMedia(file)
-        }
+        val mediaFiles = fileNames.map { File(it) }
+        driver.addMedia(mediaFiles)
         isMediaAdded = true
     }
 

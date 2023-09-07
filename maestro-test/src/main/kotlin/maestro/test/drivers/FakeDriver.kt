@@ -363,10 +363,10 @@ class FakeDriver : Driver {
         events.add(Event.SetPermissions(appId, permissions))
     }
 
-    override fun addMedia(file: File) {
+    override fun addMedia(mediaFiles: List<File>) {
         ensureOpen()
 
-        events.add(Event.AddMedia)
+        mediaFiles.forEach { _ -> events.add(Event.AddMedia) }
     }
 
     override fun removeMedia() {

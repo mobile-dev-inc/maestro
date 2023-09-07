@@ -369,7 +369,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         // no-op for web
     }
 
-    override fun addMedia(file: File) {
+    override fun addMedia(mediaFiles: List<File>) {
         // noop for web
     }
 

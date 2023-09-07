@@ -549,18 +549,23 @@ class AndroidDriver(
         }
     }
 
-    override fun addMedia(file: File) {
+    override fun addMedia(mediaFiles: List<File>) {
+        mediaFiles.forEach { addMediaToDevice(it) }
+    }
+
+    private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
-            file.name,
-            file.source(),
-            file.extension,
-            file.path
+            mediaFile.name,
+            mediaFile.source(),
+            mediaFile.extension,
+            mediaFile.path
         )
         val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
         val requestStream = asyncStub.addMedia(responseObserver)
-        val ext = MediaExt.values().firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
-            "Extension .${namedSource.extension} is not yet supported for add media"
-        )
+        val ext =
+            MediaExt.values().firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
+                "Extension .${namedSource.extension} is not yet supported for add media"
+            )
 
         val buffer = Buffer()
         val source = namedSource.source
