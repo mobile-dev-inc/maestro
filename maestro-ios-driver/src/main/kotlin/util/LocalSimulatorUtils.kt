@@ -12,6 +12,7 @@ import java.io.InputStream
 import java.lang.ProcessBuilder.Redirect.PIPE
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
 
@@ -277,14 +278,14 @@ object LocalSimulatorUtils {
         val photoDataDir = "${homedir}/Library/Developer/CoreSimulator/Devices/$deviceId/data/Media/PhotoData"
         val photosDirPath = Paths.get(photoDataDir)
         photosDataBackupDir = Files.createTempDirectory(photosDirPath.name)
-        copyDirectorySnapshot(photosDirPath, photosDataBackupDir)
+        FileUtils.copyDirectory(photosDirPath.toFile(), photosDataBackupDir.toFile())
     }
 
     fun backupDcimDir(deviceId: String) {
         val dcimDir = "${homedir}/Library/Developer/CoreSimulator/Devices/$deviceId/data/Media/DCIM"
         val dcimDirPath = Paths.get(dcimDir)
         dcimBackupDir = Files.createTempDirectory(dcimDirPath.name)
-        copyDirectorySnapshot(dcimDirPath, dcimBackupDir)
+        FileUtils.copyDirectory(dcimDirPath.toFile(), dcimBackupDir.toFile())
     }
 
     fun photoDataBackupExists(): Boolean {
@@ -314,26 +315,10 @@ object LocalSimulatorUtils {
         runCommand(listOf("rm" ,"-rf", "$dcimDir/*"))
         runCommand(listOf("rm" ,"-rf", "$photoDataDir/*"))
 
-        copyDirectorySnapshot(dcimBackupDir, Paths.get(dcimDir))
-        copyDirectorySnapshot(photosDataBackupDir, Paths.get(photoDataDir))
+        FileUtils.copyDirectory(dcimBackupDir.toFile(), Paths.get(dcimDir).toFile())
+        FileUtils.copyDirectory(photosDataBackupDir.toFile(), Paths.get(photoDataDir).toFile())
         FileUtils.deleteQuietly(photosDataBackupDir.toFile())
         FileUtils.deleteQuietly(dcimBackupDir.toFile())
-    }
-
-    private fun copyDirectorySnapshot(sourceDir: Path, targetDir: Path) {
-        Files.walkFileTree(sourceDir, setOf(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, object : SimpleFileVisitor<Path>() {
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val targetSubDir = targetDir.resolve(sourceDir.relativize(dir))
-                Files.createDirectories(targetSubDir)
-                return FileVisitResult.CONTINUE
-            }
-
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val targetFile = targetDir.resolve(sourceDir.relativize(file))
-                Files.copy(file, targetFile, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING)
-                return FileVisitResult.CONTINUE
-            }
-        })
     }
 
     fun clearKeychain(deviceId: String) {
