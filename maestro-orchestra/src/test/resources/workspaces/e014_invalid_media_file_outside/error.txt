@@ -1,1 +1,1 @@
-Media file {PROJECT_DIR}/src/test/resources/workspaces/e014_invalid_media_file_outside/workspace/../../e013_invalid_media_file/workspace/assets/android.png in flow file: Flow.yaml do not exist in workspace
+The File "android.png" referenced in flow file: {PROJECT_DIR}/src/test/resources/workspaces/e014_invalid_media_file_outside/workspace/Flow.yaml not found in workspace

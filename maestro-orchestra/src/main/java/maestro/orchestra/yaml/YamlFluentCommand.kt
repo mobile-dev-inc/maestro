@@ -210,7 +210,7 @@ data class YamlFluentCommand(
                 flowPath.resolveSibling(path).toAbsolutePath()
             }
             if (!resolvedPath.exists()) {
-                throw MediaFileNotFound("Media file $path in flow file: $flowPath not found", path)
+                throw MediaFileNotFound("Media file at $path in flow file: $flowPath not found", path)
             }
             resolvedPath
         }

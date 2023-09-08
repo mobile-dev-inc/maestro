@@ -11,11 +11,3 @@ enum class MediaExt(val extName: String) {
     GIF("gif"),
     MP4("mp4"),
 }
-
-fun String.isMediaFile(): Boolean {
-    return this == MediaExt.PNG.extName ||
-            this == MediaExt.JPEG.extName ||
-            this == MediaExt.JPG.extName ||
-            this == MediaExt.GIF.extName ||
-            this == MediaExt.MP4.extName
-}
