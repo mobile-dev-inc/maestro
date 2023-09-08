@@ -20,7 +20,6 @@
 package maestro.drivers
 
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
@@ -30,15 +29,11 @@ import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
 import okio.Sink
-import okio.Source
 import okio.source
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
-import java.nio.file.Files
 import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
@@ -433,7 +428,9 @@ class IOSDriver(
     }
 
     override fun addMedia(mediaFiles: List<File>) {
+        LOGGER.info("[Start] Adding media files")
         mediaFiles.forEach { addMediaToDevice(it) }
+        LOGGER.info("[Done] Adding media files")
     }
 
     private fun addMediaToDevice(mediaFile: File) {
@@ -451,7 +448,11 @@ class IOSDriver(
     }
 
     override fun removeMedia() {
-        runCatching { iosDevice.deleteMedia() }
+        runCatching {
+            LOGGER.info("[Start] Deleting media files")
+            iosDevice.deleteMedia()
+            LOGGER.info("[Done] Deleting media files")
+        }
     }
 
     private fun isScreenStatic(): Boolean {

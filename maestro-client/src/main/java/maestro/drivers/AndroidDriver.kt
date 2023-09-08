@@ -550,7 +550,9 @@ class AndroidDriver(
     }
 
     override fun addMedia(mediaFiles: List<File>) {
+        LOGGER.info("[Start] Adding media files")
         mediaFiles.forEach { addMediaToDevice(it) }
+        LOGGER.info("[Done] Adding media files")
     }
 
     private fun addMediaToDevice(mediaFile: File) {
@@ -588,9 +590,11 @@ class AndroidDriver(
 
     override fun removeMedia() {
         runCatching {
+            LOGGER.info("[Start] Removing media files")
             dadb.shell("rm -rf /sdcard/Pictures/*")
             dadb.shell("rm -rf /sdcard/Movies/*")
             dadb.shell("rm -rf /sdcard/Music/*")
+            LOGGER.info("[Done] Removing media files")
         }
     }
 
