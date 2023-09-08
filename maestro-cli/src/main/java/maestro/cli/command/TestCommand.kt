@@ -101,6 +101,13 @@ class TestCommand : Callable<Int> {
     )
     private var excludeTags: List<String> = emptyList()
 
+    @Option(
+        names = ["--repeat"],
+        description = ["Repeat flow run"],
+        hidden = true
+    )
+    private var repeat: Int = 1
+
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
 
@@ -172,7 +179,31 @@ class TestCommand : Callable<Int> {
                 if (continuous) {
                     TestDebugReporter.deleteOldFiles()
                     TestRunner.runContinuous(maestro, device, flowFile, env)
-                } else {
+                } else if (repeat > 1) {
+                    val resultView = if (DisableAnsiMixin.ansiEnabled) AnsiResultView() else PlainTextResultView()
+                    val results = mutableListOf<Int>()
+
+                    repeat(repeat) { index ->
+                        PrintUtils.message("Running iteration: $index")
+                        val resultSingle =
+                            TestRunner.runSingle(maestro, device, flowFile, env, resultView, debugOutputPath)
+                        results.add(resultSingle)
+                        if (resultSingle == 1) {
+                            printExitDebugMessage()
+                        }
+                    }
+
+                    results.forEachIndexed { index, result ->
+                        if (result == 0) PrintUtils.success("Iteration: $index [OK]")
+                        else PrintUtils.err("Iteration: $index [FAILED]")
+                    }
+                    println()
+
+                    TestDebugReporter.deleteOldFiles()
+                    return@newSession if (results.contains(1)) 1 else 0
+                }
+
+                else {
                     val resultView = if (DisableAnsiMixin.ansiEnabled) AnsiResultView() else PlainTextResultView()
                     val resultSingle = TestRunner.runSingle(maestro, device, flowFile, env, resultView, debugOutputPath)
                     if (resultSingle == 1) {
