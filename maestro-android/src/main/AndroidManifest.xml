@@ -7,7 +7,23 @@
                      tools:ignore="MockLocation,ProtectedPermissions"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
                      tools:ignore="QueryAllPackagesPermission"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+                     tools:ignore="ProtectedPermissions" />
 
-    <application android:usesCleartextTraffic="true" />
-
+    <application
+            android:usesCleartextTraffic="true">
+            <activity
+                android:name=".MainActivity"
+                android:excludeFromRecents="true"
+                android:exported="true"
+                android:finishOnTaskLaunch="true"
+                android:launchMode="singleInstance"
+                android:noHistory="false"
+                android:stateNotNeeded="true">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+    </application>
 </manifest>
