@@ -10,6 +10,8 @@ import ios.IOSScreenRecording
 import ios.device.DeviceInfo
 import logger.Logger
 import maestro.utils.DepthTracker
+import maestro.utils.network.InputFieldNotFound
+import maestro.utils.network.UnknownFailure
 import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
@@ -106,7 +108,7 @@ class XCTestIOSDevice(
     ): Result<Unit, Throwable> {
         return runCatching {
             client.swipe(
-                appId = activeAppId() ?: error("Unable to obtain active app id"),
+                appId = activeAppId(),
                 startX = xStart,
                 startY = yStart,
                 endX = xEnd,
@@ -266,44 +268,14 @@ class XCTestIOSDevice(
         client.eraseText(charactersToErase, appIds).use {}
     }
 
-    private fun activeAppId(): String? {
+    private fun activeAppId(): String {
         val appIds = getInstalledApps()
         logger.info("installed apps: $appIds")
 
-        return client.runningAppId(appIds).use { response ->
-            response.body.use { body ->
-                val runningAppBundleId = if (response.isSuccessful) {
-                    body?.let {
-                        val responseBody: GetRunningAppIdResponse = mapper.readValue(
-                            String(it.bytes()),
-                            GetRunningAppIdResponse::class.java
-                        )
-                        val runningAppId = responseBody.runningAppBundleId
-                        logger.info("Running app id response received $runningAppId")
-                        runningAppId
-                    }
-                } else {
-                    val bodyString = response.body?.let { String(it.bytes()) } ?: ""
-                    val code = response.code
-                    logger.info("request to resolve running app id failed with exception - Code: $code Body: $bodyString")
-
-                    return null
-                }
-
-                logger.info("found running app id $runningAppBundleId")
-
-                runningAppBundleId
-            }
-        }
+        return client.runningAppId(appIds).runningAppBundleId
     }
 
-    class IllegalArgumentSnapshotFailure : Throwable("Failed to capture view hierarchy due to kAXErrorIllegalArgument")
-    class InputFieldNotFound : Throwable("Unable to find focused input field")
-    class UnknownFailure(errorResponse: String) : Throwable(errorResponse)
-
     companion object {
-
-        private const val VIEW_HIERARCHY_SNAPSHOT_ERROR_CODE = "illegal-argument-snapshot-failure"
 
         private val mapper by lazy { jacksonObjectMapper() }
 

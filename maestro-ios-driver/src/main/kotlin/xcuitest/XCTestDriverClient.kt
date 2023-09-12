@@ -1,9 +1,11 @@
 package xcuitest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import hierarchy.Error
 import hierarchy.ViewHierarchy
-import maestro.api.GetRunningAppRequest
+import xcuitest.api.GetRunningAppRequest
 import logger.Logger
+import maestro.utils.network.XCUITestServerError
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -18,7 +20,6 @@ import xcuitest.api.NetworkErrorHandler.Companion.RETRY_RESPONSE_CODE
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
@@ -70,8 +71,7 @@ class XCTestDriverClient(
     fun viewHierarchy(installedApps: Set<String>): ViewHierarchy {
         return executeJsonRequest(
             "viewHierarchy",
-            ViewHierarchyRequest(installedApps),
-            ViewHierarchy::class
+            ViewHierarchyRequest(installedApps)
         )
     }
 
@@ -100,8 +100,11 @@ class XCTestDriverClient(
         return okHttpClient.newCall(request).execute()
     }
 
-    fun runningAppId(appIds: Set<String>): Response {
-        return executeJsonRequestUNCHECKED("runningApp", GetRunningAppRequest(appIds))
+    fun runningAppId(appIds: Set<String>): GetRunningAppIdResponse {
+        return executeJsonRequest(
+            "runningApp",
+            GetRunningAppRequest(appIds)
+        )
     }
 
     fun swipe(
@@ -218,29 +221,41 @@ class XCTestDriverClient(
             .execute()
     }
 
-    private fun executeJsonRequest(url: String, body: Any): Response {
-        val response = executeJsonRequestUNCHECKED(url, body)
+    private inline fun <reified T: Any> executeJsonRequest(url: String, body: Any): T {
+        return executeJsonRequestUNCHECKED(url, body).use {
+            val responseBodyAsString = it.body?.bytes()?.let { bytes -> String(bytes) } ?: ""
 
-        if (!response.isSuccessful) {
-            val responseBodyAsString = response.body?.bytes()?.let {
-                String(it)
+            if (!it.isSuccessful) {
+                val error = mapper.readValue(responseBodyAsString, Error::class.java)
+                when {
+                    it.code in 400..499 -> {
+                        logger.error("Request for $url failed with bad request ${it.code}, body: $responseBodyAsString")
+                        throw XCUITestServerError.BadRequest(
+                            "Request for $url failed with bad request ${it.code}, body: $responseBodyAsString",
+                            responseBodyAsString
+                        )
+                    }
+                    it.code == 502 -> {
+                        logger.error("Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
+                        throw XCUITestServerError.NetworkError(
+                            "Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
+                        )
+                    }
+                    error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
+                        throw XCUITestServerError.AppCrash(
+                            "Request for $url failed, due to app crash"
+                        )
+                    }
+                    else -> {
+                        logger.error("Request for $url failed, body: $responseBodyAsString")
+                        throw XCUITestServerError.UnknownFailure(
+                            "Request for $url failed, code: ${it.code}, body: $responseBodyAsString"
+                        )
+                    }
+                }
+            } else {
+                mapper.readValue(responseBodyAsString, T::class.java)
             }
-            val code = response.code
-            logger.error("Request for $url failed, status code ${code}, body: $responseBodyAsString")
-            error("Request for $url failed, status code ${code}, body: $responseBodyAsString")
-        }
-
-        return response
-    }
-
-    private inline fun <reified T: Any> executeJsonRequest(url: String, body: Any, type: KClass<T>): T {
-        val response = executeJsonRequest(url, body)
-
-        return response.body.use { responseBody ->
-            responseBody ?: error("Missing response body for mapping to $type")
-
-            mapper.readValue(responseBody.bytes(), T::class.java)
-                ?: error("Response body '${String(responseBody.bytes()).take(10)}...' not mappable to $type")
         }
     }
 
