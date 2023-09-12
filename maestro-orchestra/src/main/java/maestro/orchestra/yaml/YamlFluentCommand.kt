@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import maestro.KeyCode
 import maestro.Point
 import maestro.TapRepeat
+import maestro.orchestra.AddMediaCommand
 import maestro.orchestra.AssertConditionCommand
 import maestro.orchestra.BackPressCommand
 import maestro.orchestra.ClearKeychainCommand
@@ -58,9 +59,11 @@ import maestro.orchestra.TapOnPointV2Command
 import maestro.orchestra.TravelCommand
 import maestro.orchestra.WaitForAnimationToEndCommand
 import maestro.orchestra.error.InvalidFlowFile
+import maestro.orchestra.error.MediaFileNotFound
 import maestro.orchestra.error.SyntaxError
 import maestro.orchestra.util.Env.withEnv
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
@@ -103,6 +106,7 @@ data class YamlFluentCommand(
     val travel: YamlTravelCommand? = null,
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
+    val addMedia: YamlAddMedia? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -146,6 +150,11 @@ data class YamlFluentCommand(
             inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length, label = inputRandomNumber.label)))
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS, label = inputRandomEmail.label)))
             inputRandomPersonName != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_PERSON_NAME, label = inputRandomPersonName.label)))
+            addMedia != null -> listOf(
+                MaestroCommand(
+                    addMediaCommand = addMediaCommand(addMedia, flowPath)
+                )
+            )
             swipe != null -> listOf(swipeCommand(swipe))
             openLink != null -> listOf(MaestroCommand(OpenLinkCommand(link = openLink.link, autoVerify = openLink.autoVerify, browser =  openLink.browser, label = openLink.label)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey.key) ?: throw SyntaxError("Unknown key name: $pressKey"), label = pressKey.label)))
@@ -227,6 +236,28 @@ data class YamlFluentCommand(
             }
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
+    }
+
+    private fun addMediaCommand(addMedia: YamlAddMedia, flowPath: Path): AddMediaCommand {
+        if (addMedia.files == null || addMedia.files.any { it == null }) {
+            throw SyntaxError("Invalid addMedia command: media files cannot be empty")
+        }
+
+        val mediaPaths = addMedia.files.filterNotNull().map {
+            val path = flowPath.fileSystem.getPath(it)
+
+            val resolvedPath = if (path.isAbsolute) {
+                path
+            } else {
+                flowPath.resolveSibling(path).toAbsolutePath()
+            }
+            if (!resolvedPath.exists()) {
+                throw MediaFileNotFound("Media file at $path in flow file: $flowPath not found", path)
+            }
+            resolvedPath
+        }
+        val mediaAbsolutePathStrings = mediaPaths.mapNotNull { it.absolutePathString() }
+        return AddMediaCommand(mediaAbsolutePathStrings, addMedia.label)
     }
 
     private fun runFlowCommand(
