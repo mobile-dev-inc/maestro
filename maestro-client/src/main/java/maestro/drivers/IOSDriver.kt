@@ -20,34 +20,21 @@
 package maestro.drivers
 
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
 import ios.IOSDevice
-import maestro.Capability
-import maestro.DeviceInfo
-import maestro.Driver
-import maestro.Filters
-import maestro.KeyCode
-import maestro.MaestroException
-import maestro.Platform
-import maestro.Point
-import maestro.ScreenRecording
-import maestro.SwipeDirection
-import maestro.TreeNode
+import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
-import maestro.ViewHierarchy
 import maestro.utils.*
 import okio.Sink
+import okio.source
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
-import java.nio.file.Files
 import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
 class IOSDriver(
@@ -73,7 +60,7 @@ class IOSDriver(
     }
 
     override fun open() {
-        iosDevice.open()
+        awaitLaunch()
     }
 
     override fun close() {
@@ -440,6 +427,34 @@ class IOSDriver(
         iosDevice.setPermissions(appId, permissions)
     }
 
+    override fun addMedia(mediaFiles: List<File>) {
+        LOGGER.info("[Start] Adding media files")
+        mediaFiles.forEach { addMediaToDevice(it) }
+        LOGGER.info("[Done] Adding media files")
+    }
+
+    private fun addMediaToDevice(mediaFile: File) {
+        val namedSource = NamedSource(
+            mediaFile.name,
+            mediaFile.source(),
+            mediaFile.extension,
+            mediaFile.path
+        )
+        MediaExt.values().firstOrNull { mediaExt -> mediaExt.extName == namedSource.extension }
+            ?: throw IllegalArgumentException(
+                "Extension .${namedSource.extension} is not yet supported for add media"
+            )
+        iosDevice.addMedia(namedSource.path)
+    }
+
+    override fun removeMedia() {
+        runCatching {
+            LOGGER.info("[Start] Deleting media files")
+            iosDevice.deleteMedia()
+            LOGGER.info("[Done] Deleting media files")
+        }
+    }
+
     private fun isScreenStatic(): Boolean {
         return iosDevice.isScreenStatic().expect {}
     }
@@ -452,10 +467,31 @@ class IOSDriver(
         return (percent * widthPoints).toInt()
     }
 
+    private fun awaitLaunch() {
+        val startTime = System.currentTimeMillis()
+
+        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
+            runCatching {
+                iosDevice.open()
+                return
+            }
+            Thread.sleep(100)
+        }
+
+        throw TimeoutException("Maestro iOS driver did not start up in time")
+    }
+
+    private fun getStartupTimeout(): Long = runCatching {
+        System.getenv(MAESTRO_DRIVER_STARTUP_TIMEOUT).toLong()
+    }.getOrDefault(SERVER_LAUNCH_TIMEOUT_MS)
+
     companion object {
         const val NAME = "iOS Simulator"
 
         private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
+
+        private const val SERVER_LAUNCH_TIMEOUT_MS = 15000L
+        private const val MAESTRO_DRIVER_STARTUP_TIMEOUT = "MAESTRO_DRIVER_STARTUP_TIMEOUT"
 
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40

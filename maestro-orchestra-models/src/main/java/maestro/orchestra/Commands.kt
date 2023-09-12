@@ -27,6 +27,7 @@ import maestro.TapRepeat
 import maestro.js.JsEngine
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.util.InputRandomTextHelper
+import java.nio.file.Path
 
 sealed interface Command {
 
@@ -35,7 +36,6 @@ sealed interface Command {
     fun evaluateScripts(jsEngine: JsEngine): Command
 
     fun visible(): Boolean = true
-
 }
 
 sealed interface CompositeCommand : Command {
@@ -60,18 +60,23 @@ data class SwipeCommand(
             label != null -> {
                 label
             }
+
             elementSelector != null && direction != null -> {
                 "Swiping in $direction direction on ${elementSelector.description()}"
             }
+
             direction != null -> {
                 "Swiping in $direction direction in $duration ms"
             }
+
             startPoint != null && endPoint != null -> {
                 "Swipe from (${startPoint.x},${startPoint.y}) to (${endPoint.x},${endPoint.y}) in $duration ms"
             }
+
             startRelative != null && endRelative != null -> {
                 "Swipe from ($startRelative) to ($endRelative) in $duration ms"
             }
+
             else -> "Invalid input to swipe command"
         }
     }
@@ -236,7 +241,7 @@ data class TapOnElementCommand(
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
-    val label: String? = null
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -262,7 +267,7 @@ data class TapOnPointCommand(
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
-    val label: String? = null    
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -279,7 +284,7 @@ data class TapOnPointV2Command(
     val retryIfNoChange: Boolean? = null,
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
-    val label: String? = null
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -303,7 +308,7 @@ data class AssertCommand(
 ) : Command {
 
     override fun description(): String {
-        if (label != null){
+        if (label != null) {
             return label
         }
         val timeoutStr = timeout?.let { " within $timeout ms" } ?: ""
@@ -334,7 +339,6 @@ data class AssertCommand(
             timeout = timeout?.toString(),
         )
     }
-
 }
 
 data class AssertConditionCommand(
@@ -384,7 +388,7 @@ data class LaunchAppCommand(
 ) : Command {
 
     override fun description(): String {
-        if (label != null){
+        if (label != null) {
             return label
         }
 
@@ -474,7 +478,6 @@ data class PressKeyCommand(
     override fun evaluateScripts(jsEngine: JsEngine): PressKeyCommand {
         return this
     }
-
 }
 
 data class EraseTextCommand(
@@ -495,12 +498,11 @@ data class EraseTextCommand(
     override fun evaluateScripts(jsEngine: JsEngine): EraseTextCommand {
         return this
     }
-
 }
 
 data class TakeScreenshotCommand(
     val path: String,
-    val label: String? = null
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -516,7 +518,7 @@ data class TakeScreenshotCommand(
 
 data class StopAppCommand(
     val appId: String,
-    val label: String? = null    
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -567,7 +569,6 @@ class ClearKeychainCommand(
     override fun hashCode(): Int {
         return javaClass.hashCode()
     }
-
 }
 
 enum class InputRandomType {
@@ -640,13 +641,12 @@ data class RunFlowCommand(
             config = config?.evaluateScripts(jsEngine),
         )
     }
-
 }
 
 data class SetLocationCommand(
     val latitude: Double,
     val longitude: Double,
-    val label: String? = null    
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -680,12 +680,15 @@ data class RepeatCommand(
             label != null -> {
                 label
             }
+
             condition != null && timesInt > 1 -> {
                 "Repeat while ${condition.description()} (up to $timesInt times)"
             }
+
             condition != null -> {
                 "Repeat while ${condition.description()}"
             }
+
             timesInt > 1 -> "Repeat $timesInt times"
             else -> "Repeat indefinitely"
         }
@@ -696,7 +699,6 @@ data class RepeatCommand(
             times = times?.evaluateScripts(jsEngine),
         )
     }
-
 }
 
 data class DefineVariablesCommand(
@@ -717,7 +719,6 @@ data class DefineVariablesCommand(
     }
 
     override fun visible(): Boolean = false
-
 }
 
 data class RunScriptCommand(
@@ -725,7 +726,7 @@ data class RunScriptCommand(
     val env: Map<String, String> = emptyMap(),
     val sourceDescription: String,
     val condition: Condition?,
-    val label: String? = null
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -746,12 +747,11 @@ data class RunScriptCommand(
             condition = condition?.evaluateScripts(jsEngine),
         )
     }
-
 }
 
 data class WaitForAnimationToEndCommand(
     val timeout: Long?,
-    val label: String? = null    
+    val label: String? = null,
 ) : Command {
 
     override fun description(): String {
@@ -775,7 +775,6 @@ data class EvalScriptCommand(
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return this
     }
-
 }
 
 data class TravelCommand(
@@ -803,7 +802,6 @@ data class TravelCommand(
 
             return distance
         }
-
     }
 
     override fun description(): String {
@@ -813,7 +811,6 @@ data class TravelCommand(
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return this
     }
-
 }
 
 data class StartRecordingCommand(
@@ -828,6 +825,19 @@ data class StartRecordingCommand(
     override fun evaluateScripts(jsEngine: JsEngine): StartRecordingCommand {
         return copy(
             path = path.evaluateScripts(jsEngine),
+        )
+    }
+}
+
+data class AddMediaCommand(val mediaPaths: List<String>, val label: String? = null) : Command {
+
+    override fun description(): String {
+        return label ?: "Adding media files(${mediaPaths.size}) to the device"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            mediaPaths = mediaPaths.map { it.evaluateScripts(jsEngine) }
         )
     }
 }
