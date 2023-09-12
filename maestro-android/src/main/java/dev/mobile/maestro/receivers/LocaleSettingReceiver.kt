@@ -13,7 +13,6 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
     override fun onReceive(context: Context?, intent: Intent?) {
         var language = intent?.getStringExtra(LANG)
         var country = intent?.getStringExtra(COUNTRY)
-        val skipLocaleCheck = intent?.getStringExtra(SKIP_LOCALE_CHECK)
 
         if (language == null || country == null) {
             Log.w(TAG, "It is required to provide both language and country, for example: " +
@@ -32,9 +31,7 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
         }
 
-        if (skipLocaleCheck != null) {
-            Log.i(TAG, "'skip_locale_check' value is provided, will not check locale availability")
-        } else if (!LocaleUtils.isAvailableLocale(locale)) {
+        if (!LocaleUtils.isAvailableLocale(locale)) {
             val approximateMatchesLc = matchLocales(language, country)
 
             if (approximateMatchesLc.isNotEmpty() && script.isNullOrBlank()) {
@@ -101,7 +98,6 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
     companion object {
         private const val LANG = "lang"
         private const val COUNTRY = "country"
-        private const val SKIP_LOCALE_CHECK = "skip_locale_check"
         private const val SCRIPT = "script"
         private const val ACTION = "dev.mobile.maestro.locale"
         private const val TAG = "Maestro"

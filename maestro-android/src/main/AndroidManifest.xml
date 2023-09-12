@@ -9,6 +9,8 @@
                      tools:ignore="QueryAllPackagesPermission"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
                      tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"
+                     tools:ignore="ProtectedPermissions" />
 
     <application
             android:usesCleartextTraffic="true">
@@ -25,5 +27,9 @@
                     <category android:name="android.intent.category.LAUNCHER" />
                 </intent-filter>
             </activity>
+
+            <receiver android:name=".receivers.LocaleSettingReceiver"
+                android:exported="true"
+                tools:ignore="ExportedReceiver" />
     </application>
 </manifest>
