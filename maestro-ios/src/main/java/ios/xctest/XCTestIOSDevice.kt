@@ -88,7 +88,7 @@ class XCTestIOSDevice(
     }
 
     override fun pressButton(name: String) {
-        client.pressButton(name).use {}
+        client.pressButton(name)
     }
 
     override fun addMedia(path: String) {
