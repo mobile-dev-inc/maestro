@@ -88,6 +88,12 @@ class TestCommand : Callable<Int> {
     private var debugOutput: String? = null
 
     @Option(
+        names = ["--flatten-debug-output"],
+        description = ["Don't create subfolders or timestamps for each run. Useful for CI."]
+    )
+    private var flattenDebugOutput: Boolean = false
+
+    @Option(
         names = ["--include-tags"],
         description = ["List of tags that will remove the Flows that does not have the provided tags"],
         split = ",",
@@ -130,7 +136,7 @@ class TestCommand : Callable<Int> {
 
         env = env.withInjectedShellEnvVars()
 
-        TestDebugReporter.install(debugOutputPathAsString = debugOutput)
+        TestDebugReporter.install(debugOutputPathAsString = debugOutput, flattenDebugOutput = flattenDebugOutput)
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
         
         return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->

@@ -33,6 +33,7 @@ object TestDebugReporter {
 
     private var debugOutputPath: Path? = null
     private var debugOutputPathAsString: String? = null
+    private var flattenDebugOutput: Boolean = false
 
     init {
 
@@ -114,8 +115,9 @@ object TestDebugReporter {
         logger.info("---------------------")
     }
 
-    fun install(debugOutputPathAsString: String?) {
+    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false) {
         this.debugOutputPathAsString = debugOutputPathAsString
+        this.flattenDebugOutput = flattenDebugOutput
         val path = getDebugOutputPath()
         LogConfig.configure(path.absolutePathString() + "/maestro.log")
         logSystemInfo()
@@ -125,10 +127,11 @@ object TestDebugReporter {
     fun getDebugOutputPath(): Path {
         if (debugOutputPath != null) return debugOutputPath as Path
 
-        val dateFormat = "yyyy-MM-dd_HHmmss"
-        val dateFormatter = DateTimeFormatter.ofPattern(dateFormat)
-        val folderName = dateFormatter.format(LocalDateTime.now())
-        val debugOutput = Paths.get(debugOutputPathAsString ?: System.getProperty("user.home"), ".maestro", "tests", folderName)
+        val preamble = if(flattenDebugOutput) arrayOf("") else arrayOf(".maestro", "tests")
+        val foldername = if(flattenDebugOutput) "" else DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
+        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")
+        val debugOutput = Paths.get(debugRootPath, *preamble, foldername)
+        
         if (!debugOutput.exists()) {
             Files.createDirectories(debugOutput)
         }
