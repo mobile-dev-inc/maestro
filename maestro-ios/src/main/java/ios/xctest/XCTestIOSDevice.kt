@@ -143,13 +143,7 @@ class XCTestIOSDevice(
             client.inputText(
                 text = text,
                 appIds = appIds,
-            ).use {
-                if (!it.isSuccessful) {
-                    if (it.code == 404) {
-                        throw InputFieldNotFound()
-                    }
-                }
-            }
+            )
         }
     }
 
