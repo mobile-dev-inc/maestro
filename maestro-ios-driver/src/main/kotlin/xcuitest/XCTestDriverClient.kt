@@ -174,8 +174,8 @@ class XCTestDriverClient(
         executeJsonRequest<Any>("pressButton", PressButtonRequest(name))
     }
 
-    fun eraseText(charactersToErase: Int, appIds: Set<String>): Response {
-        return executeJsonRequestUNCHECKED("eraseText", EraseTextRequest(charactersToErase, appIds))
+    fun eraseText(charactersToErase: Int, appIds: Set<String>) {
+        executeJsonRequest<Any>("eraseText", EraseTextRequest(charactersToErase, appIds))
     }
 
     fun deviceInfo(httpUrl: HttpUrl = client.xctestAPIBuilder("deviceInfo").build()): Response {

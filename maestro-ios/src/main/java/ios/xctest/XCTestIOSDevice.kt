@@ -259,7 +259,7 @@ class XCTestIOSDevice(
 
     override fun eraseText(charactersToErase: Int) {
         val appIds = getInstalledApps()
-        client.eraseText(charactersToErase, appIds).use {}
+        client.eraseText(charactersToErase, appIds)
     }
 
     private fun activeAppId(): String {
