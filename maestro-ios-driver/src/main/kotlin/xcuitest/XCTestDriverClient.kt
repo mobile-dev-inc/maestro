@@ -194,21 +194,7 @@ class XCTestDriverClient(
         executeJsonRequest<Any>("setPermissions", SetPermissionsRequest(permissions))
     }
 
-    private fun executeJsonRequestUNCHECKED(pathSegment: String, body: Any): Response {
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
-
-        val requestBuilder = Request.Builder()
-            .addHeader("Content-Type", "application/json")
-            .url(client.xctestAPIBuilder(pathSegment).build())
-            .post(bodyData)
-
-        return okHttpClient
-            .newCall(requestBuilder.build())
-            .execute()
-    }
-
-    private fun executeJsonRequestUNCHECKED(httpUrl: HttpUrl, body: Any): Response {
+    private inline fun <reified T: Any> executeJsonRequest(httpUrl: HttpUrl, body: Any): T {
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
 
@@ -219,19 +205,21 @@ class XCTestDriverClient(
 
         return okHttpClient
             .newCall(requestBuilder.build())
-            .execute()
+            .execute().use { processResponse(it, httpUrl.toString()) }
     }
 
-    private inline fun <reified T: Any> executeJsonRequest(httpUrl: HttpUrl, body: Any): T {
-        return executeJsonRequestUNCHECKED(httpUrl, body).use {
-            processResponse(it, httpUrl.toString())
-        }
-    }
+    private inline fun <reified T: Any> executeJsonRequest(pathSegment: String, body: Any): T {
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
 
-    private inline fun <reified T: Any> executeJsonRequest(url: String, body: Any): T {
-        return executeJsonRequestUNCHECKED(url, body).use {
-            processResponse(it, url)
-        }
+        val requestBuilder = Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .url(client.xctestAPIBuilder(pathSegment).build())
+            .post(bodyData)
+
+        return okHttpClient
+            .newCall(requestBuilder.build())
+            .execute().use { processResponse(it, pathSegment) }
     }
 
     private inline fun <reified T : Any> processResponse(response: Response, url: String): T {
