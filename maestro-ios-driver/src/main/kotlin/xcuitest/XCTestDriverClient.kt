@@ -190,9 +190,8 @@ class XCTestDriverClient(
         installer.close()
     }
 
-    fun setPermissions(permissions: Map<String, String>): Response {
-        val response = executeJsonRequestUNCHECKED("setPermissions", SetPermissionsRequest(permissions))
-        return response.use { it }
+    fun setPermissions(permissions: Map<String, String>) {
+        executeJsonRequest<Any>("setPermissions", SetPermissionsRequest(permissions))
     }
 
     private fun executeJsonRequestUNCHECKED(pathSegment: String, body: Any): Response {
