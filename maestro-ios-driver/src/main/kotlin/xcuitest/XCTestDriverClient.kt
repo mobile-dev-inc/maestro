@@ -134,15 +134,17 @@ class XCTestDriverClient(
         endX: Double,
         endY: Double,
         duration: Double,
-    ): Response {
-        return executeJsonRequestUNCHECKED("swipeV2", SwipeRequest(
-            startX = startX,
-            startY = startY,
-            endX = endX,
-            endY = endY,
-            duration = duration,
-            appIds = installedApps
-        ))
+    ) {
+        executeJsonRequest<Any>("swipeV2",
+            SwipeRequest(
+                startX = startX,
+                startY = startY,
+                endX = endX,
+                endY = endY,
+                duration = duration,
+                appIds = installedApps
+            )
+        )
     }
 
     fun inputText(

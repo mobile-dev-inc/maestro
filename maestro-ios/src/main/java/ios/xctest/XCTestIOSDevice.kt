@@ -133,7 +133,7 @@ class XCTestIOSDevice(
                 endX = xEnd,
                 endY = yEnd,
                 duration = duration,
-            ).use {}
+            )
         }
     }
 
