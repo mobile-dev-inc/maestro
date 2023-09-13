@@ -114,9 +114,9 @@ class XCTestDriverClient(
         endX: Double,
         endY: Double,
         duration: Double,
-    ): Response {
-        return executeJsonRequestUNCHECKED(
-            "swipe", SwipeRequest(
+    ) {
+        executeJsonRequest<Any>("swipe",
+            SwipeRequest(
                 appId = appId,
                 startX = startX,
                 startY = startY,
