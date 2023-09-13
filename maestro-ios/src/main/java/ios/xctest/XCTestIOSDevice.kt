@@ -69,7 +69,7 @@ class XCTestIOSDevice(
             client.tap(
                 x = x.toFloat(),
                 y = y.toFloat(),
-            ).use {}
+            )
         }
     }
 
@@ -79,7 +79,7 @@ class XCTestIOSDevice(
                 x = x.toFloat(),
                 y = y.toFloat(),
                 duration = durationMs.toDouble() / 1000
-            ).use {}
+            )
         }
     }
 

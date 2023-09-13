@@ -158,8 +158,8 @@ class XCTestDriverClient(
         x: Float,
         y: Float,
         duration: Double? = null,
-    ): Response {
-        return executeJsonRequestUNCHECKED("touch", TouchRequest(
+    ) {
+        executeJsonRequest<Any>("touch", TouchRequest(
             x = x,
             y = y,
             duration = duration
