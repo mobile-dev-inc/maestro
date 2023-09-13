@@ -84,7 +84,7 @@ class XCTestIOSDevice(
     }
 
     override fun pressKey(name: String) {
-        client.pressKey(name).use {}
+        client.pressKey(name)
     }
 
     override fun pressButton(name: String) {

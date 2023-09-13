@@ -166,8 +166,8 @@ class XCTestDriverClient(
         ))
     }
 
-    fun pressKey(name: String): Response {
-        return executeJsonRequestUNCHECKED("pressKey", PressKeyRequest(name))
+    fun pressKey(name: String) {
+        executeJsonRequest<Any>("pressKey", PressKeyRequest(name))
     }
 
     fun pressButton(name: String): Response {
