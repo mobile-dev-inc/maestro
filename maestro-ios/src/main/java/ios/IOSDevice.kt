@@ -20,11 +20,9 @@
 package ios
 
 import com.github.michaelbull.result.Result
-import hierarchy.AXElement
 import hierarchy.ViewHierarchy
-import ios.device.DeviceInfo
+import xcuitest.api.DeviceInfo
 import okio.Sink
-import java.io.File
 import java.io.InputStream
 import java.util.UUID
 

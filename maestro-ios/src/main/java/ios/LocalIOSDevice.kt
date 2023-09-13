@@ -1,7 +1,7 @@
 package ios
 
 import com.github.michaelbull.result.*
-import ios.device.DeviceInfo
+import xcuitest.api.DeviceInfo
 import ios.simctl.SimctlIOSDevice
 import ios.xctest.XCTestIOSDevice
 import okio.Sink

@@ -1,4 +1,4 @@
-package hierarchy
+package xcuitest.api
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

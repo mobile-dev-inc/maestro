@@ -7,15 +7,13 @@ import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
 import ios.IOSScreenRecording
-import ios.device.DeviceInfo
+import xcuitest.api.DeviceInfo
 import logger.Logger
 import maestro.utils.DepthTracker
-import maestro.utils.network.InputFieldNotFound
 import maestro.utils.network.UnknownFailure
 import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
-import xcuitest.api.GetRunningAppIdResponse
 import xcuitest.api.IsScreenStaticResponse
 import java.io.InputStream
 import java.util.UUID
@@ -33,23 +31,9 @@ class XCTestIOSDevice(
 
     override fun deviceInfo(): Result<DeviceInfo, Throwable> {
         return runCatching {
-            client.deviceInfo().use { response ->
-                response.body.use { body ->
-                    val bodyString = body?.bytes()?.let { String(it) }
-                    if (!response.isSuccessful) {
-                        val message = "${response.code} ${response.message} - $bodyString"
-                        logger.info("Device info failed: $message")
-                        return Err(UnknownFailure(message))
-                    }
-
-                    bodyString ?: throw UnknownFailure("Error: response body missing")
-
-                    val deviceInfo = mapper.readValue(bodyString, DeviceInfo::class.java)
-                    logger.info("Device info $deviceInfo")
-
-                    deviceInfo
-                }
-            }
+            val deviceInfo = client.deviceInfo()
+            logger.info("Device info $deviceInfo")
+            deviceInfo
         }
     }
 

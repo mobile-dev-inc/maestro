@@ -6,7 +6,7 @@ import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
 import ios.IOSScreenRecording
-import ios.device.DeviceInfo
+import xcuitest.api.DeviceInfo
 import okio.Sink
 import okio.buffer
 import okio.source

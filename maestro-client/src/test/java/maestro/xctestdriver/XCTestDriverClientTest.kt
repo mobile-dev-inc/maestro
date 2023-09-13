@@ -4,12 +4,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
 import maestro.debuglog.IOSDriverLogger
 import maestro.ios.MockXCTestInstaller
+import maestro.utils.network.XCUITestServerError
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import xcuitest.XCTestClient
 import xcuitest.XCTestDriverClient
+import xcuitest.api.DeviceInfo
+import xcuitest.api.Error
 import xcuitest.api.NetworkException
 import java.net.InetAddress
 
@@ -34,12 +38,11 @@ class XCTestDriverClientTest {
             IOSDriverLogger(XCTestDriverClient::class.java),
             XCTestClient("localhost", 22087)
         )
-        val response = xcTestDriverClient.deviceInfo(httpUrl)
 
         // then
-        assertThat(response.message).contains(
-            "A timeout occurred while waiting for a response from the XCUITest server."
-        )
+        assertThrows<XCUITestServerError.NetworkError> {
+            xcTestDriverClient.deviceInfo(httpUrl)
+        }
         mockXCTestInstaller.assertInstallationRetries(5)
         mockWebServer.shutdown()
     }
@@ -48,9 +51,11 @@ class XCTestDriverClientTest {
     fun `it should return the 4xx response as is without retrying`() {
         // given
         val mockWebServer = MockWebServer()
+        val mapper = jacksonObjectMapper()
+        val error = Error(errorMessage = "This is bad request, failure", errorCode = "bad-request")
         val mockResponse = MockResponse().apply {
             setResponseCode(401)
-            setBody("This is a bad request")
+            setBody(mapper.writeValueAsString(error))
         }
         mockWebServer.enqueue(mockResponse)
         mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
@@ -64,14 +69,12 @@ class XCTestDriverClientTest {
             IOSDriverLogger(XCTestDriverClient::class.java),
             XCTestClient("localhost", 22087)
         )
-        val response = xcTestDriverClient.deviceInfo(httpUrl)
+
 
         // then
-        val body = response.body?.string()
-        val code = response.code
-        assertThat(code).isEqualTo(401)
-        assertThat(body).isNotNull()
-        assertThat(body).isEqualTo("This is a bad request")
+        assertThrows<XCUITestServerError.BadRequest> {
+            xcTestDriverClient.deviceInfo(httpUrl)
+        }
         mockXCTestInstaller.assertInstallationRetries(0)
         mockWebServer.shutdown()
     }
@@ -80,9 +83,11 @@ class XCTestDriverClientTest {
     fun `it should return the 200 response as is without retrying`() {
         // given
         val mockWebServer = MockWebServer()
+        val mapper = jacksonObjectMapper()
+        val expectedDeviceInfo = DeviceInfo(1123, 5000, 1223, 1123)
         val mockResponse = MockResponse().apply {
             setResponseCode(200)
-            setBody("This is a valid response")
+            setBody(mapper.writeValueAsString(expectedDeviceInfo))
         }
         mockWebServer.enqueue(mockResponse)
         mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
@@ -96,14 +101,10 @@ class XCTestDriverClientTest {
             IOSDriverLogger(XCTestDriverClient::class.java),
             XCTestClient("localhost", 22087)
         )
-        val response = xcTestDriverClient.deviceInfo(httpUrl)
+        val actualDeviceInfo = xcTestDriverClient.deviceInfo(httpUrl)
 
         // then
-        val body = response.body?.string()
-        val code = response.code
-        assertThat(code).isEqualTo(200)
-        assertThat(body).isNotNull()
-        assertThat(body).isEqualTo("This is a valid response")
+        assertThat(actualDeviceInfo).isEqualTo(expectedDeviceInfo)
         mockXCTestInstaller.assertInstallationRetries(0)
         mockWebServer.shutdown()
     }
@@ -118,7 +119,6 @@ class XCTestDriverClientTest {
         )
         mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
         val httpUrl = mockWebServer.url("http://nonexistent-domain.local")
-        val mapper = jacksonObjectMapper()
 
         // when
         val simulator = MockXCTestInstaller.Simulator(
@@ -131,16 +131,11 @@ class XCTestDriverClientTest {
             IOSDriverLogger(XCTestDriverClient::class.java),
             XCTestClient("localhost", 22087)
         )
-        val response = xcTestDriverClient.deviceInfo(httpUrl)
 
         // then
-        val networkErrorModel = response.body?.use {
-            mapper.readValue(it.bytes(), NetworkException.NetworkErrorModel::class.java)
-        } ?: throw IllegalStateException("No NetworkError model found for response body")
-        assertThat(response.code).isEqualTo(502)
-        assertThat(networkErrorModel.userFriendlyMessage).contains(
-            "The host for the XCUITest server is unknown."
-        )
+        assertThrows<XCUITestServerError.NetworkError> {
+            xcTestDriverClient.deviceInfo(httpUrl)
+        }
         mockXCTestInstaller.assertInstallationRetries(0)
         mockWebServer.shutdown()
     }
@@ -169,16 +164,11 @@ class XCTestDriverClientTest {
             IOSDriverLogger(XCTestDriverClient::class.java),
             XCTestClient("localhost", 22087)
         )
-        val response = xcTestDriverClient.deviceInfo(httpUrl)
 
         // then
-        assertThat(response.code).isEqualTo(502)
-        val networkErrorModel = response.body?.use {
-            mapper.readValue(it.bytes(), NetworkException.NetworkErrorModel::class.java)
-        } ?: throw IllegalStateException("No NetworkError model found for response body")
-        assertThat(networkErrorModel.userFriendlyMessage).contains(
-            "Unable to establish a connection to the XCUITest server."
-        )
+        assertThrows<XCUITestServerError.NetworkError> {
+            xcTestDriverClient.deviceInfo(httpUrl)
+        }
         mockXCTestInstaller.assertInstallationRetries(5)
     }
 }

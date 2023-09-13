@@ -1,7 +1,7 @@
 package xcuitest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import hierarchy.Error
+import xcuitest.api.Error
 import hierarchy.ViewHierarchy
 import xcuitest.api.GetRunningAppRequest
 import logger.Logger
@@ -178,8 +178,8 @@ class XCTestDriverClient(
         executeJsonRequest<Any>("eraseText", EraseTextRequest(charactersToErase, appIds))
     }
 
-    fun deviceInfo(httpUrl: HttpUrl = client.xctestAPIBuilder("deviceInfo").build()): Response {
-        return executeJsonRequestUNCHECKED(httpUrl, Unit)
+    fun deviceInfo(httpUrl: HttpUrl = client.xctestAPIBuilder("deviceInfo").build()): DeviceInfo {
+        return executeJsonRequest(httpUrl, Unit)
     }
 
     fun isChannelAlive(): Boolean {
@@ -222,41 +222,51 @@ class XCTestDriverClient(
             .execute()
     }
 
+    private inline fun <reified T: Any> executeJsonRequest(httpUrl: HttpUrl, body: Any): T {
+        return executeJsonRequestUNCHECKED(httpUrl, body).use {
+            processResponse(it, httpUrl.toString())
+        }
+    }
+
     private inline fun <reified T: Any> executeJsonRequest(url: String, body: Any): T {
         return executeJsonRequestUNCHECKED(url, body).use {
-            val responseBodyAsString = it.body?.bytes()?.let { bytes -> String(bytes) } ?: ""
+            processResponse(it, url)
+        }
+    }
 
-            if (!it.isSuccessful) {
-                val error = mapper.readValue(responseBodyAsString, Error::class.java)
-                when {
-                    it.code in 400..499 -> {
-                        logger.error("Request for $url failed with bad request ${it.code}, body: $responseBodyAsString")
-                        throw XCUITestServerError.BadRequest(
-                            "Request for $url failed with bad request ${it.code}, body: $responseBodyAsString",
-                            responseBodyAsString
-                        )
-                    }
-                    it.code == 502 -> {
-                        logger.error("Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
-                        throw XCUITestServerError.NetworkError(
-                            "Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
-                        )
-                    }
-                    error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
-                        throw XCUITestServerError.AppCrash(
-                            "Request for $url failed, due to app crash"
-                        )
-                    }
-                    else -> {
-                        logger.error("Request for $url failed, body: $responseBodyAsString")
-                        throw XCUITestServerError.UnknownFailure(
-                            "Request for $url failed, code: ${it.code}, body: $responseBodyAsString"
-                        )
-                    }
+    private inline fun <reified T : Any> processResponse(response: Response, url: String): T {
+        val responseBodyAsString = response.body?.bytes()?.let { bytes -> String(bytes) } ?: ""
+
+        return if (!response.isSuccessful) {
+            val error = mapper.readValue(responseBodyAsString, Error::class.java)
+            when {
+                response.code in 400..499 -> {
+                    logger.error("Request for $url failed with bad request ${response.code}, body: $responseBodyAsString")
+                    throw XCUITestServerError.BadRequest(
+                        "Request for $url failed with bad request ${response.code}, body: $responseBodyAsString",
+                        responseBodyAsString
+                    )
                 }
-            } else {
-                mapper.readValue(responseBodyAsString, T::class.java)
+                response.code == 502 -> {
+                    logger.error("Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
+                    throw XCUITestServerError.NetworkError(
+                        "Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
+                    )
+                }
+                error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
+                    throw XCUITestServerError.AppCrash(
+                        "Request for $url failed, due to app crash"
+                    )
+                }
+                else -> {
+                    logger.error("Request for $url failed, body: $responseBodyAsString")
+                    throw XCUITestServerError.UnknownFailure(
+                        "Request for $url failed, code: ${response.code}, body: $responseBodyAsString"
+                    )
+                }
             }
+        } else {
+            mapper.readValue(responseBodyAsString, T::class.java)
         }
     }
 
