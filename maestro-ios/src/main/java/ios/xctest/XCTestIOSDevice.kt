@@ -166,20 +166,8 @@ class XCTestIOSDevice(
 
     override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
         return runCatching {
-            client.screenshot(compressed).use { response ->
-                response.body.use { body ->
-                    body ?: throw UnknownFailure("Error - body for snapshot request not available")
-
-                    if (response.isSuccessful) {
-                        out.buffer().use {
-                            it.write(body.bytes())
-                        }
-                    } else {
-                        val errorResponse = String(body.bytes()).trim()
-                        throw UnknownFailure(errorResponse)
-                    }
-                }
-            }
+            val bytes = client.screenshot(compressed)
+            out.buffer().use { it.write(bytes) }
         }
     }
 
@@ -201,25 +189,9 @@ class XCTestIOSDevice(
 
     override fun isScreenStatic(): Result<Boolean, Throwable> {
         return runCatching {
-            client.isScreenStatic().use { response ->
-                response.body.use { body ->
-                    body ?: throw UnknownFailure("Error - body for isScreenStatic request not available")
-
-                    if (response.isSuccessful) {
-                        val responseBody: IsScreenStaticResponse = mapper.readValue(
-                            String(body.bytes()),
-                            IsScreenStaticResponse::class.java
-                        )
-                        val isScreenStatic = responseBody.isScreenStatic
-                        logger.info("Screen diff request finished with isScreenStatic = $isScreenStatic")
-                        isScreenStatic
-                    } else {
-                        val errorResponse = String(body.bytes()).trim()
-                        logger.info("Screen diff request failed with error = $errorResponse")
-                        throw UnknownFailure(errorResponse)
-                    }
-                }
-            }
+            val isScreenStatic = client.isScreenStatic().isScreenStatic
+            logger.info("Screen diff request finished with isScreenStatic = $isScreenStatic")
+            isScreenStatic
         }
     }
 

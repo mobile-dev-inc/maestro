@@ -75,29 +75,16 @@ class XCTestDriverClient(
         )
     }
 
-    fun screenshot(compressed: Boolean): Response {
+    fun screenshot(compressed: Boolean): ByteArray {
         val url = client.xctestAPIBuilder("screenshot")
             .addQueryParameter("compressed", compressed.toString())
             .build()
 
-        val request = Request.Builder()
-            .get()
-            .url(url)
-            .build()
-
-        return okHttpClient.newCall(request).execute()
+        return executeJsonRequest(url)
     }
 
-    fun isScreenStatic(): Response {
-        val url = client.xctestAPIBuilder("isScreenStatic")
-            .build()
-
-        val request = Request.Builder()
-            .get()
-            .url(url)
-            .build()
-
-        return okHttpClient.newCall(request).execute()
+    fun isScreenStatic(): IsScreenStaticResponse {
+        return executeJsonRequest("isScreenStatic")
     }
 
     fun runningAppId(appIds: Set<String>): GetRunningAppIdResponse {
@@ -208,6 +195,25 @@ class XCTestDriverClient(
             .execute().use { processResponse(it, httpUrl.toString()) }
     }
 
+    private fun executeJsonRequest(httpUrl: HttpUrl): ByteArray {
+        val request = Request.Builder()
+            .get()
+            .url(httpUrl)
+            .build()
+
+        return okHttpClient
+            .newCall(request)
+            .execute().use {
+                val bytes = it.body?.bytes() ?: ByteArray(0)
+                if (!it.isSuccessful) {
+                    //handle exception
+                    val responseBodyAsString = String(bytes)
+                    handleExceptions<Any>(it.code, request.url.pathSegments.first(), responseBodyAsString)
+                }
+                bytes
+            }
+    }
+
     private inline fun <reified T: Any> executeJsonRequest(pathSegment: String, body: Any): T {
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
@@ -222,39 +228,58 @@ class XCTestDriverClient(
             .execute().use { processResponse(it, pathSegment) }
     }
 
+    private inline fun <reified T: Any> executeJsonRequest(pathSegment: String): T {
+        val requestBuilder = Request.Builder()
+            .url(client.xctestAPIBuilder(pathSegment).build())
+            .get()
+
+        return okHttpClient
+            .newCall(requestBuilder.build())
+            .execute().use { processResponse(it, pathSegment) }
+    }
+
     private inline fun <reified T : Any> processResponse(response: Response, url: String): T {
         val responseBodyAsString = response.body?.bytes()?.let { bytes -> String(bytes) } ?: ""
 
         return if (!response.isSuccessful) {
-            val error = mapper.readValue(responseBodyAsString, Error::class.java)
-            when {
-                response.code in 400..499 -> {
-                    logger.error("Request for $url failed with bad request ${response.code}, body: $responseBodyAsString")
-                    throw XCUITestServerError.BadRequest(
-                        "Request for $url failed with bad request ${response.code}, body: $responseBodyAsString",
-                        responseBodyAsString
-                    )
-                }
-                response.code == 502 -> {
-                    logger.error("Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
-                    throw XCUITestServerError.NetworkError(
-                        "Request for $url failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
-                    )
-                }
-                error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
-                    throw XCUITestServerError.AppCrash(
-                        "Request for $url failed, due to app crash with message ${error.errorMessage}"
-                    )
-                }
-                else -> {
-                    logger.error("Request for $url failed, body: $responseBodyAsString")
-                    throw XCUITestServerError.UnknownFailure(
-                        "Request for $url failed, code: ${response.code}, body: $responseBodyAsString"
-                    )
-                }
-            }
+            val code = response.code
+            handleExceptions(code, url, responseBodyAsString)
         } else {
             mapper.readValue(responseBodyAsString, T::class.java)
+        }
+    }
+
+    private fun <T> handleExceptions(
+        code: Int,
+        pathString: String,
+        responseBodyAsString: String,
+    ): T {
+        val error = mapper.readValue(responseBodyAsString, Error::class.java)
+        when {
+            code in 400..499 -> {
+                logger.error("Request for $pathString failed with bad request ${code}, body: $responseBodyAsString")
+                throw XCUITestServerError.BadRequest(
+                    "Request for $pathString failed with bad request ${code}, body: $responseBodyAsString",
+                    responseBodyAsString
+                )
+            }
+            code == 502 -> {
+                logger.error("Request for $pathString failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
+                throw XCUITestServerError.NetworkError(
+                    "Request for $pathString failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
+                )
+            }
+            error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
+                throw XCUITestServerError.AppCrash(
+                    "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
+                )
+            }
+            else -> {
+                logger.error("Request for $pathString failed, body: $responseBodyAsString")
+                throw XCUITestServerError.UnknownFailure(
+                    "Request for $pathString failed, code: ${code}, body: $responseBodyAsString"
+                )
+            }
         }
     }
 
