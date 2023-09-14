@@ -24,10 +24,12 @@ import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
 import ios.IOSDevice
+import ios.IOSDeviceErrors
 import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
+import maestro.utils.network.XCUITestServerError
 import okio.Sink
 import okio.source
 import org.slf4j.LoggerFactory
@@ -139,12 +141,17 @@ class IOSDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        return viewHierarchy()
+        return try {
+            viewHierarchy()
+        } catch (appCrashException: IOSDeviceErrors.AppCrash) {
+            LOGGER.info("Found app crash with message ${appCrashException.errorMessage}")
+            throw MaestroException.AppCrash(appCrashException.errorMessage)
+        }
     }
 
-    fun viewHierarchy(): TreeNode {
+    private fun viewHierarchy(): TreeNode {
         LOGGER.info("Requesting view hierarchy of the screen")
-        val hierarchyResult = iosDevice.viewHierarchy().expect {  }
+        val hierarchyResult = iosDevice.viewHierarchy()
         LOGGER.info("Depth of the screen is ${hierarchyResult.depth}")
         if (hierarchyResult.depth > WARNING_MAX_DEPTH) {
             val message = "The view hierarchy has been calculated. The current depth of the hierarchy " +

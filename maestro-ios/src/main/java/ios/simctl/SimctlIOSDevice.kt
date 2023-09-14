@@ -31,7 +31,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
+    override fun viewHierarchy(): ViewHierarchy {
         TODO("Not yet implemented")
     }
 

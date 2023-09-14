@@ -6,11 +6,13 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
+import ios.IOSDeviceErrors
 import ios.IOSScreenRecording
 import xcuitest.api.DeviceInfo
 import logger.Logger
 import maestro.utils.DepthTracker
 import maestro.utils.network.UnknownFailure
+import maestro.utils.network.XCUITestServerError
 import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
@@ -37,15 +39,14 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
-        val installedApps = getInstalledApps()
-        val result = runCatching {
+    override fun viewHierarchy(): ViewHierarchy {
+        return execute {
+            val installedApps = getInstalledApps()
             val viewHierarchy = client.viewHierarchy(installedApps)
             DepthTracker.trackDepth(viewHierarchy.depth)
             logger.info("Depth received: ${viewHierarchy.depth}")
             viewHierarchy
         }
-        return result
     }
 
     override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
@@ -251,6 +252,17 @@ class XCTestIOSDevice(
         logger.info("installed apps: $appIds")
 
         return client.runningAppId(appIds).runningAppBundleId
+    }
+
+    private fun <T> execute(call: () -> T): T {
+        return try {
+            call()
+        } catch (appCrashException: XCUITestServerError.AppCrash) {
+            throw IOSDeviceErrors.AppCrash(
+                "App crashed, please check diagnostic logs: " +
+                        "/Library/Logs/DiagnosticReports directory"
+            )
+        }
     }
 
     companion object {

@@ -243,7 +243,7 @@ class XCTestDriverClient(
                 }
                 error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
                     throw XCUITestServerError.AppCrash(
-                        "Request for $url failed, due to app crash"
+                        "Request for $url failed, due to app crash with message ${error.errorMessage}"
                     )
                 }
                 else -> {

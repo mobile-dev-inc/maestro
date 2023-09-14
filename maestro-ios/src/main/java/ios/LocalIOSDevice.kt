@@ -10,6 +10,7 @@ import java.util.UUID
 import hierarchy.ViewHierarchy
 import maestro.utils.Insight
 import maestro.utils.Insights
+import maestro.utils.network.XCUITestServerError
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -29,7 +30,7 @@ class LocalIOSDevice(
         return xcTestDevice.deviceInfo()
     }
 
-    override fun viewHierarchy(): Result<ViewHierarchy, Throwable> {
+    override fun viewHierarchy(): ViewHierarchy {
         var isViewHierarchyInProgress = true
         val future = executor.schedule(
             {
