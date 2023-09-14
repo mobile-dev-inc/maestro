@@ -37,12 +37,25 @@ class StartDeviceCommand : Callable<Int> {
     private lateinit var osVersion: String
 
     @CommandLine.Option(
+        order = 2,
+        names = ["--device-language"],
+        description = ["lowercase ISO-639-1 code, i.e. \"de\" for German"],
+    )
+    private lateinit var deviceLanguage: String
+
+    @CommandLine.Option(
         order = 3,
+        names = ["--device-country"],
+        description = ["uppercase 3166-1 code, i.e. \"DE\" for Germany"],
+    )
+    private lateinit var deviceCountry: String
+
+    @CommandLine.Option(
+        order = 4,
         names = ["--force-create"],
         description = ["Will override existing device if it already exists"],
     )
     private var forceCreate: Boolean = false
-
 
     override fun call(): Int {
         TestDebugReporter.install(null)
