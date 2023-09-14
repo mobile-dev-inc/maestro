@@ -274,6 +274,16 @@ class XCTestDriverClient(
                     "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
                 )
             }
+            error.errorMessage.contains("Application [a-zA-Z0-9.]+ is not running".toRegex()) -> {
+                throw XCUITestServerError.AppCrash(
+                    "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
+                )
+            }
+            error.errorMessage.contains("Error getting main window kAXErrorCannotComplete") -> {
+                throw XCUITestServerError.AppCrash(
+                    "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
+                )
+            }
             else -> {
                 logger.error("Request for $pathString failed, body: $responseBodyAsString")
                 throw XCUITestServerError.UnknownFailure(

@@ -10,6 +10,8 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import xcuitest.XCTestClient
 import xcuitest.XCTestDriverClient
 import xcuitest.api.DeviceInfo
@@ -109,6 +111,39 @@ class XCTestDriverClientTest {
         mockWebServer.shutdown()
     }
 
+    @ParameterizedTest
+    @MethodSource("provideAppCrashMessage")
+    fun `it should throw app crash exception correctly`(errorMessage: String) {
+        // given
+        val mockWebServer = MockWebServer()
+        val mapper = jacksonObjectMapper()
+        val expectedDeviceInfo = Error(errorMessage = errorMessage, errorCode = "internal")
+        val mockResponse = MockResponse().apply {
+            setResponseCode(500)
+            setBody(mapper.writeValueAsString(expectedDeviceInfo))
+        }
+        mockWebServer.enqueue(mockResponse)
+        mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
+        val httpUrl = mockWebServer.url("/deviceInfo")
+
+        // when
+        val simulator = MockXCTestInstaller.Simulator()
+        val mockXCTestInstaller = MockXCTestInstaller(simulator)
+        val xcTestDriverClient = XCTestDriverClient(
+            mockXCTestInstaller,
+            IOSDriverLogger(XCTestDriverClient::class.java),
+            XCTestClient("localhost", 22087)
+        )
+
+
+        // then
+        assertThrows<XCUITestServerError.AppCrash> {
+            xcTestDriverClient.deviceInfo(httpUrl)
+        }
+        mockXCTestInstaller.assertInstallationRetries(0)
+        mockWebServer.shutdown()
+    }
+
     @Test
     fun `it should return correct message in case of UnknownHostException without retries`() {
         // given
@@ -151,7 +186,6 @@ class XCTestDriverClientTest {
         mockWebServer.start(InetAddress.getByName( "localhost"), 22087)
         val httpUrl = mockWebServer.url("/deviceInfo")
         mockWebServer.shutdown()
-        val mapper = jacksonObjectMapper()
 
         // when
         val simulator = MockXCTestInstaller.Simulator(
@@ -170,5 +204,17 @@ class XCTestDriverClientTest {
             xcTestDriverClient.deviceInfo(httpUrl)
         }
         mockXCTestInstaller.assertInstallationRetries(5)
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun provideAppCrashMessage(): Array<String> {
+            return arrayOf(
+                "Application com.app.id is not running",
+                "Lost connection to the application (pid 19985).",
+                "Error getting main window kAXErrorCannotComplete"
+            )
+        }
     }
 }
