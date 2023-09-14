@@ -69,10 +69,11 @@ class XCTestDriverClient(
     private val mapper = jacksonObjectMapper()
 
     fun viewHierarchy(installedApps: Set<String>): ViewHierarchy {
-        return executeJsonRequest(
+        val responseString = executeJsonRequest(
             "viewHierarchy",
             ViewHierarchyRequest(installedApps)
         )
+        return mapper.readValue(responseString, ViewHierarchy::class.java)
     }
 
     fun screenshot(compressed: Boolean): ByteArray {
@@ -84,14 +85,16 @@ class XCTestDriverClient(
     }
 
     fun isScreenStatic(): IsScreenStaticResponse {
-        return executeJsonRequest("isScreenStatic")
+        val responseString = executeJsonRequest("isScreenStatic")
+        return mapper.readValue(responseString, IsScreenStaticResponse::class.java)
     }
 
     fun runningAppId(appIds: Set<String>): GetRunningAppIdResponse {
-        return executeJsonRequest(
+        val response = executeJsonRequest(
             "runningApp",
             GetRunningAppRequest(appIds)
         )
+        return mapper.readValue(response, GetRunningAppIdResponse::class.java)
     }
 
     fun swipe(
@@ -102,7 +105,7 @@ class XCTestDriverClient(
         endY: Double,
         duration: Double,
     ) {
-        executeJsonRequest<Any>("swipe",
+        executeJsonRequest("swipe",
             SwipeRequest(
                 appId = appId,
                 startX = startX,
@@ -122,7 +125,7 @@ class XCTestDriverClient(
         endY: Double,
         duration: Double,
     ) {
-        executeJsonRequest<Any>("swipeV2",
+        executeJsonRequest("swipeV2",
             SwipeRequest(
                 startX = startX,
                 startY = startY,
@@ -138,7 +141,7 @@ class XCTestDriverClient(
         text: String,
         appIds: Set<String>,
     ) {
-        executeJsonRequest<Any>("inputText", InputTextRequest(text, appIds))
+        executeJsonRequest("inputText", InputTextRequest(text, appIds))
     }
 
     fun tap(
@@ -146,7 +149,7 @@ class XCTestDriverClient(
         y: Float,
         duration: Double? = null,
     ) {
-        executeJsonRequest<Any>("touch", TouchRequest(
+        executeJsonRequest("touch", TouchRequest(
             x = x,
             y = y,
             duration = duration
@@ -154,19 +157,20 @@ class XCTestDriverClient(
     }
 
     fun pressKey(name: String) {
-        executeJsonRequest<Any>("pressKey", PressKeyRequest(name))
+        executeJsonRequest("pressKey", PressKeyRequest(name))
     }
 
     fun pressButton(name: String) {
-        executeJsonRequest<Any>("pressButton", PressButtonRequest(name))
+        executeJsonRequest("pressButton", PressButtonRequest(name))
     }
 
     fun eraseText(charactersToErase: Int, appIds: Set<String>) {
-        executeJsonRequest<Any>("eraseText", EraseTextRequest(charactersToErase, appIds))
+        executeJsonRequest("eraseText", EraseTextRequest(charactersToErase, appIds))
     }
 
     fun deviceInfo(httpUrl: HttpUrl = client.xctestAPIBuilder("deviceInfo").build()): DeviceInfo {
-        return executeJsonRequest(httpUrl, Unit)
+        val response = executeJsonRequest(httpUrl, Unit)
+        return mapper.readValue(response, DeviceInfo::class.java)
     }
 
     fun isChannelAlive(): Boolean {
@@ -178,10 +182,10 @@ class XCTestDriverClient(
     }
 
     fun setPermissions(permissions: Map<String, String>) {
-        executeJsonRequest<Any>("setPermissions", SetPermissionsRequest(permissions))
+        executeJsonRequest("setPermissions", SetPermissionsRequest(permissions))
     }
 
-    private inline fun <reified T: Any> executeJsonRequest(httpUrl: HttpUrl, body: Any): T {
+    private fun executeJsonRequest(httpUrl: HttpUrl, body: Any): String {
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
 
@@ -208,13 +212,13 @@ class XCTestDriverClient(
                 if (!it.isSuccessful) {
                     //handle exception
                     val responseBodyAsString = String(bytes)
-                    handleExceptions<Any>(it.code, request.url.pathSegments.first(), responseBodyAsString)
+                    handleExceptions(it.code, request.url.pathSegments.first(), responseBodyAsString)
                 }
                 bytes
             }
     }
 
-    private inline fun <reified T: Any> executeJsonRequest(pathSegment: String, body: Any): T {
+    private fun executeJsonRequest(pathSegment: String, body: Any): String {
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val bodyData = mapper.writeValueAsString(body).toRequestBody(mediaType)
 
@@ -228,7 +232,7 @@ class XCTestDriverClient(
             .execute().use { processResponse(it, pathSegment) }
     }
 
-    private inline fun <reified T: Any> executeJsonRequest(pathSegment: String): T {
+    private fun executeJsonRequest(pathSegment: String): String {
         val requestBuilder = Request.Builder()
             .url(client.xctestAPIBuilder(pathSegment).build())
             .get()
@@ -238,22 +242,22 @@ class XCTestDriverClient(
             .execute().use { processResponse(it, pathSegment) }
     }
 
-    private inline fun <reified T : Any> processResponse(response: Response, url: String): T {
+    private fun processResponse(response: Response, url: String): String {
         val responseBodyAsString = response.body?.bytes()?.let { bytes -> String(bytes) } ?: ""
 
         return if (!response.isSuccessful) {
             val code = response.code
             handleExceptions(code, url, responseBodyAsString)
         } else {
-            mapper.readValue(responseBodyAsString, T::class.java)
+            responseBodyAsString
         }
     }
 
-    private fun <T> handleExceptions(
+    private fun handleExceptions(
         code: Int,
         pathString: String,
         responseBodyAsString: String,
-    ): T {
+    ): String {
         val error = mapper.readValue(responseBodyAsString, Error::class.java)
         when {
             code in 400..499 -> {
