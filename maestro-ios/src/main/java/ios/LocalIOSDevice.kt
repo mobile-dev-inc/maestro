@@ -114,8 +114,8 @@ class LocalIOSDevice(
         return simctlIOSDevice.openLink(link)
     }
 
-    override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
-        return xcTestDevice.takeScreenshot(out, compressed)
+    override fun takeScreenshot(out: Sink, compressed: Boolean) {
+        xcTestDevice.takeScreenshot(out, compressed)
     }
 
     override fun startScreenRecording(out: Sink): Result<IOSScreenRecording, Throwable> {
@@ -135,15 +135,13 @@ class LocalIOSDevice(
         simctlIOSDevice.close()
     }
 
-    override fun isScreenStatic(): Result<Boolean, Throwable> {
+    override fun isScreenStatic(): Boolean {
         return xcTestDevice.isScreenStatic()
     }
 
-    override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
-        return runCatching {
-            simctlIOSDevice.setPermissions(id, permissions).expect { }
-            xcTestDevice.setPermissions(id, permissions).expect { }
-        }
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        simctlIOSDevice.setPermissions(id, permissions)
+        xcTestDevice.setPermissions(id, permissions)
     }
 
     override fun eraseText(charactersToErase: Int) {

@@ -1,9 +1,6 @@
 package ios.xctest
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
 import ios.IOSDeviceErrors
@@ -11,12 +8,10 @@ import ios.IOSScreenRecording
 import xcuitest.api.DeviceInfo
 import logger.Logger
 import maestro.utils.DepthTracker
-import maestro.utils.network.UnknownFailure
 import maestro.utils.network.XCUITestServerError
 import okio.Sink
 import okio.buffer
 import xcuitest.XCTestDriverClient
-import xcuitest.api.IsScreenStaticResponse
 import java.io.InputStream
 import java.util.UUID
 
@@ -164,8 +159,8 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
-        return runCatching {
+    override fun takeScreenshot(out: Sink, compressed: Boolean) {
+        execute {
             val bytes = client.screenshot(compressed)
             out.buffer().use { it.write(bytes) }
         }
@@ -187,43 +182,43 @@ class XCTestIOSDevice(
         client.close()
     }
 
-    override fun isScreenStatic(): Result<Boolean, Throwable> {
-        return runCatching {
+    override fun isScreenStatic(): Boolean {
+        return execute {
             val isScreenStatic = client.isScreenStatic().isScreenStatic
             logger.info("Screen diff request finished with isScreenStatic = $isScreenStatic")
             isScreenStatic
         }
     }
 
-    override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
-        return runCatching {
-            val mutable = permissions.toMutableMap()
-            if (mutable.containsKey("all")) {
-                val value = mutable.remove("all")
-                allPermissions.forEach {
-                    when (value) {
-                        "allow" -> mutable.putIfAbsent(it, "allow")
-                        "deny" -> mutable.putIfAbsent(it, "deny")
-                        "unset" -> mutable.putIfAbsent(it, "unset")
-                        else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
-                    }
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        val mutable = permissions.toMutableMap()
+        if (mutable.containsKey("all")) {
+            val value = mutable.remove("all")
+            allPermissions.forEach {
+                when (value) {
+                    "allow" -> mutable.putIfAbsent(it, "allow")
+                    "deny" -> mutable.putIfAbsent(it, "deny")
+                    "unset" -> mutable.putIfAbsent(it, "unset")
+                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
                 }
             }
-
-            client.setPermissions(mutable)
         }
+
+        execute { client.setPermissions(mutable) }
     }
 
     override fun eraseText(charactersToErase: Int) {
         val appIds = getInstalledApps()
-        client.eraseText(charactersToErase, appIds)
+        execute { client.eraseText(charactersToErase, appIds) }
     }
 
     private fun activeAppId(): String {
-        val appIds = getInstalledApps()
-        logger.info("installed apps: $appIds")
+        return execute {
+            val appIds = getInstalledApps()
+            logger.info("installed apps: $appIds")
 
-        return client.runningAppId(appIds).runningAppBundleId
+            client.runningAppId(appIds).runningAppBundleId
+        }
     }
 
     private fun <T> execute(call: () -> T): T {
@@ -238,9 +233,6 @@ class XCTestIOSDevice(
     }
 
     companion object {
-
-        private val mapper by lazy { jacksonObjectMapper() }
-
         private val allPermissions = listOf(
             "notifications"
         )

@@ -112,7 +112,7 @@ interface IOSDevice : AutoCloseable {
      *
      * @param out - output sink
      */
-    fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable>
+    fun takeScreenshot(out: Sink, compressed: Boolean)
 
     /**
      * Start a screen recording
@@ -137,9 +137,9 @@ interface IOSDevice : AutoCloseable {
     /**
      * @return false if 2 consequent screenshots are equal, true if screen is static
      */
-    fun isScreenStatic(): Result<Boolean, Throwable>
+    fun isScreenStatic(): Boolean
 
-    fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable>
+    fun setPermissions(id: String, permissions: Map<String, String>)
 
     fun pressKey(name: String)
 

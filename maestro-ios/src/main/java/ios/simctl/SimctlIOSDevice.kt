@@ -110,7 +110,7 @@ class SimctlIOSDevice(
         }
     }
 
-    override fun takeScreenshot(out: Sink, compressed: Boolean): Result<Unit, Throwable> {
+    override fun takeScreenshot(out: Sink, compressed: Boolean) {
         TODO("Not yet implemented")
     }
 
@@ -170,14 +170,12 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun isScreenStatic(): Result<Boolean, Throwable> {
+    override fun isScreenStatic(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun setPermissions(id: String, permissions: Map<String, String>): Result<Unit, Throwable> {
-        return runCatching {
-            LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
-        }
+    override fun setPermissions(id: String, permissions: Map<String, String>) {
+        LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
     }
 
     override fun eraseText(charactersToErase: Int) {

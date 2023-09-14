@@ -363,7 +363,7 @@ class IOSDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        iosDevice.takeScreenshot(out, compressed).expect {}
+        runDeviceCall { iosDevice.takeScreenshot(out, compressed) }
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
@@ -387,7 +387,7 @@ class IOSDriver(
     }
 
     override fun eraseText(charactersToErase: Int) {
-        iosDevice.eraseText(charactersToErase)
+        runDeviceCall { iosDevice.eraseText(charactersToErase) }
     }
 
     override fun setProxy(host: String, port: Int) {
@@ -424,7 +424,9 @@ class IOSDriver(
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        iosDevice.setPermissions(appId, permissions)
+        runDeviceCall {
+            iosDevice.setPermissions(appId, permissions)
+        }
     }
 
     override fun addMedia(mediaFiles: List<File>) {
@@ -456,7 +458,7 @@ class IOSDriver(
     }
 
     private fun isScreenStatic(): Boolean {
-        return iosDevice.isScreenStatic().expect {}
+        return runDeviceCall { iosDevice.isScreenStatic() }
     }
 
     private fun heightPercentToPoint(percent: Double): Int {
