@@ -10,7 +10,6 @@ import java.util.UUID
 import hierarchy.ViewHierarchy
 import maestro.utils.Insight
 import maestro.utils.Insights
-import maestro.utils.network.XCUITestServerError
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -26,7 +25,7 @@ class LocalIOSDevice(
         xcTestDevice.open()
     }
 
-    override fun deviceInfo(): Result<DeviceInfo, Throwable> {
+    override fun deviceInfo(): DeviceInfo {
         return xcTestDevice.deviceInfo()
     }
 
@@ -53,12 +52,12 @@ class LocalIOSDevice(
         return result
     }
 
-    override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
+    override fun tap(x: Int, y: Int) {
         return xcTestDevice.tap(x, y)
     }
 
-    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
-        return xcTestDevice.longPress(x, y, durationMs)
+    override fun longPress(x: Int, y: Int, durationMs: Long) {
+        xcTestDevice.longPress(x, y, durationMs)
     }
 
     override fun pressKey(name: String) {
@@ -75,12 +74,12 @@ class LocalIOSDevice(
         xEnd: Double,
         yEnd: Double,
         duration: Double
-    ): Result<Unit, Throwable> {
-        return xcTestDevice.scrollV2(xStart, yStart, xEnd, yEnd, duration)
+    ) {
+        xcTestDevice.scrollV2(xStart, yStart, xEnd, yEnd, duration)
     }
 
-    override fun input(text: String): Result<Unit, Throwable> {
-        return xcTestDevice.input(text)
+    override fun input(text: String) {
+        xcTestDevice.input(text)
     }
 
     override fun install(stream: InputStream): Result<Unit, Throwable> {

@@ -32,13 +32,13 @@ interface IOSDevice : AutoCloseable {
 
     fun open()
 
-    fun deviceInfo(): Result<DeviceInfo, Throwable>
+    fun deviceInfo(): DeviceInfo
 
     fun viewHierarchy(): ViewHierarchy
 
-    fun tap(x: Int, y: Int): Result<Unit, Throwable>
+    fun tap(x: Int, y: Int)
 
-    fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable>
+    fun longPress(x: Int, y: Int, durationMs: Long)
 
     fun scroll(
         xStart: Double,
@@ -46,14 +46,12 @@ interface IOSDevice : AutoCloseable {
         xEnd: Double,
         yEnd: Double,
         duration: Double,
-    ): Result<Unit, Throwable>
+    )
 
     /**
      * Inputs text into the currently focused element.
      */
-    fun input(
-        text: String,
-    ): Result<Unit, Throwable>
+    fun input(text: String)
 
     /**
      * Installs application on the device.

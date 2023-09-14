@@ -27,7 +27,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun deviceInfo(): Result<DeviceInfo, Throwable> {
+    override fun deviceInfo(): DeviceInfo {
         TODO("Not yet implemented")
     }
 
@@ -35,11 +35,11 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
+    override fun tap(x: Int, y: Int) {
         TODO("Not yet implemented")
     }
 
-    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
+    override fun longPress(x: Int, y: Int, durationMs: Long) {
         TODO("Not yet implemented")
     }
 
@@ -51,11 +51,11 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun scroll(xStart: Double, yStart: Double, xEnd: Double, yEnd: Double, duration: Double): Result<Unit, Throwable> {
+    override fun scroll(xStart: Double, yStart: Double, xEnd: Double, yEnd: Double, duration: Double) {
         TODO("Not yet implemented")
     }
 
-    override fun input(text: String): Result<Unit, Throwable> {
+    override fun input(text: String) {
         TODO("Not yet implemented")
     }
 

@@ -29,7 +29,6 @@ import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
-import maestro.utils.network.XCUITestServerError
 import okio.Sink
 import okio.source
 import org.slf4j.LoggerFactory
@@ -44,7 +43,7 @@ class IOSDriver(
 ) : Driver {
 
     private val deviceInfo by lazy {
-        iosDevice.deviceInfo().expect {}
+        iosDevice.deviceInfo()
     }
 
     private val widthPoints by lazy {
@@ -74,13 +73,15 @@ class IOSDriver(
     }
 
     override fun deviceInfo(): DeviceInfo {
-        return DeviceInfo(
-            platform = Platform.IOS,
-            widthPixels = deviceInfo.widthPixels,
-            heightPixels = deviceInfo.heightPixels,
-            widthGrid = deviceInfo.widthPoints,
-            heightGrid = deviceInfo.heightPoints,
-        )
+        return runDeviceCall {
+            DeviceInfo(
+                platform = Platform.IOS,
+                widthPixels = deviceInfo.widthPixels,
+                heightPixels = deviceInfo.heightPixels,
+                widthGrid = deviceInfo.widthPoints,
+                heightGrid = deviceInfo.heightPoints,
+            )
+        }
     }
 
     override fun launchApp(
@@ -108,22 +109,17 @@ class IOSDriver(
     }
 
     override fun tap(point: Point) {
-        iosDevice.tap(point.x, point.y).expect {}
+        runDeviceCall { iosDevice.tap(point.x, point.y) }
     }
 
     override fun longPress(point: Point) {
-        iosDevice.longPress(point.x, point.y, 3000).expect {}
+        runDeviceCall { iosDevice.longPress(point.x, point.y, 3000) }
     }
 
     override fun pressKey(code: KeyCode) {
         val keyCodeNameMap = mapOf(
             KeyCode.BACKSPACE to "delete",
             KeyCode.ENTER to "return",
-            // Supported by iOS but not yet by maestro:
-//        KeyCode.RETURN to "return",
-//        KeyCode.TAP to "tab",
-//        KeyCode.SPACE to "space",
-//        KeyCode.ESCAPE to "escape",
         )
 
         val buttonNameMap = mapOf(
@@ -131,22 +127,19 @@ class IOSDriver(
             KeyCode.LOCK to "lock",
         )
 
-        keyCodeNameMap[code]?.let { name ->
-            iosDevice.pressKey(name)
-        }
+        runDeviceCall {
+            keyCodeNameMap[code]?.let { name ->
+                iosDevice.pressKey(name)
+            }
 
-        buttonNameMap[code]?.let { name ->
-            iosDevice.pressButton(name)
+            buttonNameMap[code]?.let { name ->
+                iosDevice.pressButton(name)
+            }
         }
     }
 
     override fun contentDescriptor(): TreeNode {
-        return try {
-            viewHierarchy()
-        } catch (appCrashException: IOSDeviceErrors.AppCrash) {
-            LOGGER.info("Found app crash with message ${appCrashException.errorMessage}")
-            throw MaestroException.AppCrash(appCrashException.errorMessage)
-        }
+        return runDeviceCall { viewHierarchy() }
     }
 
     private fun viewHierarchy(): TreeNode {
@@ -235,14 +228,16 @@ class IOSDriver(
     ) {
         validate(start, end)
 
-        waitForAppToSettle(null, null)
-        iosDevice.scroll(
-            xStart = start.x.toDouble(),
-            yStart = start.y.toDouble(),
-            xEnd = end.x.toDouble(),
-            yEnd = end.y.toDouble(),
-            duration = durationMs.toDouble() / 1000
-        ).expect {}
+        runDeviceCall {
+            waitForAppToSettle(null, null)
+            iosDevice.scroll(
+                xStart = start.x.toDouble(),
+                yStart = start.y.toDouble(),
+                xEnd = end.x.toDouble(),
+                yEnd = end.y.toDouble(),
+                duration = durationMs.toDouble() / 1000
+            )
+        }
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
@@ -380,9 +375,7 @@ class IOSDriver(
 
     override fun inputText(text: String) {
         // silently fail if no XCUIElement has focus
-        iosDevice.input(
-            text = text,
-        )
+        runDeviceCall { iosDevice.input(text = text) }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -486,6 +479,14 @@ class IOSDriver(
         }
 
         throw TimeoutException("Maestro iOS driver did not start up in time")
+    }
+
+    private fun <T> runDeviceCall(call: () -> T): T {
+        return try {
+            call()
+        } catch (appCrashException: IOSDeviceErrors.AppCrash) {
+            throw MaestroException.AppCrash(appCrashException.errorMessage)
+        }
     }
 
     private fun getStartupTimeout(): Long = runCatching {

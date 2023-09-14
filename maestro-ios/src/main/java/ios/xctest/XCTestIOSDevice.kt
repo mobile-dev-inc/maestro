@@ -31,8 +31,8 @@ class XCTestIOSDevice(
         client.restartXCTestRunnerService()
     }
 
-    override fun deviceInfo(): Result<DeviceInfo, Throwable> {
-        return runCatching {
+    override fun deviceInfo(): DeviceInfo {
+        return execute {
             val deviceInfo = client.deviceInfo()
             logger.info("Device info $deviceInfo")
             deviceInfo
@@ -49,8 +49,8 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun tap(x: Int, y: Int): Result<Unit, Throwable> {
-        return runCatching {
+    override fun tap(x: Int, y: Int) {
+        execute {
             client.tap(
                 x = x.toFloat(),
                 y = y.toFloat(),
@@ -58,8 +58,8 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun longPress(x: Int, y: Int, durationMs: Long): Result<Unit, Throwable> {
-        return runCatching {
+    override fun longPress(x: Int, y: Int, durationMs: Long) {
+        execute {
             client.tap(
                 x = x.toFloat(),
                 y = y.toFloat(),
@@ -69,11 +69,11 @@ class XCTestIOSDevice(
     }
 
     override fun pressKey(name: String) {
-        client.pressKey(name)
+        execute { client.pressKey(name) }
     }
 
     override fun pressButton(name: String) {
-        client.pressButton(name)
+        execute { client.pressButton(name) }
     }
 
     override fun addMedia(path: String) {
@@ -90,8 +90,8 @@ class XCTestIOSDevice(
         xEnd: Double,
         yEnd: Double,
         duration: Double,
-    ): Result<Unit, Throwable> {
-        return runCatching {
+    ) {
+        execute {
             client.swipe(
                 appId = activeAppId(),
                 startX = xStart,
@@ -109,8 +109,8 @@ class XCTestIOSDevice(
         xEnd: Double,
         yEnd: Double,
         duration: Double,
-    ): Result<Unit, Throwable> {
-        return runCatching {
+    ) {
+        execute {
             client.swipeV2(
                 installedApps = getInstalledApps(),
                 startX = xStart,
@@ -122,14 +122,14 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun input(text: String): Result<Unit, Throwable> {
-        return runCatching {
-            val appIds = getInstalledApps()
-            client.inputText(
-                text = text,
-                appIds = appIds,
-            )
-        }
+    override fun input(text: String) {
+       execute {
+           val appIds = getInstalledApps()
+           client.inputText(
+               text = text,
+               appIds = appIds,
+           )
+       }
     }
 
     override fun install(stream: InputStream): Result<Unit, Throwable> {
