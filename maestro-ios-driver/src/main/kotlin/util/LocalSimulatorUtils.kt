@@ -558,6 +558,39 @@ object LocalSimulatorUtils {
         }
     }
 
+    fun setDeviceLanguage(deviceId: String, language: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "defaults",
+                "write",
+                ".GlobalPreferences.plist",
+                "AppleLanguages",
+                "($language)"
+            )
+        )
+    }
+
+    fun setDeviceLocale(deviceId: String, language: String, country: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "defaults",
+                "write",
+                ".GlobalPreferences.plist",
+                "AppleLocale",
+                "-string",
+                "${language}_$country"
+            )
+        )
+    }
+
     fun stopScreenRecording(screenRecording: ScreenRecording): File {
         screenRecording.process.outputStream.close()
         screenRecording.process.waitFor()

@@ -41,14 +41,14 @@ class StartDeviceCommand : Callable<Int> {
         names = ["--device-language"],
         description = ["lowercase ISO-639-1 code, i.e. \"de\" for German"],
     )
-    private lateinit var deviceLanguage: String
+    private var deviceLanguage: String? = null
 
     @CommandLine.Option(
         order = 3,
         names = ["--device-country"],
         description = ["uppercase 3166-1 code, i.e. \"DE\" for Germany"],
     )
-    private lateinit var deviceCountry: String
+    private var deviceCountry: String? = null
 
     @CommandLine.Option(
         order = 4,
@@ -77,11 +77,10 @@ class StartDeviceCommand : Callable<Int> {
         }
         val o = osVersion.toIntOrNull()
 
-        DeviceCreateUtil.getOrCreateDevice(p, o, forceCreate).let {
+        DeviceCreateUtil.getOrCreateDevice(p, o, deviceLanguage, deviceCountry, forceCreate).let {
             PrintUtils.message(if (p == Platform.IOS) "Launching simulator..." else "Launching emulator...")
             DeviceService.startDevice(it)
         }
-
 
         return 0
     }

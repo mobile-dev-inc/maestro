@@ -24,6 +24,13 @@ object DeviceService {
             Platform.IOS -> {
                 try {
                     LocalSimulatorUtils.bootSimulator(device.modelId)
+                    if (device.language != null) {
+                        LocalSimulatorUtils.setDeviceLanguage(device.modelId, device.language)
+                        if (device.country != null) {
+                            LocalSimulatorUtils.setDeviceLocale(device.modelId, device.language, device.country)
+                        }
+                        LocalSimulatorUtils.reboot(device.modelId)
+                    }
                     LocalSimulatorUtils.launchSimulator(device.modelId)
                     LocalSimulatorUtils.awaitLaunch(device.modelId, 60000)
                 } catch (e: SimctlError) {
@@ -108,7 +115,9 @@ object DeviceService {
             Device.AvailableForLaunch(
                 platform = Platform.WEB,
                 description = "Chromium Desktop Browser (Experimental)",
-                modelId = "chromium"
+                modelId = "chromium",
+                language = null,
+                country = null,
             )
         )
     }
@@ -138,6 +147,8 @@ object DeviceService {
                                 modelId = it,
                                 description = it,
                                 platform = Platform.ANDROID,
+                                language = null,
+                                country = null,
                             )
                         }
                         .toList()
@@ -188,6 +199,8 @@ object DeviceService {
                 modelId = device.udid,
                 description = description,
                 platform = Platform.IOS,
+                language = null,
+                country = null,
             )
         }
     }
