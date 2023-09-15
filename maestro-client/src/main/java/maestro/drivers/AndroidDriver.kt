@@ -56,6 +56,17 @@ class AndroidDriver(
 
     private val channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
         .usePlaintext()
+        .enableRetry()
+        .defaultServiceConfig(
+            mapOf(
+                "retryPolicy" to mapOf(
+                    "maxAttempts" to 5, // Maximum number of retry attempts
+                    "initialBackoff" to "1s", // Initial backoff duration
+                    "maxBackoff" to "30s", // Maximum backoff duration
+                    "backoffMultiplier" to 2.0 // Backoff multiplier
+                )
+            )
+        )
         .build()
     private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
     private val asyncStub = MaestroDriverGrpc.newStub(channel)
