@@ -267,29 +267,32 @@ class XCTestDriverClient(
                     responseBodyAsString
                 )
             }
-            code == 502 -> {
+            code == NetworkErrorHandler.NO_RETRY_RESPONSE_CODE -> {
                 logger.error("Request for $pathString failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString")
                 throw XCUITestServerError.NetworkError(
                     "Request for $pathString failed, because of XCUITest server got crashed/exit, body: $responseBodyAsString"
                 )
             }
             error.errorMessage.contains("Lost connection to the application.*".toRegex()) -> {
+                logger.error("Request for $pathString failed, because of app crash, body: $responseBodyAsString")
                 throw XCUITestServerError.AppCrash(
                     "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
                 )
             }
             error.errorMessage.contains("Application [a-zA-Z0-9.]+ is not running".toRegex()) -> {
+                logger.error("Request for $pathString failed, because of app crash, body: $responseBodyAsString")
                 throw XCUITestServerError.AppCrash(
                     "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
                 )
             }
             error.errorMessage.contains("Error getting main window kAXErrorCannotComplete") -> {
+                logger.error("Request for $pathString failed, because of app crash, body: $responseBodyAsString")
                 throw XCUITestServerError.AppCrash(
                     "Request for $pathString failed, due to app crash with message ${error.errorMessage}"
                 )
             }
             else -> {
-                logger.error("Request for $pathString failed, body: $responseBodyAsString")
+                logger.error("Request for $pathString failed, because of unknown reason, body: $responseBodyAsString")
                 throw XCUITestServerError.UnknownFailure(
                     "Request for $pathString failed, code: ${code}, body: $responseBodyAsString"
                 )

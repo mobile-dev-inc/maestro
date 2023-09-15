@@ -19,7 +19,7 @@ class NetworkErrorHandler(
 
     companion object {
         const val RETRY_RESPONSE_CODE = 503
-        private const val NO_RETRY_RESPONSE_CODE = 502
+        const val NO_RETRY_RESPONSE_CODE = 502
         private const val MAX_RETRY = 5
         private val mapper = jacksonObjectMapper()
     }
