@@ -15,6 +15,8 @@ tags:
 - tapOn: Search Wikipedia
 - runScript: scripts/getSearchQuery.js
 - inputText: ${output.result}
+- assertNotVisible: Search Wikipedia
 - eraseText
+- assertVisible: Search Wikipedia
 - inputText: qwerty
 - assertVisible: ${output.result}
