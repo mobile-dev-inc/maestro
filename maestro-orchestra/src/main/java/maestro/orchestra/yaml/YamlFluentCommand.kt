@@ -560,20 +560,12 @@ data class YamlFluentCommand(
     private fun copyTextFromCommand(
         copyText: YamlElementSelectorUnion
     ): MaestroCommand {
-        return if (copyText is StringElementSelector) {
-            MaestroCommand(
-                CopyTextFromCommand(
-                    selector = toElementSelector(copyText)
-                )
+        return MaestroCommand(
+            CopyTextFromCommand(
+                selector = toElementSelector(copyText),
+                label = (copyText as YamlElementSelector).label
             )
-        } else {
-            MaestroCommand(
-                CopyTextFromCommand(
-                    selector = toElementSelector(copyText),
-                    label = (copyText as? YamlElementSelector)?.label
-                )
-            )
-        }
+        )
     }
 
     private fun scrollUntilVisibleCommand(yaml: YamlScrollUntilVisible): MaestroCommand {
