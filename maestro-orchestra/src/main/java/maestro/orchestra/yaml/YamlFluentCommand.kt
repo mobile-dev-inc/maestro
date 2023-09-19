@@ -91,6 +91,7 @@ data class YamlFluentCommand(
     val openBrowser: String? = null,
     val pressKey: YamlPressKey? = null,
     val eraseText: YamlEraseText? = null,
+    val action: String? = null,
     val takeScreenshot: YamlTakeScreenshot? = null,
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
     val stopApp: YamlStopApp? = null,
@@ -159,6 +160,16 @@ data class YamlFluentCommand(
             openLink != null -> listOf(MaestroCommand(OpenLinkCommand(link = openLink.link, autoVerify = openLink.autoVerify, browser =  openLink.browser, label = openLink.label)))
             pressKey != null -> listOf(MaestroCommand(PressKeyCommand(code = KeyCode.getByName(pressKey.key) ?: throw SyntaxError("Unknown key name: $pressKey"), label = pressKey.label)))
             eraseText != null -> listOf(eraseCommand(eraseText))
+            action != null -> listOf(
+                when (action) {
+                    "back" -> MaestroCommand(BackPressCommand())
+                    "hideKeyboard" -> MaestroCommand(HideKeyboardCommand())
+                    "scroll" -> MaestroCommand(ScrollCommand())
+                    "clearKeychain" -> MaestroCommand(ClearKeychainCommand())
+                    "pasteText" -> MaestroCommand(PasteTextCommand())
+                    else -> error("Unknown navigation target: $action")
+                }
+            )
             back != null -> listOf(MaestroCommand(BackPressCommand(label = back.label)))
             clearKeychain != null -> listOf(MaestroCommand(ClearKeychainCommand(label = clearKeychain.label)))
             hideKeyboard != null -> listOf(MaestroCommand(HideKeyboardCommand(label = hideKeyboard.label)))

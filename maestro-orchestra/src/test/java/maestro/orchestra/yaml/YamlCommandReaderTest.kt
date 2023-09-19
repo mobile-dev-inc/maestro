@@ -593,7 +593,17 @@ internal class YamlCommandReaderTest {
                     visible = ElementSelector(textRegex = "Hello"),
                 ),
             ),
-            CopyTextFromCommand(ElementSelector(textRegex = "Hello"))
+            CopyTextFromCommand(ElementSelector(textRegex = "Hello")),
+            BackPressCommand(),
+            BackPressCommand(),
+            HideKeyboardCommand(),
+            HideKeyboardCommand(),
+            ScrollCommand(),
+            ScrollCommand(),
+            ClearKeychainCommand(),
+            ClearKeychainCommand(),
+            PasteTextCommand(),
+            PasteTextCommand(),
         )
     }
 
