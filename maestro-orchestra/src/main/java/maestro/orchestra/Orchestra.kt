@@ -251,7 +251,9 @@ class Orchestra(
         do {
             try {
                 if (isNetworkError) logger.info("Attempt #${retryCount+1} to run the previous command... [${maestroCommand.description()}]")
-                return executeCommand(maestroCommand, config)
+                return executeCommand(maestroCommand, config).apply {
+                    if (isNetworkError) logger.info("Connection established and command run successfully!")
+                }
             } catch (e: Throwable) {
                 if (maestro.isResetConnectionSupported() && (e is StatusRuntimeException || e is SocketException)) {
                     retryCount++
@@ -261,8 +263,8 @@ class Orchestra(
                         logger.info("Failed to reset connection: ${it.message}")
                     }
 
-                    logger.info("Will wait 15s before trying to run the previous command...")
-                    Thread.sleep(15 * 1000)
+                    logger.info("Will wait 30s before trying to run the previous command...")
+                    Thread.sleep(30 * 1000)
                 }
                 else throw e
             }
