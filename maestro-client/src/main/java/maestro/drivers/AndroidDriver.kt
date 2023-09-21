@@ -93,7 +93,7 @@ class AndroidDriver(
             channel.shutdown()
         }
 
-        // re-open connections
+        // re-create dadb connection
         createDadb?.invoke()?.let { dadb = it }
 
         channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
