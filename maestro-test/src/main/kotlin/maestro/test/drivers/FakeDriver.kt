@@ -369,6 +369,14 @@ class FakeDriver : Driver {
         mediaFiles.forEach { _ -> events.add(Event.AddMedia) }
     }
 
+    override fun resetConnection(): Boolean {
+        return false
+    }
+
+    override fun isResetConnectionSupported(): Boolean {
+        return false
+    }
+
     sealed class Event {
 
         data class Tap(
