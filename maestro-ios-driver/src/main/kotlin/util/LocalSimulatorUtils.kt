@@ -22,6 +22,26 @@ object LocalSimulatorUtils {
 
     private val homedir = System.getProperty("user.home")
 
+    private val allPermissions = listOf(
+        "calendar",
+        "camera",
+        "contacts",
+        "faceid",
+        "homekit",
+        "medialibrary",
+        "microphone",
+        "motion",
+        "photos",
+        "reminders",
+        "siri",
+        "speech",
+        "userTracking",
+    )
+
+    private val simctlPermissions = listOf(
+        "location"
+    )
+
     fun list(): SimctlList {
         val command = listOf("xcrun", "simctl", "list", "-j")
 
@@ -321,8 +341,8 @@ object LocalSimulatorUtils {
             val value = mutable.remove("all")
             allPermissions.forEach {
                 when (value) {
-                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
-                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
+                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission())
+                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission())
                     "unset" -> mutable.putIfAbsent(it, "unset")
                     else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
                 }
@@ -334,49 +354,98 @@ object LocalSimulatorUtils {
             .map { "${it.key}=${translatePermissionValue(it.value)}" }
             .joinToString(",")
 
-        try {
-            runCommand(
-                listOf(
-                    "$homedir/.maestro/deps/applesimutils",
-                    "--byId",
-                    deviceId,
-                    "--bundle",
-                    bundleId,
-                    "--setPermissions",
-                    argument
+        if (argument.isNotEmpty()) {
+            try {
+                runCommand(
+                    listOf(
+                        "$homedir/.maestro/deps/applesimutils",
+                        "--byId",
+                        deviceId,
+                        "--bundle",
+                        bundleId,
+                        "--setPermissions",
+                        argument
+                    )
                 )
-            )
-        } catch(e: Exception) {
-            runCommand(
-                listOf(
-                    "applesimutils",
-                    "--byId",
-                    deviceId,
-                    "--bundle",
-                    bundleId,
-                    "--setPermissions",
-                    argument
+            } catch(e: Exception) {
+                runCommand(
+                    listOf(
+                        "applesimutils",
+                        "--byId",
+                        deviceId,
+                        "--bundle",
+                        bundleId,
+                        "--setPermissions",
+                        argument
+                    )
                 )
-            )
+            }
         }
+
+        setSimctlPermissions(deviceId, bundleId, permissions)
     }
 
-    private val allPermissions = listOf(
-        "calendar",
-        "camera",
-        "contacts",
-        "faceid",
-        "homekit",
-        "location",
-        "medialibrary",
-        "microphone",
-        "motion",
-        "photos",
-        "reminders",
-        "siri",
-        "speech",
-        "userTracking",
-    )
+    private fun setSimctlPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
+        permissions
+            .forEach {
+                if (simctlPermissions.contains(it.key)) {
+                    when (it.key) {
+                        // TODO: more simctl supported permissions can be migrated here
+                        "location" -> {
+                            setLocationPermission(deviceId, bundleId, it.value)
+                        }
+                    }
+                }
+            }
+    }
+
+    private fun setLocationPermission(deviceId: String, bundleId: String, value: String) {
+        when (value) {
+            "always" -> {
+                runCommand(
+                    listOf(
+                        "xcrun",
+                        "simctl",
+                        "privacy",
+                        deviceId,
+                        "grant",
+                        "location-always",
+                        bundleId
+                    )
+                )
+            }
+
+            "inuse" -> {
+                runCommand(
+                    listOf(
+                        "xcrun",
+                        "simctl",
+                        "privacy",
+                        deviceId,
+                        "grant",
+                        "location",
+                        bundleId
+                    )
+                )
+            }
+
+            "never" -> {
+                runCommand(
+                    listOf(
+                        "xcrun",
+                        "simctl",
+                        "privacy",
+                        deviceId,
+                        "revoke",
+                        "location-always",
+                        bundleId
+                    )
+                )
+            }
+
+            else -> throw IllegalArgumentException("wrong argument value '$value' was provided for 'location' permission")
+        }
+    }
 
     private fun translatePermissionValue(value: String): String {
         return when (value) {
@@ -386,18 +455,12 @@ object LocalSimulatorUtils {
         }
     }
 
-    private fun allowValueForPermission(permission: String): String {
-        return when (permission) {
-            "location" -> "always"
-            else -> "YES"
-        }
+    private fun allowValueForPermission(): String {
+        return "YES"
     }
 
-    private fun denyValueForPermission(permission: String): String {
-        return when (permission) {
-            "location" -> "never"
-            else -> "NO"
-        }
+    private fun denyValueForPermission(): String {
+        return "NO"
     }
 
     fun install(deviceId: String, stream: InputStream) {
