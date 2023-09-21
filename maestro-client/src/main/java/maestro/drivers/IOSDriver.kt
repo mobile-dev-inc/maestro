@@ -435,6 +435,14 @@ class IOSDriver(
         LOGGER.info("[Done] Adding media files")
     }
 
+    override fun resetConnection(): Boolean {
+        throw UnsupportedOperationException("Connection reset is not support for the iOSDriver yet")
+    }
+
+    override fun isResetConnectionSupported(): Boolean {
+        return false
+    }
+
     private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
             mediaFile.name,

@@ -22,6 +22,7 @@ package maestro
 import com.github.romankh3.image.comparison.ImageComparison
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
+import maestro.drivers.AndroidDriver
 import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
@@ -557,6 +558,21 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun isUnicodeInputSupported(): Boolean {
         return driver.isUnicodeInputSupported()
+    }
+
+    fun resetConnection() {
+        if (driver.isResetConnectionSupported()) {
+            LOGGER.info("Resetting connection for $driver...")
+            val result = driver.resetConnection()
+            LOGGER.info("Connection reset: ${if (result) "OK!" else "FAILED"}")
+        }
+        else {
+            LOGGER.warn("Unsupported operation. Cannot reset connection for driver $driver")
+        }
+    }
+
+    fun isResetConnectionSupported(): Boolean {
+        return driver.isResetConnectionSupported()
     }
 
     companion object {

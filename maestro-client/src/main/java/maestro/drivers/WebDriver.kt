@@ -373,6 +373,14 @@ class WebDriver(val isStudio: Boolean) : Driver {
         // noop for web
     }
 
+    override fun resetConnection(): Boolean {
+        throw UnsupportedOperationException("Connection reset is not support for the WebDriver yet")
+    }
+
+    override fun isResetConnectionSupported(): Boolean {
+        return false
+    }
+
     companion object {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
     }

@@ -19,6 +19,7 @@
 
 package maestro.orchestra
 
+import io.grpc.StatusRuntimeException
 import maestro.DeviceInfo
 import maestro.ElementFilter
 import maestro.Filters
@@ -40,12 +41,16 @@ import maestro.toSwipeDirection
 import maestro.utils.Insight
 import maestro.utils.Insights
 import maestro.utils.MaestroTimer
+import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
 import okhttp3.OkHttpClient
 import okio.buffer
 import okio.sink
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.Long.max
+import java.net.ConnectException
+import java.net.SocketException
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -206,13 +211,12 @@ class Orchestra(
                 }
                 Insights.onInsightsUpdated(callback)
                 try {
-                    executeCommand(evaluatedCommand, config)
+                    executeSafeCommand(evaluatedCommand, config)
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
-
                     when (onCommandFailed(index, command, e)) {
                         ErrorResolution.FAIL -> return false
                         ErrorResolution.CONTINUE -> {
@@ -236,6 +240,35 @@ class Orchestra(
         } else {
             httpClient?.let { RhinoJsEngine(it) } ?: RhinoJsEngine()
         }
+    }
+
+    /**
+     * Re-tries to run a command if there's a connection error with the device
+     */
+    private fun executeSafeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
+        var isNetworkError = false
+        var retryCount = 0
+        do {
+            try {
+                if (isNetworkError) logger.info("Attempt #${retryCount+1} to run the previous command... [${maestroCommand.description()}]")
+                return executeCommand(maestroCommand, config)
+            } catch (e: Throwable) {
+                if (maestro.isResetConnectionSupported() && (e is StatusRuntimeException || e is SocketException)) {
+                    retryCount++
+                    isNetworkError = true
+                    logger.info("Failed to run command due to disconnection error: $e")
+                    runCatching { maestro.resetConnection() }.exceptionOrNull()?.let {
+                        logger.info("Failed to reset connection: ${it.message}")
+                    }
+
+                    logger.info("Will wait 15s before trying to run the previous command...")
+                    Thread.sleep(15 * 1000)
+                }
+                else throw e
+            }
+        } while (isNetworkError && retryCount < 3)
+
+        throw ConnectException("Unable to establish connection to driver")
     }
 
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
@@ -572,7 +605,7 @@ class Orchestra(
                     updateMetadata(command, metadata)
 
                     return@mapIndexed try {
-                        executeCommand(evaluatedCommand, config)
+                        executeSafeCommand(evaluatedCommand, config)
                             .also {
                                 onCommandComplete(index, command)
                             }
@@ -1067,6 +1100,8 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+
+        private val logger = LoggerFactory.getLogger(Orchestra::class.java)
     }
 }
 

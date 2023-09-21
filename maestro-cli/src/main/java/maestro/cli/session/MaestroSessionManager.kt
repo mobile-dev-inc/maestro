@@ -224,16 +224,16 @@ object MaestroSessionManager {
         port: Int?,
         openDriver: Boolean,
     ): Maestro {
-        val dadb = if (port != null) {
-            Dadb.create(host ?: defaultHost, port)
-        } else {
-            Dadb.discover(host ?: defaultHost)
-                ?: createAdbServerDadb()
-                ?: error("No android devices found.")
-        }
-
         return Maestro.android(
-            driver = AndroidDriver(dadb),
+            driver = AndroidDriver(createDadb = {
+                if (port != null) {
+                    Dadb.create(host ?: defaultHost, port)
+                } else {
+                    Dadb.discover(host ?: defaultHost)
+                        ?: createAdbServerDadb()
+                        ?: error("No android devices found.")
+                }
+            }),
             openDriver = openDriver,
         )
     }
@@ -256,13 +256,14 @@ object MaestroSessionManager {
 
     private fun createAndroid(instanceId: String, openDriver: Boolean): Maestro {
         val driver = AndroidDriver(
-            dadb = Dadb
-                .list()
-                .find { it.toString() == instanceId }
-                ?: Dadb.discover()
-                ?: error("Unable to find device with id $instanceId"),
+            createDadb = {
+                Dadb
+                    .list()
+                    .find { it.toString() == instanceId }
+                    ?: Dadb.discover()
+                    ?: error("Unable to find device with id $instanceId")
+            }
         )
-
         return Maestro.android(
             driver = driver,
             openDriver = openDriver,

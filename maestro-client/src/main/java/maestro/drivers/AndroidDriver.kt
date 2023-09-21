@@ -45,24 +45,80 @@ import java.util.UUID
 import java.util.concurrent.*
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.use
+import kotlin.system.measureTimeMillis
 
 class AndroidDriver(
-    private val dadb: Dadb,
-    private val hostPort: Int = 7001,
-) : Driver {
+    private var dadb: Dadb,
+    private var hostPort: Int = 7001
+): Driver {
 
-    private val channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
+    private var createDadb: (() -> Dadb)? = null
+    constructor(createDadb: (() -> Dadb), hostPort: Int = 7001): this(createDadb(), hostPort) {
+        this.createDadb = createDadb
+    }
+
+    private var channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
         .usePlaintext()
         .build()
-    private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
-    private val asyncStub = MaestroDriverGrpc.newStub(channel)
-    private val documentBuilderFactory = DocumentBuilderFactory.newInstance()
+    private var blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
+    private var asyncStub = MaestroDriverGrpc.newStub(channel)
+    private var documentBuilderFactory = DocumentBuilderFactory.newInstance()
 
     private var instrumentationSession: AdbShellStream? = null
     private var proxySet = false
 
     override fun name(): String {
         return "Android Device ($dadb)"
+    }
+
+    override fun resetConnection(): Boolean {
+        if (createDadb == null) {
+            LOGGER.warn("Unable to reset connection. Please init driver with createDadb() function to re-establish connection")
+            return false
+        }
+
+        // close any existing connections
+        PORT_TO_FORWARDER[hostPort]?.close()
+        PORT_TO_FORWARDER.remove(hostPort)
+        PORT_TO_ALLOCATION_POINT.remove(hostPort)
+
+        // may throw exception if disconnected
+        runCatching {
+            instrumentationSession?.close()
+            instrumentationSession = null
+        }
+
+        // may throw exception if disconnected
+        runCatching {
+            channel.shutdown()
+        }
+
+        // re-open connections
+        createDadb?.invoke()?.let { dadb = it }
+
+        channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
+            .usePlaintext()
+            .build()
+        blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
+        asyncStub = MaestroDriverGrpc.newStub(channel)
+        documentBuilderFactory = DocumentBuilderFactory.newInstance()
+
+        startInstrumentationSession()
+
+        try {
+            awaitLaunch()
+        } catch (ignored: InterruptedException) {
+            instrumentationSession?.close()
+            return false
+        }
+
+        allocateForwarder()
+
+        return true
+    }
+
+    override fun isResetConnectionSupported(): Boolean {
+        return true
     }
 
     override fun open() {
@@ -239,7 +295,7 @@ class AndroidDriver(
             // There is a bug in Android UiAutomator that rarely throws an NPE while dumping a view hierarchy.
             // Trying to recover once by giving it a bit of time to settle.
 
-            LOGGER.error("Failed to get view hierarchy", ignored)
+            LOGGER.error("Failed to get view hierarchy: ${ignored.message}")
 
             MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000L)
 
@@ -261,7 +317,7 @@ class AndroidDriver(
         return try {
             future.get(5, TimeUnit.SECONDS)
         } catch (e: TimeoutException) {
-            LOGGER.error("Timeout while fetching view hierarchy", e)
+            LOGGER.error("Timeout while fetching view hierarchy")
             null
         }
     }
