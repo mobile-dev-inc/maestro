@@ -341,8 +341,8 @@ object LocalSimulatorUtils {
             val value = mutable.remove("all")
             allPermissions.forEach {
                 when (value) {
-                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission())
-                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission())
+                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
+                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
                     "unset" -> mutable.putIfAbsent(it, "unset")
                     else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
                 }
@@ -386,7 +386,20 @@ object LocalSimulatorUtils {
     }
 
     private fun setSimctlPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
-        permissions
+        val mutable = permissions.toMutableMap()
+        if (mutable.containsKey("all")) {
+            val value = mutable.remove("all")
+            simctlPermissions.forEach {
+                when (value) {
+                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
+                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
+                    "unset" -> mutable.putIfAbsent(it, "unset")
+                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+                }
+            }
+        }
+
+        mutable
             .forEach {
                 if (simctlPermissions.contains(it.key)) {
                     when (it.key) {
@@ -455,12 +468,18 @@ object LocalSimulatorUtils {
         }
     }
 
-    private fun allowValueForPermission(): String {
-        return "YES"
+    private fun allowValueForPermission(permission: String): String {
+        return when (permission) {
+            "location" -> "always"
+            else -> "YES"
+        }
     }
 
-    private fun denyValueForPermission(): String {
-        return "NO"
+    private fun denyValueForPermission(permission: String): String {
+        return when (permission) {
+            "location" -> "never"
+            else -> "NO"
+        }
     }
 
     fun install(deviceId: String, stream: InputStream) {
