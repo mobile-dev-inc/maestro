@@ -460,6 +460,20 @@ object LocalSimulatorUtils {
                 )
             }
 
+            "unset" -> {
+                runCommand(
+                    listOf(
+                        "xcrun",
+                        "simctl",
+                        "privacy",
+                        deviceId,
+                        "reset",
+                        "location-always",
+                        bundleId
+                    )
+                )
+            }
+
             else -> throw IllegalArgumentException("wrong argument value '$value' was provided for 'location' permission")
         }
     }
