@@ -336,25 +336,25 @@ object LocalSimulatorUtils {
     }
 
     fun setPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
-        val mutable = permissions.toMutableMap()
-        if (mutable.containsKey("all")) {
-            val value = mutable.remove("all")
+        val permissionsMap = permissions.toMutableMap()
+        if (permissionsMap.containsKey("all")) {
+            val value = permissionsMap.remove("all")
             allPermissions.forEach {
                 when (value) {
-                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
-                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
-                    "unset" -> mutable.putIfAbsent(it, "unset")
+                    "allow" -> permissionsMap.putIfAbsent(it, allowValueForPermission(it))
+                    "deny" -> permissionsMap.putIfAbsent(it, denyValueForPermission(it))
+                    "unset" -> permissionsMap.putIfAbsent(it, "unset")
                     else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
                 }
             }
         }
 
-        val argument = mutable
+        val permissionsArgument = permissionsMap
             .filter { allPermissions.contains(it.key) }
             .map { "${it.key}=${translatePermissionValue(it.value)}" }
             .joinToString(",")
 
-        if (argument.isNotEmpty()) {
+        if (permissionsArgument.isNotEmpty()) {
             try {
                 runCommand(
                     listOf(
@@ -364,7 +364,7 @@ object LocalSimulatorUtils {
                         "--bundle",
                         bundleId,
                         "--setPermissions",
-                        argument
+                        permissionsArgument
                     )
                 )
             } catch(e: Exception) {
@@ -376,7 +376,7 @@ object LocalSimulatorUtils {
                         "--bundle",
                         bundleId,
                         "--setPermissions",
-                        argument
+                        permissionsArgument
                     )
                 )
             }
@@ -386,20 +386,24 @@ object LocalSimulatorUtils {
     }
 
     private fun setSimctlPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
-        val mutable = permissions.toMutableMap()
-        if (mutable.containsKey("all")) {
-            val value = mutable.remove("all")
-            simctlPermissions.forEach {
-                when (value) {
-                    "allow" -> mutable.putIfAbsent(it, allowValueForPermission(it))
-                    "deny" -> mutable.putIfAbsent(it, denyValueForPermission(it))
-                    "unset" -> mutable.putIfAbsent(it, "unset")
-                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny' or 'unset', not '$value'")
+        val permissionsMap = permissions.toMutableMap()
+
+        permissionsMap.remove("all")?.let { value ->
+            val transformedPermissions = simctlPermissions.associateWith { permission ->
+                val newValue = when (value) {
+                    "allow" -> allowValueForPermission(permission)
+                    "deny" -> denyValueForPermission(permission)
+                    "unset" -> "unset"
+                    else -> throw IllegalArgumentException("Permission 'all' can be set to 'allow', 'deny', or 'unset', not '$value'")
                 }
+                newValue
             }
+
+            permissionsMap.putAll(transformedPermissions)
         }
 
-        mutable
+
+        permissionsMap
             .forEach {
                 if (simctlPermissions.contains(it.key)) {
                     when (it.key) {
