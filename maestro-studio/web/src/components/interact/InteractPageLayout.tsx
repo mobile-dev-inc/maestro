@@ -2,7 +2,7 @@ import { useState } from "react";
 import clsx from "clsx";
 
 import InteractableDevice from "../device-and-device-elements/InteractableDevice";
-import ReplView from "../commands/ReplView";
+// import ReplView from "../commands/ReplView";
 import ActionModal from "../device-and-device-elements/ActionModal";
 import { Button } from "../design-system/button";
 import { CommandExample } from "../../helpers/commandExample";
@@ -11,6 +11,7 @@ import DeviceWrapperAspectRatio from "../device-and-device-elements/DeviceWrappe
 import { useDeviceContext } from "../../context/DeviceContext";
 import { Spinner } from "../design-system/spinner";
 import { useRepl } from '../../context/ReplContext';
+import EditorView from "../commands/EditorView";
 
 const InteractPageLayout = () => {
   const {
@@ -88,7 +89,7 @@ const InteractPageLayout = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <ReplView />
+        <EditorView />
       </div>
       <ActionModal onEdit={onEdit} onRun={onRun} />
     </div>

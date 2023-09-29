@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.15",
+    "@monaco-editor/react": "^4.5.2",
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-tabs": "^1.0.4",
@@ -23,6 +24,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^7.10.3",
     "fuse.js": "^6.6.2",
+    "monaco-yaml": "^5.1.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-contenteditable": "^3.3.6",
