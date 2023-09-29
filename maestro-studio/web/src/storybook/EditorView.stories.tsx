@@ -5,7 +5,5 @@ export default {
 };
 
 export const Main = () => {
-  return (
-    <EditorView />
-  );
+  return <EditorView directory={null} />;
 };

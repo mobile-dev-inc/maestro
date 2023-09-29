@@ -90,7 +90,7 @@ export const API = {
   ): SWRResponse<BannerMessage> => {
     return useSWR(
       "/api/banner-message",
-      (url) => makeRequest("GET", url),
+      (url: any) => makeRequest("GET", url),
       config
     );
   },
@@ -140,5 +140,14 @@ export const API = {
       throw new HttpError(response.status, body);
     }
     return await response.json();
+  },
+  readDirectory: async () => {
+    return makeRequest("GET", "/api/read-directory");
+  },
+  readFile: async (filePath: string) => {
+    return makeRequest("GET", `/api/read-file/${filePath}`);
+  },
+  saveFile: async (content: string, absolutePath: string) => {
+    return makeRequest("POST", `/api/save-file`, { content, absolutePath });
   },
 };

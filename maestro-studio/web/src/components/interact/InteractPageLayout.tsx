@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 
 import InteractableDevice from "../device-and-device-elements/InteractableDevice";
@@ -12,6 +12,26 @@ import { useDeviceContext } from "../../context/DeviceContext";
 import { Spinner } from "../design-system/spinner";
 import { useRepl } from "../../context/ReplContext";
 import EditorView from "../commands/EditorView";
+import { API } from "../../api/api";
+
+interface FileNode {
+  name: string;
+  absolutePath: string;
+  isDirectory: boolean;
+}
+
+interface FolderNode {
+  name: string;
+  isDirectory: boolean;
+  absolutePath: string;
+  children: TreeNodeType[];
+}
+
+type TreeNodeType = FileNode | FolderNode;
+
+interface DirectoryResponseType {
+  fileTree?: TreeNodeType[];
+}
 
 const InteractPageLayout = () => {
   const {
@@ -21,10 +41,26 @@ const InteractPageLayout = () => {
     setInspectedElement,
     setCurrentCommandValue,
   } = useDeviceContext();
-  const [selectedTab, setSelectedTab] = useState<string>("editor");
+  const [selectedTab, setSelectedTab] = useState<string>("generator");
+  const [directory, setDirectory] = useState<TreeNodeType[] | null>(null);
   const { runCommandYaml } = useRepl();
 
   const [showElementsPanel, setShowElementsPanel] = useState<boolean>(false);
+
+  const getDirectory = async () => {
+    try {
+      const response = (await API.readDirectory()) as DirectoryResponseType;
+      const directory: TreeNodeType[] | null = response?.fileTree || null;
+      setDirectory(directory);
+    } catch (error) {
+      console.error("Error reading directory:", error);
+      setDirectory(null);
+    }
+  };
+
+  useEffect(() => {
+    getDirectory();
+  }, []);
 
   const onEdit = (example: CommandExample) => {
     if (example.status === "unavailable") return;
@@ -90,30 +126,34 @@ const InteractPageLayout = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <div className="flex mx-12 mt-4 mb-2 p-0.5 rounded-lg bg-gray-100">
-          <div
-            onClick={() => setSelectedTab("generator")}
-            className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
-              selectedTab === "generator"
-                ? "bg-white text-black"
-                : "bg-transparent text-slate-400 hover:bg-white/20"
-            }`}
-          >
-            Generator
+        {!!directory && (
+          <div className="flex mx-12 mt-4 mb-2 p-0.5 rounded-lg bg-gray-100">
+            <div
+              onClick={() => setSelectedTab("generator")}
+              className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+                selectedTab === "generator"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-slate-400 hover:bg-white/20"
+              }`}
+            >
+              Generator
+            </div>
+            <div
+              onClick={() => setSelectedTab("editor")}
+              className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+                selectedTab === "editor"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-slate-400 hover:bg-white/20"
+              }`}
+            >
+              Editor
+            </div>
           </div>
-          <div
-            onClick={() => setSelectedTab("editor")}
-            className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
-              selectedTab === "editor"
-                ? "bg-white text-black"
-                : "bg-transparent text-slate-400 hover:bg-white/20"
-            }`}
-          >
-            Editor
-          </div>
-        </div>
+        )}
         {selectedTab === "generator" && <ReplView />}
-        {selectedTab === "editor" && <EditorView />}
+        {selectedTab === "editor" && directory && (
+          <EditorView directory={directory} />
+        )}
       </div>
       <ActionModal onEdit={onEdit} onRun={onRun} />
     </div>

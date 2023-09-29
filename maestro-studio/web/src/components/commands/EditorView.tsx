@@ -2,92 +2,101 @@ import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import { Icon } from "../design-system/icon";
 import { Button } from "../design-system/button";
-
-const directoryTree: FolderNode = {
-  name: "root",
-  isDirectory: true,
-  children: [
-    {
-      name: "folder1",
-      absolututePath: "",
-      isDirectory: true,
-      children: [
-        { name: "file1.txt", isDirectory: false } as FileNode,
-        { name: "file2.txt", isDirectory: false } as FileNode,
-      ],
-    } as FolderNode,
-    {
-      name: "folder2",
-      absolututePath: "",
-      isDirectory: true,
-      children: [{ name: "file3.txt", isDirectory: false } as FileNode],
-    } as FolderNode,
-    { name: "file4.txt", isDirectory: false } as FileNode,
-  ],
-};
-
-const EditorView = () => {
-  const [code, setCode] = useState("");
-  const [file, setFile] = useState();
-
-  const handleFileChange = (event: any) => {
-    if (event.target.files) {
-      setFile(event.target.files[0]);
-      console.log(event.target.files[0]);
-    }
-  };
-
-  useEffect(() => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target !== null) {
-          if (e.target.result !== null) {
-            setCode(e.target.result as string);
-          }
-        }
-      };
-      reader.readAsText(file);
-    }
-  }, [file]);
-
-  return (
-    <div className="mx-12">
-      <div className="flex h-[calc(100vh-240px)] rounded-lg overflow-hidden pt-5">
-        <div className="w-[160px] min-w-[160px] h-full pt-2 border-r border-slate-200">
-          {directoryTree.children.map((child) => (
-            <TreeNode key={child.name} node={child} />
-          ))}
-        </div>
-        <div className="flex-grow">
-          <Editor language="yaml" value={code} />
-        </div>
-      </div>
-      {/* <div className="flex"> */}
-      <Button className="w-full mt-4" disabled>
-        Save
-      </Button>
-      {/* </div> */}
-    </div>
-  );
-};
-
-export default EditorView;
+import { API } from "../../api/api";
+import { node } from "prop-types";
 
 interface FileNode {
   name: string;
+  absolutePath: string;
   isDirectory: boolean;
 }
 
 interface FolderNode {
   name: string;
   isDirectory: boolean;
+  absolutePath: string;
   children: TreeNodeType[];
 }
 
 type TreeNodeType = FileNode | FolderNode;
 
-const TreeNode = ({ node }: { node: TreeNodeType }) => {
+const EditorView = ({ directory }: { directory: TreeNodeType[] | null }) => {
+  const [code, setCode] = useState("");
+  const [editorCode, setEditorCode] = useState("");
+  const [selectedFile, setSelectedFile] = useState<any>(null);
+
+  const handleFileChange = async (e: any, node: TreeNodeType) => {
+    e.stopPropagation();
+    try {
+      const response: { content: string } = (await API.readFile(
+        node.absolutePath
+      )) as { content: string };
+      setSelectedFile(node);
+      setCode(response.content);
+      setEditorCode(response.content);
+    } catch (error) {
+      setSelectedFile(null);
+      setCode("");
+      setEditorCode("");
+    }
+  };
+
+  const saveFile = async () => {
+    try {
+      const response = await API.saveFile(
+        editorCode,
+        selectedFile.absolutePath
+      );
+      setCode(editorCode);
+    } catch (error) {}
+  };
+
+  const getFileExtension = (filename: string) =>
+    filename.includes(".") ? filename.split(".").pop() : undefined;
+
+  return (
+    <div className="mx-12">
+      <div className="flex h-[calc(100vh-240px)] rounded-lg overflow-hidden pt-5">
+        <div className="w-[160px] min-w-[160px] h-full pt-2 border-r border-slate-200">
+          {directory?.map((child) => (
+            <TreeNode
+              selectedFile={selectedFile}
+              key={child.name}
+              node={child}
+              handleFileChange={handleFileChange}
+            />
+          ))}
+        </div>
+        <div className="flex-grow">
+          <Editor
+            language={getFileExtension(node.name)}
+            value={editorCode}
+            onChange={(val) => setEditorCode(val || "")}
+          />
+        </div>
+      </div>
+      <Button
+        onClick={saveFile}
+        className="w-full mt-4"
+        disabled={editorCode === code}
+      >
+        Save
+      </Button>
+    </div>
+  );
+};
+
+export default EditorView;
+
+const TreeNode = ({
+  node,
+  selectedFile,
+  handleFileChange,
+}: {
+  node: TreeNodeType;
+  selectedFile: TreeNodeType;
+  handleFileChange: (e: any, node: TreeNodeType) => void;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleOpen = (e: any) => {
@@ -100,14 +109,16 @@ const TreeNode = ({ node }: { node: TreeNodeType }) => {
       onClick={
         node.isDirectory
           ? (e) => toggleOpen(e)
-          : (e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }
+          : (e) => handleFileChange(e, node)
+      }
+      className={
+        !node.isDirectory && selectedFile === node
+          ? `bg-purple-100 rounded-lg`
+          : ""
       }
     >
       <div className="cursor-pointer flex gap-1 items-center px-2 text-sm">
-        <div className="w-4">
+        <div className="w-4 min-w-4">
           {node.isDirectory && (
             <>
               {isOpen ? (
@@ -118,17 +129,20 @@ const TreeNode = ({ node }: { node: TreeNodeType }) => {
             </>
           )}
         </div>
-        {node.name}
+        <p className="truncate">{node.name}</p>
       </div>
-      {isOpen &&
-        node.isDirectory &&
-        "children" in node && ( // <-- Type guard added here
-          <div className="ml-4">
-            {node.children.map((child) => (
-              <TreeNode key={child.name} node={child} />
-            ))}
-          </div>
-        )}
+      {isOpen && node.isDirectory && "children" in node && (
+        <div className="ml-4">
+          {node.children.map((child) => (
+            <TreeNode
+              selectedFile={selectedFile}
+              key={child.name}
+              node={child}
+              handleFileChange={handleFileChange}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
