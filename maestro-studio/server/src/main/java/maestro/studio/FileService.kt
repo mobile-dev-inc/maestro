@@ -4,9 +4,9 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import okio.Path.Companion.toPath
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
+import java.nio.file.*
 import java.util.*
 import kotlin.streams.toList
 
@@ -57,7 +57,8 @@ object FileService {
 
         routing.post("/api/save-file") {
             val request = call.parseBody<SaveFileRequest>()
-            File(request.absolutePath).writeText(request.content)
+            val filePath = String(Base64.getDecoder().decode(request.absolutePath))
+            File(filePath).writeText(request.content)
             call.respond(HttpStatusCode.OK)
         }
     }
