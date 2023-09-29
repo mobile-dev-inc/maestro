@@ -90,28 +90,26 @@ const InteractPageLayout = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <div className="flex">
-          <div className="flex mx-12 mt-4 mb-2 p-0.5 rounded-lg bg-gray-200">
-            <div
-              onClick={() => setSelectedTab("generator")}
-              className={`text-sm px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
-                selectedTab === "generator"
-                  ? "bg-white text-black"
-                  : "bg-transparent text-slate-400 hover:bg-white/20"
-              }`}
-            >
-              Command Generator
-            </div>
-            <div
-              onClick={() => setSelectedTab("editor")}
-              className={`text-sm px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
-                selectedTab === "editor"
-                  ? "bg-white text-black"
-                  : "bg-transparent text-slate-400 hover:bg-white/20"
-              }`}
-            >
-              Editor
-            </div>
+        <div className="flex mx-12 mt-4 mb-2 p-0.5 rounded-lg bg-gray-100">
+          <div
+            onClick={() => setSelectedTab("generator")}
+            className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+              selectedTab === "generator"
+                ? "bg-white text-black"
+                : "bg-transparent text-slate-400 hover:bg-white/20"
+            }`}
+          >
+            Generator
+          </div>
+          <div
+            onClick={() => setSelectedTab("editor")}
+            className={`text-sm flex-grow text-center px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+              selectedTab === "editor"
+                ? "bg-white text-black"
+                : "bg-transparent text-slate-400 hover:bg-white/20"
+            }`}
+          >
+            Editor
           </div>
         </div>
         {selectedTab === "generator" && <ReplView />}
