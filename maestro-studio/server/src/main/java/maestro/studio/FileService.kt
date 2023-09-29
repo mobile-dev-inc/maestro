@@ -1,5 +1,6 @@
 package maestro.studio
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -36,13 +37,14 @@ object FileService {
         routing.get("/api/read-file/{path}") {
             val encodedFilePath = call.parameters["path"] ?: throw IllegalArgumentException("Path parameter is missing")
             val filePath = Base64.getDecoder().decode(encodedFilePath).toString()
+            println(filePath)
             val file = File(filePath)
             if (!file.exists() || file.isDirectory) {
-                throw IllegalArgumentException("Path does not point to a file")
+                throw IllegalArgumentException("Path (${file.path}) does not point to a file")
             }
 
             val fileContent = file.readText()
-            call.respond(FileResponse(fileContent))
+            call.respond(FileResponse(fileContent).json())
         }
 
         routing.get("/api/read-directory") {
@@ -52,12 +54,12 @@ object FileService {
             }
 
             val fullFileTree = listDirectory(workspaceDirectory.toPath())
-            call.respond(FileDirectoryResponse(fullFileTree))
+            call.respond(FileDirectoryResponse(fullFileTree).json())
         }
 
         routing.post("/api/save-file") {
             val request = call.parseBody<SaveFileRequest>()
-
+            File(request.absolutePath).writeText(request.content)
             call.respond(HttpStatusCode.OK)
         }
     }

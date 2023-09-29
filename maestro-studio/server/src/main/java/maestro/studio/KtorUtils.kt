@@ -19,3 +19,7 @@ suspend inline fun <reified T> ApplicationCall.parseBody(): T {
         throw HttpException(HttpStatusCode.BadRequest, "Failed to parse request body")
     }
 }
+
+inline fun <reified T> T.json(): String {
+    return jacksonObjectMapper().writeValueAsString(this)
+}
