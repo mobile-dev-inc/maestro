@@ -12,6 +12,7 @@ import maestro.cli.view.faint
 import maestro.studio.MaestroStudio
 import picocli.CommandLine
 import java.awt.Desktop
+import java.io.File
 import java.net.ServerSocket
 import java.net.URI
 import java.util.concurrent.Callable
@@ -41,16 +42,25 @@ class StudioCommand : Callable<Int> {
     )
     private var noWindow: Boolean? = null
 
+    @CommandLine.Parameters(
+        arity = "0..1",
+    )
+    private var workspaceDirectory: File? = null
+
     override fun call(): Int {
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
+        }
+
+        if (workspaceDirectory != null && !workspaceDirectory!!.isDirectory) {
+            throw CliError("Workspace Directory must be a directory, not a file.")
         }
 
         TestDebugReporter.install(debugOutputPathAsString = debugOutput)
 
         MaestroSessionManager.newSession(parent?.host, parent?.port, parent?.deviceId, true) { session ->
             val port = getFreePort()
-            MaestroStudio.start(port, session.maestro)
+            MaestroStudio.start(port, session.maestro, workspaceDirectory)
 
             val studioUrl = "http://localhost:${port}"
             val message = ("Maestro Studio".bold() + " is running at " + studioUrl.blue()).box()

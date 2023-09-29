@@ -14,10 +14,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import maestro.Maestro
 import maestro.mockserver.MockInteractor
+import java.io.File
 
 object MaestroStudio {
 
-    fun start(port: Int, maestro: Maestro?) {
+    fun start(port: Int, maestro: Maestro?, workspaceDirectory: File?) {
         embeddedServer(Netty, port = port) {
             install(CORS) {
                 allowHost("localhost:3000")
@@ -42,6 +43,7 @@ object MaestroStudio {
                     DeviceService.routes(this, maestro)
                     InsightService.routes(this)
                     AuthService.routes(this)
+                    FileService.routes(this, workspaceDirectory)
                 }
                 MockService.routes(this, MockInteractor())
                 singlePageApplication {
