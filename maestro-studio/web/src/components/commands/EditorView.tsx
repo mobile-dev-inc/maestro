@@ -2,7 +2,7 @@ import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 
 const EditorView = () => {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [file, setFile] = useState();
 
   const handleFileChange = (event: any) => {
@@ -18,7 +18,7 @@ const EditorView = () => {
       reader.onload = (e) => {
         if (e.target !== null) {
           if (e.target.result !== null) {
-            setCode((e.target.result as string));
+            setCode(e.target.result as string);
           }
         }
       };
@@ -27,13 +27,10 @@ const EditorView = () => {
   }, [file]);
 
   return (
-    <>
+    <div className="pl-10 pr-12 max-h-[calc(100vh-188px)]">
       <input type="file" onChange={handleFileChange} />
-      <Editor
-        language="yaml"
-        value={code}
-      />
-    </>
+      <Editor language="yaml" value={code} />
+    </div>
   );
 };
 

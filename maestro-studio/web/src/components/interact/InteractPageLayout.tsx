@@ -2,7 +2,7 @@ import { useState } from "react";
 import clsx from "clsx";
 
 import InteractableDevice from "../device-and-device-elements/InteractableDevice";
-// import ReplView from "../commands/ReplView";
+import ReplView from "../commands/ReplView";
 import ActionModal from "../device-and-device-elements/ActionModal";
 import { Button } from "../design-system/button";
 import { CommandExample } from "../../helpers/commandExample";
@@ -10,7 +10,7 @@ import ElementsPanel from "../device-and-device-elements/ElementsPanel";
 import DeviceWrapperAspectRatio from "../device-and-device-elements/DeviceWrapperAspectRatio";
 import { useDeviceContext } from "../../context/DeviceContext";
 import { Spinner } from "../design-system/spinner";
-import { useRepl } from '../../context/ReplContext';
+import { useRepl } from "../../context/ReplContext";
 import EditorView from "../commands/EditorView";
 
 const InteractPageLayout = () => {
@@ -21,6 +21,7 @@ const InteractPageLayout = () => {
     setInspectedElement,
     setCurrentCommandValue,
   } = useDeviceContext();
+  const [selectedTab, setSelectedTab] = useState<string>("editor");
   const { runCommandYaml } = useRepl();
 
   const [showElementsPanel, setShowElementsPanel] = useState<boolean>(false);
@@ -89,7 +90,32 @@ const InteractPageLayout = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <EditorView />
+        <div className="flex">
+          <div className="flex mx-12 mt-4 mb-2 p-0.5 rounded-lg bg-gray-200">
+            <div
+              onClick={() => setSelectedTab("generator")}
+              className={`text-sm px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+                selectedTab === "generator"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-slate-400 hover:bg-white/20"
+              }`}
+            >
+              Command Generator
+            </div>
+            <div
+              onClick={() => setSelectedTab("editor")}
+              className={`text-sm px-2 py-1 rounded-lg font-semibold cursor-pointer  ${
+                selectedTab === "editor"
+                  ? "bg-white text-black"
+                  : "bg-transparent text-slate-400 hover:bg-white/20"
+              }`}
+            >
+              Editor
+            </div>
+          </div>
+        </div>
+        {selectedTab === "generator" && <ReplView />}
+        {selectedTab === "editor" && <EditorView />}
       </div>
       <ActionModal onEdit={onEdit} onRun={onRun} />
     </div>
