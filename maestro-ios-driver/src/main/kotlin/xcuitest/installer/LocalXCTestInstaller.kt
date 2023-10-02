@@ -98,7 +98,7 @@ class LocalXCTestInstaller(
 
     private fun ensureOpen(): Boolean {
         XCRunnerCLIUtils.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-        return MaestroTimer.retryUntilTrue(10_000, 100) {
+        return MaestroTimer.retryUntilTrue(100_000, 100) {
             try {
                 xcTestDriverStatusCheck().use { it.isSuccessful }
             } catch (ignore: IOException) {
