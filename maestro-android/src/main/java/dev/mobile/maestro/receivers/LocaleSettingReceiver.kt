@@ -10,9 +10,9 @@ import org.apache.commons.lang3.LocaleUtils
 import java.util.*
 
 class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        var language = intent?.getStringExtra(LANG)
-        var country = intent?.getStringExtra(COUNTRY)
+    override fun onReceive(context: Context, intent: Intent) {
+        var language = intent.getStringExtra(LANG)
+        var country = intent.getStringExtra(COUNTRY)
 
         if (language == null || country == null) {
             Log.w(TAG, "It is required to provide both language and country, for example: " +
@@ -26,7 +26,7 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
 
         Log.i(TAG, "Obtained locale: $locale")
 
-        val script = intent?.getStringExtra(SCRIPT)
+        val script = intent.getStringExtra(SCRIPT)
         if (script != null) {
             Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
         }
@@ -61,18 +61,16 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             }
         }
 
-        context?.let {
-            LocaleSettingHandler(it).setLocale(locale)
-            Log.i(TAG, "Set locale: $locale")
-            resultCode = Activity.RESULT_OK
-            resultData = locale.toString()
-        } ?: Log.e(TAG, "Failed to set device locale setting (context is null)")
+        LocaleSettingHandler(context).setLocale(locale)
+        Log.i(TAG, "Set locale: $locale")
+        resultCode = Activity.RESULT_OK
+        resultData = locale.toString()
     }
 
     private fun matchLocales(language: String): List<Locale> {
         val matches = ArrayList<Locale>()
         for (locale in LocaleUtils.availableLocaleList()) {
-            if (locale.language.equals(language, ignoreCase = true)) {
+            if (locale.language == language) {
                 matches.add(locale)
             }
         }
@@ -82,8 +80,8 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
     private fun matchLocales(language: String, country: String): List<Locale> {
         val matches = ArrayList<Locale>()
         for (locale in LocaleUtils.availableLocaleList()) {
-            if (locale.language.equals(language, ignoreCase = true) &&
-                locale.country.equals(country, ignoreCase = true)
+            if (locale.language == language &&
+                locale.country == country
             ) {
                 matches.add(locale)
             }
