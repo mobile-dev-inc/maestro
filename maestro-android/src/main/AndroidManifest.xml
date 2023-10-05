@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:tools="http://schemas.android.com/tools"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
-                     tools:ignore="MockLocation,ProtectedPermissions"/>
+        tools:ignore="MockLocation,ProtectedPermissions"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
-                     tools:ignore="QueryAllPackagesPermission"/>
+        tools:ignore="QueryAllPackagesPermission"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
-                     tools:ignore="ProtectedPermissions" />
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"
-                     tools:ignore="ProtectedPermissions" />
+        tools:ignore="ProtectedPermissions" />
 
     <application
-            android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true">
 
-            <receiver android:name=".receivers.LocaleSettingReceiver"
-                android:exported="true"
-                tools:ignore="ExportedReceiver" />
+        <activity
+            android:name=".MainActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:noHistory="false"
+            android:stateNotNeeded="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".receivers.LocaleSettingReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver" />
     </application>
 </manifest>
