@@ -568,6 +568,11 @@ class AndroidDriver(
         LOGGER.info("[Done] Adding media files")
     }
 
+    fun setDeviceLocale(country: String, language: String) {
+        dadb.shell("pm grant dev.mobile.maestro android.permission.CHANGE_CONFIGURATION")
+        dadb.shell("am broadcast -a dev.mobile.maestro.locale -n dev.mobile.maestro/.receivers.LocaleSettingReceiver --es lang $language --es country $country")
+    }
+
     private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
             mediaFile.name,
@@ -773,6 +778,7 @@ class AndroidDriver(
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
+        println("install ${maestroAppApk.absolutePath}")
         install(maestroAppApk)
         if (!isPackageInstalled("dev.mobile.maestro")) {
             throw IllegalStateException("dev.mobile.maestro was not installed")

@@ -4,6 +4,7 @@ import dadb.Dadb
 import maestro.cli.CliError
 import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.AvdDevice
+import maestro.drivers.AndroidDriver
 import maestro.utils.MaestroTimer
 import okio.buffer
 import okio.source
@@ -58,6 +59,18 @@ object DeviceService {
                         null
                     }
                 } ?: throw CliError("Unable to start device: ${device.modelId}")
+
+                if (device.language != null && device.country != null) {
+                    println("test language")
+                    val driver = AndroidDriver(dadb)
+                    driver.open()
+//                    println("driver did open")
+//                    driver.setDeviceLocale(
+//                        country = device.country,
+//                        language = device.language
+//                    )
+//                    driver.close()
+                }
 
                 return Device.Connected(
                     instanceId = dadb.toString(),
