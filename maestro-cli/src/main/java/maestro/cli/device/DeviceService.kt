@@ -4,6 +4,7 @@ import dadb.Dadb
 import maestro.cli.CliError
 import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.AvdDevice
+import maestro.cli.util.PrintUtils
 import maestro.drivers.AndroidDriver
 import maestro.utils.MaestroTimer
 import okio.buffer
@@ -67,7 +68,13 @@ object DeviceService {
                     }
                 } ?: throw CliError("Unable to start device: ${device.modelId}")
 
+                PrintUtils.message("Waiting for emulator to boot...")
+                while (!bootComplete(dadb)) {
+                    Thread.sleep(1000)
+                }
+
                 if (device.language != null && device.country != null) {
+                    PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                     val driver = AndroidDriver(dadb)
                     driver.open()
                     driver.setDeviceLocale(
@@ -437,6 +444,15 @@ object DeviceService {
         }
 
         return process.exitValue() == 0
+    }
+
+    private fun bootComplete(dadb: Dadb): Boolean {
+        return try {
+            val value = dadb.shell("getprop init.svc.bootanim").output.trim()
+            return value == "stopped"
+        } catch (e: IllegalStateException) {
+            false
+        }
     }
 
     private fun requireEmulatorBinary(): File = AndroidEnvUtils.requireEmulatorBinary()
