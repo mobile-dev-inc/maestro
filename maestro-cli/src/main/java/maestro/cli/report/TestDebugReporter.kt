@@ -1,6 +1,7 @@
 package maestro.cli.report
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import maestro.Driver
 import maestro.MaestroException
@@ -29,7 +30,6 @@ object TestDebugReporter {
 
     private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
     private val mapper = ObjectMapper()
-    private val parentPath = Paths.get(System.getProperty("user.home"), ".maestro", "tests")
 
     private var debugOutputPath: Path? = null
     private var debugOutputPathAsString: String? = null
@@ -44,14 +44,17 @@ object TestDebugReporter {
     fun saveFlow(flowName: String, data: FlowDebugMetadata, path: Path) {
 
         // commands
-        val commandMetadata = data.commands
-        if (commandMetadata.isNotEmpty()) {
-
-            val commandsFilename = "commands-(${flowName.replace("/", "_")}).json"
-            val file = File(path.absolutePathString(), commandsFilename)
-            commandMetadata.map { CommandDebugWrapper(it.key, it.value) }.let {
-                mapper.writeValue(file, it)
+        try {
+            val commandMetadata = data.commands
+            if (commandMetadata.isNotEmpty()) {
+                val commandsFilename = "commands-(${flowName.replace("/", "_")}).json"
+                val file = File(path.absolutePathString(), commandsFilename)
+                commandMetadata.map { CommandDebugWrapper(it.key, it.value) }.let {
+                    mapper.writeValue(file, it)
+                }
             }
+        } catch (e: JsonMappingException) {
+            logger.error("Unable to parse commands", e)
         }
 
         // screenshots
@@ -68,12 +71,12 @@ object TestDebugReporter {
         }
     }
 
-    fun deleteOldFiles(path: Path = parentPath, days: Long = 14) {
+    fun deleteOldFiles(days: Long = 14) {
         try {
             val currentTime = Instant.now()
             val daysLimit = currentTime.minus(Duration.of(days, ChronoUnit.DAYS))
 
-            Files.walk(path)
+            Files.walk(getDebugOutputPath())
                 .filter {
                     val fileTime = Files.getAttribute(it, "basic:lastModifiedTime") as FileTime
                     val isOlderThanLimit = fileTime.toInstant().isBefore(daysLimit)
@@ -90,7 +93,7 @@ object TestDebugReporter {
         }
     }
 
-    fun logSystemInfo() {
+    private fun logSystemInfo() {
         val appVersion = runCatching {
             val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
                 Properties().apply { load(it) }

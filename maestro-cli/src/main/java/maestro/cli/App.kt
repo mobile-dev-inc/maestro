@@ -19,29 +19,17 @@
 
 package maestro.cli
 
-import maestro.cli.command.BugReportCommand
-import maestro.cli.command.CloudCommand
+import maestro.cli.command.*
 import maestro.cli.command.DownloadSamplesCommand
-import maestro.cli.command.LoginCommand
 import maestro.cli.command.LogoutCommand
-import maestro.cli.command.PrintHierarchyCommand
-import maestro.cli.command.QueryCommand
-import maestro.cli.command.RecordCommand
-import maestro.cli.command.StudioCommand
-import maestro.cli.command.TestCommand
-import maestro.cli.command.UploadCommand
-import maestro.cli.report.TestDebugReporter
 import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
-import maestro.debuglog.LogConfig
-import org.slf4j.LoggerFactory
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
-import java.util.Properties
-import kotlin.io.path.absolutePathString
+import java.util.*
 import kotlin.system.exitProcess
 
 @Command(
@@ -58,6 +46,7 @@ import kotlin.system.exitProcess
         LogoutCommand::class,
         BugReportCommand::class,
         StudioCommand::class,
+        StartDeviceCommand::class
     ]
 )
 class App {
@@ -94,9 +83,6 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
-    // logs & debug output
-    val logger = LoggerFactory.getLogger(App::class.java)
-
     Dependencies.install()
     Updates.fetchUpdatesAsync()
 
@@ -113,8 +99,13 @@ fun main(args: Array<String>) {
                 ex.stackTraceToString()
             }
 
-            logger.error(message)
             println()
+
+            // make errors red
+            cmd.colorScheme =  CommandLine.Help.ColorScheme.Builder()
+                .errors(CommandLine.Help.Ansi.Style.fg_red)
+                .build()
+
             cmd.err.println(
                 cmd.colorScheme.errorText(message)
             )
@@ -125,7 +116,6 @@ fun main(args: Array<String>) {
     val exitCode = commandLine
         .execute(*args)
 
-    TestDebugReporter.deleteOldFiles()
     DebugLogStore.finalizeRun()
 
     val newVersion = Updates.checkForUpdates()
@@ -133,7 +123,7 @@ fun main(args: Array<String>) {
         System.err.println()
         System.err.println(
             ("A new version of the Maestro CLI is available ($newVersion). Upgrade command:\n" +
-                "curl -Ls \"https://get.maestro.mobile.dev\" | bash").box()
+                    "curl -Ls \"https://get.maestro.mobile.dev\" | bash").box()
         )
     }
 

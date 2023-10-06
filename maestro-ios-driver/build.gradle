@@ -9,6 +9,7 @@ dependencies {
     implementation project(':maestro-utils')
 
     api(libs.square.okhttp)
+    api(libs.square.okhttp.logs)
     api(libs.jackson.module.kotlin)
     api(libs.jarchivelib)
     api(libs.kotlin.result)
@@ -18,6 +19,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
+    implementation "commons-io:commons-io:2.11.0"
 }
 
 java {

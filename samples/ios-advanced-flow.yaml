@@ -3,7 +3,19 @@ tags:
   - advanced
 ---
 - runFlow: subflows/onboarding-ios.yaml
+
+# Dismiss the auth modal if visible
+- runFlow:
+    when:
+      visible: "You have been logged out"
+    commands:
+      - tapOn:
+          text: "Continue without logging in"
+
 - tapOn: Search Wikipedia
 - runScript: scripts/getSearchQuery.js
 - inputText: ${output.result}
+- eraseText
+- inputText: qwerty
 - assertVisible: ${output.result}
+

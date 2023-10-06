@@ -3,7 +3,6 @@ import clsx from "clsx";
 
 import InteractableDevice from "../device-and-device-elements/InteractableDevice";
 import ReplView from "../commands/ReplView";
-import { API } from "../../api/api";
 import ActionModal from "../device-and-device-elements/ActionModal";
 import { Button } from "../design-system/button";
 import { CommandExample } from "../../helpers/commandExample";
@@ -11,17 +10,23 @@ import ElementsPanel from "../device-and-device-elements/ElementsPanel";
 import DeviceWrapperAspectRatio from "../device-and-device-elements/DeviceWrapperAspectRatio";
 import { useDeviceContext } from "../../context/DeviceContext";
 import { Spinner } from "../design-system/spinner";
+import { useRepl } from '../../context/ReplContext';
 
 const InteractPageLayout = () => {
-  const { isLoading, deviceScreen, footerHint, setInspectedElement } =
-    useDeviceContext();
+  const {
+    isLoading,
+    deviceScreen,
+    footerHint,
+    setInspectedElement,
+    setCurrentCommandValue,
+  } = useDeviceContext();
+  const { runCommandYaml } = useRepl();
 
   const [showElementsPanel, setShowElementsPanel] = useState<boolean>(false);
-  const [input, setInput] = useState("");
 
   const onEdit = (example: CommandExample) => {
     if (example.status === "unavailable") return;
-    setInput(example.content.trim());
+    setCurrentCommandValue(example.content.trim());
     setInspectedElement(null);
     // find textarea by id and focus on it if it exists
     setTimeout(() => {
@@ -32,10 +37,10 @@ const InteractPageLayout = () => {
     }, 0);
   };
 
-  const onRun = (example: CommandExample) => {
+  const onRun = async (example: CommandExample) => {
     if (example.status === "unavailable") return;
-    API.repl.runCommand(example.content);
     setInspectedElement(null);
+    await runCommandYaml(example.content);
   };
 
   if (isLoading)
@@ -83,7 +88,7 @@ const InteractPageLayout = () => {
         )}
       </div>
       <div className="flex flex-col flex-1 h-full overflow-hidden border-l border-slate-200 dark:border-slate-800 relative dark:bg-slate-900 dark:text-white">
-        <ReplView input={input} onInput={setInput} />
+        <ReplView />
       </div>
       <ActionModal onEdit={onEdit} onRun={onRun} />
     </div>

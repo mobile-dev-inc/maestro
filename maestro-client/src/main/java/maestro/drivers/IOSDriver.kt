@@ -20,34 +20,22 @@
 package maestro.drivers
 
 import com.github.michaelbull.result.expect
-import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
 import hierarchy.AXElement
 import ios.IOSDevice
-import maestro.Capability
-import maestro.DeviceInfo
-import maestro.Driver
-import maestro.Filters
-import maestro.KeyCode
-import maestro.MaestroException
-import maestro.Platform
-import maestro.Point
-import maestro.ScreenRecording
-import maestro.SwipeDirection
-import maestro.TreeNode
+import ios.IOSDeviceErrors
+import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
-import maestro.ViewHierarchy
 import maestro.utils.*
 import okio.Sink
+import okio.source
 import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
-import java.nio.file.Files
 import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
 class IOSDriver(
@@ -55,7 +43,7 @@ class IOSDriver(
 ) : Driver {
 
     private val deviceInfo by lazy {
-        iosDevice.deviceInfo().expect {}
+        iosDevice.deviceInfo()
     }
 
     private val widthPoints by lazy {
@@ -73,7 +61,7 @@ class IOSDriver(
     }
 
     override fun open() {
-        iosDevice.open()
+        awaitLaunch()
     }
 
     override fun close() {
@@ -85,13 +73,15 @@ class IOSDriver(
     }
 
     override fun deviceInfo(): DeviceInfo {
-        return DeviceInfo(
-            platform = Platform.IOS,
-            widthPixels = deviceInfo.widthPixels,
-            heightPixels = deviceInfo.heightPixels,
-            widthGrid = deviceInfo.widthPoints,
-            heightGrid = deviceInfo.heightPoints,
-        )
+        return runDeviceCall {
+            DeviceInfo(
+                platform = Platform.IOS,
+                widthPixels = deviceInfo.widthPixels,
+                heightPixels = deviceInfo.heightPixels,
+                widthGrid = deviceInfo.widthPoints,
+                heightGrid = deviceInfo.heightPoints,
+            )
+        }
     }
 
     override fun launchApp(
@@ -119,22 +109,17 @@ class IOSDriver(
     }
 
     override fun tap(point: Point) {
-        iosDevice.tap(point.x, point.y).expect {}
+        runDeviceCall { iosDevice.tap(point.x, point.y) }
     }
 
     override fun longPress(point: Point) {
-        iosDevice.longPress(point.x, point.y, 3000).expect {}
+        runDeviceCall { iosDevice.longPress(point.x, point.y, 3000) }
     }
 
     override fun pressKey(code: KeyCode) {
         val keyCodeNameMap = mapOf(
             KeyCode.BACKSPACE to "delete",
             KeyCode.ENTER to "return",
-            // Supported by iOS but not yet by maestro:
-//        KeyCode.RETURN to "return",
-//        KeyCode.TAP to "tab",
-//        KeyCode.SPACE to "space",
-//        KeyCode.ESCAPE to "escape",
         )
 
         val buttonNameMap = mapOf(
@@ -142,22 +127,24 @@ class IOSDriver(
             KeyCode.LOCK to "lock",
         )
 
-        keyCodeNameMap[code]?.let { name ->
-            iosDevice.pressKey(name)
-        }
+        runDeviceCall {
+            keyCodeNameMap[code]?.let { name ->
+                iosDevice.pressKey(name)
+            }
 
-        buttonNameMap[code]?.let { name ->
-            iosDevice.pressButton(name)
+            buttonNameMap[code]?.let { name ->
+                iosDevice.pressButton(name)
+            }
         }
     }
 
     override fun contentDescriptor(): TreeNode {
-        return viewHierarchy()
+        return runDeviceCall { viewHierarchy() }
     }
 
-    fun viewHierarchy(): TreeNode {
+    private fun viewHierarchy(): TreeNode {
         LOGGER.info("Requesting view hierarchy of the screen")
-        val hierarchyResult = iosDevice.viewHierarchy().expect {  }
+        val hierarchyResult = iosDevice.viewHierarchy()
         LOGGER.info("Depth of the screen is ${hierarchyResult.depth}")
         if (hierarchyResult.depth > WARNING_MAX_DEPTH) {
             val message = "The view hierarchy has been calculated. The current depth of the hierarchy " +
@@ -241,14 +228,16 @@ class IOSDriver(
     ) {
         validate(start, end)
 
-        waitForAppToSettle(null, null)
-        iosDevice.scroll(
-            xStart = start.x.toDouble(),
-            yStart = start.y.toDouble(),
-            xEnd = end.x.toDouble(),
-            yEnd = end.y.toDouble(),
-            duration = durationMs.toDouble() / 1000
-        ).expect {}
+        runDeviceCall {
+            waitForAppToSettle(null, null)
+            iosDevice.scroll(
+                xStart = start.x.toDouble(),
+                yStart = start.y.toDouble(),
+                xEnd = end.x.toDouble(),
+                yEnd = end.y.toDouble(),
+                duration = durationMs.toDouble() / 1000
+            )
+        }
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
@@ -374,7 +363,7 @@ class IOSDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        iosDevice.takeScreenshot(out, compressed).expect {}
+        runDeviceCall { iosDevice.takeScreenshot(out, compressed) }
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
@@ -386,9 +375,7 @@ class IOSDriver(
 
     override fun inputText(text: String) {
         // silently fail if no XCUIElement has focus
-        iosDevice.input(
-            text = text,
-        )
+        runDeviceCall { iosDevice.input(text = text) }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -400,7 +387,7 @@ class IOSDriver(
     }
 
     override fun eraseText(charactersToErase: Int) {
-        iosDevice.eraseText(charactersToErase)
+        runDeviceCall { iosDevice.eraseText(charactersToErase) }
     }
 
     override fun setProxy(host: String, port: Int) {
@@ -437,11 +424,33 @@ class IOSDriver(
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        iosDevice.setPermissions(appId, permissions)
+        runDeviceCall {
+            iosDevice.setPermissions(appId, permissions)
+        }
+    }
+
+    override fun addMedia(mediaFiles: List<File>) {
+        LOGGER.info("[Start] Adding media files")
+        mediaFiles.forEach { addMediaToDevice(it) }
+        LOGGER.info("[Done] Adding media files")
+    }
+
+    private fun addMediaToDevice(mediaFile: File) {
+        val namedSource = NamedSource(
+            mediaFile.name,
+            mediaFile.source(),
+            mediaFile.extension,
+            mediaFile.path
+        )
+        MediaExt.values().firstOrNull { mediaExt -> mediaExt.extName == namedSource.extension }
+            ?: throw IllegalArgumentException(
+                "Extension .${namedSource.extension} is not yet supported for add media"
+            )
+        iosDevice.addMedia(namedSource.path)
     }
 
     private fun isScreenStatic(): Boolean {
-        return iosDevice.isScreenStatic().expect {}
+        return runDeviceCall { iosDevice.isScreenStatic() }
     }
 
     private fun heightPercentToPoint(percent: Double): Int {
@@ -452,10 +461,39 @@ class IOSDriver(
         return (percent * widthPoints).toInt()
     }
 
+    private fun awaitLaunch() {
+        val startTime = System.currentTimeMillis()
+
+        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
+            runCatching {
+                iosDevice.open()
+                return
+            }
+            Thread.sleep(100)
+        }
+
+        throw TimeoutException("Maestro iOS driver did not start up in time")
+    }
+
+    private fun <T> runDeviceCall(call: () -> T): T {
+        return try {
+            call()
+        } catch (appCrashException: IOSDeviceErrors.AppCrash) {
+            throw MaestroException.AppCrash(appCrashException.errorMessage)
+        }
+    }
+
+    private fun getStartupTimeout(): Long = runCatching {
+        System.getenv(MAESTRO_DRIVER_STARTUP_TIMEOUT).toLong()
+    }.getOrDefault(SERVER_LAUNCH_TIMEOUT_MS)
+
     companion object {
         const val NAME = "iOS Simulator"
 
         private val LOGGER = LoggerFactory.getLogger(IOSDevice::class.java)
+
+        private const val SERVER_LAUNCH_TIMEOUT_MS = 15000L
+        private const val MAESTRO_DRIVER_STARTUP_TIMEOUT = "MAESTRO_DRIVER_STARTUP_TIMEOUT"
 
         private const val ELEMENT_TYPE_CHECKBOX = 12
         private const val ELEMENT_TYPE_SWITCH = 40

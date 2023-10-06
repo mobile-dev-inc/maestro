@@ -19,56 +19,32 @@
 
 package maestro.drivers
 
+import com.google.protobuf.ByteString
 import dadb.AdbShellPacket
 import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
 import io.grpc.ManagedChannelBuilder
-import maestro.Capability
-import maestro.DeviceInfo
-import maestro.Driver
-import maestro.Filters
-import maestro.KeyCode
-import maestro.Maestro
-import maestro.Platform
-import maestro.Point
-import maestro.ScreenRecording
-import maestro.SwipeDirection
-import maestro.TreeNode
-import maestro.UiElement
+import maestro.*
 import maestro.UiElement.Companion.toUiElementOrNull
-import maestro.ViewHierarchy
 import maestro.android.AndroidAppFiles
 import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
+import maestro.utils.BlockingStreamObserver
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
-import maestro_android.MaestroDriverGrpc
-import maestro_android.checkWindowUpdatingRequest
-import maestro_android.deviceInfoRequest
-import maestro_android.eraseAllTextRequest
-import maestro_android.inputTextRequest
-import maestro_android.launchAppRequest
-import maestro_android.screenshotRequest
-import maestro_android.setLocationRequest
-import maestro_android.tapRequest
-import maestro_android.viewHierarchyRequest
+import maestro_android.*
 import net.dongliu.apk.parser.ApkFile
-import okio.Sink
-import okio.buffer
-import okio.sink
-import okio.source
+import okio.*
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.File
 import java.io.IOException
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
+import java.util.concurrent.*
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.io.use
 
 class AndroidDriver(
     private val dadb: Dadb,
@@ -79,6 +55,7 @@ class AndroidDriver(
         .usePlaintext()
         .build()
     private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
+    private val asyncStub = MaestroDriverGrpc.newStub(channel)
     private val documentBuilderFactory = DocumentBuilderFactory.newInstance()
 
     private var instrumentationSession: AdbShellStream? = null
@@ -263,8 +240,12 @@ class AndroidDriver(
             // There is a bug in Android UiAutomator that rarely throws an NPE while dumping a view hierarchy.
             // Trying to recover once by giving it a bit of time to settle.
 
+            LOGGER.error("Failed to get view hierarchy", ignored)
+
             MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000L)
-            blockingStub.viewHierarchy(viewHierarchyRequest {})
+
+            // If the connection is broken, getting the view hierarchy will wait indefinitely
+            getViewHierarchyWithTimeout() ?: throw ignored
         }
 
         val document = documentBuilderFactory
@@ -272,6 +253,18 @@ class AndroidDriver(
             .parse(response.hierarchy.byteInputStream())
 
         return mapHierarchy(document)
+    }
+
+    private fun getViewHierarchyWithTimeout(): MaestroAndroid.ViewHierarchyResponse? {
+        val future: Future<MaestroAndroid.ViewHierarchyResponse> = Executors.newSingleThreadExecutor().submit<MaestroAndroid.ViewHierarchyResponse> {
+            blockingStub.viewHierarchy(viewHierarchyRequest {})
+        }
+        return try {
+            future.get(5, TimeUnit.SECONDS)
+        } catch (e: TimeoutException) {
+            LOGGER.error("Timeout while fetching view hierarchy", e)
+            null
+        }
     }
 
     override fun scrollVertical() {
@@ -570,6 +563,45 @@ class AndroidDriver(
         }
     }
 
+    override fun addMedia(mediaFiles: List<File>) {
+        LOGGER.info("[Start] Adding media files")
+        mediaFiles.forEach { addMediaToDevice(it) }
+        LOGGER.info("[Done] Adding media files")
+    }
+
+    private fun addMediaToDevice(mediaFile: File) {
+        val namedSource = NamedSource(
+            mediaFile.name,
+            mediaFile.source(),
+            mediaFile.extension,
+            mediaFile.path
+        )
+        val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
+        val requestStream = asyncStub.addMedia(responseObserver)
+        val ext =
+            MediaExt.values().firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
+                "Extension .${namedSource.extension} is not yet supported for add media"
+            )
+
+        val buffer = Buffer()
+        val source = namedSource.source
+        while (source.read(buffer, CHUNK_SIZE) != -1L) {
+            requestStream.onNext(
+                addMediaRequest {
+                    this.payload = payload {
+                        data = ByteString.copyFrom(buffer.readByteArray())
+                    }
+                    this.mediaName = namedSource.name
+                    this.mediaExt = ext.extName
+                }
+            )
+            buffer.clear()
+        }
+        source.close()
+        requestStream.onCompleted()
+        responseObserver.awaitResult()
+    }
+
     private fun setAllPermissions(appId: String, permissionValue: String) {
         val permissionsResult = runCatching {
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
@@ -827,5 +859,6 @@ class AndroidDriver(
         private val PORT_TO_FORWARDER = mutableMapOf<Int, AutoCloseable>()
         private val PORT_TO_ALLOCATION_POINT = mutableMapOf<Int, String>()
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
+        private const val CHUNK_SIZE = 1024L * 1024L * 3L
     }
 }

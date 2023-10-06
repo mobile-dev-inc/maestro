@@ -1,5 +1,56 @@
 # Changelog
 
+## 1.33.1 - 2023-10-03
+- Feature: support for multipart form data file upload in Javascript, thanks @maciejkrolik
+- Fix: setPermissions produces error on Xcode 15
+- Fix: Maestro studio - include enter key in command editor on initial paste
+
+## 1.33.0 - 2023-09-21
+
+- Feature: Adds MAESTRO_DRIVER_STARTUP_TIMEOUT to iOS driver to configure timeout to start iOS driver, used in CI/CD environment with performance limitations. Thanks, Jesse Farsong for contributing.
+- Feature: Introducing the "addMedia" command that enables adding images and videos directly to the devices.
+- Change: Improved Studio's user interface:
+   - Updated fonts to align with company branding.
+   - Introduced a distinct loading animation for better clarity when AI is processing commands.
+- Fix: Crash resulting in Error: No matches found for first query match sequence: `Children matching type Other` due to resolving root element for a snapshot operation on iOS
+- Fix: Android driver getting stuck when the device was disconnected
+- Fix: XCTestUnreachable exceptions due to missing IPv6 config on /etc/hosts
+- Fix: Handling app crash errors from XCUITest drivers gracefully  
+- Fix: Timeouts can be separated with `_`. For example 10_000 for 10000
+
+## 1.32.0 - 2023-09-06
+
+Studio
+- Feature: Support writing Flows using AI (more info to come 🚀)
+- Feature: Maestro Studio can now run in multiple tabs simultaneously
+- Feature: Added element id and copy option for it
+- Tweak: Hide action buttons till command is hovered
+- Tweak: Hide Unnecessary Scrollbars
+- Tweak: Repl view scroll improvements
+- Tweak: Improve Maestro Studio performance
+- Fix: Selected element size
+- Fix: Performance issues with maestro studio device refresh
+- Fix: Fixed dark mode for element id
+
+CLI
+- Feature: New command to start or create a Maestro recommended device (docs)
+- Feature: Support id selection for testID with react-native-web (community contribution)
+- Feature: Control if browser automatically opens when running Maestro Studio via --no-window (community contribution)
+- Tweak: Show cancellation reason when available (Maestro Cloud)
+- Tweak: Update selenium-java and remove webdrivermanager to support Chrome 116+
+- Tweak: Show device type when running on Maestro Cloud
+- Tweak: Added better messaging and recovery options for Maestro Cloud uploads (useful for CI)
+- Tweak: Added better error messages for missing workspace and yaml validation errors
+- Tweak: Added file name and line number in yaml parsing error messages
+- Fix: Input text and erase text stability improvements for iOS
+- Fix: Leaking response body on iOS & better error handling for iOS Driver
+- Fix: Fixed Maestro Cloud wrong exit code when flow failed
+- Fix: Debug commands parsing would crash maestro
+- Fix: Cleaning up debug logs
+
+
+
+
 ## 1.31.0 - 2023-08-10
 
 - Fix: Warning shown from OkHttp for leaking response bodies on CLI

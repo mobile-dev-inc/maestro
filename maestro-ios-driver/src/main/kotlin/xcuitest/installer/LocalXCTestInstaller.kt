@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 class LocalXCTestInstaller(
     private val logger: Logger,
     private val deviceId: String,
-    private val host: String = "localhost",
+    private val host: String = "[::1]",
     defaultPort: Int? = null,
 ) : XCTestInstaller {
     // Set this flag to allow using a test runner started from Xcode
@@ -46,10 +46,9 @@ class LocalXCTestInstaller(
     }
 
     private fun stop() {
+        logger.info("[Start] Stop XCUITest runner")
         if (xcTestProcess?.isAlive == true) {
-            logger.info("[Start] Stop XCUITest runner")
             xcTestProcess?.destroy()
-            logger.info("[Done] Stop XCUITest runner")
         }
 
         val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
@@ -58,6 +57,7 @@ class LocalXCTestInstaller(
                 .start()
                 .waitFor()
         }
+        logger.info("[Done] Stop XCUITest runner")
     }
 
     override fun start(): XCTestClient? {
@@ -97,10 +97,10 @@ class LocalXCTestInstaller(
     }
 
     private fun ensureOpen(): Boolean {
-        XCRunnerCLIUtils.ensureAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-        return MaestroTimer.retryUntilTrue(10_000, 100) {
+        return MaestroTimer.retryUntilTrue(10_000, 200) {
             try {
-                xcTestDriverStatusCheck().use { it.isSuccessful }
+                XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
+                    xcTestDriverStatusCheck().use { it.isSuccessful }
             } catch (ignore: IOException) {
                 false
             }
@@ -111,7 +111,7 @@ class LocalXCTestInstaller(
         fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
             return HttpUrl.Builder()
                 .scheme("http")
-                .host("localhost")
+                .host("[::1]")
                 .addPathSegment(pathSegment)
                 .port(port)
         }
@@ -144,9 +144,10 @@ class LocalXCTestInstaller(
         logger.info("[Done] Writing xctest run file")
 
         if (processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
+            logger.info("UI Test runner already running, stopping it")
             stop()
         } else {
-            logger.info("Not able to find ui test runner app, going to install now")
+            logger.info("Not able to find ui test runner app running, going to install now")
 
             logger.info("[Start] Writing maestro-driver-iosUITests-Runner app")
             extractZipToApp("maestro-driver-iosUITests-Runner", UI_TEST_RUNNER_PATH)

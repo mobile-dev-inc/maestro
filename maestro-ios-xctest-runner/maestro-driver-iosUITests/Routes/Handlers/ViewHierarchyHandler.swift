@@ -19,10 +19,9 @@ struct ViewHierarchyHandler: HTTPHandler {
             return AppError(type: .precondition, message: "incorrect request body provided").httpResponse
         }
 
-        let runningAppIds = requestBody.appIds
-        let app = getForegroundApp(runningAppIds)
-
         do {
+            let runningAppIds = requestBody.appIds
+            let app = getForegroundApp(runningAppIds)
             guard let app = app else {
                 let springboardHierarchy = try elementHierarchy(xcuiElement: springboardApplication)
                 let springBoardViewHierarchy = ViewHierarchy.init(axElement: springboardHierarchy, depth: springboardHierarchy.depth())
@@ -162,7 +161,12 @@ struct ViewHierarchyHandler: HTTPHandler {
         if try element.snapshot().children.count > 1 {
             return element
         }
-        return try findRecoveryElement(element.children(matching: .other).firstMatch)
+        let firstOtherElement = element.children(matching: .other).firstMatch
+        if (firstOtherElement.exists) {
+            return try findRecoveryElement(firstOtherElement)
+        } else {
+            return element
+        }
     }
 
     private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {

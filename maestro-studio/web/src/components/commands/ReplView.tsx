@@ -3,11 +3,11 @@ import { API } from "../../api/api";
 import { Icon } from "../design-system/icon";
 import { FormattedFlow, ReplCommand } from "../../helpers/models";
 import { SaveFlowModal } from "./SaveFlowModal";
-import { useConfirmationDialog } from "../common/ConfirmationDialog";
-import { Button } from "../design-system/button";
 import ReplHeader from "./ReplHeader";
-import CommandInput from "./CommandInput";
 import CommandList from "./CommandList";
+import CommandCreator from "./CommandCreator";
+import { useDeviceContext } from "../../context/DeviceContext";
+import { useRepl } from '../../context/ReplContext';
 
 const getFlowText = (selected: ReplCommand[]): string => {
   return selected
@@ -15,25 +15,15 @@ const getFlowText = (selected: ReplCommand[]): string => {
     .join("");
 };
 
-const ReplView = ({
-  input,
-  onInput,
-}: {
-  input: string;
-  onInput: (input: string) => void;
-}) => {
+const ReplView = () => {
+  const { currentCommandValue, setCurrentCommandValue } = useDeviceContext();
   const listRef = useRef<HTMLElement>();
-  const [replError, setReplError] = useState<string | null>(null);
   const [_selected, setSelected] = useState<string[]>([]);
   const [formattedFlow, setFormattedFlow] =
     useState<FormattedFlow | null>(null);
-  const { error, repl } = API.repl.useRepl();
+  const { repl, errorMessage, setErrorMessage, reorderCommands, deleteCommands, runCommandYaml, runCommandIds } = useRepl();
   const listSize = repl?.commands.length || 0;
   const previousListSize = useRef(0);
-
-  const [showConfirmationDialog, Dialog] = useConfirmationDialog(() =>
-    API.repl.deleteCommands(selectedIds)
-  );
 
   // Scroll to bottom when new commands are added
   useEffect(() => {
@@ -44,10 +34,6 @@ const ReplView = ({
     previousListSize.current = listSize;
   }, [listSize]);
 
-  if (error) {
-    return <div>Error fetching repl</div>;
-  }
-
   if (!repl) {
     return null;
   }
@@ -57,53 +43,51 @@ const ReplView = ({
     .filter((c): c is ReplCommand => !!c);
   const selectedIds = selectedCommands.map((c) => c.id);
 
-  const runCommand = async () => {
-    if (!input) return;
-    setReplError(null);
-    try {
-      await API.repl.runCommand(input);
-      onInput("");
-    } catch (e: any) {
-      setReplError(e.message || "Failed to run command");
-    }
+  // TODO handle invalid yaml
+  const onCommandSubmit = async () => {
+    if (!currentCommandValue) return;
+    const success = await runCommandYaml(currentCommandValue);
+    if (success) setCurrentCommandValue('');
   };
 
   const onReorder = (newOrder: ReplCommand[]) => {
-    API.repl.reorderCommands(newOrder.map((c) => c.id));
+    reorderCommands(newOrder.map((c) => c.id));
   };
 
-  const onPlay = () => {
-    API.repl.runCommandsById(selectedIds);
+  const onPlay = async () => {
+    await runCommandIds(selectedIds);
   };
 
   const onExport = () => {
     if (selectedIds.length === 0) return;
-    API.repl.formatFlow(selectedIds).then(setFormattedFlow);
+    const commands = selectedIds.map(id => repl.commands.find(command => command.id === id)?.yaml).filter(Boolean) as string[]
+    API.formatFlow(commands).then(setFormattedFlow);
   };
+
   const onDelete = () => {
-    showConfirmationDialog();
+    deleteCommands(selectedIds);
   };
 
   const flowText = getFlowText(selectedCommands);
 
   return (
     <>
-      <div className="pt-6 pb-8 flex-grow overflow-auto hide-scrollbar">
-        {repl.commands.length > 0 ? (
-          <div className="flex flex-col">
-            <div className="px-12">
-              <ReplHeader
-                onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
-                onDeselectAll={() => setSelected([])}
-                selected={selectedIds.length}
-                allSelected={selectedIds.length === repl.commands.length}
-                copyText={flowText}
-                onPlay={onPlay}
-                onExport={onExport}
-                onDelete={onDelete}
-              />
-            </div>
-            <div className="pr-12 pl-6">
+      {repl.commands.length > 0 ? (
+        <div className="flex flex-col h-full">
+          <div className="px-12">
+            <ReplHeader
+              onSelectAll={() => setSelected(repl.commands.map((c) => c.id))}
+              onDeselectAll={() => setSelected([])}
+              selectedLength={selectedIds.length}
+              allSelected={selectedIds.length === repl.commands.length}
+              copyText={flowText}
+              onPlay={onPlay}
+              onExport={onExport}
+              onDelete={onDelete}
+            />
+          </div>
+          <div className="px-12 overflow-auto pb-20 hide-scrollbar">
+            <div className="-ml-6 py-5 -mr-1">
               <CommandList
                 onReorder={onReorder}
                 commands={repl.commands}
@@ -119,10 +103,17 @@ const ReplView = ({
                 }}
               />
             </div>
+            <CommandCreator
+              onSubmit={onCommandSubmit}
+              error={errorMessage}
+              setError={setErrorMessage}
+            />
           </div>
-        ) : (
-          <div className="flex px-12 flex-col items-center pt-4">
-            <div className="p-4 bg-slate-200 dark:bg-slate-800 rounded-lg mb-4">
+        </div>
+      ) : (
+        <div className="px-12 py-6">
+          <div className="flex px-12 flex-col items-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-4">
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl mb-4 shadow-xl">
               <Icon iconName="RiCodeLine" size="20" />
             </div>
             <p className="text-center text-base font-semibold mb-1">
@@ -132,35 +123,16 @@ const ReplView = ({
               Write command below OR select an element, then a command to add it
             </p>
           </div>
-        )}
-      </div>
-      <form
-        className="border-t border-slate-100 shadow-up dark:border-slate-800 px-12 pt-6 pb-8 gap-2 flex flex-col z-10"
-        onSubmit={(e: React.FormEvent) => {
-          e.preventDefault();
-          runCommand();
-        }}
-      >
-        <CommandInput
-          setValue={(value) => {
-            setReplError(null);
-            onInput(value);
-          }}
-          value={input}
-          error={replError}
-          placeholder="Enter a command, then press CMD + ENTER to run"
-          onSubmit={runCommand}
-        />
-        <Button
-          disabled={!input || !!replError}
-          type="submit"
-          leftIcon="RiPlayLine"
-          size="sm"
-          className="w-full"
-        >
-          Run (CMD + ENTER)
-        </Button>
-      </form>
+          <CommandCreator
+            onSubmit={onCommandSubmit}
+            error={errorMessage}
+            setError={setErrorMessage}
+          />
+        </div>
+      )}
+      {/* <div className="px-12">
+        
+      </div> */}
       {formattedFlow && (
         <SaveFlowModal
           formattedFlow={formattedFlow}
@@ -169,14 +141,6 @@ const ReplView = ({
           }}
         />
       )}
-      <Dialog
-        title={`Delete (${selectedIds.length}) command${
-          selectedIds.length === 1 ? "" : "s"
-        }?`}
-        content={`Click confirm to delete the selected command${
-          selectedIds.length === 1 ? "" : "s"
-        }.`}
-      />
     </>
   );
 };

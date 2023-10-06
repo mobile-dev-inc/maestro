@@ -47,6 +47,7 @@ import okio.sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
+import java.nio.file.Path
 
 class Orchestra(
     private val maestro: Maestro,
@@ -282,6 +283,7 @@ class Orchestra(
             is TravelCommand -> travelCommand(command)
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
+            is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -297,6 +299,11 @@ class Orchestra(
             speedMPS = command.speedMPS ?: 4.0,
         )
 
+        return true
+    }
+
+    private fun addMediaCommand(mediaPaths: List<String>): Boolean {
+        maestro.addMedia(mediaPaths)
         return true
     }
 

@@ -17,7 +17,7 @@
  *
  */
 
-package ios.device
+package xcuitest.api
 
 data class DeviceInfo(
     val widthPixels: Int,
