@@ -68,15 +68,13 @@ object DeviceService {
                 } ?: throw CliError("Unable to start device: ${device.modelId}")
 
                 if (device.language != null && device.country != null) {
-                    println("test language")
                     val driver = AndroidDriver(dadb)
                     driver.open()
-//                    println("driver did open")
-//                    driver.setDeviceLocale(
-//                        country = device.country,
-//                        language = device.language
-//                    )
-//                    driver.close()
+                    driver.setDeviceLocale(
+                        country = device.country,
+                        language = device.language
+                    )
+                    driver.close()
                 }
 
                 return Device.Connected(
