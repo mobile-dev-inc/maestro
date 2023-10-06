@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Modifier
 import java.util.*
 
 class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, listOf(CHANGE_CONFIGURATION)) {
@@ -33,11 +35,11 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
         methodGetDefault.isAccessible = true
         val amn = methodGetDefault.invoke(activityManagerNativeClass)
 
-        // Build.VERSION_CODES.O
-        if (Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // getConfiguration moved from ActivityManagerNative to ActivityManagerProxy
             activityManagerNativeClass = Class.forName(amn.javaClass.name)
         }
+
         val methodGetConfiguration = activityManagerNativeClass.getMethod("getConfiguration")
         methodGetConfiguration.isAccessible = true
         val config = methodGetConfiguration.invoke(amn) as Configuration
@@ -46,12 +48,22 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
         f.setBoolean(config, true)
         config.locale = locale
         config.setLayoutDirection(locale)
-        val methodUpdateConfiguration = activityManagerNativeClass.getMethod(
-            "updateConfiguration",
-            Configuration::class.java
-        )
-        methodUpdateConfiguration.isAccessible = true
-        methodUpdateConfiguration.invoke(amn, config)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.invoke(
+                activityManagerNativeClass,
+                amn,
+                "updateConfiguration",
+                config
+            )
+        } else {
+            val methodUpdateConfiguration = activityManagerNativeClass.getMethod(
+                "updateConfiguration",
+                Configuration::class.java
+            )
+            methodUpdateConfiguration.isAccessible = true
+            methodUpdateConfiguration.invoke(amn, config)
+        }
     }
 
     override fun setState(state: Boolean): Boolean {
