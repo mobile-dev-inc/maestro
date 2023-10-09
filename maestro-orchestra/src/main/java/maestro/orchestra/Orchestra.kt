@@ -398,7 +398,6 @@ class Orchestra(
 
                 if (command.centerElement && visibility > 0.1 && retryCenterCount <= maxRetryCenterCount) {
                     if (element.isElementNearScreenCenter(direction, deviceInfo.widthGrid, deviceInfo.heightGrid)) {
-                        println("Element is near center")
                         return true
                     }
                     retryCenterCount++
