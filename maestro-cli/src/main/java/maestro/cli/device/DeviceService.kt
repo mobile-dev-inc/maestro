@@ -25,11 +25,10 @@ object DeviceService {
             Platform.IOS -> {
                 try {
                     LocalSimulatorUtils.bootSimulator(device.modelId)
-                    if (device.language != null) {
+                    if (device.language != null && device.country != null) {
+                        PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                         LocalSimulatorUtils.setDeviceLanguage(device.modelId, device.language)
-                        if (device.country != null) {
-                            LocalSimulatorUtils.setDeviceLocale(device.modelId, device.language, device.country)
-                        }
+                        LocalSimulatorUtils.setDeviceLocale(device.modelId, device.language, device.country)
                         LocalSimulatorUtils.reboot(device.modelId)
                     }
                     LocalSimulatorUtils.launchSimulator(device.modelId)
