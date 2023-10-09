@@ -46,6 +46,38 @@ data class UiElement(
         return visibleArea.toDouble() / totalArea.toDouble()
     }
 
+    fun isElementNearScreenCenter(direction: SwipeDirection, screenWidth: Int, screenHeight: Int): Boolean {
+        val centerX = screenWidth / 2
+        val centerY = screenHeight / 2
+
+        val elementCenterX = bounds.x + (bounds.width / 2)
+        val elementCenterY = bounds.y + (bounds.height / 2)
+
+        val margin = when(direction) {
+            SwipeDirection.DOWN, SwipeDirection.UP -> screenHeight / 5
+            SwipeDirection.LEFT, SwipeDirection.RIGHT -> screenWidth / 5
+        }
+
+        return when(direction) {
+            SwipeDirection.RIGHT -> {
+                // return true when the element center is within the right half of the screen bounds plus margin
+                elementCenterX > centerX - margin
+            }
+            SwipeDirection.LEFT -> {
+                // return true when the element center is within the left half of the screen bounds minus a margin
+                elementCenterX < centerX + margin
+            }
+            SwipeDirection.UP -> {
+                // return true when the element center is within the top half of the screen bounds minus a margin
+                elementCenterY < centerY + margin
+            }
+            SwipeDirection.DOWN -> {
+                // return true when the element center is within the bottom half of the screen bounds plus a margin
+                elementCenterY > centerY - margin
+            }
+        }
+    }
+
     fun isWithinViewPortBounds(info: DeviceInfo, paddingHorizontal: Float = 0f, paddingVertical: Float = 0f): Boolean {
         val paddingX = (info.widthGrid * paddingHorizontal).toInt()
         val paddingY = (info.heightGrid * paddingVertical).toInt()
