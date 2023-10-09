@@ -778,7 +778,6 @@ class AndroidDriver(
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
-        println("install ${maestroAppApk.absolutePath}")
         install(maestroAppApk)
         if (!isPackageInstalled("dev.mobile.maestro")) {
             throw IllegalStateException("dev.mobile.maestro was not installed")
