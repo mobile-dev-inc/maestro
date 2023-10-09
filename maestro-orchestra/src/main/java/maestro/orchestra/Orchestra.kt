@@ -388,16 +388,15 @@ class Orchestra(
         val direction = command.direction.toSwipeDirection()
         val deviceInfo = maestro.deviceInfo()
 
-        val shouldCenterElement = true
         var retryCenterCount = 0
-        var maxRetryCenterCount = 4
+        val maxRetryCenterCount = 4 // for when the list is no longer scrollable (last element) but the element is visible
 
         do {
             try {
                 val element = findElement(command.selector, 500).element
                 val visibility = element.getVisiblePercentage(deviceInfo.widthGrid, deviceInfo.heightGrid)
 
-                if (shouldCenterElement && visibility > 0.1 && retryCenterCount <= maxRetryCenterCount) {
+                if (command.centerElement && visibility > 0.1 && retryCenterCount <= maxRetryCenterCount) {
                     if (element.isElementNearScreenCenter(direction, deviceInfo.widthGrid, deviceInfo.heightGrid)) {
                         println("Element is near center")
                         return true
