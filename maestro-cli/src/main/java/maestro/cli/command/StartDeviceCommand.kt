@@ -77,6 +77,8 @@ class StartDeviceCommand : Callable<Int> {
         }
         val o = osVersion.toIntOrNull()
 
+        validateLocaleParams()
+
         DeviceCreateUtil.getOrCreateDevice(p, o, deviceLanguage, deviceCountry, forceCreate).let {
             PrintUtils.message(if (p == Platform.IOS) "Launching simulator..." else "Launching emulator...")
             DeviceService.startDevice(it)
@@ -85,4 +87,11 @@ class StartDeviceCommand : Callable<Int> {
         return 0
     }
 
+    private fun validateLocaleParams() {
+        if (deviceLanguage != null && deviceCountry == null) {
+            throw CliError("When setting up the device locale both --device-language and --device-country are required. Only --device-language was provided.")
+        } else if (deviceLanguage == null && deviceCountry != null) {
+            throw CliError("When setting up the device locale both --device-language and --device-country are required. Only --device-country was provided.")
+        }
+    }
 }
