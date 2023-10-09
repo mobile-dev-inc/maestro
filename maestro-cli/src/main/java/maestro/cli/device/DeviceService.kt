@@ -447,8 +447,10 @@ object DeviceService {
 
     private fun bootComplete(dadb: Dadb): Boolean {
         return try {
-            val value = dadb.shell("getprop init.svc.bootanim").output.trim()
-            return value == "stopped"
+            val booted = dadb.shell("getprop sys.boot_completed").output.trim() == "1"
+            val settingsAvailable = dadb.shell("settings list global").exitCode == 0
+            val packageManagerAvailable = dadb.shell("pm get-max-users").exitCode == 0
+            return settingsAvailable && packageManagerAvailable && booted
         } catch (e: IllegalStateException) {
             false
         }
