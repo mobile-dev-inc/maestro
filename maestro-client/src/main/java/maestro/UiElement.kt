@@ -58,23 +58,12 @@ data class UiElement(
             SwipeDirection.LEFT, SwipeDirection.RIGHT -> screenWidth / 5
         }
 
+        // return true when the element center is within the <direction> half of the screen bounds plus margin
         return when(direction) {
-            SwipeDirection.RIGHT -> {
-                // return true when the element center is within the right half of the screen bounds plus margin
-                elementCenterX > centerX - margin
-            }
-            SwipeDirection.LEFT -> {
-                // return true when the element center is within the left half of the screen bounds minus a margin
-                elementCenterX < centerX + margin
-            }
-            SwipeDirection.UP -> {
-                // return true when the element center is within the top half of the screen bounds minus a margin
-                elementCenterY < centerY + margin
-            }
-            SwipeDirection.DOWN -> {
-                // return true when the element center is within the bottom half of the screen bounds plus a margin
-                elementCenterY > centerY - margin
-            }
+            SwipeDirection.RIGHT -> elementCenterX > centerX - margin
+            SwipeDirection.LEFT -> elementCenterX < centerX + margin
+            SwipeDirection.UP -> elementCenterY < centerY + margin
+            SwipeDirection.DOWN -> elementCenterY > centerY - margin
         }
     }
 
