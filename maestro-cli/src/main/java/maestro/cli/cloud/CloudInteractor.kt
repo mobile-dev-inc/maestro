@@ -3,17 +3,19 @@ package maestro.cli.cloud
 import maestro.cli.CliError
 import maestro.cli.api.ApiClient
 import maestro.cli.api.DeviceInfo
-import maestro.cli.api.UploadResponse
 import maestro.cli.api.UploadStatus
 import maestro.cli.auth.Auth
 import maestro.cli.device.Platform
+import maestro.cli.model.RunningFlow
 import maestro.cli.model.FlowStatus
+import maestro.cli.model.RunningFlows
 import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
 import maestro.cli.util.EnvUtils
 import maestro.cli.util.FileUtils.isZip
 import maestro.cli.util.PrintUtils
+import maestro.cli.util.TimeUtils
 import maestro.cli.util.WorkspaceUtils
 import maestro.cli.view.ProgressBar
 import maestro.cli.view.TestSuiteStatusView
@@ -30,7 +32,6 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolute
-import kotlin.time.Duration
 
 class CloudInteractor(
     private val client: ApiClient,
@@ -197,7 +198,7 @@ class CloudInteractor(
     ): Int {
         val startTime = System.currentTimeMillis()
 
-        val reportedCompletions = mutableSetOf<String>()
+        val runningFlows = RunningFlows()
 
         var pollingInterval = minPollIntervalMs
         var retryCounter = 0
@@ -223,21 +224,38 @@ class CloudInteractor(
                 throw CliError("Failed to fetch the status of an upload $uploadId. Status code = ${e.statusCode}")
             }
 
-            upload.flows
-                .filter {
-                    it.name !in reportedCompletions && it.status in COMPLETED_STATUSES
+            for (uploadFlowResult in upload.flows) {
+                if (runningFlows.flows.none { it.name == uploadFlowResult.name }) {
+                    runningFlows.flows.add(RunningFlow(name = uploadFlowResult.name))
                 }
-                .forEach {
-                    TestSuiteStatusView.showFlowCompletion(
-                        it.toViewModel()
-                    )
-
-                    reportedCompletions.add(it.name)
+                val runningFlow = runningFlows.flows.find { it.name == uploadFlowResult.name } ?: continue
+                runningFlow.status = uploadFlowResult.status
+                when (runningFlow.status) {
+                    UploadStatus.Status.PENDING -> { /* do nothing */ }
+                    UploadStatus.Status.RUNNING -> {
+                        if (runningFlow.startTime == null) {
+                            runningFlow.startTime = System.currentTimeMillis()
+                        }
+                    }
+                    else -> {
+                        if (runningFlow.duration == null) {
+                            runningFlow.duration = TimeUtils.durationInSeconds(startTime = runningFlow.startTime, endTime = System.currentTimeMillis())
+                        }
+                        if (!runningFlow.reported) {
+                            TestSuiteStatusView.showFlowCompletion(
+                                uploadFlowResult.toViewModel(runningFlow.duration)
+                            )
+                            runningFlow.reported = true
+                        }
+                    }
                 }
+            }
 
             if (upload.completed) {
+                runningFlows.duration = TimeUtils.durationInSeconds(startTime = startTime, endTime = System.currentTimeMillis())
                 return handleSyncUploadCompletion(
                     upload = upload,
+                    runningFlows = runningFlows,
                     teamId = teamId,
                     appId = appId,
                     failOnCancellation = failOnCancellation,
@@ -274,6 +292,7 @@ class CloudInteractor(
 
     private fun handleSyncUploadCompletion(
         upload: UploadStatus,
+        runningFlows: RunningFlows,
         teamId: String,
         appId: String,
         failOnCancellation: Boolean,
@@ -307,7 +326,7 @@ class CloudInteractor(
             }
 
         if (reportOutputSink != null) {
-            saveReport(reportFormat, !failed, upload, reportOutputSink, testSuiteName)
+            saveReport(reportFormat, !failed, convert(!failed, upload, runningFlows), reportOutputSink, testSuiteName)
         }
 
 
@@ -329,7 +348,7 @@ class CloudInteractor(
     private fun saveReport(
         reportFormat: ReportFormat,
         passed: Boolean,
-        upload: UploadStatus,
+        suiteResult: TestExecutionSummary.SuiteResult,
         reportOutputSink: BufferedSink,
         testSuiteName: String?
     ) {
@@ -337,35 +356,26 @@ class CloudInteractor(
             .report(
                 TestExecutionSummary(
                     passed = passed,
-                    suites = listOf(
-                        TestExecutionSummary.SuiteResult(
-                            passed = passed,
-                            flows = upload.flows.map { flow ->
-                                val failure = flow.errors.firstOrNull()
-                                TestExecutionSummary.FlowResult(
-                                    name = flow.name,
-                                    fileName = null,
-                                    status = FlowStatus.from(flow.status),
-                                    failure = if (failure != null) TestExecutionSummary.Failure(failure) else null,
-                                    duration = Duration.ZERO
-                                )
-                            }
-                        )
-                    )
+                    suites = listOf(suiteResult)
                 ),
                 reportOutputSink,
             )
     }
 
-    companion object {
-
-        private val COMPLETED_STATUSES = setOf(
-            UploadStatus.Status.CANCELED,
-            UploadStatus.Status.WARNING,
-            UploadStatus.Status.SUCCESS,
-            UploadStatus.Status.ERROR,
+    private fun convert(passed: Boolean, upload: UploadStatus, runningFlows: RunningFlows): TestExecutionSummary.SuiteResult {
+        return TestExecutionSummary.SuiteResult(
+            passed = passed,
+            flows = upload.flows.map { uploadFlowResult ->
+                val failure = uploadFlowResult.errors.firstOrNull()
+                TestExecutionSummary.FlowResult(
+                    name = uploadFlowResult.name,
+                    fileName = null,
+                    status = FlowStatus.from(uploadFlowResult.status),
+                    failure = if (failure != null) TestExecutionSummary.Failure(failure) else null,
+                    duration = runningFlows.flows.find { it.name == uploadFlowResult.name }?.duration
+                )
+            },
+            duration = runningFlows.duration
         )
-
     }
-
 }
