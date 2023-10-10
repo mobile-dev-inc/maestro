@@ -76,10 +76,13 @@ object DeviceService {
                     PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                     val driver = AndroidDriver(dadb)
                     driver.open()
-                    driver.setDeviceLocale(
+                    val result = driver.setDeviceLocale(
                         country = device.country,
                         language = device.language
                     )
+                    if (result != -1) {
+                        throw IllegalStateException("Android failed to update a device locale")
+                    }
                     driver.close()
                 }
 
