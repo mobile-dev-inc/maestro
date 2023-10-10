@@ -87,13 +87,91 @@ class StartDeviceCommand : Callable<Int> {
             if (parts.size == 2) {
                 val language = parts[0]
                 val country = parts[1]
+
+                validateLocale(language, country)
+
                 return Pair(language, country)
             } else {
-                throw CliError("Wrong device locale format was provided $it. A combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code should be used, i.e. \"de_DE\" for Germany")
+                throw CliError("Wrong device locale format was provided $it. A combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code should be used, i.e. \"de_DE\" for Germany. More info can be found here https://maestro.mobile.dev/")
             }
         }
 
         // use en_US locale as a default
         return Pair("en", "US")
+    }
+
+    private fun validateLocale(language: String, country: String) {
+        if (!SUPPORTED_LANGUAGES.contains(language)) {
+            throw CliError("$language language is currently not supported by Maestro, please check that it is a valid ISO-639-1 code, for a full list of supported languages please refer to our documentation https://maestro.mobile.dev/")
+        }
+        if (!SUPPORTED_COUNTRIES.contains(country)) {
+            throw CliError("$country country is currently not supported by Maestro, please check that it is a valid ISO-3166-1 code, for a full list of supported countries please refer to our documentation https://maestro.mobile.dev/")
+        }
+    }
+
+    companion object {
+        // ISO-639-1
+        private val SUPPORTED_LANGUAGES = listOf(
+            "en", // English
+            "es", // Spanish
+            "fr", // French
+            "de", // German
+            "zh", // Chinese
+            "ja", // Japanese
+            "ko", // Korean
+            "ar", // Arabic
+            "ru", // Russian
+            "pt", // Portuguese
+            "it", // Italian
+            "nl", // Dutch
+            "sv", // Swedish
+            "no", // Norwegian
+            "da", // Danish
+            "fi", // Finnish
+            "tr", // Turkish
+            "he", // Hebrew
+            "el", // Greek
+            "th", // Thai
+            "hi", // Hindi
+            "uk", // Ukrainian
+            "vi", // Vietnamese
+            "ms", // Malay
+            "id"  // Indonesian
+        )
+
+        // ISO-3166-1
+        private val SUPPORTED_COUNTRIES = listOf(
+            "US", // United States
+            "GB", // United Kingdom
+            "CA", // Canada
+            "AU", // Australia
+            "DE", // Germany
+            "FR", // France
+            "JP", // Japan
+            "CN", // China
+            "IN", // India
+            "BR", // Brazil
+            "MX", // Mexico
+            "KR", // South Korea
+            "RU", // Russia
+            "ES", // Spain
+            "IT", // Italy
+            "NL", // Netherlands
+            "BE", // Belgium
+            "CH", // Switzerland
+            "SE", // Sweden
+            "NO", // Norway
+            "DK", // Denmark
+            "FI", // Finland
+            "TR", // Turkey
+            "AE", // United Arab Emirates
+            "UA", // Ukraine
+            "SA", // Saudi Arabia
+            "ZA", // South Africa
+            "SG", // Singapore
+            "MY", // Malaysia
+            "ID", // Indonesia
+            "TH"  // Thailand
+        )
     }
 }
