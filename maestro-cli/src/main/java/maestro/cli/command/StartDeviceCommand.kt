@@ -38,17 +38,10 @@ class StartDeviceCommand : Callable<Int> {
 
     @CommandLine.Option(
         order = 2,
-        names = ["--device-language"],
-        description = ["lowercase ISO-639-1 code, i.e. \"de\" for German"],
+        names = ["--device-locale"],
+        description = ["a combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code i.e. \"de_DE\" for Germany"],
     )
-    private var deviceLanguage: String? = null
-
-    @CommandLine.Option(
-        order = 3,
-        names = ["--device-country"],
-        description = ["uppercase 3166-1 code, i.e. \"DE\" for Germany"],
-    )
-    private var deviceCountry: String? = null
+    private var deviceLocale: String? = null
 
     @CommandLine.Option(
         order = 4,
@@ -77,7 +70,7 @@ class StartDeviceCommand : Callable<Int> {
         }
         val o = osVersion.toIntOrNull()
 
-        validateLocaleParams()
+        val (deviceLanguage, deviceCountry) = validateLocaleParams()
 
         DeviceCreateUtil.getOrCreateDevice(p, o, deviceLanguage, deviceCountry, forceCreate).let {
             PrintUtils.message(if (p == Platform.IOS) "Launching simulator..." else "Launching emulator...")
@@ -87,11 +80,20 @@ class StartDeviceCommand : Callable<Int> {
         return 0
     }
 
-    private fun validateLocaleParams() {
-        if (deviceLanguage != null && deviceCountry == null) {
-            throw CliError("When setting up the device locale both --device-language and --device-country are required. Only --device-language was provided.")
-        } else if (deviceLanguage == null && deviceCountry != null) {
-            throw CliError("When setting up the device locale both --device-language and --device-country are required. Only --device-country was provided.")
+    private fun validateLocaleParams(): Pair<String, String> {
+        deviceLocale?.let {
+            val parts = it.split("_")
+
+            if (parts.size == 2) {
+                val language = parts[0]
+                val country = parts[1]
+                return Pair(language, country)
+            } else {
+                throw CliError("Wrong device locale format was provided $it. A combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code should be used, i.e. \"de_DE\" for Germany")
+            }
         }
+
+        // use en_US locale as a default
+        return Pair("en", "US")
     }
 }
