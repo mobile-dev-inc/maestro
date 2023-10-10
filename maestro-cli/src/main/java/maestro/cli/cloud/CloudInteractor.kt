@@ -30,6 +30,7 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolute
+import kotlin.time.Duration
 
 class CloudInteractor(
     private val client: ApiClient,
@@ -345,7 +346,8 @@ class CloudInteractor(
                                     name = flow.name,
                                     fileName = null,
                                     status = FlowStatus.from(flow.status),
-                                    failure = if (failure != null) TestExecutionSummary.Failure(failure) else null
+                                    failure = if (failure != null) TestExecutionSummary.Failure(failure) else null,
+                                    duration = Duration.ZERO
                                 )
                             }
                         )
