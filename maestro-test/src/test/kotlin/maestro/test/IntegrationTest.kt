@@ -987,6 +987,7 @@ class IntegrationTest {
         driver.assertHasEvent(Event.PressKey(KeyCode.REMOTE_PREVIOUS))
         driver.assertHasEvent(Event.PressKey(KeyCode.REMOTE_REWIND))
         driver.assertHasEvent(Event.PressKey(KeyCode.REMOTE_FAST_FORWARD))
+        driver.assertHasEvent(Event.PressKey(KeyCode.POWER))
     }
 
     @Test
@@ -2993,6 +2994,33 @@ class IntegrationTest {
 
         // then
         driver.assertEvents(listOf(Event.AddMedia, Event.AddMedia, Event.AddMedia))
+    }
+
+    @Test
+    fun `Case 112 - Scroll until view is visible - with element center`() {
+        // Given
+        val commands = readCommands("112_scroll_until_visible_center")
+        val info = driver { }.deviceInfo()
+
+        val elementBounds = Bounds(0, 0 + info.heightGrid, 100, 100 + info.heightGrid)
+        val driver = driver {
+            element {
+                text = "Test"
+                bounds = elementBounds
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            assertThat(orchestra(it).runFlow(commands)).isTrue()
+        }
+
+        // Then
+        driver.assertEvents(
+            listOf(
+                Event.SwipeElementWithDirection(Point(270, 480), SwipeDirection.UP, 1),
+            )
+        )
     }
 
     private fun orchestra(
