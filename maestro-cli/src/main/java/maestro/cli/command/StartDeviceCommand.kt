@@ -101,77 +101,85 @@ class StartDeviceCommand : Callable<Int> {
     }
 
     private fun validateLocale(language: String, country: String) {
-        if (!SUPPORTED_LANGUAGES.contains(language)) {
-            throw CliError("$language language is currently not supported by Maestro, please check that it is a valid ISO-639-1 code, for a full list of supported languages please refer to our documentation https://maestro.mobile.dev/")
+        if (!SUPPORTED_LANGUAGES.map { it.first }.contains(language)) {
+            val languages = SUPPORTED_LANGUAGES.joinToString("\n")
+            throw CliError("$language language is currently not supported by Maestro, please check that it is a valid ISO-639-1 code. Here is a full list of supported languages:\n" +
+                    "\n" +
+                    languages
+            )
         }
-        if (!SUPPORTED_COUNTRIES.contains(country)) {
-            throw CliError("$country country is currently not supported by Maestro, please check that it is a valid ISO-3166-1 code, for a full list of supported countries please refer to our documentation https://maestro.mobile.dev/")
+        if (!SUPPORTED_COUNTRIES.map { it.first }.contains(country)) {
+            val countries = SUPPORTED_COUNTRIES.joinToString("\n")
+            throw CliError("$country country is currently not supported by Maestro, please check that it is a valid ISO-3166-1 code. Here is a full list of supported countries:\n" +
+                    "\n" +
+                    countries
+            )
         }
     }
 
     companion object {
         // ISO-639-1
         private val SUPPORTED_LANGUAGES = listOf(
-            "en", // English
-            "es", // Spanish
-            "fr", // French
-            "de", // German
-            "zh", // Chinese
-            "ja", // Japanese
-            "ko", // Korean
-            "ar", // Arabic
-            "ru", // Russian
-            "pt", // Portuguese
-            "it", // Italian
-            "nl", // Dutch
-            "sv", // Swedish
-            "no", // Norwegian
-            "da", // Danish
-            "fi", // Finnish
-            "tr", // Turkish
-            "he", // Hebrew
-            "el", // Greek
-            "th", // Thai
-            "hi", // Hindi
-            "uk", // Ukrainian
-            "vi", // Vietnamese
-            "ms", // Malay
-            "id"  // Indonesian
+            "en" to "English",
+            "es" to "Spanish",
+            "fr" to "French",
+            "de" to "German",
+            "zh" to "Chinese",
+            "ja" to "Japanese",
+            "ko" to "Korean",
+            "ar" to "Arabic",
+            "ru" to "Russian",
+            "pt" to "Portuguese",
+            "it" to "Italian",
+            "nl" to "Dutch",
+            "sv" to "Swedish",
+            "no" to "Norwegian",
+            "da" to "Danish",
+            "fi" to "Finnish",
+            "tr" to "Turkish",
+            "he" to "Hebrew",
+            "el" to "Greek",
+            "th" to "Thai",
+            "hi" to "Hindi",
+            "uk" to "Ukrainian",
+            "vi" to "Vietnamese",
+            "ms" to "Malay",
+            "id" to "Indonesian"
         )
 
         // ISO-3166-1
         private val SUPPORTED_COUNTRIES = listOf(
-            "US", // United States
-            "GB", // United Kingdom
-            "CA", // Canada
-            "AU", // Australia
-            "DE", // Germany
-            "FR", // France
-            "JP", // Japan
-            "CN", // China
-            "IN", // India
-            "BR", // Brazil
-            "MX", // Mexico
-            "KR", // South Korea
-            "RU", // Russia
-            "ES", // Spain
-            "IT", // Italy
-            "NL", // Netherlands
-            "BE", // Belgium
-            "CH", // Switzerland
-            "SE", // Sweden
-            "NO", // Norway
-            "DK", // Denmark
-            "FI", // Finland
-            "TR", // Turkey
-            "AE", // United Arab Emirates
-            "UA", // Ukraine
-            "SA", // Saudi Arabia
-            "ZA", // South Africa
-            "SG", // Singapore
-            "MY", // Malaysia
-            "ID", // Indonesia
-            "TH"  // Thailand
+            "US" to "United States",
+            "GB" to "United Kingdom",
+            "CA" to "Canada",
+            "AU" to "Australia",
+            "DE" to "Germany",
+            "FR" to "France",
+            "JP" to "Japan",
+            "CN" to "China",
+            "IN" to "India",
+            "BR" to "Brazil",
+            "MX" to "Mexico",
+            "KR" to "South Korea",
+            "RU" to "Russia",
+            "ES" to "Spain",
+            "IT" to "Italy",
+            "NL" to "Netherlands",
+            "BE" to "Belgium",
+            "CH" to "Switzerland",
+            "SE" to "Sweden",
+            "NO" to "Norway",
+            "DK" to "Denmark",
+            "FI" to "Finland",
+            "TR" to "Turkey",
+            "AE" to "United Arab Emirates",
+            "UA" to "Ukraine",
+            "SA" to "Saudi Arabia",
+            "ZA" to "South Africa",
+            "SG" to "Singapore",
+            "MY" to "Malaysia",
+            "ID" to "Indonesia",
+            "TH" to "Thailand"
         )
     }
 }
