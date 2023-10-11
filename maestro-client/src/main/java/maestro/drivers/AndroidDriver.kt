@@ -577,7 +577,7 @@ class AndroidDriver(
     private fun extractSetLocaleResult(result: String): Int {
         val regex = Regex("result=(-?\\d+)")
         val match = regex.find(result)
-        return match?.groups?.get(1)?.value?.toIntOrNull() ?: 0
+        return match?.groups?.get(1)?.value?.toIntOrNull() ?: -1
     }
 
     private fun addMediaToDevice(mediaFile: File) {
