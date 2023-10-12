@@ -28,7 +28,9 @@ object DeviceService {
                     if (device.language != null && device.country != null) {
                         PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                         LocalSimulatorUtils.setDeviceLanguage(device.modelId, device.language)
-                        LocalSimulatorUtils.setDeviceLocale(device.modelId, device.language, device.country)
+                        LocaleConstants.findIOSLocale(device.language, device.country)?.let {
+                            LocalSimulatorUtils.setDeviceLocale(device.modelId, it)
+                        }
                         LocalSimulatorUtils.reboot(device.modelId)
                     }
                     LocalSimulatorUtils.launchSimulator(device.modelId)
