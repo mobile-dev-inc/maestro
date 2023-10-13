@@ -55,16 +55,22 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
                                 "The following locales are available altogether: ${LocaleUtils.availableLocaleList()}"
                     )
                 }
-                resultCode = Activity.RESULT_CANCELED
-                resultData = "The locale $locale is not known"
+                resultCode = RESULT_LOCALE_NOT_VALID
+                resultData = "Failed to set locale $locale, the locale is not valid"
                 return
             }
         }
 
-        LocaleSettingHandler(context).setLocale(locale)
-        Log.i(TAG, "Set locale: $locale")
-        resultCode = Activity.RESULT_OK
-        resultData = locale.toString()
+        try {
+            LocaleSettingHandler(context).setLocale(locale)
+            Log.i(TAG, "Set locale: $locale")
+            resultCode = RESULT_SUCCESS
+            resultData = locale.toString()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to set locale", e)
+            resultCode = RESULT_UPDATE_CONFIGURATION_FAILED
+            resultData = "Failed to set locale $locale, exception during updating configuration occurred: $e"
+        }
     }
 
     private fun matchLocales(language: String): List<Locale> {
@@ -99,5 +105,9 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
         private const val SCRIPT = "script"
         private const val ACTION = "dev.mobile.maestro.locale"
         private const val TAG = "Maestro"
+
+        private const val RESULT_SUCCESS = 0
+        private const val RESULT_LOCALE_NOT_VALID = 1
+        private const val RESULT_UPDATE_CONFIGURATION_FAILED = 2
     }
 }

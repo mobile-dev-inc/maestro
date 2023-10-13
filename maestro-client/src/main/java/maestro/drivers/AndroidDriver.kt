@@ -568,6 +568,18 @@ class AndroidDriver(
         LOGGER.info("[Done] Adding media files")
     }
 
+    fun setDeviceLocale(country: String, language: String): Int {
+        dadb.shell("pm grant dev.mobile.maestro android.permission.CHANGE_CONFIGURATION")
+        val response = dadb.shell("am broadcast -a dev.mobile.maestro.locale -n dev.mobile.maestro/.receivers.LocaleSettingReceiver --es lang $language --es country $country")
+        return extractSetLocaleResult(response.output)
+    }
+
+    private fun extractSetLocaleResult(result: String): Int {
+        val regex = Regex("result=(-?\\d+)")
+        val match = regex.find(result)
+        return match?.groups?.get(1)?.value?.toIntOrNull() ?: -1
+    }
+
     private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
             mediaFile.name,
