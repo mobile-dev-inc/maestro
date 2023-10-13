@@ -574,7 +574,7 @@ object LocalSimulatorUtils {
         )
     }
 
-    fun setDeviceLocale(deviceId: String, language: String, country: String) {
+    fun setDeviceLocale(deviceId: String, locale: String) {
         runCommand(
             listOf(
                 "xcrun",
@@ -586,7 +586,7 @@ object LocalSimulatorUtils {
                 ".GlobalPreferences.plist",
                 "AppleLocale",
                 "-string",
-                "${language}_$country"
+                locale
             )
         )
     }

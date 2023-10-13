@@ -3,6 +3,7 @@ package maestro.cli.command
 import maestro.cli.CliError
 import maestro.cli.device.DeviceCreateUtil
 import maestro.cli.device.DeviceService
+import maestro.cli.device.LocaleConstants
 import maestro.cli.device.Platform
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.util.DeviceConfigAndroid
@@ -70,7 +71,7 @@ class StartDeviceCommand : Callable<Int> {
         }
         val o = osVersion.toIntOrNull()
 
-        val (deviceLanguage, deviceCountry) = validateLocaleParams()
+        val (deviceLanguage, deviceCountry) = validateLocaleParams(p)
 
         DeviceCreateUtil.getOrCreateDevice(p, o, deviceLanguage, deviceCountry, forceCreate).let {
             PrintUtils.message(if (p == Platform.IOS) "Launching simulator..." else "Launching emulator...")
@@ -80,20 +81,66 @@ class StartDeviceCommand : Callable<Int> {
         return 0
     }
 
-    private fun validateLocaleParams(): Pair<String, String> {
+    private fun validateLocaleParams(platform: Platform): Pair<String, String> {
         deviceLocale?.let {
-            val parts = it.split("_")
+            var parts = it.split("_")
 
             if (parts.size == 2) {
                 val language = parts[0]
                 val country = parts[1]
+
+                validateLocale(language, country, it, platform)
+
                 return Pair(language, country)
             } else {
-                throw CliError("Wrong device locale format was provided $it. A combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code should be used, i.e. \"de_DE\" for Germany")
+                parts = it.split("-")
+
+                if (parts.size == 2) {
+                    val language = parts[0]
+                    val country = parts[1]
+
+                    validateLocale(language, country, it, platform)
+
+                    return Pair(language, country)
+                }
+
+                throw CliError("Wrong device locale format was provided $it. A combination of lowercase ISO-639-1 code and uppercase ISO-3166-1 code should be used, i.e. \"de_DE\" for Germany. More info can be found here https://maestro.mobile.dev/")
             }
         }
 
         // use en_US locale as a default
         return Pair("en", "US")
+    }
+
+    private fun validateLocale(language: String, country: String, fullLocale: String, platform: Platform) {
+        when (platform) {
+            Platform.IOS -> {
+                if (LocaleConstants.findIOSLocale(language, country) == null) {
+                    val locales = LocaleConstants.IOS_SUPPORTED_LOCALES.joinToString("\n")
+                    throw CliError("$fullLocale locale is currently not supported by Maestro, please check that it is a valid ISO-639-1 + ISO-3166-1 code. Here is a full list of supported locales:\n" +
+                            "\n" +
+                            locales
+                    )
+                }
+            }
+            Platform.ANDROID -> {
+                if (!LocaleConstants.ANDROID_SUPPORTED_LANGUAGES.map { it.first }.contains(language)) {
+                    val languages = LocaleConstants.ANDROID_SUPPORTED_LANGUAGES.joinToString("\n")
+                    throw CliError("$language language is currently not supported by Maestro, please check that it is a valid ISO-639-1 code. Here is a full list of supported languages:\n" +
+                            "\n" +
+                            languages
+                    )
+                }
+
+                if (!LocaleConstants.ANDROID_SUPPORTED_COUNTRIES.map { it.first }.contains(country)) {
+                    val countries = LocaleConstants.ANDROID_SUPPORTED_COUNTRIES.joinToString("\n")
+                    throw CliError("$country country is currently not supported by Maestro, please check that it is a valid ISO-3166-1 code. Here is a full list of supported countries:\n" +
+                            "\n" +
+                            countries
+                    )
+                }
+            }
+            else -> return
+        }
     }
 }

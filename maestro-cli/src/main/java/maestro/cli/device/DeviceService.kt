@@ -28,7 +28,9 @@ object DeviceService {
                     if (device.language != null && device.country != null) {
                         PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                         LocalSimulatorUtils.setDeviceLanguage(device.modelId, device.language)
-                        LocalSimulatorUtils.setDeviceLocale(device.modelId, device.language, device.country)
+                        LocaleConstants.findIOSLocale(device.language, device.country)?.let {
+                            LocalSimulatorUtils.setDeviceLocale(device.modelId, it)
+                        }
                         LocalSimulatorUtils.reboot(device.modelId)
                     }
                     LocalSimulatorUtils.launchSimulator(device.modelId)
@@ -76,10 +78,17 @@ object DeviceService {
                     PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                     val driver = AndroidDriver(dadb)
                     driver.open()
-                    driver.setDeviceLocale(
+                    val result = driver.setDeviceLocale(
                         country = device.country,
                         language = device.language
                     )
+
+                    when (result) {
+                        SET_LOCALE_RESULT_SUCCESS -> PrintUtils.message("[Done] Setting the device locale to ${device.language}_${device.country}")
+                        SET_LOCALE_RESULT_LOCALE_NOT_VALID -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, the locale is not valid for a chosen device")
+                        SET_LOCALE_RESULT_UPDATE_CONFIGURATION_FAILED -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, exception during updating configuration occurred")
+                        else -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, unknown exception happened")
+                    }
                     driver.close()
                 }
 
@@ -341,7 +350,7 @@ object DeviceService {
         val avd = requireAvdManagerBinary()
         val command = mutableListOf(
             avd.absolutePath,
-             "list", "device"
+            "list", "device"
         )
 
         val process = ProcessBuilder(*command.toTypedArray()).start()
@@ -461,4 +470,8 @@ object DeviceService {
     private fun requireAvdManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("avdmanager")
 
     private fun requireSdkManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("sdkmanager")
+
+    private const val SET_LOCALE_RESULT_SUCCESS = 0
+    private const val SET_LOCALE_RESULT_LOCALE_NOT_VALID = 1
+    private const val SET_LOCALE_RESULT_UPDATE_CONFIGURATION_FAILED = 2
 }

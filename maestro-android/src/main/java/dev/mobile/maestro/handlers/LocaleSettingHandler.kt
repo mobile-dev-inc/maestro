@@ -4,20 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import android.util.Log
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Modifier
 import java.util.*
 
 class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, listOf(CHANGE_CONFIGURATION)) {
     fun setLocale(locale: Locale) {
-        try {
-            if (hasPermissions()) {
-                setLocaleWith(locale)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to set locale", e)
+        if (hasPermissions()) {
+            setLocaleWith(locale)
         }
     }
 
