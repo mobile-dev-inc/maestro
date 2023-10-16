@@ -53,6 +53,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.lang.IllegalStateException
+import java.util.IllegalFormatException
 import kotlin.system.measureTimeMillis
 
 /**
@@ -254,14 +256,18 @@ class Service(
         request: MaestroAndroid.InputTextRequest,
         responseObserver: StreamObserver<MaestroAndroid.InputTextResponse>
     ) {
-        Log.d("Maestro", "Inputting text")
-        request.text.forEach {
-            setText(it.toString())
-            Thread.sleep(75)
-        }
+        try {
+            Log.d("Maestro", "Inputting text")
+            request.text.forEach {
+                setText(it.toString())
+                Thread.sleep(75)
+            }
 
-        responseObserver.onNext(inputTextResponse { })
-        responseObserver.onCompleted()
+            responseObserver.onNext(inputTextResponse { })
+            responseObserver.onCompleted()
+        } catch (e: Throwable) {
+            responseObserver.onError(e.internalError())
+        }
     }
 
     override fun screenshot(
