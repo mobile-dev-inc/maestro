@@ -66,7 +66,6 @@ class AndroidDriver(
     }
 
     override fun open() {
-        uninstallMaestroApks()
         installMaestroApks()
         startInstrumentationSession()
 
@@ -772,36 +771,60 @@ class AndroidDriver(
             ?.let { it == "true" }
     }
 
-    private fun installMaestroApks() {
+    fun installMaestroDriverApp() {
+        uninstallMaestroDriverApp()
+
         val maestroAppApk = File.createTempFile("maestro-app", ".apk")
-        val maestroServerApk = File.createTempFile("maestro-server", ".apk")
+
         Maestro::class.java.getResourceAsStream("/maestro-app.apk")?.let {
             val bufferedSink = maestroAppApk.sink().buffer()
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
+
+        install(maestroAppApk)
+        if (!isPackageInstalled("dev.mobile.maestro")) {
+            throw IllegalStateException("dev.mobile.maestro was not installed")
+        }
+    }
+
+    private fun installMaestroServerApp() {
+        uninstallMaestroServerApp()
+
+        val maestroServerApk = File.createTempFile("maestro-server", ".apk")
+
         Maestro::class.java.getResourceAsStream("/maestro-server.apk")?.let {
             val bufferedSink = maestroServerApk.sink().buffer()
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
-        install(maestroAppApk)
-        if (!isPackageInstalled("dev.mobile.maestro")) {
-            throw IllegalStateException("dev.mobile.maestro was not installed")
-        }
+
         install(maestroServerApk)
         if (!isPackageInstalled("dev.mobile.maestro.test")) {
             throw IllegalStateException("dev.mobile.maestro.test was not installed")
         }
     }
 
-    private fun uninstallMaestroApks() {
-        if (isPackageInstalled("dev.mobile.maestro.test")) {
-            uninstall("dev.mobile.maestro.test")
-        }
+    private fun installMaestroApks() {
+        installMaestroDriverApp()
+        installMaestroServerApp()
+    }
+
+    fun uninstallMaestroDriverApp() {
         if (isPackageInstalled("dev.mobile.maestro")) {
             uninstall("dev.mobile.maestro")
         }
+    }
+
+    private fun uninstallMaestroServerApp() {
+        if (isPackageInstalled("dev.mobile.maestro.test")) {
+            uninstall("dev.mobile.maestro.test")
+        }
+    }
+
+    private fun uninstallMaestroApks() {
+        uninstallMaestroDriverApp()
+        uninstallMaestroServerApp()
     }
 
     private fun install(apkFile: File) {

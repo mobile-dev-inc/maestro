@@ -77,7 +77,7 @@ object DeviceService {
                 if (device.language != null && device.country != null) {
                     PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
                     val driver = AndroidDriver(dadb)
-                    driver.open()
+                    driver.installMaestroDriverApp()
                     val result = driver.setDeviceLocale(
                         country = device.country,
                         language = device.language
@@ -89,7 +89,7 @@ object DeviceService {
                         SET_LOCALE_RESULT_UPDATE_CONFIGURATION_FAILED -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, exception during updating configuration occurred")
                         else -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, unknown exception happened")
                     }
-                    driver.close()
+                    driver.uninstallMaestroDriverApp()
                 }
 
                 return Device.Connected(
