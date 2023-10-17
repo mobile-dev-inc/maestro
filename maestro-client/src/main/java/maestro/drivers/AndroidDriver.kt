@@ -65,6 +65,7 @@ class AndroidDriver(
 
     private var instrumentationSession: AdbShellStream? = null
     private var proxySet = false
+    private var closed = false
 
     override fun name(): String {
         return "Android Device ($dadb)"
@@ -131,6 +132,7 @@ class AndroidDriver(
     }
 
     override fun close() {
+        if (closed) return
         if (proxySet) {
             resetProxy()
         }
@@ -927,6 +929,7 @@ class AndroidDriver(
         } catch (throwable: StatusRuntimeException) {
             val status = Status.fromThrowable(throwable)
             if (status.code == Status.Code.DEADLINE_EXCEEDED) {
+                closed = true
                 throw MaestroException.DriverTimeout("Emulator's driver unreachable")
             }
             throw throwable
