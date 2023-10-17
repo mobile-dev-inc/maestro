@@ -301,7 +301,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                     if (tapRepeat.repeat > 1) Thread.sleep(delay) // do not wait for single taps
                 }
             } else driver.tap(Point(x, y))
-            val hierarchyAfterTap = waitForAppToSettle()
+            val hierarchyAfterTap = waitForAppToSettle(waitToSettleTimeoutMs = waitToSettleTimeoutMs)
 
             if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something has changed in the UI judging by view hierarchy. Proceed.")
