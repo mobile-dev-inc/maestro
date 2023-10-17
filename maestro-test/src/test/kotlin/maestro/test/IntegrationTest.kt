@@ -3023,6 +3023,28 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 113 - Tap on element - with app settle timeout`() {
+        // Given
+        val commands = readCommands("113_tap_on_element_settle_timeout")
+
+        val driver = driver {
+            element {
+                text = "Primary button"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 2)
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(
