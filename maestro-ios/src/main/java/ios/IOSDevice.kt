@@ -105,7 +105,7 @@ interface IOSDevice : AutoCloseable {
      *
      * @param link - link to open
      */
-    fun openLink(link: String): Result<Unit, Throwable>
+    fun openLink(link: String)
 
     /**
      * Takes a screenshot and writes it into output sink

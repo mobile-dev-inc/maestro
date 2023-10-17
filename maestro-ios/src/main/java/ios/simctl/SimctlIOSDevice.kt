@@ -5,7 +5,10 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
+import ios.IOSDeviceErrors
 import ios.IOSScreenRecording
+import maestro.utils.network.SimctlError
+import maestro.utils.network.XCUITestServerError
 import xcuitest.api.DeviceInfo
 import okio.Sink
 import okio.buffer
@@ -104,10 +107,8 @@ class SimctlIOSDevice(
         }
     }
 
-    override fun openLink(link: String): Result<Unit, Throwable> {
-        return runCatching {
-            LocalSimulatorUtils.openURL(deviceId, link)
-        }
+    override fun openLink(link: String) {
+        execute { LocalSimulatorUtils.openURL(deviceId, link) }
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
@@ -172,4 +173,11 @@ class SimctlIOSDevice(
         stopScreenRecording()
     }
 
+    private fun <T> execute(call: () -> T): T {
+        return try {
+            call()
+        } catch (invalidURL: SimctlError.InvalidURL) {
+            throw IOSDeviceErrors.InvalidURL("Invalid URL in openLink: ${invalidURL.errorMessage}")
+        }
+    }
 }

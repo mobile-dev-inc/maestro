@@ -151,7 +151,7 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun openLink(link: String): Result<Unit, Throwable> {
+    override fun openLink(link: String) {
         error("Not supported")
     }
 

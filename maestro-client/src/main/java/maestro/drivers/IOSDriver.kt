@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
 class IOSDriver(
@@ -382,7 +381,7 @@ class IOSDriver(
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         val sanitizedLink = link.toSanitizedIOSLink()
-        iosDevice.openLink(sanitizedLink).expect {}
+        runDeviceCall { iosDevice.openLink(sanitizedLink) }
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
@@ -483,6 +482,8 @@ class IOSDriver(
             call()
         } catch (appCrashException: IOSDeviceErrors.AppCrash) {
             throw MaestroException.AppCrash(appCrashException.errorMessage)
+        } catch (invalidURLException: IOSDeviceErrors.InvalidURL) {
+            throw MaestroException.InvalidURL(invalidURLException.errorMessage)
         }
     }
 

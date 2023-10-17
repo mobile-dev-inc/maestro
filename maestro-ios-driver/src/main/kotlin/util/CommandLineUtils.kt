@@ -24,7 +24,7 @@ object CommandLineUtils {
         } else {
             ProcessBuilder(*parts.toTypedArray())
                 .redirectOutput(nullFile)
-                .redirectError(nullFile)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
         }
 
         processBuilder.environment().putAll(params)

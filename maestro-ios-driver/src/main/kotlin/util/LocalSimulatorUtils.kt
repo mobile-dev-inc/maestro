@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.utils.MaestroTimer
 import org.rauschig.jarchivelib.ArchiveFormat
+import maestro.utils.network.SimctlError.InvalidURL
+import maestro.utils.network.SimctlError.UnknownFailure
 import org.rauschig.jarchivelib.ArchiverFactory
 import util.CommandLineUtils.runCommand
 import java.io.File
@@ -258,15 +260,24 @@ object LocalSimulatorUtils {
     }
 
     fun openURL(deviceId: String, url: String) {
-        runCommand(
-            listOf(
-                "xcrun",
-                "simctl",
-                "openurl",
-                deviceId,
-                url,
+        try {
+            runCommand(
+                listOf(
+                    "xcrun",
+                    "simctl",
+                    "openurl",
+                    deviceId,
+                    url,
+                )
             )
-        )
+        } catch (illegalStateException: IllegalStateException) {
+            val message = illegalStateException.message ?: ""
+            if (message.contains("Invalid URL")) {
+                throw InvalidURL(message)
+            } else {
+                throw UnknownFailure(message)
+            }
+        }
     }
 
     fun uninstall(deviceId: String, bundleId: String) {

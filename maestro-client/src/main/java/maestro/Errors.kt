@@ -33,6 +33,8 @@ sealed class MaestroException(override val message: String) : RuntimeException(m
 
     class DriverTimeout(message: String): MaestroException(message)
 
+    class InvalidURL(message: String): MaestroException(message)
+
     open class AssertionFailure(
         message: String,
         val hierarchyRoot: TreeNode,
