@@ -21,7 +21,7 @@ package maestro
 
 import okio.Sink
 import java.io.File
-import java.util.*
+import java.util.UUID
 
 interface Driver {
 
