@@ -30,6 +30,7 @@ import maestro.MaestroDriverStartupException.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
+import maestro.utils.StringUtils.toSanitizedIOSLink
 import okio.Sink
 import okio.source
 import org.slf4j.LoggerFactory
@@ -380,7 +381,8 @@ class IOSDriver(
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
-        iosDevice.openLink(link).expect {}
+        val sanitizedLink = link.toSanitizedIOSLink()
+        iosDevice.openLink(sanitizedLink).expect {}
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {

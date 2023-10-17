@@ -12,4 +12,7 @@ object StringUtils {
         }
     }
 
+    fun String.toSanitizedIOSLink(): String {
+        return this.replace("?", "\\?")
+    }
 }
