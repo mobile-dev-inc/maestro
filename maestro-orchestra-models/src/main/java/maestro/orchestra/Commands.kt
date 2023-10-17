@@ -240,6 +240,7 @@ data class TapOnElementCommand(
 
     companion object {
         const val DEFAULT_REPEAT_DELAY = 100L
+        const val MAX_TIMEOUT_WAIT_TO_SETTLE_MS = 30000
     }
 }
 
