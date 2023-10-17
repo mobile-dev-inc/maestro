@@ -224,7 +224,8 @@ data class TapOnElementCommand(
     val retryIfNoChange: Boolean? = null,
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
-    val repeat: TapRepeat? = null
+    val repeat: TapRepeat? = null,
+    val waitToSettleTimeoutMs: Int? = null
 ) : Command {
 
     override fun description(): String {
@@ -265,7 +266,8 @@ data class TapOnPointV2Command(
     val point: String,
     val retryIfNoChange: Boolean? = null,
     val longPress: Boolean? = null,
-    val repeat: TapRepeat? = null
+    val repeat: TapRepeat? = null,
+    val waitToSettleTimeoutMs: Int? = null
 ) : Command {
 
     override fun description(): String {
