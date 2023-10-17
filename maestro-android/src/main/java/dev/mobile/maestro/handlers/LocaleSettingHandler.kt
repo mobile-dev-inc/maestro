@@ -67,7 +67,6 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
     override val settingDescription: String = "locale"
 
     companion object {
-        private const val TAG = "Maestro"
         private const val CHANGE_CONFIGURATION = "android.permission.CHANGE_CONFIGURATION"
     }
 }

@@ -5,20 +5,6 @@ import android.content.pm.PackageManager
 import android.util.Log
 
 abstract class AbstractSettingHandler(private val context: Context, private val permissions: List<String>) {
-    fun enable(): Boolean {
-        Log.d(TAG, "Enabling $settingDescription")
-        return if (!hasPermissions()) {
-            false
-        } else setState(true)
-    }
-
-    fun disable(): Boolean {
-        Log.d(TAG, "Disabling $settingDescription")
-        return if (!hasPermissions()) {
-            false
-        } else setState(false)
-    }
-
     protected fun hasPermissions(): Boolean {
         for (p in permissions) {
             if (context.checkCallingOrSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
