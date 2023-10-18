@@ -2,11 +2,13 @@ package maestro.utils
 
 import maestro.Platform
 
-class LocaleValidationIosException : Exception("Failed to validate iOS device locale")
-class LocaleValidationAndroidLanguageException(val language: String) : Exception("Failed to validate Android device language")
-class LocaleValidationAndroidCountryException(val country: String) : Exception("Failed to validate Android device country")
-class LocaleValidationNotSupportedPlatformException : Exception("Failed to validate device locale - not supported platform provided")
-class LocaleValidationWrongLocaleFormatException : Exception("Failed to validate device locale - wrong locale format is used")
+open class LocaleValidationException(message: String): Exception(message)
+
+class LocaleValidationIosException : LocaleValidationException("Failed to validate iOS device locale")
+class LocaleValidationAndroidLanguageException(val language: String) : LocaleValidationException("Failed to validate Android device language")
+class LocaleValidationAndroidCountryException(val country: String) : LocaleValidationException("Failed to validate Android device country")
+class LocaleValidationNotSupportedPlatformException : LocaleValidationException("Failed to validate device locale - not supported platform provided")
+class LocaleValidationWrongLocaleFormatException : LocaleValidationException("Failed to validate device locale - wrong locale format is used")
 
 object LocaleUtils {
     val ANDROID_SUPPORTED_LANGUAGES = listOf(
