@@ -106,11 +106,11 @@ object LocaleUtils {
 
     val IOS_SUPPORTED_LOCALES = listOf(
         "en_AU" to "Australia",
-        "nl_BE" to "Belgium",
-        "fr_BE" to "Belgium",
+        "nl_BE" to "Belgium (Dutch)",
+        "fr_BE" to "Belgium (French)",
         "ms_BN" to "Brunei Darussalam",
-        "en_CA" to "Canada",
-        "fr_CA" to "Canada",
+        "en_CA" to "Canada (English)",
+        "fr_CA" to "Canada (French)",
         "cs_CZ" to "Czech Republic",
         "fi_FI" to "Finland",
         "de_DE" to "Germany",
@@ -139,18 +139,20 @@ object LocaleUtils {
         "tr_TR" to "Turkey",
         "en_GB" to "UK",
         "uk_UA" to "Ukraine",
-        "es_US" to "US",
-        "en_US" to "USA",
+        "es_US" to "USA (Spanish)",
+        "en_US" to "USA (English)",
         "vi_VN" to "Vietnam",
         "pt-BR" to "Brazil",
         "zh-Hans" to "China (Simplified)",
         "zh-Hant" to "China (Traditional)",
         "zh-HK" to "Hong Kong",
-        "en-IN" to "India",
+        "en-IN" to "India (English)",
         "en-IE" to "Ireland",
         "es-419" to "Latin America",
         "es-MX" to "Mexico",
-        "en-ZA" to "South Africa"
+        "en-ZA" to "South Africa",
+        "es_ES" to "Spain",
+        "fr_FR" to "France",
     )
 
     fun findIOSLocale(language: String, country: String): String? {
@@ -158,6 +160,7 @@ object LocaleUtils {
 
         for (pair in IOS_SUPPORTED_LOCALES) {
             if (searchedPair.matches(pair.first)) {
+                println("found locale ${pair.first}")
                 return pair.first
             }
         }
