@@ -1,6 +1,14 @@
-package maestro.cli.device
+package maestro.utils
 
-object LocaleConstants {
+import maestro.Platform
+
+class LocaleValidationIosException : Exception("Failed to validate iOS device locale")
+class LocaleValidationAndroidLanguageException(val language: String) : Exception("Failed to validate Android device language")
+class LocaleValidationAndroidCountryException(val country: String) : Exception("Failed to validate Android device country")
+class LocaleValidationNotSupportedPlatformException : Exception("Failed to validate device locale - not supported platform provided")
+class LocaleValidationWrongLocaleFormatException : Exception("Failed to validate device locale - wrong locale format is used")
+
+object LocaleUtils {
     val ANDROID_SUPPORTED_LANGUAGES = listOf(
         "ar" to "Arabic",
         "bg" to "Bulgarian",
@@ -155,5 +163,51 @@ object LocaleConstants {
         }
 
         return null
+    }
+
+    fun parseLocaleParams(deviceLocale: String, platform: Platform): Pair<String, String> {
+        var parts = deviceLocale.split("_")
+
+        if (parts.size == 2) {
+            val language = parts[0]
+            val country = parts[1]
+
+            validateLocale(language, country, platform)
+
+            return Pair(language, country)
+        } else {
+            parts = deviceLocale.split("-")
+
+            if (parts.size == 2) {
+                val language = parts[0]
+                val country = parts[1]
+
+                validateLocale(language, country, platform)
+
+                return Pair(language, country)
+            }
+
+            throw LocaleValidationWrongLocaleFormatException()
+        }
+    }
+
+    private fun validateLocale(language: String, country: String, platform: Platform) {
+        when (platform) {
+            Platform.IOS -> {
+                if (findIOSLocale(language, country) == null) {
+                    throw LocaleValidationIosException()
+                }
+            }
+            Platform.ANDROID -> {
+                if (!ANDROID_SUPPORTED_LANGUAGES.map { it.first }.contains(language)) {
+                    throw LocaleValidationAndroidLanguageException(language)
+                }
+
+                if (!ANDROID_SUPPORTED_COUNTRIES.map { it.first }.contains(country)) {
+                    throw LocaleValidationAndroidCountryException(country)
+                }
+            }
+            else -> throw LocaleValidationNotSupportedPlatformException()
+        }
     }
 }
