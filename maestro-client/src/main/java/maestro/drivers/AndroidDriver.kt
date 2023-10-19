@@ -262,7 +262,7 @@ class AndroidDriver(
             val status = Status.fromThrowable(throwable)
             if (status.code == Status.Code.DEADLINE_EXCEEDED) {
                 LOGGER.error("Timeout while fetching view hierarchy")
-                throw MaestroException.DriverTimeout("Emulator's driver unreachable")
+                throw MaestroException.DriverTimeout("Android driver unreachable")
             }
 
             // There is a bug in Android UiAutomator that rarely throws an NPE while dumping a view hierarchy.
@@ -930,7 +930,7 @@ class AndroidDriver(
             val status = Status.fromThrowable(throwable)
             if (status.code == Status.Code.DEADLINE_EXCEEDED) {
                 closed = true
-                throw MaestroException.DriverTimeout("Emulator's driver unreachable")
+                throw MaestroException.DriverTimeout("Android driver unreachable")
             }
             throw throwable
         }
