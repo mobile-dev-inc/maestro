@@ -3045,11 +3045,9 @@ class IntegrationTest {
             }
         }
 
-        println("Time elapsed: ${elapsedTime}ms")
-
         // Then
         // No test failure
-        assertThat(elapsedTime).isAtMost(1200)
+        assertThat(elapsedTime).isAtMost(1000)
         driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 1)
     }
 
