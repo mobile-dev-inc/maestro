@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.34.0 - 2023-10-24
+- Feature: support `--device-locale` parameter for `maestro cloud`
+- Feature: support `--device-locale` parameter for `maestro start-device`
+- Feature: add `centerElement` parameter for `scrollUntilVisible` to center on element after scrolling finished
+- Feature: add `power` button support for `pressKey` on Android
+- Change: improve command speed for animation heavy screens
+- Change: improve executionOrder planning
+- Change: improve retry mechanism to ensure openness of XCUITest Server
+- Fix: improve `TimeoutException` for driver startup
+
 ## 1.33.1 - 2023-10-03
 - Feature: support for multipart form data file upload in Javascript, thanks @maciejkrolik
 - Fix: setPermissions produces error on Xcode 15
