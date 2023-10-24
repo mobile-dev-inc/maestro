@@ -22,7 +22,7 @@ def copyWebFiles = tasks.register("copyWebFiles", Copy.class) {
     into(new File(projectDir, 'src/main/resources/web'))
 }
 
-tasks.compileJava {
+tasks.processResources {
     dependsOn(copyWebFiles)
 }
 
