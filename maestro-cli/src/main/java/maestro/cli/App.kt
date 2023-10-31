@@ -26,6 +26,7 @@ import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import maestro.utils.MaestroDirectory
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -82,6 +83,8 @@ fun main(args: Array<String>) {
     // Disable icon in Mac dock
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
+
+    MaestroDirectory.migrate()
 
     Dependencies.install()
     Updates.fetchUpdatesAsync()

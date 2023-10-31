@@ -1,12 +1,13 @@
 package maestro.cli.util
 
+import maestro.utils.MaestroDirectory
 import org.apache.commons.codec.digest.DigestUtils
 import java.io.File
 import java.net.URL
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermission
+import kotlin.io.path.div
 
 /**
  * Unpacks files from jar resources.
@@ -33,13 +34,7 @@ object Unpacker {
     }
 
     fun binaryDependency(name: String): File {
-        return Paths
-            .get(
-                System.getProperty("user.home"),
-                ".maestro",
-                "deps",
-                name
-            )
+        return (MaestroDirectory.getMaestroDirectory() / "deps" / name)
             .toAbsolutePath()
             .toFile()
             .also { file ->

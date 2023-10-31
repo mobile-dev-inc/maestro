@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     api(libs.square.okio)
+    implementation(libs.slf4j)
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)

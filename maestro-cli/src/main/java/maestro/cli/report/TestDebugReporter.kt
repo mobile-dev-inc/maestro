@@ -10,20 +10,21 @@ import maestro.cli.runner.CommandStatus
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
+import maestro.utils.MaestroDirectory
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.attribute.FileTime
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.IdentityHashMap
-import java.util.Properties
+import java.util.*
+import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.div
 import kotlin.io.path.exists
 
 object TestDebugReporter {
@@ -128,7 +129,8 @@ object TestDebugReporter {
         val dateFormat = "yyyy-MM-dd_HHmmss"
         val dateFormatter = DateTimeFormatter.ofPattern(dateFormat)
         val folderName = dateFormatter.format(LocalDateTime.now())
-        val debugOutput = Paths.get(debugOutputPathAsString ?: System.getProperty("user.home"), ".maestro", "tests", folderName)
+        val debugOutput =
+            (debugOutputPathAsString?.let(::Path) ?: MaestroDirectory.getMaestroDirectory()) / "tests" / folderName
         if (!debugOutput.exists()) {
             Files.createDirectories(debugOutput)
         }

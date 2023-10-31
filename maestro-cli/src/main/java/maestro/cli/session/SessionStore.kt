@@ -2,21 +2,18 @@ package maestro.cli.session
 
 import maestro.cli.db.KeyValueStore
 import maestro.cli.device.Platform
-import java.nio.file.Paths
+import maestro.utils.MaestroDirectory
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
 
 object SessionStore {
 
     private val keyValueStore by lazy {
         KeyValueStore(
-            Paths
-                .get(
-                    System.getProperty("user.home"),
-                    ".maestro",
-                    "sessions"
-                )
-                .toFile()
-                .also { it.parentFile.mkdirs() }
+            (MaestroDirectory.getMaestroDirectory() / "sessions").apply {
+                parent.createDirectories()
+            }.toFile()
         )
     }
 
