@@ -1,7 +1,6 @@
 # Changelog
 
 ## 1.34.0 - 2023-10-24
-- Feature: support `--device-locale` parameter for `maestro cloud`
 - Feature: support `--device-locale` parameter for `maestro start-device`
 - Feature: add `centerElement` parameter for `scrollUntilVisible` to center on element after scrolling finished
 - Feature: add `power` button support for `pressKey` on Android
