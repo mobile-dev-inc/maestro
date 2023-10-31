@@ -2,9 +2,9 @@
 
 ## 1.34.0 - 2023-10-24
 - Feature: support `--device-locale` parameter for `maestro start-device`
-- Feature: add `centerElement` parameter for `scrollUntilVisible` to center on element after scrolling finished
+- Feature: add `centerElement` parameter for `scrollUntilVisible`. Center element will attempt to stop scrolling when the element is near the center of the screen.
 - Feature: add `power` button support for `pressKey` on Android
-- Change: improve command speed for animation heavy screens
+- Change: add `tapOn` parameter `waitToSettleTimeoutMs` to control how long it waits to move on to the next command. Helpful for animation heavy apps.
 - Change: improve executionOrder planning
 - Change: improve retry mechanism to ensure openness of XCUITest Server
 - Fix: improve `TimeoutException` for driver startup
