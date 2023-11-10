@@ -17,3 +17,14 @@ appId: com.example.app
 - longPressOn: "Hello"
 - assertVisible: "Hello"
 - copyTextFrom: "Hello"
+- back
+- action: back
+- hideKeyboard
+- action: hideKeyboard
+- scroll
+- action: scroll
+- clearKeychain
+- action: clearKeychain
+- pasteText
+- action: pasteText
+

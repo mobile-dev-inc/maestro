@@ -470,7 +470,8 @@ internal class YamlCommandReaderTest {
                 timeout = 20000,
                 scrollDuration = 601,
                 visibilityPercentage = 100,
-                label = "Scroll to the bottom"
+                label = "Scroll to the bottom",
+                centerElement = false
             ),
             SetLocationCommand(
                 latitude = 12.5266,
@@ -593,7 +594,17 @@ internal class YamlCommandReaderTest {
                     visible = ElementSelector(textRegex = "Hello"),
                 ),
             ),
-            CopyTextFromCommand(ElementSelector(textRegex = "Hello"))
+            CopyTextFromCommand(ElementSelector(textRegex = "Hello")),
+            BackPressCommand(),
+            BackPressCommand(),
+            HideKeyboardCommand(),
+            HideKeyboardCommand(),
+            ScrollCommand(),
+            ScrollCommand(),
+            ClearKeychainCommand(),
+            ClearKeychainCommand(),
+            PasteTextCommand(),
+            PasteTextCommand(),
         )
     }
 
