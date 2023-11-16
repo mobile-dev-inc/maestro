@@ -119,7 +119,7 @@ data class ElementSelector(
         }
 
         childOf?.let {
-            descriptions.add("Child Of: ${it.description()}")
+            descriptions.add("Child of: ${it.description()}")
         }
 
         val combined = descriptions.joinToString(", ")

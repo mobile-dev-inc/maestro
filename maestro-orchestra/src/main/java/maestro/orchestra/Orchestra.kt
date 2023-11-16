@@ -844,15 +844,16 @@ class Orchestra(
             selector,
             deviceInfo(),
         )
-        if(selector.childOf != null){
+        if (selector.childOf != null) {
             val parentViewHierarchy = findElementViewHierarchy(
                 selector.childOf,
                 timeout
             )
-            return maestro.findElementFromViewHierarchyWithTimeout(
+            return maestro.findElementWithTimeout(
                 timeout,
                 filterFunc,
-                parentViewHierarchy)?:throw MaestroException.ElementNotFound(
+                parentViewHierarchy
+            ) ?: throw MaestroException.ElementNotFound(
                 "Element not found: $description",
                 maestro.viewHierarchy().root,
             )
@@ -871,18 +872,20 @@ class Orchestra(
     private fun findElementViewHierarchy(
         selector: ElementSelector?,
         timeout: Long
-    ):ViewHierarchy {
-        if(selector == null ){
+    ): ViewHierarchy {
+        if (selector == null) {
             return maestro.viewHierarchy()
         }
-        val parentViewHierarchy = findElementViewHierarchy(selector.childOf,timeout);
+        val parentViewHierarchy = findElementViewHierarchy(selector.childOf, timeout);
         val (description, filterFunc) = buildFilter(
             selector,
             deviceInfo(),
         )
-        return maestro.findElementFromViewHierarchyWithTimeout(timeout,
+        return maestro.findElementWithTimeout(
+            timeout,
             filterFunc,
-            parentViewHierarchy)?.hierarchy?: throw MaestroException.ElementNotFound(
+            parentViewHierarchy
+        )?.hierarchy ?: throw MaestroException.ElementNotFound(
             "Element not found: $description",
             parentViewHierarchy.root,
         )
