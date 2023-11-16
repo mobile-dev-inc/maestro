@@ -863,6 +863,7 @@ class Orchestra(
         return maestro.findElementWithTimeout(
             timeoutMs = timeout,
             filter = filterFunc,
+            null
         ) ?: throw MaestroException.ElementNotFound(
             "Element not found: $description",
             maestro.viewHierarchy().root,
