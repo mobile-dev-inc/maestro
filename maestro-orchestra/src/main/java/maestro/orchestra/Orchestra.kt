@@ -855,15 +855,14 @@ class Orchestra(
                 parentViewHierarchy
             ) ?: throw MaestroException.ElementNotFound(
                 "Element not found: $description",
-                maestro.viewHierarchy().root,
+                parentViewHierarchy.root,
             )
         }
 
 
         return maestro.findElementWithTimeout(
             timeoutMs = timeout,
-            filter = filterFunc,
-            null
+            filter = filterFunc
         ) ?: throw MaestroException.ElementNotFound(
             "Element not found: $description",
             maestro.viewHierarchy().root,

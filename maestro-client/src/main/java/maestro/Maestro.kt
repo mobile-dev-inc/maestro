@@ -401,7 +401,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementByRegexp(regex: Regex, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by regex: ${regex.pattern} (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.textMatches(regex), null)?.element
+        return findElementWithTimeout(timeoutMs, Filters.textMatches(regex))?.element
             ?: throw MaestroException.ElementNotFound(
                 "No element that matches regex: $regex",
                 viewHierarchy().root
@@ -415,7 +415,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementByIdRegex(regex: Regex, timeoutMs: Long): UiElement {
         LOGGER.info("Looking for element by id regex: ${regex.pattern} (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.idMatches(regex), null)?.element
+        return findElementWithTimeout(timeoutMs, Filters.idMatches(regex))?.element
             ?: throw MaestroException.ElementNotFound(
                 "No element has id that matches regex $regex",
                 viewHierarchy().root
@@ -427,15 +427,14 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
         return findElementWithTimeout(
             timeoutMs,
-            Filters.sizeMatches(width, height, tolerance).asFilter(),
-            null
+            Filters.sizeMatches(width, height, tolerance).asFilter()
         )?.element
     }
 
     fun findElementWithTimeout(
         timeoutMs: Long,
         filter: ElementFilter,
-        viewHierarchy: ViewHierarchy?
+        viewHierarchy: ViewHierarchy? = null
     ): FindElementResult? {
         var hierarchy = viewHierarchy ?: ViewHierarchy(TreeNode())
         val element = MaestroTimer.withTimeout(timeoutMs) {
