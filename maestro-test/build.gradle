@@ -2,6 +2,12 @@ plugins {
     id "kotlin"
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
 dependencies {
     implementation project(":maestro-orchestra")
     implementation project(':maestro-client')
