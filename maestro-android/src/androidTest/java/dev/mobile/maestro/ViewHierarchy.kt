@@ -15,6 +15,7 @@ import android.widget.ListView
 import android.widget.TableLayout
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
+import dev.mobile.maestro.AccessibilityNodeInfoExt.getHintOrFallback
 import org.xmlpull.v1.XmlSerializer
 import java.io.IOException
 import java.io.OutputStream
@@ -120,7 +121,7 @@ object ViewHierarchy {
             serializer.attribute("", "NAF", java.lang.Boolean.toString(true))
         }
         serializer.attribute("", "index", Integer.toString(index))
-        serializer.attribute("", "hintText", safeCharSeqToString(node.hintText))
+        serializer.attribute("", "hintText", safeCharSeqToString(node.getHintOrFallback()))
         serializer.attribute("", "text", safeCharSeqToString(node.text))
         serializer.attribute("", "resource-id", safeCharSeqToString(node.viewIdResourceName))
         serializer.attribute("", "class", safeCharSeqToString(node.className))
@@ -193,8 +194,8 @@ object ViewHierarchy {
      */
     private fun nafCheck(node: AccessibilityNodeInfo): Boolean {
         val isNaf = (node.isClickable && node.isEnabled
-            && safeCharSeqToString(node.contentDescription).isEmpty()
-            && safeCharSeqToString(node.text).isEmpty())
+                && safeCharSeqToString(node.contentDescription).isEmpty()
+                && safeCharSeqToString(node.text).isEmpty())
         return if (!isNaf) true else childNafCheck(node)
 
         // check children since sometimes the containing element is clickable

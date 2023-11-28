@@ -24,13 +24,8 @@ import dadb.AdbShellPacket
 import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
-import dadb.adbserver.AdbServer
 import io.grpc.ManagedChannelBuilder
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
-import ios.IOSDeviceErrors
 import maestro.*
-import maestro.MaestroDriverStartupException.*
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.android.AndroidAppFiles
 import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
@@ -60,19 +55,18 @@ class AndroidDriver(
         .usePlaintext()
         .build()
     private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
-    private val blockingStubWithTimeout get() = blockingStub.withDeadlineAfter(40, TimeUnit.SECONDS)
     private val asyncStub = MaestroDriverGrpc.newStub(channel)
     private val documentBuilderFactory = DocumentBuilderFactory.newInstance()
 
     private var instrumentationSession: AdbShellStream? = null
     private var proxySet = false
-    private var closed = false
 
     override fun name(): String {
         return "Android Device ($dadb)"
     }
 
     override fun open() {
+        uninstallMaestroApks()
         installMaestroApks()
         startInstrumentationSession()
 
@@ -88,9 +82,15 @@ class AndroidDriver(
 
     private fun startInstrumentationSession() {
         val startTime = System.currentTimeMillis()
-        val instrumentationCommand = "am instrument -w -m -e debug false " +
-                "-e class 'dev.mobile.maestro.MaestroDriverService#grpcServer' " +
-                "dev.mobile.maestro.test/androidx.test.runner.AndroidJUnitRunner &\n"
+        val apiLevel = getDeviceApiLevel()
+
+        val instrumentationCommand = buildString {
+            append("am instrument -w ")
+            if (apiLevel >= 26) append("-m ")
+            append("-e debug false ")
+            append("-e class 'dev.mobile.maestro.MaestroDriverService#grpcServer' ")
+            append("dev.mobile.maestro.test/androidx.test.runner.AndroidJUnitRunner &\n")
+        }
 
         while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
             instrumentationSession = dadb.openShell(instrumentationCommand)
@@ -102,7 +102,15 @@ class AndroidDriver(
             instrumentationSession?.close()
             Thread.sleep(100)
         }
-        throw AndroidInstrumentationSetupFailure("Maestro instrumentation could not be initialized")
+        throw TimeoutException("Maestro instrumentation could not be initialized")
+    }
+
+    private fun getDeviceApiLevel(): Int {
+        val response = dadb.openShell("getprop ro.build.version.sdk").readAll()
+        if (response.exitCode != 0) {
+            throw IOException("Failed to get device API level: ${response.errorOutput}")
+        }
+        return response.output.trim().toIntOrNull() ?: throw IOException("Invalid API level: ${response.output}")
     }
 
     private fun allocateForwarder() {
@@ -129,11 +137,10 @@ class AndroidDriver(
             Thread.sleep(100)
         }
 
-        throw AndroidDriverTimeoutException("Maestro Android driver did not start up in time")
+        throw TimeoutException("Maestro Android driver did not start up in time")
     }
 
     override fun close() {
-        if (closed) return
         if (proxySet) {
             resetProxy()
         }
@@ -152,17 +159,15 @@ class AndroidDriver(
     }
 
     override fun deviceInfo(): DeviceInfo {
-        return runDeviceCall {
-            val response = blockingStubWithTimeout.deviceInfo(deviceInfoRequest {})
+        val response = blockingStub.deviceInfo(deviceInfoRequest {})
 
-            DeviceInfo(
-                platform = Platform.ANDROID,
-                widthPixels = response.widthPixels,
-                heightPixels = response.heightPixels,
-                widthGrid = response.widthPixels,
-                heightGrid = response.heightPixels,
-            )
-        }
+        return DeviceInfo(
+            platform = Platform.ANDROID,
+            widthPixels = response.widthPixels,
+            heightPixels = response.heightPixels,
+            widthGrid = response.widthPixels,
+            heightGrid = response.heightPixels,
+        )
     }
 
     override fun launchApp(
@@ -177,14 +182,12 @@ class AndroidDriver(
         val arguments = launchArguments.toAndroidLaunchArguments()
         val sessionUUID = sessionId ?: UUID.randomUUID()
         dadb.shell("setprop debug.maestro.sessionId $sessionUUID")
-        runDeviceCall {
-            blockingStubWithTimeout.launchApp(
-                launchAppRequest {
-                    this.packageName = appId
-                    this.arguments.addAll(arguments)
-                }
-            ) ?: throw IllegalStateException("Maestro driver failed to launch app")
-        }
+        blockingStub.launchApp(
+            launchAppRequest {
+                this.packageName = appId
+                this.arguments.addAll(arguments)
+            }
+        ) ?: throw IllegalStateException("Maestro driver failed to launch app")
     }
 
     override fun stopApp(appId: String) {
@@ -205,14 +208,12 @@ class AndroidDriver(
     }
 
     override fun tap(point: Point) {
-        runDeviceCall {
-            blockingStubWithTimeout.tap(
-                tapRequest {
-                    x = point.x
-                    y = point.y
-                }
-            ) ?: throw IllegalStateException("Response can't be null")
-        }
+        blockingStub.tap(
+            tapRequest {
+                x = point.x
+                y = point.y
+            }
+        ) ?: throw IllegalStateException("Response can't be null")
     }
 
     override fun longPress(point: Point) {
@@ -247,7 +248,19 @@ class AndroidDriver(
     }
 
     override fun contentDescriptor(): TreeNode {
-        val response = callViewHierarchy()
+        val response = try {
+            blockingStub.viewHierarchy(viewHierarchyRequest {})
+        } catch (ignored: Exception) {
+            // There is a bug in Android UiAutomator that rarely throws an NPE while dumping a view hierarchy.
+            // Trying to recover once by giving it a bit of time to settle.
+
+            LOGGER.error("Failed to get view hierarchy", ignored)
+
+            MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000L)
+
+            // If the connection is broken, getting the view hierarchy will wait indefinitely
+            getViewHierarchyWithTimeout() ?: throw ignored
+        }
 
         val document = documentBuilderFactory
             .newDocumentBuilder()
@@ -256,25 +269,15 @@ class AndroidDriver(
         return mapHierarchy(document)
     }
 
-    private fun callViewHierarchy(attempt: Int = 1): MaestroAndroid.ViewHierarchyResponse {
+    private fun getViewHierarchyWithTimeout(): MaestroAndroid.ViewHierarchyResponse? {
+        val future: Future<MaestroAndroid.ViewHierarchyResponse> = Executors.newSingleThreadExecutor().submit<MaestroAndroid.ViewHierarchyResponse> {
+            blockingStub.viewHierarchy(viewHierarchyRequest {})
+        }
         return try {
-            blockingStubWithTimeout.viewHierarchy(viewHierarchyRequest {})
-        } catch (throwable: StatusRuntimeException) {
-            val status = Status.fromThrowable(throwable)
-            if (status.code == Status.Code.DEADLINE_EXCEEDED) {
-                LOGGER.error("Timeout while fetching view hierarchy")
-                throw MaestroException.DriverTimeout("Android driver unreachable")
-            }
-
-            // There is a bug in Android UiAutomator that rarely throws an NPE while dumping a view hierarchy.
-            // Trying to recover once by giving it a bit of time to settle.
-            LOGGER.error("Failed to get view hierarchy: ${status.description}", throwable)
-
-            if (attempt > 0) {
-                MaestroTimer.sleep(MaestroTimer.Reason.BUFFER, 1000L)
-                return callViewHierarchy(attempt - 1)
-            }
-            throw throwable
+            future.get(5, TimeUnit.SECONDS)
+        } catch (e: TimeoutException) {
+            LOGGER.error("Timeout while fetching view hierarchy", e)
+            null
         }
     }
 
@@ -300,7 +303,6 @@ class AndroidDriver(
                     Point(endX, endY)
                 )
             }
-
             SwipeDirection.DOWN -> {
                 val startX = (deviceInfo.widthGrid * 0.5f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.2f).toInt()
@@ -312,7 +314,6 @@ class AndroidDriver(
                     Point(endX, endY)
                 )
             }
-
             SwipeDirection.RIGHT -> {
                 val startX = (deviceInfo.widthGrid * 0.1f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
@@ -324,7 +325,6 @@ class AndroidDriver(
                     Point(endX, endY)
                 )
             }
-
             SwipeDirection.LEFT -> {
                 val startX = (deviceInfo.widthGrid * 0.9f).toInt()
                 val startY = (deviceInfo.heightGrid * 0.5f).toInt()
@@ -346,17 +346,14 @@ class AndroidDriver(
                 val endY = (deviceInfo.heightGrid * 0.1f).toInt()
                 directionalSwipe(durationMs, elementPoint, Point(elementPoint.x, endY))
             }
-
             SwipeDirection.DOWN -> {
                 val endY = (deviceInfo.heightGrid * 0.9f).toInt()
                 directionalSwipe(durationMs, elementPoint, Point(elementPoint.x, endY))
             }
-
             SwipeDirection.RIGHT -> {
                 val endX = (deviceInfo.widthGrid * 0.9f).toInt()
                 directionalSwipe(durationMs, elementPoint, Point(endX, elementPoint.y))
             }
-
             SwipeDirection.LEFT -> {
                 val endX = (deviceInfo.widthGrid * 0.1f).toInt()
                 directionalSwipe(durationMs, elementPoint, Point(endX, elementPoint.y))
@@ -380,11 +377,9 @@ class AndroidDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        runDeviceCall {
-            val response = blockingStubWithTimeout.screenshot(screenshotRequest {})
-            out.buffer().use {
-                it.write(response.bytes.toByteArray())
-            }
+        val response = blockingStub.screenshot(screenshotRequest {})
+        out.buffer().use {
+            it.write(response.bytes.toByteArray())
         }
     }
 
@@ -414,11 +409,9 @@ class AndroidDriver(
     }
 
     override fun inputText(text: String) {
-        runDeviceCall {
-            blockingStubWithTimeout.inputText(inputTextRequest {
-                this.text = text
-            }) ?: throw IllegalStateException("Input Response can't be null")
-        }
+        blockingStub.inputText(inputTextRequest {
+            this.text = text
+        }) ?: throw IllegalStateException("Input Response can't be null")
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -490,11 +483,9 @@ class AndroidDriver(
             installedPackages.contains("com.android.chrome") -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" com.android.chrome")
             }
-
             installedPackages.contains("org.mozilla.firefox") -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" org.mozilla.firefox")
             }
-
             else -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
             }
@@ -509,24 +500,20 @@ class AndroidDriver(
     override fun setLocation(latitude: Double, longitude: Double) {
         shell("appops set dev.mobile.maestro android:mock_location allow")
 
-        runDeviceCall {
-            blockingStubWithTimeout.setLocation(
-                setLocationRequest {
-                    this.latitude = latitude
-                    this.longitude = longitude
-                }
-            ) ?: error("Set Location Response can't be null")
-        }
+        blockingStub.setLocation(
+            setLocationRequest {
+                this.latitude = latitude
+                this.longitude = longitude
+            }
+        ) ?: error("Set Location Response can't be null")
     }
 
     override fun eraseText(charactersToErase: Int) {
-        runDeviceCall {
-            blockingStubWithTimeout.eraseAllText(
-                eraseAllTextRequest {
-                    this.charactersToErase = charactersToErase
-                }
-            ) ?: throw IllegalStateException("Erase Response can't be null")
-        }
+        blockingStub.eraseAllText(
+            eraseAllTextRequest {
+                this.charactersToErase = charactersToErase
+            }
+        ) ?: throw IllegalStateException("Erase Response can't be null")
     }
 
     override fun setProxy(host: String, port: Int) {
@@ -546,30 +533,24 @@ class AndroidDriver(
         return false
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy {
         return if (appId != null) {
-            waitForWindowToSettle(appId, initialHierarchy, timeoutMs)
+            waitForWindowToSettle(appId, initialHierarchy)
         } else {
-            ScreenshotUtils.waitForAppToSettle(initialHierarchy, this, timeoutMs)
+            ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
         }
     }
 
-    private fun waitForWindowToSettle(appId: String, initialHierarchy: ViewHierarchy?, timeoutMs: Int? = null): ViewHierarchy {
+    private fun waitForWindowToSettle(appId: String, initialHierarchy: ViewHierarchy?): ViewHierarchy {
         val endTime = System.currentTimeMillis() + WINDOW_UPDATE_TIMEOUT_MS
-        var hierarchy: ViewHierarchy? = null
-        do {
-            runDeviceCall {
-                val windowUpdating = blockingStubWithTimeout.isWindowUpdating(checkWindowUpdatingRequest {
-                    this.appId = appId
-                }).isWindowUpdating
 
-                if (windowUpdating) {
-                    hierarchy = ScreenshotUtils.waitForAppToSettle(initialHierarchy, this, timeoutMs)
-                }
+        do {
+            if (blockingStub.isWindowUpdating(checkWindowUpdatingRequest { this.appId = appId }).isWindowUpdating) {
+                ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
             }
         } while (System.currentTimeMillis() < endTime)
 
-        return hierarchy ?: ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
@@ -600,18 +581,6 @@ class AndroidDriver(
         LOGGER.info("[Start] Adding media files")
         mediaFiles.forEach { addMediaToDevice(it) }
         LOGGER.info("[Done] Adding media files")
-    }
-
-    fun setDeviceLocale(country: String, language: String): Int {
-        dadb.shell("pm grant dev.mobile.maestro android.permission.CHANGE_CONFIGURATION")
-        val response = dadb.shell("am broadcast -a dev.mobile.maestro.locale -n dev.mobile.maestro/.receivers.LocaleSettingReceiver --es lang $language --es country $country")
-        return extractSetLocaleResult(response.output)
-    }
-
-    private fun extractSetLocaleResult(result: String): Int {
-        val regex = Regex("result=(-?\\d+)")
-        val match = regex.find(result)
-        return match?.groups?.get(1)?.value?.toIntOrNull() ?: -1
     }
 
     private fun addMediaToDevice(mediaFile: File) {
@@ -675,36 +644,29 @@ class AndroidDriver(
                 "android.permission.ACCESS_FINE_LOCATION",
                 "android.permission.ACCESS_COARSE_LOCATION",
             )
-
             "camera" -> listOf("android.permission.CAMERA")
             "contacts" -> listOf(
                 "android.permission.READ_CONTACTS",
                 "android.permission.WRITE_CONTACTS"
             )
-
             "phone" -> listOf(
                 "android.permission.CALL_PHONE",
                 "android.permission.ANSWER_PHONE_CALLS",
             )
-
             "microphone" -> listOf(
                 "android.permission.RECORD_AUDIO"
             )
-
             "bluetooth" -> listOf(
                 "android.permission.BLUETOOTH_CONNECT",
                 "android.permission.BLUETOOTH_SCAN",
             )
-
             "storage" -> listOf(
                 "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.READ_EXTERNAL_STORAGE"
             )
-
             "notifications" -> listOf(
                 "android.permission.POST_NOTIFICATIONS"
             )
-
             "medialibrary" -> listOf(
                 "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.READ_EXTERNAL_STORAGE",
@@ -712,18 +674,15 @@ class AndroidDriver(
                 "android.permission.READ_MEDIA_IMAGES",
                 "android.permission.READ_MEDIA_VIDEO"
             )
-
             "calendar" -> listOf(
                 "android.permission.WRITE_CALENDAR",
                 "android.permission.READ_CALENDAR"
             )
-
             "sms" -> listOf(
                 "android.permission.READ_SMS",
                 "android.permission.RECEIVE_SMS",
                 "android.permission.SEND_SMS"
             )
-
             else -> listOf(name.replace("[^A-Za-z0-9._]+".toRegex(), ""))
         }
     }
@@ -784,16 +743,8 @@ class AndroidDriver(
                 attributesBuilder["checked"] = node.getAttribute("checked")
             }
 
-            if (node.hasAttribute("scrollable")) {
-                attributesBuilder["scrollable"] = node.getAttribute("scrollable")
-            }
-
             if (node.hasAttribute("selected")) {
                 attributesBuilder["selected"] = node.getAttribute("selected")
-            }
-
-            if (node.hasAttribute("class")) {
-                attributesBuilder["class"] = node.getAttribute("class")
             }
 
             attributesBuilder
@@ -824,60 +775,36 @@ class AndroidDriver(
             ?.let { it == "true" }
     }
 
-    fun installMaestroDriverApp() {
-        uninstallMaestroDriverApp()
-
+    private fun installMaestroApks() {
         val maestroAppApk = File.createTempFile("maestro-app", ".apk")
-
+        val maestroServerApk = File.createTempFile("maestro-server", ".apk")
         Maestro::class.java.getResourceAsStream("/maestro-app.apk")?.let {
             val bufferedSink = maestroAppApk.sink().buffer()
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
-
-        install(maestroAppApk)
-        if (!isPackageInstalled("dev.mobile.maestro")) {
-            throw IllegalStateException("dev.mobile.maestro was not installed")
-        }
-    }
-
-    private fun installMaestroServerApp() {
-        uninstallMaestroServerApp()
-
-        val maestroServerApk = File.createTempFile("maestro-server", ".apk")
-
         Maestro::class.java.getResourceAsStream("/maestro-server.apk")?.let {
             val bufferedSink = maestroServerApk.sink().buffer()
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
         }
-
+        install(maestroAppApk)
+        if (!isPackageInstalled("dev.mobile.maestro")) {
+            throw IllegalStateException("dev.mobile.maestro was not installed")
+        }
         install(maestroServerApk)
         if (!isPackageInstalled("dev.mobile.maestro.test")) {
             throw IllegalStateException("dev.mobile.maestro.test was not installed")
         }
     }
 
-    private fun installMaestroApks() {
-        installMaestroDriverApp()
-        installMaestroServerApp()
-    }
-
-    fun uninstallMaestroDriverApp() {
-        if (isPackageInstalled("dev.mobile.maestro")) {
-            uninstall("dev.mobile.maestro")
-        }
-    }
-
-    private fun uninstallMaestroServerApp() {
+    private fun uninstallMaestroApks() {
         if (isPackageInstalled("dev.mobile.maestro.test")) {
             uninstall("dev.mobile.maestro.test")
         }
-    }
-
-    private fun uninstallMaestroApks() {
-        uninstallMaestroDriverApp()
-        uninstallMaestroServerApp()
+        if (isPackageInstalled("dev.mobile.maestro")) {
+            uninstall("dev.mobile.maestro")
+        }
     }
 
     private fun install(apkFile: File) {
@@ -931,20 +858,6 @@ class AndroidDriver(
             else -> true
         }
     }
-
-    private fun <T> runDeviceCall(call: () -> T): T {
-        return try {
-            call()
-        } catch (throwable: StatusRuntimeException) {
-            val status = Status.fromThrowable(throwable)
-            if (status.code == Status.Code.DEADLINE_EXCEEDED) {
-                closed = true
-                throw MaestroException.DriverTimeout("Android driver unreachable")
-            }
-            throw throwable
-        }
-    }
-
 
     companion object {
 

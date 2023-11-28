@@ -38,7 +38,7 @@ android {
 
     defaultConfig {
         applicationId "dev.mobile.maestro"
-        minSdk 21
+        minSdk 24
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -91,7 +91,7 @@ tasks.register("copyMaestroAndroid", Copy) {
             throw new GradleException("Error: Input source for copyMaestroAndroid doesn't exist")
 
         new File("./maestro-client/src/main/resources/maestro-android-debug.apk")
-            .renameTo(new File("./maestro-client/src/main/resources/maestro-app.apk"))
+                .renameTo(new File("./maestro-client/src/main/resources/maestro-app.apk"))
     }
 }
 
@@ -107,12 +107,12 @@ tasks.register("copyMaestroServer", Copy) {
         if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
             throw new GradleException("This build must be run with java 8")
         }
-        
+
         if (!layout.buildDirectory.file(maestroServerApkDestPath).get().asFile.exists())
             throw new GradleException("Error: Input source for copyMaestroServer doesn't exist")
 
         new File("./maestro-client/src/main/resources/maestro-android-debug-androidTest.apk")
-            .renameTo(new File("./maestro-client/src/main/resources/maestro-server.apk"))
+                .renameTo(new File("./maestro-client/src/main/resources/maestro-server.apk"))
     }
 }
 
@@ -143,9 +143,6 @@ dependencies {
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serial.gson)
-
-    implementation('org.apache.commons:commons-lang3:3.13.0')
-    implementation('org.lsposed.hiddenapibypass:hiddenapibypass:4.3')
 
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.espresso.core)
