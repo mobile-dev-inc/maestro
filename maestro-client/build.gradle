@@ -58,7 +58,11 @@ dependencies {
     api(libs.grpc.okhttp)
     api(libs.google.protobuf.kotlin)
     api(libs.kotlin.result)
-    api(libs.dadb)
+    api("dev.mobile:dadb") {
+        version {
+            branch = 'v1-shell'
+        }
+    }
     api(libs.square.okio)
     api(libs.image.comparison)
     api(libs.android.tools.sdk)

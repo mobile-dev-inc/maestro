@@ -31,8 +31,13 @@ include("maestro-test")
 //include("examples:samples")
 //findProject(":examples:samples")?.name = "samples"
 
-includeBuild("../dadb") {
-    dependencySubstitution {
-        substitute(module("dev.mobile:dadb")).using(project(":dadb"))
+// includeBuild("../dadb") {
+//     dependencySubstitution {
+//         substitute(module("dev.mobile:dadb")).using(project(":dadb"))
+//     }
+// }
+sourceControl {
+    gitRepository(uri("https://github.com/NyCodeGHG/dadb")) {
+        producesModule("dev.mobile:dadb")
     }
 }

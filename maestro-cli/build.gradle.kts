@@ -36,7 +36,12 @@ dependencies {
     implementation(project(":maestro-ios"))
     implementation(project(":maestro-ios-driver"))
     implementation(project(":maestro-studio:server"))
-    implementation(libs.dadb)
+    // implementation(libs.dadb)
+    implementation("dev.mobile:dadb") {
+        version {
+            branch = "v1-shell"
+        }
+    }
     implementation(libs.picocli)
     implementation(libs.jackson.core.databind)
     implementation(libs.jackson.module.kotlin)
