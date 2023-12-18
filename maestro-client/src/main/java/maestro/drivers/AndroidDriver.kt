@@ -23,11 +23,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.ByteString
 import dadb.AdbShellPacket
 import dadb.AdbShellResponse
-import dadb.AdbShellStream
+import dadb.AdbShellV1Stream
 import dadb.Dadb
+import dadb.adbserver.AdbServer
 import io.grpc.ManagedChannelBuilder
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import io.grpc.okhttp.OkHttpChannelBuilder
+import ios.IOSDeviceErrors
 import maestro.*
 import maestro.MaestroDriverStartupException.*
 import maestro.UiElement.Companion.toUiElementOrNull
@@ -55,15 +58,15 @@ class AndroidDriver(
     private val hostPort: Int = 7001,
 ) : Driver {
 
-    private val channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
-        .usePlaintext()
-        .build()
+    private val channel = OkHttpChannelBuilder.forAddress("localhost", hostPort)
+            .usePlaintext()
+            .build()
     private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)
     private val blockingStubWithTimeout get() = blockingStub.withDeadlineAfter(40, TimeUnit.SECONDS)
     private val asyncStub = MaestroDriverGrpc.newStub(channel)
     private val documentBuilderFactory = DocumentBuilderFactory.newInstance()
 
-    private var instrumentationSession: AdbShellStream? = null
+    private var instrumentationSession: AdbShellV1Stream? = null
     private var proxySet = false
     private var closed = false
 
@@ -98,7 +101,7 @@ class AndroidDriver(
         }
 
         while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
-            instrumentationSession = dadb.openShell(instrumentationCommand)
+            instrumentationSession = dadb.openShellV1(instrumentationCommand)
 
             if (instrumentationSession.successfullyStarted()) {
                 return
@@ -111,11 +114,8 @@ class AndroidDriver(
     }
 
     private fun getDeviceApiLevel(): Int {
-        val response = dadb.openShell("getprop ro.build.version.sdk").readAll()
-        if (response.exitCode != 0) {
-            throw IOException("Failed to get device API level: ${response.errorOutput}")
-        }
-        return response.output.trim().toIntOrNull() ?: throw IOException("Invalid API level: ${response.output}")
+        val response = dadb.openShellV1("getprop ro.build.version.sdk").readAll()
+        return response.trim().toIntOrNull() ?: throw IOException("Invalid API level: $response")
     }
 
 
@@ -459,7 +459,7 @@ class AndroidDriver(
             } catch (e: IOException) {
                 throw IOException(
                     "Failed to capture screen recording on the device. Note that some Android emulators do not support screen recording. " +
-                            "Try using a different Android emulator (eg. Pixel 5 / API 30)",
+                        "Try using a different Android emulator (eg. Pixel 5 / API 30)",
                     e,
                 )
             }
@@ -686,7 +686,7 @@ class AndroidDriver(
         val responseObserver = BlockingStreamObserver<MaestroAndroid.AddMediaResponse>()
         val requestStream = asyncStub.addMedia(responseObserver)
         val ext =
-            MediaExt.values().firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
+            MediaExt.entries.firstOrNull { it.extName == namedSource.extension } ?: throw IllegalArgumentException(
                 "Extension .${namedSource.extension} is not yet supported for add media"
             )
 
@@ -960,7 +960,7 @@ class AndroidDriver(
 
     private fun isPackageInstalled(packageName: String): Boolean {
         val output: String = shell("pm list packages --user 0 $packageName")
-        return output.split("\n".toRegex())
+        return output.lines()
             .map { line -> line.split(":".toRegex()) }
             .filter { parts -> parts.size == 2 }
             .map { parts -> parts[1] }
@@ -984,12 +984,12 @@ class AndroidDriver(
         System.getenv(MAESTRO_DRIVER_STARTUP_TIMEOUT).toLong()
     }.getOrDefault(SERVER_LAUNCH_TIMEOUT_MS)
 
-    private fun AdbShellStream?.successfullyStarted(): Boolean {
+    private fun AdbShellV1Stream?.successfullyStarted(): Boolean {
         val output = this?.read()
         return when {
-            output is AdbShellPacket.StdError -> false
-            output.toString().contains("FAILED", true) -> false
-            output.toString().contains("UNABLE", true) -> false
+            output == null -> false
+            output.contains("FAILED", true) -> false
+            output.contains("UNABLE", true) -> false
             else -> true
         }
     }

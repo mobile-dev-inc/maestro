@@ -15,7 +15,7 @@
     <application
         android:usesCleartextTraffic="true">
 
-        <receiver android:name=".receivers.LocaleSettingReceiver"
+        <receiver android:name="dev.mobile.maestro.receivers.LocaleSettingReceiver"
             android:exported="true"
             tools:ignore="ExportedReceiver" />
     </application>

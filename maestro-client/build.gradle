@@ -54,7 +54,6 @@ dependencies {
     api(libs.graaljs)
     api(libs.grpc.kotlin.stub)
     api(libs.grpc.stub)
-    api(libs.grpc.netty)
     api(libs.grpc.protobuf)
     api(libs.grpc.okhttp)
     api(libs.google.protobuf.kotlin)

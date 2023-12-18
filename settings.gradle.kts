@@ -30,3 +30,9 @@ include("maestro-studio:web")
 include("maestro-test")
 //include("examples:samples")
 //findProject(":examples:samples")?.name = "samples"
+
+includeBuild("../dadb") {
+    dependencySubstitution {
+        substitute(module("dev.mobile:dadb")).using(project(":dadb"))
+    }
+}
