@@ -45,16 +45,15 @@ import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiDeviceExt.clickExt
 import com.google.protobuf.ByteString
+import io.grpc.InsecureServerCredentials
 import io.grpc.Status
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
+import io.grpc.okhttp.OkHttpServerBuilder
 import io.grpc.stub.StreamObserver
 import maestro_android.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.lang.IllegalStateException
-import java.util.IllegalFormatException
 import kotlin.system.measureTimeMillis
 
 /**
@@ -76,7 +75,7 @@ class MaestroDriverService {
         val uiDevice = UiDevice.getInstance(instrumentation)
         val uiAutomation = instrumentation.uiAutomation
 
-        NettyServerBuilder.forPort(7001)
+        OkHttpServerBuilder.forPort(7001, InsecureServerCredentials.create())
             .addService(Service(uiDevice, uiAutomation))
             .build()
             .start()

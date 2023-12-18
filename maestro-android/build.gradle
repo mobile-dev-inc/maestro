@@ -133,7 +133,6 @@ dependencies {
     protobuf project(':maestro-proto')
 
     implementation(libs.grpc.kotlin.stub)
-    implementation(libs.grpc.netty.shaded)
     implementation(libs.grpc.stub)
     implementation(libs.grpc.protobuf.lite)
     implementation(libs.grpc.okhttp)
