@@ -82,8 +82,8 @@ class LocalIOSDevice(
         xcTestDevice.input(text)
     }
 
-    override fun install(stream: InputStream): Result<Unit, Throwable> {
-        return simctlIOSDevice.install(stream)
+    override fun install(stream: InputStream) {
+        simctlIOSDevice.install(stream)
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {

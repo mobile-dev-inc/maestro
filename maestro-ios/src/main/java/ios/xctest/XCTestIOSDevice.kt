@@ -123,7 +123,7 @@ class XCTestIOSDevice(
        }
     }
 
-    override fun install(stream: InputStream): Result<Unit, Throwable> {
+    override fun install(stream: InputStream) {
         error("Not supported")
     }
 

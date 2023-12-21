@@ -58,7 +58,7 @@ interface IOSDevice : AutoCloseable {
      *
      * @param stream - input stream of zipped .app bundle
      */
-    fun install(stream: InputStream): Result<Unit, Throwable>
+    fun install(stream: InputStream)
 
     /**
      * Uninstalls the app.

@@ -59,10 +59,8 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun install(stream: InputStream): Result<Unit, Throwable> {
-        return runCatching {
-            LocalSimulatorUtils.install(deviceId, stream)
-        }
+    override fun install(stream: InputStream) {
+        LocalSimulatorUtils.install(deviceId, stream)
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
