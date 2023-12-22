@@ -131,7 +131,7 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun clearAppState(id: String): Result<Unit, Throwable> {
+    override fun clearAppState(id: String) {
         error("Not supported")
     }
 

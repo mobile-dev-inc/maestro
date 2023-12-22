@@ -90,8 +90,8 @@ class LocalIOSDevice(
         return simctlIOSDevice.uninstall(id)
     }
 
-    override fun clearAppState(id: String): Result<Unit, Throwable> {
-        return simctlIOSDevice.clearAppState(id)
+    override fun clearAppState(id: String) {
+        simctlIOSDevice.clearAppState(id)
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
