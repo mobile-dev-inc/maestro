@@ -68,10 +68,10 @@ class XCTestDriverClient(
 
     private val mapper = jacksonObjectMapper()
 
-    fun viewHierarchy(installedApps: Set<String>): ViewHierarchy {
+    fun viewHierarchy(installedApps: Set<String>, filterOutKeyboardElements: Boolean): ViewHierarchy {
         val responseString = executeJsonRequest(
             "viewHierarchy",
-            ViewHierarchyRequest(installedApps)
+            ViewHierarchyRequest(installedApps, filterOutKeyboardElements)
         )
         return mapper.readValue(responseString, ViewHierarchy::class.java)
     }

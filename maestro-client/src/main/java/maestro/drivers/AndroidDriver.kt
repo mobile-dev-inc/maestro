@@ -263,14 +263,39 @@ class AndroidDriver(
         Thread.sleep(300)
     }
 
-    override fun contentDescriptor(): TreeNode {
+    override fun contentDescriptor(filterOutKeyboardElements: Boolean): TreeNode {
         val response = callViewHierarchy()
 
         val document = documentBuilderFactory
             .newDocumentBuilder()
             .parse(response.hierarchy.byteInputStream())
 
-        return mapHierarchy(document)
+        val treeNode = mapHierarchy(document)
+        return if (filterOutKeyboardElements) {
+            treeNode.filterOutKeyboardElements() ?: treeNode
+        } else {
+            treeNode
+        }
+    }
+
+    private fun TreeNode.filterOutKeyboardElements(): TreeNode? {
+        val filtered = children.mapNotNull {
+            it.filterOutKeyboardElements()
+        }.toList()
+
+        val resourceId = attributes["resource-id"]
+        if (resourceId != null && resourceId.startsWith("com.google.android.inputmethod.latin:id/")) {
+            return null
+        }
+        return TreeNode(
+            attributes = attributes,
+            children = filtered,
+            clickable = clickable,
+            enabled = enabled,
+            focused = focused,
+            checked = checked,
+            selected = selected
+        )
     }
 
     private fun callViewHierarchy(attempt: Int = 1): MaestroAndroid.ViewHierarchyResponse {

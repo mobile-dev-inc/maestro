@@ -34,7 +34,7 @@ interface IOSDevice : AutoCloseable {
 
     fun deviceInfo(): DeviceInfo
 
-    fun viewHierarchy(): ViewHierarchy
+    fun viewHierarchy(filterOutKeyboardElements: Boolean): ViewHierarchy
 
     fun tap(x: Int, y: Int)
 

@@ -412,8 +412,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             )
     }
 
-    fun viewHierarchy(): ViewHierarchy {
-        return ViewHierarchy.from(driver)
+    fun viewHierarchy(filterOutKeyboardElements: Boolean = false): ViewHierarchy {
+        return ViewHierarchy.from(driver, filterOutKeyboardElements)
     }
 
     fun findElementByIdRegex(regex: Regex, timeoutMs: Long): UiElement {
