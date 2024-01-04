@@ -138,8 +138,8 @@ class IOSDriver(
         }
     }
 
-    override fun contentDescriptor(filterOutKeyboardElements: Boolean): TreeNode {
-        return runDeviceCall { viewHierarchy(filterOutKeyboardElements) }
+    override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
+        return runDeviceCall { viewHierarchy(excludeKeyboardElements) }
     }
 
     private fun viewHierarchy(filterOutKeyboardElements: Boolean): TreeNode {

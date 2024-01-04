@@ -25,11 +25,9 @@ import dadb.AdbShellPacket
 import dadb.AdbShellResponse
 import dadb.AdbShellStream
 import dadb.Dadb
-import dadb.adbserver.AdbServer
 import io.grpc.ManagedChannelBuilder
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import ios.IOSDeviceErrors
 import maestro.*
 import maestro.MaestroDriverStartupException.*
 import maestro.UiElement.Companion.toUiElementOrNull
@@ -263,7 +261,7 @@ class AndroidDriver(
         Thread.sleep(300)
     }
 
-    override fun contentDescriptor(filterOutKeyboardElements: Boolean): TreeNode {
+    override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         val response = callViewHierarchy()
 
         val document = documentBuilderFactory
@@ -271,16 +269,16 @@ class AndroidDriver(
             .parse(response.hierarchy.byteInputStream())
 
         val treeNode = mapHierarchy(document)
-        return if (filterOutKeyboardElements) {
-            treeNode.filterOutKeyboardElements() ?: treeNode
+        return if (excludeKeyboardElements) {
+            treeNode.excludeKeyboardElements() ?: treeNode
         } else {
             treeNode
         }
     }
 
-    private fun TreeNode.filterOutKeyboardElements(): TreeNode? {
+    private fun TreeNode.excludeKeyboardElements(): TreeNode? {
         val filtered = children.mapNotNull {
-            it.filterOutKeyboardElements()
+            it.excludeKeyboardElements()
         }.toList()
 
         val resourceId = attributes["resource-id"]
