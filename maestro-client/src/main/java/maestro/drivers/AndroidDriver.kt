@@ -269,7 +269,7 @@ class AndroidDriver(
             .parse(response.hierarchy.byteInputStream())
 
         val treeNode = mapHierarchy(document)
-        return if (excludeKeyboardElements) {
+        return if (true) {
             treeNode.excludeKeyboardElements() ?: treeNode
         } else {
             treeNode
