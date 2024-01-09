@@ -273,6 +273,7 @@ object MaestroSessionManager {
         deviceId: String,
         openDriver: Boolean,
     ): Maestro {
+        val source = "maestro-local-cli"
 
         val xcTestInstaller = LocalXCTestInstaller(
             logger = IOSDriverLogger(LocalXCTestInstaller::class.java),
@@ -284,7 +285,8 @@ object MaestroSessionManager {
         val xcTestDriverClient = XCTestDriverClient(
             installer = xcTestInstaller,
             logger = IOSDriverLogger(XCTestDriverClient::class.java),
-            client = XCTestClient(defaultXctestHost, defaultXcTestPort)
+            client = XCTestClient(defaultXctestHost, defaultXcTestPort),
+            source = source
         )
 
         val xcTestDevice = XCTestIOSDevice(
@@ -292,6 +294,7 @@ object MaestroSessionManager {
             client = xcTestDriverClient,
             getInstalledApps = { XCRunnerCLIUtils.listApps(deviceId) },
             logger = IOSDriverLogger(XCTestIOSDevice::class.java),
+            source = source
         )
 
         val simctlIOSDevice = SimctlIOSDevice(

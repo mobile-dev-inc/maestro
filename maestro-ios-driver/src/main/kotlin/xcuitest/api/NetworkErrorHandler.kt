@@ -8,6 +8,8 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import util.PrintUtils
 import xcuitest.XCTestClient
 import xcuitest.api.NetworkException.Companion.toUserNetworkException
+import xcuitest.installer.Intent
+import xcuitest.installer.SourceIntent
 import xcuitest.installer.XCTestInstaller
 
 class NetworkErrorHandler(
@@ -64,10 +66,11 @@ class NetworkErrorHandler(
     fun retryConnection(
         call: Call,
         response: Response,
+        source: String,
         reInitializeInstaller: (XCTestClient) -> Unit
     ): Response {
         return if (retry < MAX_RETRY) {
-            xcTestInstaller.start()?.let {
+            xcTestInstaller.start(SourceIntent(source, Intent.RETRY))?.let {
                 reInitializeInstaller(it)
             }
             response.close()
@@ -92,11 +95,12 @@ class NetworkErrorHandler(
     fun retryConnection(
         chain: Interceptor.Chain,
         networkException: NetworkException,
+        source: String,
         reInitializeInstaller: (XCTestClient) -> Unit
     ): Response {
         logger.info("Got Network exception in application layer: $networkException")
         return if (networkException.shouldRetryDriverInstallation() && retry < MAX_RETRY) {
-            xcTestInstaller.start()?.let {
+            xcTestInstaller.start(SourceIntent(source, Intent.RETRY))?.let {
                 reInitializeInstaller(it)
             }
             retry++

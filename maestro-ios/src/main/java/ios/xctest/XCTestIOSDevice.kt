@@ -20,10 +20,11 @@ class XCTestIOSDevice(
     private val client: XCTestDriverClient,
     private val logger: Logger,
     private val getInstalledApps: () -> Set<String>,
+    private val source: String
 ) : IOSDevice {
 
     override fun open() {
-        client.restartXCTestRunnerService()
+        client.restartXCTestRunnerService(source)
     }
 
     override fun deviceInfo(): DeviceInfo {
@@ -180,7 +181,7 @@ class XCTestIOSDevice(
     }
 
     override fun close() {
-        client.close()
+        client.close(source)
     }
 
     override fun isScreenStatic(): Boolean {

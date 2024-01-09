@@ -17,6 +17,8 @@ import java.io.IOException
 import java.net.ConnectException
 import xcuitest.api.NetworkErrorHandler
 import xcuitest.api.NetworkErrorHandler.Companion.RETRY_RESPONSE_CODE
+import xcuitest.installer.Intent
+import xcuitest.installer.SourceIntent
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -24,10 +26,11 @@ import java.util.concurrent.TimeUnit
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
     private val logger: Logger,
-    private val httpInterceptor: HttpLoggingInterceptor? = null
+    private val httpInterceptor: HttpLoggingInterceptor? = null,
+    private val source: String
 ) {
     private lateinit var client: XCTestClient
-    constructor(installer: XCTestInstaller, logger: Logger, client: XCTestClient): this(installer, logger) {
+    constructor(installer: XCTestInstaller, logger: Logger, client: XCTestClient, source: String): this(installer, logger, null, source) {
         this.client = client
     }
 
@@ -42,12 +45,13 @@ class XCTestDriverClient(
         httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
-    fun restartXCTestRunnerService() {
+    fun restartXCTestRunnerService(source: String) {
         logger.info("[Start] Uninstalling xctest ui runner app")
-        installer.uninstall()
+        val sourceIntent = SourceIntent(source, Intent.DRIVER_OPEN)
+        installer.uninstall(sourceIntent)
         logger.info("[Done] Uninstalling xctest ui runner app")
         logger.info("[Start] Installing xctest ui runner app")
-        client = installer.start()
+        client = installer.start(sourceIntent)
             ?: throw XCTestDriverUnreachable("Failed to reach XCUITest Server in restart")
         logger.info("[Done] Installing xctest ui runner app")
     }
@@ -185,8 +189,8 @@ class XCTestDriverClient(
         return installer.isChannelAlive()
     }
 
-    fun close() {
-        installer.close()
+    fun close(source: String) {
+        installer.close(SourceIntent(source, Intent.DRIVER_CLOSE))
     }
 
     fun setPermissions(permissions: Map<String, String>) {
@@ -319,14 +323,14 @@ class XCTestDriverClient(
              chain.proceed(chain.request())
         } catch (ioException: IOException) {
             val networkException = mapNetworkException(ioException)
-            return@Interceptor networkErrorHandler.retryConnection(chain, networkException) {
+            return@Interceptor networkErrorHandler.retryConnection(chain, networkException, source) {
                 client = it
             }
         }
 
         return@Interceptor when (response.code) {
             RETRY_RESPONSE_CODE -> {
-                networkErrorHandler.retryConnection(chain.call(), response) {
+                networkErrorHandler.retryConnection(chain.call(), response, source) {
                     logger.info("Reinitialized the xctest client after reestablishing connection")
                     client = it
                 }

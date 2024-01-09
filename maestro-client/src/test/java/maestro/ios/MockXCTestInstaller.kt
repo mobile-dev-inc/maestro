@@ -2,6 +2,8 @@ package maestro.ios
 
 import com.google.common.truth.Truth.assertThat
 import xcuitest.XCTestClient
+import xcuitest.installer.Intent
+import xcuitest.installer.SourceIntent
 import xcuitest.installer.XCTestInstaller
 
 class MockXCTestInstaller(
@@ -10,7 +12,7 @@ class MockXCTestInstaller(
 
     private var attempts = 0
 
-    override fun start(): XCTestClient? {
+    override fun start(sourceIntent: SourceIntent): XCTestClient? {
         attempts++
         for (i in 0..simulator.installationRetryCount) {
             assertThat(simulator.runningApps()).doesNotContain("dev.mobile.maestro-driver-iosUITests.xctrunner")
@@ -23,7 +25,7 @@ class MockXCTestInstaller(
         }
     }
 
-    override fun uninstall() {
+    override fun uninstall(sourceIntent: SourceIntent) {
         simulator.uninstallXCTestDriver()
     }
 
@@ -31,7 +33,7 @@ class MockXCTestInstaller(
         return simulator.isXCTestRunnerAlive()
     }
 
-    override fun close() {
+    override fun close(sourceIntent: SourceIntent) {
         simulator.uninstallXCTestDriver()
     }
 
