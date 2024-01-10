@@ -26,6 +26,10 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
+    override fun isConnected(): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun deviceInfo(): DeviceInfo {
         TODO("Not yet implemented")
     }

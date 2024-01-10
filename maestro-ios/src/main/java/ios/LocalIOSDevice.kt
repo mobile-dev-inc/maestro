@@ -25,6 +25,10 @@ class LocalIOSDevice(
         xcTestDevice.open()
     }
 
+    override fun isConnected(): Boolean {
+        return xcTestDevice.isConnected()
+    }
+
     override fun deviceInfo(): DeviceInfo {
         return xcTestDevice.deviceInfo()
     }

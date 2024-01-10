@@ -27,6 +27,10 @@ class XCTestIOSDevice(
         client.restartXCTestRunnerService(source)
     }
 
+    override fun isConnected(): Boolean {
+        return client.isChannelAlive()
+    }
+
     override fun deviceInfo(): DeviceInfo {
         return execute {
             val deviceInfo = client.deviceInfo()

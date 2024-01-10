@@ -32,7 +32,8 @@ class LocalXCTestInstaller(
 
     private var xcTestProcess: Process? = null
 
-    private val port = defaultPort ?: SocketUtils.nextFreePort(9800, 9900)
+    private val lazyPort by lazy { SocketUtils.nextFreePort(9800, 9900) }
+    private val port = defaultPort ?: lazyPort
 
     override fun uninstall(sourceIntent: SourceIntent) {
         if (useXcodeTestRunner) {
@@ -41,26 +42,26 @@ class LocalXCTestInstaller(
 
         stop(sourceIntent)
 
-        logger.info("[Start] Uninstall XCUITest runner on $deviceId with intent of ${sourceIntent.intent} from ${sourceIntent.source}")
-        XCRunnerCLIUtils.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-        logger.info("[Done] Uninstall XCUITest runner on $deviceId with intent of ${sourceIntent.intent} from ${sourceIntent.source}")
+        //logger.info("[Start] Uninstall XCUITest runner on $deviceId with intent of ${sourceIntent.intent} from ${sourceIntent.source}")
+        //XCRunnerCLIUtils.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
+        //logger.info("[Done] Uninstall XCUITest runner on $deviceId with intent of ${sourceIntent.intent} from ${sourceIntent.source}")
     }
 
     private fun stop(sourceIntent: SourceIntent) {
         val intent = sourceIntent.intent
         val source = sourceIntent.source
-        logger.info("[Start] Stop XCUITest runner on $deviceId with intent of $intent from $source")
-        if (xcTestProcess?.isAlive == true) {
-            xcTestProcess?.destroy()
-        }
+        //logger.info("[Start] Stop XCUITest runner on $deviceId with intent of $intent from $source")
+//        if (xcTestProcess?.isAlive == true) {
+//            xcTestProcess?.destroy()
+//        }
 
-        val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-        if (pid != null) {
-            ProcessBuilder(listOf("kill", pid.toString()))
-                .start()
-                .waitFor()
-        }
-        logger.info("[Done] Stop XCUITest runner on $deviceId with intent of $intent from $source")
+//        val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
+//        if (pid != null) {
+//            ProcessBuilder(listOf("kill", pid.toString()))
+//                .start()
+//                .waitFor()
+//        }
+        //logger.info("[Done] Stop XCUITest runner on $deviceId with intent of $intent from $source")
     }
 
     override fun start(sourceIntent: SourceIntent): XCTestClient? {
@@ -95,8 +96,13 @@ class LocalXCTestInstaller(
     }
 
     override fun isChannelAlive(): Boolean {
-        return XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
-            xcTestDriverStatusCheck().use { it.isSuccessful }
+        // TODO: remove this isAlive and check because this might
+        return try {
+            return xcTestDriverStatusCheck().use { it.isSuccessful }
+        } catch (exception: IOException) {
+            // ignore
+            false
+        }
     }
 
     private fun ensureOpen(): Boolean {
@@ -110,7 +116,7 @@ class LocalXCTestInstaller(
         }
     }
 
-    private fun xcTestDriverStatusCheck(): Response {
+    fun xcTestDriverStatusCheck(): Response {
         fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
             return HttpUrl.Builder()
                 .scheme("http")
@@ -148,9 +154,10 @@ class LocalXCTestInstaller(
         writeFileToDestination(XCTEST_RUN_PATH, xctestRunFile)
         logger.info("[Done] Writing xctest run file for $deviceId with intent of $intent from $source")
 
-        if (processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
+        if (isChannelAlive()) {
             logger.info("UI Test runner already running on $deviceId, stopping it with intent of $intent from $source")
-            stop(sourceIntent)
+            //stop(sourceIntent)
+            return
         } else {
             logger.info("Not able to find ui test runner app running, going to install now on $deviceId with intent of $intent from $source")
 
@@ -164,6 +171,7 @@ class LocalXCTestInstaller(
         }
 
         logger.info("[Start] Running XcUITest with xcode build command for $deviceId with intent of $intent from $source")
+
         xcTestProcess = XCRunnerCLIUtils.runXcTestWithoutBuild(
             deviceId,
             xctestRunFile.absolutePath,

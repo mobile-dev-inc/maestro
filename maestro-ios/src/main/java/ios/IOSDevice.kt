@@ -32,6 +32,8 @@ interface IOSDevice : AutoCloseable {
 
     fun open()
 
+    fun isConnected(): Boolean
+
     fun deviceInfo(): DeviceInfo
 
     fun viewHierarchy(excludeKeyboardElements: Boolean): ViewHierarchy
