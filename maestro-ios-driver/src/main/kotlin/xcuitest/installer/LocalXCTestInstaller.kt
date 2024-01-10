@@ -10,6 +10,7 @@ import okhttp3.Response
 import okio.buffer
 import okio.sink
 import okio.source
+import org.apache.commons.io.FileUtils
 import org.rauschig.jarchivelib.ArchiverFactory
 import util.XCRunnerCLIUtils
 import xcuitest.XCTestClient
@@ -178,7 +179,7 @@ class LocalXCTestInstaller(
 
         val intent = Intent.DRIVER_CLOSE
         logger.info("[Start] Cleaning up the ui test runner files for $deviceId with intent of $intent from ${sourceIntent.source}")
-        File(tempDir).deleteRecursively()
+        FileUtils.cleanDirectory(File(tempDir))
         uninstall(sourceIntent)
         logger.info("[Done] Cleaning up the ui test runner files for $deviceId with intent of $intent from ${sourceIntent.source}")
     }
