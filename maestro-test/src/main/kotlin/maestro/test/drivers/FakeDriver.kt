@@ -259,7 +259,7 @@ class FakeDriver : Driver {
         events += Event.EraseAllText
     }
 
-    override fun inputText(text: String) {
+    override fun inputText(text: String, typingFrequency: Int?) {
         ensureOpen()
 
         currentText += text

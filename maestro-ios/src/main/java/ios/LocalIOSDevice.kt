@@ -78,8 +78,8 @@ class LocalIOSDevice(
         xcTestDevice.scrollV2(xStart, yStart, xEnd, yEnd, duration)
     }
 
-    override fun input(text: String) {
-        xcTestDevice.input(text)
+    override fun input(text: String, typingFrequency: Int?) {
+        xcTestDevice.input(text, typingFrequency)
     }
 
     override fun install(stream: InputStream) {

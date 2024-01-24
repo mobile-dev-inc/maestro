@@ -54,7 +54,7 @@ class SimctlIOSDevice(
         TODO("Not yet implemented")
     }
 
-    override fun input(text: String) {
+    override fun input(text: String, typingFrequency: Int?) {
         TODO("Not yet implemented")
     }
 

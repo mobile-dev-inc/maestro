@@ -465,7 +465,7 @@ class AndroidDriver(
         }
     }
 
-    override fun inputText(text: String) {
+    override fun inputText(text: String, typingFrequency: Int?) {
         runDeviceCall {
             blockingStubWithTimeout.inputText(inputTextRequest {
                 this.text = text

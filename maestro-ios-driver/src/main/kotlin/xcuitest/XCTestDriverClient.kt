@@ -147,9 +147,10 @@ class XCTestDriverClient(
 
     fun inputText(
         text: String,
+        typingFrequency: Int?,
         appIds: Set<String>,
     ) {
-        executeJsonRequest("inputText", InputTextRequest(text, appIds))
+        executeJsonRequest("inputText", InputTextRequest(text, typingFrequency, appIds))
     }
 
     fun tap(

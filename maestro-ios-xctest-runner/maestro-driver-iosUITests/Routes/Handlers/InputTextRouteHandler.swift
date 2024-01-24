@@ -20,7 +20,7 @@ struct InputTextRouteHandler : HTTPHandler {
             let appId = RunningApp.getForegroundAppId(requestBody.appIds)
             await waitUntilKeyboardIsPresented(appId: appId)
             
-            try await TextInputHelper.inputText(requestBody.text)
+            try await TextInputHelper.inputText(requestBody.text, requestBody.typingFrequency ?? 30)
 
             let duration = Date().timeIntervalSince(start)
             logger.info("Text input duration took \(duration)")

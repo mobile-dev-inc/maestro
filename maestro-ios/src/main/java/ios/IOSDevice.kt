@@ -51,7 +51,7 @@ interface IOSDevice : AutoCloseable {
     /**
      * Inputs text into the currently focused element.
      */
-    fun input(text: String)
+    fun input(text: String, typingFrequency: Int? = null)
 
     /**
      * Installs application on the device.

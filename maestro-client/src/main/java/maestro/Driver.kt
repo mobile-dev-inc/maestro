@@ -22,6 +22,7 @@ package maestro
 import okio.Sink
 import java.io.File
 import java.util.UUID
+import jdk.jfr.Frequency
 
 interface Driver {
 
@@ -65,7 +66,7 @@ interface Driver {
 
     fun backPress()
 
-    fun inputText(text: String)
+    fun inputText(text: String, typingFrequency: Int? = null)
 
     fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean)
 

@@ -8,11 +8,10 @@ struct TextInputHelper {
     )
     
     private enum Constants {
-        static let typingFrequency = 30
         static let slowInputCharactersCount = 1
     }
     
-    static func inputText(_ text: String) async throws {
+    static func inputText(_ text: String, _ typingFrequency: Int = 30) async throws {
         // due to different keyboard input listener events (i.e. autocorrection or hardware keyboard connection)
         // characters after the first on are often skipped, so we'll input it with lower typing frequency
         let firstCharacter = String(text.prefix(Constants.slowInputCharactersCount))
@@ -30,7 +29,7 @@ struct TextInputHelper {
             let remainingText = String(text.suffix(text.count - Constants.slowInputCharactersCount))
             logger.info("remaining text: \(remainingText)")
             var eventPath2 = PointerEventPath.pathForTextInput()
-            eventPath2.type(text: remainingText, typingSpeed: Constants.typingFrequency)
+            eventPath2.type(text: remainingText, typingSpeed: typingFrequency)
             let eventRecord2 = EventRecord(orientation: .portrait)
             _ = eventRecord2.add(eventPath2)
             try await RunnerDaemonProxy().synthesize(eventRecord: eventRecord2)

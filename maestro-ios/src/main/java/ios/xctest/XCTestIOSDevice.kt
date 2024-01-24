@@ -113,11 +113,12 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun input(text: String) {
+    override fun input(text: String, typingFrequency: Int?) {
        execute {
            val appIds = getInstalledApps()
            client.inputText(
                text = text,
+               typingFrequency = typingFrequency,
                appIds = appIds,
            )
        }

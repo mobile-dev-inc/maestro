@@ -288,14 +288,15 @@ class WebDriver(val isStudio: Boolean) : Driver {
         driver.navigate().back()
     }
 
-    override fun inputText(text: String) {
+    override fun inputText(text: String, typingFrequency: Int?) {
+        val frequencyInMs = 60 / (typingFrequency ?: 120) * 1000
         val driver = ensureOpen()
 
         val xPath = executeJS("return window.maestro.createXPathFromElement(document.activeElement)") as String
         val element = driver.findElement(By.ByXPath(xPath))
         for (c in text.toCharArray()) {
             element.sendKeys("$c")
-            sleep(random(20, 100).toLong())
+            sleep(frequencyInMs.toLong())
         }
     }
 

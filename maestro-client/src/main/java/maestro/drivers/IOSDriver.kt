@@ -378,9 +378,9 @@ class IOSDriver(
         }
     }
 
-    override fun inputText(text: String) {
+    override fun inputText(text: String, typingFrequency: Int?) {
         // silently fail if no XCUIElement has focus
-        runDeviceCall { iosDevice.input(text = text) }
+        runDeviceCall { iosDevice.input(text = text, typingFrequency) }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
