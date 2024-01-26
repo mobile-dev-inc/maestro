@@ -242,7 +242,7 @@ class CloudInteractor(
                     }
                     else -> {
                         if (runningFlow.duration == null) {
-                            runningFlow.duration = TimeUtils.durationInSeconds(startTime = runningFlow.startTime, endTime = System.currentTimeMillis())
+                            runningFlow.duration = TimeUtils.durationInSeconds(startTimeInMillis = runningFlow.startTime, endTimeInMillis = System.currentTimeMillis())
                         }
                         if (!runningFlow.reported) {
                             TestSuiteStatusView.showFlowCompletion(
@@ -255,7 +255,7 @@ class CloudInteractor(
             }
 
             if (upload.completed) {
-                runningFlows.duration = TimeUtils.durationInSeconds(startTime = startTime, endTime = System.currentTimeMillis())
+                runningFlows.duration = TimeUtils.durationInSeconds(startTimeInMillis = startTime, endTimeInMillis = System.currentTimeMillis())
                 return handleSyncUploadCompletion(
                     upload = upload,
                     runningFlows = runningFlows,
@@ -329,7 +329,7 @@ class CloudInteractor(
             }
 
         if (reportOutputSink != null) {
-            saveReport(reportFormat, !failed, convert(!failed, upload, runningFlows), reportOutputSink, testSuiteName)
+            saveReport(reportFormat, !failed, createSuiteResult(!failed, upload, runningFlows), reportOutputSink, testSuiteName)
         }
 
 
@@ -365,7 +365,7 @@ class CloudInteractor(
             )
     }
 
-    private fun convert(passed: Boolean, upload: UploadStatus, runningFlows: RunningFlows): TestExecutionSummary.SuiteResult {
+    private fun createSuiteResult(passed: Boolean, upload: UploadStatus, runningFlows: RunningFlows): TestExecutionSummary.SuiteResult {
         return TestExecutionSummary.SuiteResult(
             passed = passed,
             flows = upload.flows.map { uploadFlowResult ->
