@@ -29,7 +29,7 @@ class LocalIOSDevice(
         return xcTestDevice.deviceInfo()
     }
 
-    override fun viewHierarchy(): ViewHierarchy {
+    override fun viewHierarchy(excludeKeyboardElements: Boolean): ViewHierarchy {
         var isViewHierarchyInProgress = true
         val future = executor.schedule(
             {
@@ -44,7 +44,7 @@ class LocalIOSDevice(
                 }
             }, 15, TimeUnit.SECONDS
         )
-        val result = xcTestDevice.viewHierarchy()
+        val result = xcTestDevice.viewHierarchy(excludeKeyboardElements)
         isViewHierarchyInProgress = false
         if (!future.isDone) {
             future.cancel(false)
@@ -82,16 +82,16 @@ class LocalIOSDevice(
         xcTestDevice.input(text)
     }
 
-    override fun install(stream: InputStream): Result<Unit, Throwable> {
-        return simctlIOSDevice.install(stream)
+    override fun install(stream: InputStream) {
+        simctlIOSDevice.install(stream)
     }
 
     override fun uninstall(id: String): Result<Unit, Throwable> {
         return simctlIOSDevice.uninstall(id)
     }
 
-    override fun clearAppState(id: String): Result<Unit, Throwable> {
-        return simctlIOSDevice.clearAppState(id)
+    override fun clearAppState(id: String) {
+        simctlIOSDevice.clearAppState(id)
     }
 
     override fun clearKeychain(): Result<Unit, Throwable> {
@@ -108,6 +108,10 @@ class LocalIOSDevice(
 
     override fun stop(id: String): Result<Unit, Throwable> {
         return simctlIOSDevice.stop(id)
+    }
+
+    override fun isKeyboardVisible(): Boolean {
+        return xcTestDevice.isKeyboardVisible()
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {

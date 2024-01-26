@@ -34,10 +34,10 @@ class XCTestIOSDevice(
         }
     }
 
-    override fun viewHierarchy(): ViewHierarchy {
+    override fun viewHierarchy(excludeKeyboardElements: Boolean): ViewHierarchy {
         return execute {
             val installedApps = getInstalledApps()
-            val viewHierarchy = client.viewHierarchy(installedApps)
+            val viewHierarchy = client.viewHierarchy(installedApps, excludeKeyboardElements)
             DepthTracker.trackDepth(viewHierarchy.depth)
             logger.info("Depth received: ${viewHierarchy.depth}")
             viewHierarchy
@@ -123,7 +123,7 @@ class XCTestIOSDevice(
        }
     }
 
-    override fun install(stream: InputStream): Result<Unit, Throwable> {
+    override fun install(stream: InputStream) {
         error("Not supported")
     }
 
@@ -131,7 +131,7 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
-    override fun clearAppState(id: String): Result<Unit, Throwable> {
+    override fun clearAppState(id: String) {
         error("Not supported")
     }
 
@@ -149,6 +149,11 @@ class XCTestIOSDevice(
 
     override fun stop(id: String): Result<Unit, Throwable> {
         error("Not supported")
+    }
+
+    override fun isKeyboardVisible(): Boolean {
+        val appIds = getInstalledApps()
+        return execute { client.keyboardInfo(appIds).isKeyboardVisible }
     }
 
     override fun openLink(link: String): Result<Unit, Throwable> {

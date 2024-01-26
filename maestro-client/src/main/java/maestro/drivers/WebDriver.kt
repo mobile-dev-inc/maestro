@@ -161,7 +161,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         driver.close()
     }
 
-    override fun contentDescriptor(): TreeNode {
+    override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         ensureOpen()
 
         // retrieve view hierarchy from DOM
@@ -232,6 +232,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun scrollVertical() {
         scroll("window.scrollY + Math.round(window.innerHeight / 2)", "window.scrollX")
+    }
+
+    override fun isKeyboardVisible(): Boolean {
+        TODO("Not yet implemented")
     }
 
     override fun swipe(start: Point, end: Point, durationMs: Long) {
@@ -351,7 +355,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         return true
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
         return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
     }
 

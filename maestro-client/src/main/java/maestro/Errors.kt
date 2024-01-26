@@ -31,13 +31,11 @@ sealed class MaestroException(override val message: String) : RuntimeException(m
 
     class AppCrash(message: String): MaestroException(message)
 
+    class DriverTimeout(message: String): MaestroException(message)
+
     open class AssertionFailure(
         message: String,
         val hierarchyRoot: TreeNode,
-    ) : MaestroException(message)
-
-    open class OutgoingRequestAssertionFailure(
-        message: String,
     ) : MaestroException(message)
 
     class ElementNotFound(
@@ -56,4 +54,10 @@ sealed class MaestroException(override val message: String) : RuntimeException(m
     ) : MaestroException(message)
 
     class DeprecatedCommand(message: String) : MaestroException(message)
+}
+
+sealed class MaestroDriverStartupException(override val message: String): RuntimeException() {
+    class AndroidDriverTimeoutException(message: String): MaestroDriverStartupException(message)
+    class AndroidInstrumentationSetupFailure(message: String): MaestroDriverStartupException(message)
+    class IOSDriverTimeoutException(message: String): MaestroDriverStartupException(message)
 }

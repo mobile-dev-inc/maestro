@@ -142,7 +142,7 @@ class FakeDriver : Driver {
         events += Event.PressKey(code)
     }
 
-    override fun contentDescriptor(): TreeNode {
+    override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         ensureOpen()
 
         return layout.toTreeNode()
@@ -152,6 +152,15 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events += Event.Scroll
+    }
+
+    override fun isKeyboardVisible(): Boolean {
+        ensureOpen()
+
+        if (events.contains(Event.HideKeyboard)) {
+            return false
+        }
+        return true
     }
 
     override fun swipe(start: Point, end: Point, durationMs: Long) {
@@ -343,8 +352,8 @@ class FakeDriver : Driver {
         }
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
-        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
+        return ScreenshotUtils.waitForAppToSettle(initialHierarchy, this, timeoutMs)
     }
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {

@@ -4,6 +4,9 @@ import dadb.Dadb
 import maestro.cli.CliError
 import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.AvdDevice
+import maestro.cli.util.PrintUtils
+import maestro.drivers.AndroidDriver
+import maestro.utils.LocaleUtils
 import maestro.utils.MaestroTimer
 import okio.buffer
 import okio.source
@@ -12,7 +15,7 @@ import util.LocalSimulatorUtils
 import util.LocalSimulatorUtils.SimctlError
 import util.SimctlList
 import java.io.File
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -23,8 +26,16 @@ object DeviceService {
             Platform.IOS -> {
                 try {
                     LocalSimulatorUtils.bootSimulator(device.modelId)
+                    if (device.language != null && device.country != null) {
+                        PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
+                        LocalSimulatorUtils.setDeviceLanguage(device.modelId, device.language)
+                        LocaleUtils.findIOSLocale(device.language, device.country)?.let {
+                            LocalSimulatorUtils.setDeviceLocale(device.modelId, it)
+                        }
+                        LocalSimulatorUtils.reboot(device.modelId)
+                    }
                     LocalSimulatorUtils.launchSimulator(device.modelId)
-                    LocalSimulatorUtils.awaitLaunch(device.modelId, 60000)
+                    LocalSimulatorUtils.awaitLaunch(device.modelId)
                 } catch (e: SimctlError) {
                     logger.error("Failed to launch simulator", e)
                     throw CliError(e.message)
@@ -58,6 +69,29 @@ object DeviceService {
                         null
                     }
                 } ?: throw CliError("Unable to start device: ${device.modelId}")
+
+                PrintUtils.message("Waiting for emulator to boot...")
+                while (!bootComplete(dadb)) {
+                    Thread.sleep(1000)
+                }
+
+                if (device.language != null && device.country != null) {
+                    PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
+                    val driver = AndroidDriver(dadb)
+                    driver.installMaestroDriverApp()
+                    val result = driver.setDeviceLocale(
+                        country = device.country,
+                        language = device.language
+                    )
+
+                    when (result) {
+                        SET_LOCALE_RESULT_SUCCESS -> PrintUtils.message("[Done] Setting the device locale to ${device.language}_${device.country}")
+                        SET_LOCALE_RESULT_LOCALE_NOT_VALID -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, the locale is not valid for a chosen device")
+                        SET_LOCALE_RESULT_UPDATE_CONFIGURATION_FAILED -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, exception during updating configuration occurred")
+                        else -> throw IllegalStateException("Failed to set locale ${device.language}_${device.country}, unknown exception happened")
+                    }
+                    driver.uninstallMaestroDriverApp()
+                }
 
                 return Device.Connected(
                     instanceId = dadb.toString(),
@@ -95,7 +129,9 @@ object DeviceService {
             Device.AvailableForLaunch(
                 platform = Platform.WEB,
                 description = "Chromium Desktop Browser (Experimental)",
-                modelId = "chromium"
+                modelId = "chromium",
+                language = null,
+                country = null,
             )
         )
     }
@@ -125,6 +161,8 @@ object DeviceService {
                                 modelId = it,
                                 description = it,
                                 platform = Platform.ANDROID,
+                                language = null,
+                                country = null,
                             )
                         }
                         .toList()
@@ -159,7 +197,7 @@ object DeviceService {
     private fun device(
         runtimeNameByIdentifier: Map<String, String>,
         runtime: Map.Entry<String, List<SimctlList.Device>>,
-        device: SimctlList.Device
+        device: SimctlList.Device,
     ): Device {
         val runtimeName = runtimeNameByIdentifier[runtime.key] ?: "Unknown runtime"
         val description = "${device.name} - $runtimeName - ${device.udid}"
@@ -175,6 +213,8 @@ object DeviceService {
                 modelId = device.udid,
                 description = description,
                 platform = Platform.IOS,
+                language = null,
+                country = null,
             )
         }
     }
@@ -218,7 +258,6 @@ object DeviceService {
         }
     }
 
-
     /**
      * Creates an iOS simulator
      *
@@ -255,7 +294,6 @@ object DeviceService {
             } catch (ignore: IllegalArgumentException) {
                 throw IllegalStateException("Unable to create device. No UUID was generated")
             }
-
         }
     }
 
@@ -274,7 +312,7 @@ object DeviceService {
         systemImage: String,
         tag: String,
         abi: String,
-        force: Boolean = false
+        force: Boolean = false,
     ): String {
         val avd = requireAvdManagerBinary()
         val command = mutableListOf(
@@ -311,7 +349,7 @@ object DeviceService {
         val avd = requireAvdManagerBinary()
         val command = mutableListOf(
             avd.absolutePath,
-             "list", "device"
+            "list", "device"
         )
 
         val process = ProcessBuilder(*command.toTypedArray()).start()
@@ -334,7 +372,6 @@ object DeviceService {
         }.getOrNull() ?: emptyList()
     }
 
-
     /**
      * @return true is Android system image is already installed
      */
@@ -354,7 +391,6 @@ object DeviceService {
 
                 return output.contains(image)
             }
-
         } catch (e: Exception) {
             logger.error("Unable to detect if SDK package is installed", e)
         }
@@ -383,7 +419,6 @@ object DeviceService {
 
                 return output.contains(image)
             }
-
         } catch (e: Exception) {
             logger.error("Unable to install if SDK package is installed", e)
         }
@@ -415,9 +450,24 @@ object DeviceService {
         return process.exitValue() == 0
     }
 
+    private fun bootComplete(dadb: Dadb): Boolean {
+        return try {
+            val booted = dadb.shell("getprop sys.boot_completed").output.trim() == "1"
+            val settingsAvailable = dadb.shell("settings list global").exitCode == 0
+            val packageManagerAvailable = dadb.shell("pm get-max-users").exitCode == 0
+            return settingsAvailable && packageManagerAvailable && booted
+        } catch (e: IllegalStateException) {
+            false
+        }
+    }
+
     private fun requireEmulatorBinary(): File = AndroidEnvUtils.requireEmulatorBinary()
 
     private fun requireAvdManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("avdmanager")
 
     private fun requireSdkManagerBinary(): File = AndroidEnvUtils.requireCommandLineTools("sdkmanager")
+
+    private const val SET_LOCALE_RESULT_SUCCESS = 0
+    private const val SET_LOCALE_RESULT_LOCALE_NOT_VALID = 1
+    private const val SET_LOCALE_RESULT_UPDATE_CONFIGURATION_FAILED = 2
 }

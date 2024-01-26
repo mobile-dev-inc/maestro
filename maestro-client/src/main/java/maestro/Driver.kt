@@ -51,9 +51,11 @@ interface Driver {
 
     fun pressKey(code: KeyCode)
 
-    fun contentDescriptor(): TreeNode
+    fun contentDescriptor(excludeKeyboardElements: Boolean = false): TreeNode
 
     fun scrollVertical()
+
+    fun isKeyboardVisible(): Boolean
 
     fun swipe(start: Point, end: Point, durationMs: Long)
 
@@ -87,7 +89,7 @@ interface Driver {
 
     fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean
 
-    fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy?
+    fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int? = null): ViewHierarchy?
 
     fun capabilities(): List<Capability>
 

@@ -3,10 +3,11 @@ package maestro.cli.util
 internal object DeviceConfigIos {
 
     val device: String = "iPhone-11"
-    val versions = listOf(15, 16)
+    val versions = listOf(15, 16, 17)
     val runtimes = mapOf(
         15 to "iOS-15-5",
-        16 to "iOS-16-2"
+        16 to "iOS-16-2",
+        17 to "iOS-17-0"
     )
 
     val defaultVersion = 15
@@ -22,7 +23,7 @@ data class DeviceConfigAndroid(
     val abi: String
 ) {
     companion object {
-        val versions = listOf(33, 31, 30, 29, 28)
+        val versions = listOf(34, 33, 31, 30, 29, 28)
         val defaultVersion = 30
 
         fun createConfig(version: Int, device: AvdDevice, architecture: MACOS_ARCHITECTURE): DeviceConfigAndroid {

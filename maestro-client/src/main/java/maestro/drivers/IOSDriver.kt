@@ -26,6 +26,7 @@ import hierarchy.AXElement
 import ios.IOSDevice
 import ios.IOSDeviceErrors
 import maestro.*
+import maestro.MaestroDriverStartupException.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.TimeoutException
 import kotlin.collections.set
 
 class IOSDriver(
@@ -138,13 +138,13 @@ class IOSDriver(
         }
     }
 
-    override fun contentDescriptor(): TreeNode {
-        return runDeviceCall { viewHierarchy() }
+    override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
+        return runDeviceCall { viewHierarchy(excludeKeyboardElements) }
     }
 
-    private fun viewHierarchy(): TreeNode {
+    private fun viewHierarchy(excludeKeyboardElements: Boolean): TreeNode {
         LOGGER.info("Requesting view hierarchy of the screen")
-        val hierarchyResult = iosDevice.viewHierarchy()
+        val hierarchyResult = iosDevice.viewHierarchy(excludeKeyboardElements)
         LOGGER.info("Depth of the screen is ${hierarchyResult.depth}")
         if (hierarchyResult.depth > WARNING_MAX_DEPTH) {
             val message = "The view hierarchy has been calculated. The current depth of the hierarchy " +
@@ -202,23 +202,25 @@ class IOSDriver(
         )
     }
 
-    private fun validate(start: Point, end: Point) {
+    override fun isKeyboardVisible(): Boolean {
+        return runDeviceCall { iosDevice.isKeyboardVisible() }
+    }
+
+    private fun validate(start: Point, end: Point): Pair<Point, Point> {
         val screenWidth = widthPoints
         val screenHeight = heightPoints
 
-        if (start.x < 0 || start.x > screenWidth) {
-            error("x value of start point (${start.x}) needs to be between 0 and $screenWidth")
-        }
-        if (end.x < 0 || end.x > screenWidth) {
-            error("x value of end point (${end.x}) needs to be between 0 and $screenWidth")
-        }
+        val validatedStart = Point(
+            x = start.x.coerceIn(0, screenWidth),
+            y = start.y.coerceIn(0, screenHeight)
+        )
 
-        if (start.y < 0 || start.y > screenHeight) {
-            error("y value of start point (${start.y}) needs to be between 0 and $screenHeight")
-        }
-        if (end.y < 0 || end.y > screenHeight) {
-            error("y value of end point (${end.y}) needs to be between 0 and $screenHeight")
-        }
+        val validatedEnd = Point(
+            x = end.x.coerceIn(0, screenWidth),
+            y = end.y.coerceIn(0, screenHeight)
+        )
+
+        return Pair(validatedStart, validatedEnd)
     }
 
     override fun swipe(
@@ -226,15 +228,18 @@ class IOSDriver(
         end: Point,
         durationMs: Long
     ) {
-        validate(start, end)
+        val validatedPoints = validate(start, end)
+
+        val startPoint = validatedPoints.first
+        val endPoint = validatedPoints.second
 
         runDeviceCall {
             waitForAppToSettle(null, null)
             iosDevice.scroll(
-                xStart = start.x.toDouble(),
-                yStart = start.y.toDouble(),
-                xEnd = end.x.toDouble(),
-                yEnd = end.y.toDouble(),
+                xStart = startPoint.x.toDouble(),
+                yStart = startPoint.y.toDouble(),
+                xEnd = endPoint.x.toDouble(),
+                yEnd = endPoint.y.toDouble(),
                 duration = durationMs.toDouble() / 1000
             )
         }
@@ -412,11 +417,11 @@ class IOSDriver(
         }
     }
 
-    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?): ViewHierarchy? {
+    override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
         LOGGER.info("Waiting for animation to end with timeout $SCREEN_SETTLE_TIMEOUT_MS")
         val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
 
-        return if (didFinishOnTime) null else ScreenshotUtils.waitForAppToSettle(initialHierarchy, this)
+        return if (didFinishOnTime) null else ScreenshotUtils.waitForAppToSettle(initialHierarchy, this, timeoutMs)
     }
 
     override fun capabilities(): List<Capability> {
@@ -472,7 +477,7 @@ class IOSDriver(
             Thread.sleep(100)
         }
 
-        throw TimeoutException("Maestro iOS driver did not start up in time")
+        throw IOSDriverTimeoutException("Maestro iOS driver did not start up in time")
     }
 
     private fun <T> runDeviceCall(call: () -> T): T {

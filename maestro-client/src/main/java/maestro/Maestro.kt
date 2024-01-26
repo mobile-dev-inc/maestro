@@ -29,12 +29,10 @@ import maestro.utils.SocketUtils
 import okio.Sink
 import okio.buffer
 import okio.sink
-import okio.source
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
-import java.nio.file.Path
-import java.util.UUID
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -110,6 +108,10 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.hideKeyboard()
     }
 
+    fun isKeyboardVisible(): Boolean {
+        return driver.isKeyboardVisible()
+    }
+
     fun swipe(
         swipeDirection: SwipeDirection? = null,
         startPoint: Point? = null,
@@ -169,19 +171,20 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         waitUntilVisible: Boolean = false,
         longPress: Boolean = false,
         appId: String? = null,
-        tapRepeat: TapRepeat? = null
+        tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         LOGGER.info("Tapping on element: ${tapRepeat ?: ""} $element")
 
-        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy, appId) ?: initialHierarchy
+        val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy, appId, waitToSettleTimeoutMs) ?: initialHierarchy
 
         val center = (
-            hierarchyBeforeTap
-                .refreshElement(element.treeNode)
-                ?.also { LOGGER.info("Refreshed element") }
-                ?.toUiElementOrNull()
-                ?: element
-            ).bounds
+                hierarchyBeforeTap
+                    .refreshElement(element.treeNode)
+                    ?.also { LOGGER.info("Refreshed element") }
+                    ?.toUiElementOrNull()
+                    ?: element
+                ).bounds
             .center()
         performTap(
             x = center.x,
@@ -189,7 +192,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
             initialHierarchy = hierarchyBeforeTap,
-            tapRepeat = tapRepeat
+            tapRepeat = tapRepeat,
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs
         )
 
         if (waitUntilVisible) {
@@ -219,7 +223,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         percentY: Int,
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
-        tapRepeat: TapRepeat? = null
+        tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         val x = cachedDeviceInfo.widthGrid * percentX / 100
         val y = cachedDeviceInfo.heightGrid * percentY / 100
@@ -228,7 +233,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             y = y,
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
-            tapRepeat = tapRepeat
+            tapRepeat = tapRepeat,
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs
         )
     }
 
@@ -238,13 +244,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
         tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         performTap(
             x = x,
             y = y,
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
-            tapRepeat = tapRepeat
+            tapRepeat = tapRepeat,
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs
         )
     }
 
@@ -258,14 +266,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
-        tapRepeat: TapRepeat? = null
+        tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         val capabilities = driver.capabilities()
 
         if (Capability.FAST_HIERARCHY in capabilities) {
-            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat)
+            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs)
         } else {
-            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat)
+            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs)
         }
     }
 
@@ -275,7 +284,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
-        tapRepeat: TapRepeat? = null
+        tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         LOGGER.info("Tapping at ($x, $y) using screenshot based logic for wait")
 
@@ -295,7 +305,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                     if (tapRepeat.repeat > 1) Thread.sleep(delay) // do not wait for single taps
                 }
             } else driver.tap(Point(x, y))
-            val hierarchyAfterTap = waitForAppToSettle()
+            val hierarchyAfterTap = waitForAppToSettle(waitToSettleTimeoutMs = waitToSettleTimeoutMs)
 
             if (hierarchyAfterTap == null || hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something has changed in the UI judging by view hierarchy. Proceed.")
@@ -310,7 +320,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         retryIfNoChange: Boolean = true,
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
-        tapRepeat: TapRepeat? = null
+        tapRepeat: TapRepeat? = null,
+        waitToSettleTimeoutMs: Int? = null
     ) {
         LOGGER.info("Tapping at ($x, $y) using hierarchy based logic for wait")
 
@@ -333,7 +344,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             } else {
                 driver.tap(Point(x, y))
             }
-            val hierarchyAfterTap = waitForAppToSettle()
+            val hierarchyAfterTap = waitForAppToSettle(waitToSettleTimeoutMs = waitToSettleTimeoutMs)
 
             if (hierarchyBeforeTap != hierarchyAfterTap) {
                 LOGGER.info("Something have changed in the UI judging by view hierarchy. Proceed.")
@@ -401,8 +412,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             )
     }
 
-    fun viewHierarchy(): ViewHierarchy {
-        return ViewHierarchy.from(driver)
+    fun viewHierarchy(excludeKeyboardElements: Boolean = false): ViewHierarchy {
+        return ViewHierarchy.from(driver, excludeKeyboardElements)
     }
 
     fun findElementByIdRegex(regex: Regex, timeoutMs: Long): UiElement {
@@ -418,22 +429,29 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     fun findElementBySize(width: Int?, height: Int?, tolerance: Int?, timeoutMs: Long): UiElement? {
         LOGGER.info("Looking for element by size: $width x $height (tolerance $tolerance) (timeout $timeoutMs)")
 
-        return findElementWithTimeout(timeoutMs, Filters.sizeMatches(width, height, tolerance).asFilter())?.element
+        return findElementWithTimeout(
+            timeoutMs,
+            Filters.sizeMatches(width, height, tolerance).asFilter()
+        )?.element
     }
 
     fun findElementWithTimeout(
         timeoutMs: Long,
         filter: ElementFilter,
+        viewHierarchy: ViewHierarchy? = null
     ): FindElementResult? {
-        var hierarchy = ViewHierarchy(TreeNode())
+        var hierarchy = viewHierarchy ?: ViewHierarchy(TreeNode())
         val element = MaestroTimer.withTimeout(timeoutMs) {
-            hierarchy = viewHierarchy()
+            hierarchy = viewHierarchy ?: viewHierarchy()
             filter(hierarchy.aggregate()).firstOrNull()
         }?.toUiElementOrNull()
 
         return if (element == null) {
             null
         } else {
+            if (viewHierarchy != null) {
+                hierarchy = ViewHierarchy(element.treeNode)
+            }
             return FindElementResult(element, hierarchy)
         }
     }
@@ -442,8 +460,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         return filter(viewHierarchy().aggregate())
     }
 
-    fun waitForAppToSettle(initialHierarchy: ViewHierarchy? = null, appId: String? = null): ViewHierarchy? {
-        return driver.waitForAppToSettle(initialHierarchy, appId)
+    fun waitForAppToSettle(
+        initialHierarchy: ViewHierarchy? = null,
+        appId: String? = null,
+        waitToSettleTimeoutMs: Int? = null
+    ): ViewHierarchy? {
+        return driver.waitForAppToSettle(initialHierarchy, appId, waitToSettleTimeoutMs)
     }
 
     fun inputText(text: String) {

@@ -1,5 +1,47 @@
 # Changelog
 
+## 1.35.0 - 2024-1-8
+- Change: Adds view class to Android hierarchy output
+- Change: Improves description of maestro start-device command to include device locale as well
+- Change: Adds scrollable attribute to Android view hierarchy output
+- Feature: Adds childOf attribute to selector to select from children of a container
+- Feature: Adds label attribute to customize the CLI output of maestro commands
+- Fix: Fixing “Unsupported architecture UNKNOWN” on linux environment when calling maestro attempts to create devices
+- Fix: Allow maestro to work below API level 25 for Android
+- Fix: IllegalArgumentException on swipe operation for iOS if the coordinates beyond device width and height are selected
+
+## 1.34.5 - 2024-1-4
+- Feature: Adds a parameter to exclude all the keyboard elements from hierarchy
+
+## 1.34.4 - 2023-12-27
+- Fix: Failures due to swipe ranges going beyond screen dimensions
+- Change: Adding escape key in `pressKey` API
+- Tweak: Avoid returning `Result` in IOSDriver install and clearAppState
+
+## 1.34.3 - 2023-11-21
+- Tweak: Include scrollable attribute in view hierarchy from Android Driver
+- Feature: Custom labels for readability of maestro commands
+- Feature: Adding childOf selector 
+- Tweak: Message of start-device command to show locale as well
+
+## 1.34.2 - 2023-11-13
+- Tweak: Include view class in view hierarchy attributes from the Android driver
+
+
+## 1.34.1 - 2023-11-9
+- Feature: add support `--device-locale` parameter for `maestro cloud` command
+- Feature: add support iOS17 for `maestro start-device` command
+- Feature: add support Android API level 34 for `maestro start-device` command
+
+## 1.34.0 - 2023-10-24
+- Feature: support `--device-locale` parameter for `maestro start-device`
+- Feature: add `centerElement` parameter for `scrollUntilVisible`. Center element will attempt to stop scrolling when the element is near the center of the screen.
+- Feature: add `power` button support for `pressKey` on Android
+- Change: add `tapOn` parameter `waitToSettleTimeoutMs` to control how long it waits to move on to the next command. Helpful for animation heavy apps.
+- Change: improve executionOrder planning
+- Change: improve retry mechanism to ensure openness of XCUITest Server
+- Fix: improve `TimeoutException` for driver startup
+
 ## 1.33.1 - 2023-10-03
 - Feature: support for multipart form data file upload in Javascript, thanks @maciejkrolik
 - Fix: setPermissions produces error on Xcode 15

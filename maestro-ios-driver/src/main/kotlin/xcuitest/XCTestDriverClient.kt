@@ -68,10 +68,10 @@ class XCTestDriverClient(
 
     private val mapper = jacksonObjectMapper()
 
-    fun viewHierarchy(installedApps: Set<String>): ViewHierarchy {
+    fun viewHierarchy(installedApps: Set<String>, excludeKeyboardElements: Boolean): ViewHierarchy {
         val responseString = executeJsonRequest(
             "viewHierarchy",
-            ViewHierarchyRequest(installedApps)
+            ViewHierarchyRequest(installedApps, excludeKeyboardElements)
         )
         return mapper.readValue(responseString, ViewHierarchy::class.java)
     }
@@ -82,6 +82,14 @@ class XCTestDriverClient(
             .build()
 
         return executeJsonRequest(url)
+    }
+
+    fun keyboardInfo(installedApps: Set<String>): KeyboardInfoResponse {
+        val response = executeJsonRequest(
+            "keyboard",
+            KeyboardInfoRequest(installedApps)
+        )
+        return mapper.readValue(response, KeyboardInfoResponse::class.java)
     }
 
     fun isScreenStatic(): IsScreenStaticResponse {

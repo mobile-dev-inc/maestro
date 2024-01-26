@@ -3,22 +3,17 @@ package util
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.utils.MaestroTimer
-import org.apache.commons.io.FileUtils
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
 import util.CommandLineUtils.runCommand
 import java.io.File
 import java.io.InputStream
 import java.lang.ProcessBuilder.Redirect.PIPE
-import java.nio.file.*
-import java.nio.file.attribute.BasicFileAttributes
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.name
 
 object LocalSimulatorUtils {
 
-    data class SimctlError(override val message: String): Throwable(message)
+    data class SimctlError(override val message: String) : Throwable(message)
 
     private val homedir = System.getProperty("user.home")
 
@@ -51,28 +46,28 @@ object LocalSimulatorUtils {
         return jacksonObjectMapper().readValue(json)
     }
 
-    fun awaitLaunch(deviceId: String, timeout: Long= 30000) {
-        MaestroTimer.withTimeout(timeout) {
+    fun awaitLaunch(deviceId: String) {
+        MaestroTimer.withTimeout(60000) {
             if (list()
                     .devices
                     .values
                     .flatten()
-                    .find { it.udid == deviceId }
+                    .find { it.udid.equals(deviceId, ignoreCase = true) }
                     ?.state == "Booted"
             ) true else null
         } ?: throw SimctlError("Device $deviceId did not boot in time")
     }
 
-    fun awaitShutdown(deviceId: String) {
-        MaestroTimer.withTimeout(30000) {
+    fun awaitShutdown(deviceId: String, timeoutMs: Long = 60000) {
+        MaestroTimer.withTimeout(timeoutMs) {
             if (list()
                     .devices
                     .values
                     .flatten()
-                    .find { it.udid == deviceId }
-                    ?.state != "Booted"
+                    .find { it.udid.equals(deviceId, ignoreCase = true) }
+                    ?.state == "Shutdown"
             ) true else null
-        } ?: throw SimctlError("Device $deviceId did not boot in time")
+        } ?: throw SimctlError("Device $deviceId did not shutdown in time")
     }
 
     private fun xcodePath(): String {
@@ -89,9 +84,25 @@ object LocalSimulatorUtils {
                 "simctl",
                 "boot",
                 deviceId
-            )
+            ),
+            waitForCompletion = true
         )
+        awaitLaunch(deviceId)
     }
+
+    fun shutdownSimulator(deviceId: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "shutdown",
+                deviceId
+            ),
+            waitForCompletion = true
+        )
+        awaitShutdown(deviceId)
+    }
+
     fun launchSimulator(deviceId: String) {
         val simulatorPath = "${xcodePath()}/Applications/Simulator.app"
         var exceptionToThrow: Exception? = null
@@ -122,27 +133,8 @@ object LocalSimulatorUtils {
     fun reboot(
         deviceId: String,
     ) {
-        runCommand(
-            listOf(
-                "xcrun",
-                "simctl",
-                "shutdown",
-                deviceId
-            ),
-            waitForCompletion = true
-        )
-        awaitShutdown(deviceId)
-
-        runCommand(
-            listOf(
-                "xcrun",
-                "simctl",
-                "boot",
-                deviceId
-            ),
-            waitForCompletion = true
-        )
-        awaitLaunch(deviceId)
+        shutdownSimulator(deviceId)
+        bootSimulator(deviceId)
     }
 
     fun addTrustedCertificate(
@@ -219,7 +211,6 @@ object LocalSimulatorUtils {
 
         return String(process.inputStream.readBytes()).trimEnd()
     }
-
 
     fun launch(
         deviceId: String,
@@ -367,7 +358,7 @@ object LocalSimulatorUtils {
                         permissionsArgument
                     )
                 )
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 runCommand(
                     listOf(
                         "applesimutils",
@@ -525,7 +516,7 @@ object LocalSimulatorUtils {
 
     data class ScreenRecording(
         val process: Process,
-        val file: File
+        val file: File,
     )
 
     fun startScreenRecording(deviceId: String): ScreenRecording {
@@ -556,6 +547,39 @@ object LocalSimulatorUtils {
         } else {
             throw IllegalStateException("screenrecord.sh file not found")
         }
+    }
+
+    fun setDeviceLanguage(deviceId: String, language: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "defaults",
+                "write",
+                ".GlobalPreferences.plist",
+                "AppleLanguages",
+                "($language)"
+            )
+        )
+    }
+
+    fun setDeviceLocale(deviceId: String, locale: String) {
+        runCommand(
+            listOf(
+                "xcrun",
+                "simctl",
+                "spawn",
+                deviceId,
+                "defaults",
+                "write",
+                ".GlobalPreferences.plist",
+                "AppleLocale",
+                "-string",
+                locale
+            )
+        )
     }
 
     fun stopScreenRecording(screenRecording: ScreenRecording): File {

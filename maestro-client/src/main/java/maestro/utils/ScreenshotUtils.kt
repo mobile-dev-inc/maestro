@@ -35,19 +35,39 @@ class ScreenshotUtils {
             null
         }
 
-        fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, driver: Driver): ViewHierarchy {
-            var latestHierarchy = initialHierarchy ?: viewHierarchy(driver)
-            repeat(10) {
-                val hierarchyAfter = viewHierarchy(driver)
-                if (latestHierarchy == hierarchyAfter) {
-                    val isLoading = latestHierarchy.root.attributes.getOrDefault("is-loading", "false").toBoolean()
-                    if (!isLoading) {
-                        return hierarchyAfter
+        fun waitForAppToSettle(
+            initialHierarchy: ViewHierarchy?,
+            driver: Driver,
+            timeoutMs: Int? = null
+        ): ViewHierarchy {
+            var latestHierarchy: ViewHierarchy
+            if (timeoutMs != null) {
+                val endTime = System.currentTimeMillis() + timeoutMs
+                latestHierarchy = initialHierarchy ?: viewHierarchy(driver)
+                do {
+                    val hierarchyAfter = viewHierarchy(driver)
+                    if (latestHierarchy == hierarchyAfter) {
+                        val isLoading = latestHierarchy.root.attributes.getOrDefault("is-loading", "false").toBoolean()
+                        if (!isLoading) {
+                            return hierarchyAfter
+                        }
                     }
-                }
-                latestHierarchy = hierarchyAfter
+                    latestHierarchy = hierarchyAfter
+                } while (System.currentTimeMillis() < endTime)
+            } else {
+                latestHierarchy = initialHierarchy ?: viewHierarchy(driver)
+                repeat(10) {
+                    val hierarchyAfter = viewHierarchy(driver)
+                    if (latestHierarchy == hierarchyAfter) {
+                        val isLoading = latestHierarchy.root.attributes.getOrDefault("is-loading", "false").toBoolean()
+                        if (!isLoading) {
+                            return hierarchyAfter
+                        }
+                    }
+                    latestHierarchy = hierarchyAfter
 
-                MaestroTimer.sleep(MaestroTimer.Reason.WAIT_TO_SETTLE, 200)
+                    MaestroTimer.sleep(MaestroTimer.Reason.WAIT_TO_SETTLE, 200)
+                }
             }
 
             return latestHierarchy
@@ -76,7 +96,7 @@ class ScreenshotUtils {
         }
 
         private fun viewHierarchy(driver: Driver): ViewHierarchy {
-            return ViewHierarchy.from(driver)
+            return ViewHierarchy.from(driver, false)
         }
     }
 }

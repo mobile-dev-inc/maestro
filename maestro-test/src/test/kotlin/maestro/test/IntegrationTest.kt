@@ -10,7 +10,6 @@ import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
-import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.Orchestra
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.util.Env.withEnv
@@ -29,6 +28,7 @@ import java.awt.Color
 import java.io.File
 import java.nio.file.Paths
 import maestro.orchestra.error.SyntaxError
+import kotlin.system.measureTimeMillis
 
 class IntegrationTest {
 
@@ -1104,7 +1104,6 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
-                Event.HideKeyboard,
                 Event.HideKeyboard,
             )
         )
@@ -2348,7 +2347,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `085 - Open link with auto verify`() {
+    fun `Case 085 - Open link with auto verify`() {
         // Given
         val commands = readCommands("085_open_link_auto_verify")
 
@@ -2369,7 +2368,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `086 - launchApp sets all permissions to allow`() {
+    fun `Case 086 - launchApp sets all permissions to allow`() {
         // Given
         val commands = readCommands("086_launchApp_sets_all_permissions_to_allow")
         val driver = driver {}
@@ -2390,7 +2389,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `087 - launchApp with all permissions to deny`() {
+    fun `Case 087 - launchApp with all permissions to deny`() {
         // Given
         val commands = readCommands("087_launchApp_with_all_permissions_to_deny")
         val driver = driver {}
@@ -2411,7 +2410,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `088 - launchApp with all permissions to deny and notification to allow`() {
+    fun `Case 088 - launchApp with all permissions to deny and notification to allow`() {
         // Given
         val commands = readCommands("088_launchApp_with_all_permissions_to_deny_and_notification_to_allow")
         val driver = driver {}
@@ -2432,7 +2431,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `089 - launchApp with SMS permissions`() {
+    fun `Case 089 - launchApp with SMS permissions`() {
         // Given
         val commands = readCommands("089_launchApp_with_sms_permission_group_to_allow")
         val driver = driver {}
@@ -2453,7 +2452,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `090 - Travel`() {
+    fun `Case 090 - Travel`() {
         // Given
         val commands = readCommands("090_travel")
         val driver = driver {}
@@ -2476,7 +2475,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `091 - Assert visible by index`() {
+    fun `Case 091 - Assert visible by index`() {
         // Given
         val commands = readCommands("091_assert_visible_by_index")
         val driver = driver {
@@ -2504,7 +2503,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `092 - Log messages`() {
+    fun `Case 092 - Log messages`() {
         // Given
         val commands = readCommands("092_log_messages")
         val driver = driver {
@@ -2530,7 +2529,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `093 - JS default values`() {
+    fun `Case 093 - JS default values`() {
         // Given
         val commands = readCommands("093_js_default_value")
         val driver = driver {
@@ -2547,7 +2546,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `094 - Subflow with inlined commands`() {
+    fun `Case 094 - Subflow with inlined commands`() {
         // Given
         val commands = readCommands("094_runFlow_inline")
         val driver = driver {
@@ -2563,7 +2562,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `095 - Launch arguments`() {
+    fun `Case 095 - Launch arguments`() {
         // Given
         val commands = readCommands("095_launch_arguments")
         val driver = driver {
@@ -2588,7 +2587,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `096 - platform condition`() {
+    fun `Case 096 - platform condition`() {
         // Given
         val commands = readCommands("096_platform_condition")
         val driver = driver {
@@ -3023,6 +3022,82 @@ class IntegrationTest {
         )
     }
 
+    @Test
+    fun `Case 113 - Tap on element - with app settle timeout`() {
+        // Given
+        val commands = readCommands("113_tap_on_element_settle_timeout")
+
+        val driver = driver {
+            element {
+                mutatingText = {
+                    "The time is ${System.nanoTime()}"
+                }
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+
+        // When
+        var elapsedTime: Long
+        Maestro(driver).use { maestro ->
+            elapsedTime = measureTimeMillis {
+                orchestra(maestro).runFlow(commands)
+            }
+        }
+
+        // Then
+        // No test failure
+        assertThat(elapsedTime).isAtMost(1000)
+        driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 1)
+    }
+
+    @Test
+    fun `Case 114 - child of selector`() {
+        // Given
+        val commands = readCommands("114_child_of_selector")
+
+        val driver = driver {
+            element {
+                id = "id1"
+                bounds = Bounds(0, 0, 200, 600)
+
+                element {
+                    bounds = Bounds(0, 0, 200, 200)
+                    text = "parent_id_1"
+                    element {
+                        text = "child_id"
+                        bounds = Bounds(0, 0, 100, 200)
+                    }
+                }
+                element {
+                    bounds = Bounds(0, 200, 200, 400)
+                    text = "parent_id_2"
+                    element {
+                        text = "child_id"
+                        bounds = Bounds(0, 200, 100, 400)
+                    }
+                }
+                element {
+                    bounds = Bounds(0, 400, 200, 600)
+                    text = "parent_id_3"
+                    element {
+                        text = "child_id_1"
+                        bounds = Bounds(0, 400, 100, 600)
+                    }
+                }
+            }
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failures
+        driver.assertNoInteraction()
+
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(
@@ -3063,4 +3138,5 @@ class IntegrationTest {
             ?: throw IllegalArgumentException("File $caseName.yaml not found")
         return YamlCommandReader.readCommands(Paths.get(resource.toURI()))
     }
+
 }
