@@ -34,6 +34,22 @@ class LocalXCTestInstaller(
     private val port = defaultPort ?: SocketUtils.nextFreePort(9800, 9900)
 
     override fun uninstall() {
+        fun stop() {
+            logger.info("[Start] Stop XCUITest runner")
+            if (xcTestProcess?.isAlive == true) {
+                xcTestProcess?.destroy()
+            }
+            xcTestProcess = null
+
+            val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
+            if (pid != null) {
+                ProcessBuilder(listOf("kill", pid.toString()))
+                    .start()
+                    .waitFor()
+            }
+            logger.info("[Done] Stop XCUITest runner")
+        }
+
         if (useXcodeTestRunner) {
             return
         }
@@ -43,21 +59,6 @@ class LocalXCTestInstaller(
         logger.info("[Start] Uninstall XCUITest runner")
         XCRunnerCLIUtils.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
         logger.info("[Done] Uninstall XCUITest runner")
-    }
-
-    private fun stop() {
-        logger.info("[Start] Stop XCUITest runner")
-        if (xcTestProcess?.isAlive == true) {
-            xcTestProcess?.destroy()
-        }
-
-        val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-        if (pid != null) {
-            ProcessBuilder(listOf("kill", pid.toString()))
-                .start()
-                .waitFor()
-        }
-        logger.info("[Done] Stop XCUITest runner")
     }
 
     override fun start(): XCTestClient? {
@@ -72,7 +73,7 @@ class LocalXCTestInstaller(
             throw IllegalStateException("XCTest was not started manually")
         }
 
-        stop()
+        uninstall()
 
         repeat(3) { i ->
             logger.info("[Start] Install XCUITest runner on $deviceId")
@@ -84,6 +85,7 @@ class LocalXCTestInstaller(
                 logger.info("[Done] Ensure XCUITest runner is running on $deviceId")
                 return XCTestClient(host, port)
             } else {
+                uninstall()
                 logger.info("[Failed] Ensure XCUITest runner is running on $deviceId")
                 logger.info("[Retry] Retrying setup() ${i}th time")
             }
@@ -145,7 +147,7 @@ class LocalXCTestInstaller(
 
         if (processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
             logger.info("UI Test runner already running, stopping it")
-            stop()
+            uninstall()
         } else {
             logger.info("Not able to find ui test runner app running, going to install now")
 
@@ -201,6 +203,5 @@ class LocalXCTestInstaller(
         private const val XCTEST_RUN_PATH = "/maestro-driver-ios-config.xctestrun"
         private const val UI_TEST_HOST_PATH = "/maestro-driver-ios.zip"
         private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
-        private const val SPRINGBOARD_BUNDLE_ID = "com.apple.springboard"
     }
 }
