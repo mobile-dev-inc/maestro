@@ -74,6 +74,7 @@ data class YamlFluentCommand(
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
     val addMedia: YamlAddMedia? = null,
+    val setAirplaneMode: YamlSetAirplaneMode? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -211,6 +212,7 @@ data class YamlFluentCommand(
                 val tapRepeat = TapRepeat(2, delay)
                 listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
             }
+            setAirplaneMode != null -> listOf(MaestroCommand(SetAirplaneModeCommand(setAirplaneMode.value)))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
