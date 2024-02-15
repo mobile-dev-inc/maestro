@@ -5,7 +5,6 @@
 - Feature: Add support for extra keys to Android TV
 - Feature: Add support for pressing tab key on Android
 - Feature: Add status and time to report.xml
-- Fix: Shebang in maestro script
 - Fix: Extend retry to handle 404 in upload status call
 - Fix: Crashes caused by toasts on Android API < 30
 
