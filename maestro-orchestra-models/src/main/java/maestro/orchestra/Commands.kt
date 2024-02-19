@@ -876,3 +876,15 @@ internal fun tapOnDescription(isLongPress: Boolean?, repeat: TapRepeat?): String
         }
     } else "Tap"
 }
+
+data class SimulateNetworkFailureCommand(
+    val state: Boolean,
+) : Command {
+    override fun description(): String {
+        return if (state) "Enable Network Failure" else "Disable Network Failure"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+       return this
+    }
+}

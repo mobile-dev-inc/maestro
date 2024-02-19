@@ -74,6 +74,7 @@ data class YamlFluentCommand(
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
     val addMedia: YamlAddMedia? = null,
+    val simulateNetworkFailure: YamlSimulateNetworkFailureCommand? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -210,6 +211,9 @@ data class YamlFluentCommand(
                 val delay = if (yamlDelay != null && yamlDelay >= 0) yamlDelay else TapOnElementCommand.DEFAULT_REPEAT_DELAY
                 val tapRepeat = TapRepeat(2, delay)
                 listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
+            }
+            simulateNetworkFailure != null -> {
+                listOf(MaestroCommand(SimulateNetworkFailureCommand(simulateNetworkFailure.state)))
             }
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
