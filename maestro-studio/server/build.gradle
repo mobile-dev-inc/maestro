@@ -22,13 +22,14 @@ def copyWebFiles = tasks.register("copyWebFiles", Copy.class) {
     into(new File(projectDir, 'src/main/resources/web'))
 }
 
-tasks.compileJava {
+tasks.processResources {
     dependsOn(copyWebFiles)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 dependencies {
