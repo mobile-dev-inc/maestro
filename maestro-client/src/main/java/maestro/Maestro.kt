@@ -26,6 +26,7 @@ import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
 import maestro.utils.SocketUtils
+import maestro.utils.StubProxy
 import okio.Sink
 import okio.buffer
 import okio.sink
@@ -45,6 +46,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     private var screenRecordingInProgress = false
+
+    // let the os choose a random port
+    private val stubProxy = StubProxy(0u)
+
+    // current active proxy
+    private var currentProxy: Proxy? = null
+
+    // proxy used before simulating network failure
+    private var previousProxy: Proxy? = null
 
     fun deviceName(): String {
         return driver.name()
@@ -564,11 +574,15 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     ) {
         LOGGER.info("Setting proxy: $host:$port")
 
+        currentProxy = Proxy(host, port)
+
         driver.setProxy(host, port)
     }
 
     fun resetProxy() {
         LOGGER.info("Resetting proxy")
+
+        currentProxy = null
 
         driver.resetProxy()
     }
@@ -579,6 +593,28 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun isUnicodeInputSupported(): Boolean {
         return driver.isUnicodeInputSupported()
+    }
+
+    fun simulateNetworkFailure(state: Boolean): Boolean {
+        if (state) {
+            if (!stubProxy.isRunning) {
+                stubProxy.start()
+            }
+            Thread.sleep(100)
+            val port = stubProxy.port ?: error("Failed to retrieve port from StubProxy while its running")
+            previousProxy = currentProxy
+            setProxy(port = port.toInt())
+        } else {
+            stubProxy.stop()
+            // restore the previous proxy, if any
+            val prevProxy = previousProxy
+            if (prevProxy != null) {
+                setProxy(prevProxy.host, prevProxy.port)
+            } else {
+                resetProxy()
+            }
+        }
+        return true
     }
 
     companion object {

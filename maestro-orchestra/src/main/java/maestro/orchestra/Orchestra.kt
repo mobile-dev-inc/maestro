@@ -277,6 +277,7 @@ class Orchestra(
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
+            is SimulateNetworkFailureCommand -> maestro.simulateNetworkFailure(command.state)
             else -> true
         }.also { mutating ->
             if (mutating) {
