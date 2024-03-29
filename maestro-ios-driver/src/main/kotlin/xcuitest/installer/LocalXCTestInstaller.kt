@@ -43,6 +43,8 @@ class LocalXCTestInstaller(
             }
             xcTestProcess = null
 
+            XCRunnerCLIUtils.killProcessesByPattern("maestro")
+
             val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
             if (pid != null) {
                 ProcessBuilder(listOf("kill", pid.toString()))

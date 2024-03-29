@@ -3,6 +3,7 @@ package util
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.utils.MaestroTimer
 import net.harawata.appdirs.AppDirsFactory
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.time.LocalDateTime
@@ -18,6 +19,7 @@ object XCRunnerCLIUtils {
     private const val MAX_COUNT_XCTEST_LOGS = 5
 
     private val dateFormatter by lazy { DateTimeFormatter.ofPattern(LOG_DIR_DATE_FORMAT) }
+    private val logger = LoggerFactory.getLogger(XCRunnerCLIUtils::class.java)
     private val logDirectory by lazy {
         val parentName = AppDirsFactory.getInstance().getUserLogDir(APP_NAME, null, APP_AUTHOR)
         val logsDirectory = File(parentName, "xctest_runner_logs")
@@ -145,5 +147,33 @@ object XCRunnerCLIUtils {
             outputFile = outputFile,
             params = mapOf("TEST_RUNNER_PORT" to port.toString())
         )
+    }
+
+    fun killProcessesByPattern(pattern: String) {
+        try {
+            // Execute ps and grep command using ProcessBuilder
+            val psGrepProcess = ProcessBuilder("/bin/sh", "-c", "ps aux | grep '$pattern' | grep -v grep | awk '{print \$2}'")
+                .start()
+
+            val reader = psGrepProcess.inputStream.bufferedReader()
+            val pids = reader.readLines().filter { it.isNotEmpty() }
+
+            // Check if any PIDs were found
+            if (pids.isNotEmpty()) {
+                pids.forEach { pid ->
+                    try {
+                        // Kill each process found by PID
+                        ProcessBuilder("kill", pid).start().also { it.waitFor() }
+                        logger.info("Killed process with PID: $pid")
+                    } catch (e: Exception) {
+                        logger.error("Error killing process $pid with patter $pattern", e)
+                    }
+                }
+            } else {
+                logger.info("No processes found matching pattern: $pattern")
+            }
+        } catch (e: Exception) {
+            logger.error("An error occurred while trying to kill processes by pattern '$pattern': ${e.message}", e)
+        }
     }
 }
