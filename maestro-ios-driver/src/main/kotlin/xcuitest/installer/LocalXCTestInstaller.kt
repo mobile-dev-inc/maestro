@@ -98,12 +98,16 @@ class LocalXCTestInstaller(
     }
 
     override fun isChannelAlive(): Boolean {
-        return XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
-            xcTestDriverStatusCheck().use { it.isSuccessful }
+        return try {
+            XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
+                    xcTestDriverStatusCheck().use { it.isSuccessful }
+        } catch (exception: IOException) {
+            false
+        }
     }
 
     private fun ensureOpen(): Boolean {
-        return MaestroTimer.retryUntilTrue(10_000, 200) {
+        return MaestroTimer.retryUntilTrue(60_000, 200) {
             try {
                 XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
                     xcTestDriverStatusCheck().use { it.isSuccessful }
