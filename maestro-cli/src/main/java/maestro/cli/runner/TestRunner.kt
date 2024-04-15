@@ -1,13 +1,10 @@
 package maestro.cli.runner
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getOr
-import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.*
 import maestro.Maestro
 import maestro.cli.device.Device
+import maestro.cli.model.FlowStatus
+import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.FlowDebugMetadata
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.runner.resultview.AnsiResultView
@@ -15,8 +12,6 @@ import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
 import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.OrchestraAppState
@@ -24,13 +19,11 @@ import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
-import kotlin.io.path.absolutePathString
+import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTime
 
 object TestRunner {
 
@@ -43,27 +36,42 @@ object TestRunner {
         env: Map<String, String>,
         resultView: ResultView,
         debugOutputPath: Path
-    ): Int {
+    ): TestExecutionSummary.FlowResult {
 
         // debug
         val debug = FlowDebugMetadata()
 
-        val result = runCatching(resultView, maestro) {
-            val commands = YamlCommandReader.readCommands(flowFile.toPath())
-                .withEnv(env)
-            MaestroCommandRunner.runCommands(
-                maestro,
-                device,
-                resultView,
-                commands,
-                debug
-            )
-        }
+        val result: Result<MaestroCommandRunner.Result, Exception>
+        val time = measureTimeMillis {
+            result = runCatching(resultView, maestro) {
+                val commands = YamlCommandReader.readCommands(flowFile.toPath())
+                    .withEnv(env)
+                MaestroCommandRunner.runCommands(
+                    maestro,
+                    device,
+                    resultView,
+                    commands,
+                    debug
+                )
+            }
+        }.milliseconds
 
         TestDebugReporter.saveFlow(flowFile.name, debug, debugOutputPath)
         if (debug.exception != null) PrintUtils.err("${debug.exception?.message}")
 
-        return if (result.get()?.flowSuccess == true) 0 else 1
+        val flowStatus = if (result.get()?.flowSuccess == true) FlowStatus.SUCCESS else FlowStatus.ERROR
+
+        return TestExecutionSummary.FlowResult(
+            name = flowFile.nameWithoutExtension,
+            fileName = flowFile.nameWithoutExtension,
+            status = flowStatus,
+            failure = if (flowStatus == FlowStatus.ERROR) {
+                TestExecutionSummary.Failure(
+                    message = result.getError()?.message ?: debug.exception?.message ?: "Unknown error",
+                )
+            } else null,
+            duration = time,
+        )
     }
 
     fun runContinuous(

@@ -22,12 +22,14 @@ package maestro.cli.command
 import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
+import maestro.cli.model.FlowStatus
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.runner.TestRunner
 import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.runner.resultview.AnsiResultView
+import maestro.cli.runner.resultview.NoopResultView
 import maestro.cli.runner.resultview.PlainTextResultView
 import maestro.cli.session.MaestroSessionManager
 import maestro.cli.util.PrintUtils
@@ -71,6 +73,12 @@ class TestCommand : Callable<Int> {
         description = ["Test report format (default=\${DEFAULT-VALUE}): \${COMPLETION-CANDIDATES}"],
     )
     private var format: ReportFormat = ReportFormat.NOOP
+
+    @Option(
+        names = ["--hide-execution"],
+        description = ["Hides the execution flow of the tests."],
+    )
+    private var hideExecution: Boolean = false
 
     @Option(
         names = ["--test-suite-name"],
@@ -142,8 +150,11 @@ class TestCommand : Callable<Int> {
         return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->
             val maestro = session.maestro
             val device = session.device
+            val resultView = if (!hideExecution) {
+                if (DisableAnsiMixin.ansiEnabled) AnsiResultView() else PlainTextResultView()
+            } else NoopResultView
 
-            if (flowFile.isDirectory || format != ReportFormat.NOOP) {
+            if (flowFile.isDirectory) {
                 if (continuous) {
                     throw CommandLine.ParameterException(
                         commandSpec.commandLine(),
@@ -164,12 +175,11 @@ class TestCommand : Callable<Int> {
                                 .sink()
                                 .buffer()
                         },
+                    view = resultView,
                     debugOutputPath = debugOutputPath
                 )
 
-                if (!flattenDebugOutput) {
-                    TestDebugReporter.deleteOldFiles()
-                }
+                TestDebugReporter.deleteOldFiles()
                 if (suiteResult.passed) {
                     0
                 } else {
@@ -178,20 +188,16 @@ class TestCommand : Callable<Int> {
                 }
             } else {
                 if (continuous) {
-                    if(!flattenDebugOutput){
-                        TestDebugReporter.deleteOldFiles()
-                    }
+                    TestDebugReporter.deleteOldFiles()
                     TestRunner.runContinuous(maestro, device, flowFile, env)
                 } else {
                     val resultView = if (DisableAnsiMixin.ansiEnabled) AnsiResultView() else PlainTextResultView()
                     val resultSingle = TestRunner.runSingle(maestro, device, flowFile, env, resultView, debugOutputPath)
-                    if (resultSingle == 1) {
+                    if (resultSingle.status != FlowStatus.SUCCESS) {
                         printExitDebugMessage()
                     }
-                    if(!flattenDebugOutput){
-                        TestDebugReporter.deleteOldFiles()
-                    }
-                    return@newSession resultSingle
+                    TestDebugReporter.deleteOldFiles()
+                    return@newSession if (resultSingle.status != FlowStatus.SUCCESS) 1 else 0
                 }
             }
         }
