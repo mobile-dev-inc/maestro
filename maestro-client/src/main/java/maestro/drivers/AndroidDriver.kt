@@ -50,12 +50,16 @@ import java.util.concurrent.*
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.use
 
+private const val DefaultDriverHostPort = 7001
+
 class AndroidDriver(
     private val dadb: Dadb,
-    private val hostPort: Int = 7001,
+    hostPort: Int? = null,
 ) : Driver {
 
-    private val channel = ManagedChannelBuilder.forAddress("localhost", hostPort)
+    private val hostPort: Int = hostPort ?: DefaultDriverHostPort
+
+    private val channel = ManagedChannelBuilder.forAddress("localhost", this.hostPort)
         .usePlaintext()
         .build()
     private val blockingStub = MaestroDriverGrpc.newBlockingStub(channel)

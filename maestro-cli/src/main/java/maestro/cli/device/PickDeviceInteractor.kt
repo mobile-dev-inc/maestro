@@ -6,7 +6,7 @@ import maestro.cli.util.PrintUtils
 
 object PickDeviceInteractor {
 
-    fun pickDevice(deviceId: String? = null): Device.Connected {
+    fun pickDevice(deviceId: String? = null, driverHostPort: Int? = null): Device.Connected {
         if (deviceId != null) {
             return DeviceService.listConnectedDevices()
                 .find {
@@ -25,7 +25,7 @@ object PickDeviceInteractor {
                         Platform.WEB -> PrintUtils.message("Launching ${result.description}")
                     }
 
-                    result = DeviceService.startDevice(result)
+                    result = DeviceService.startDevice(result, driverHostPort)
                 }
 
                 if (result !is Device.Connected) {
@@ -100,7 +100,7 @@ object PickDeviceInteractor {
 }
 
 fun main() {
-    println(PickDeviceInteractor.pickDevice())
+    println(PickDeviceInteractor.pickDevice(driverHostPort = 7001))
 
     println("Ready")
     while (!Thread.interrupted()) {

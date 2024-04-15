@@ -63,6 +63,9 @@ class App {
     @Option(names = ["--host"], hidden = true)
     var host: String? = null
 
+    @Option(names = ["--driver-host-port"], hidden = true)
+    var driverHostPort: Int = 7001
+
     @Option(names = ["--port"], hidden = true)
     var port: Int? = null
 

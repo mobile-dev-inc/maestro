@@ -133,7 +133,12 @@ class TestCommand : Callable<Int> {
         TestDebugReporter.install(debugOutputPathAsString = debugOutput)
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
         
-        return MaestroSessionManager.newSession(parent?.host, parent?.port, deviceId) { session ->
+        return MaestroSessionManager.newSession(
+            host = parent?.host,
+            port = parent?.port,
+            driverHostPort = parent?.driverHostPort,
+            deviceId = deviceId,
+        ) { session ->
             val maestro = session.maestro
             val device = session.device
 

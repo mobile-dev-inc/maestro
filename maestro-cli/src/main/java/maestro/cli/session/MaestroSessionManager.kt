@@ -58,11 +58,17 @@ object MaestroSessionManager {
     fun <T> newSession(
         host: String?,
         port: Int?,
+        driverHostPort: Int?,
         deviceId: String?,
         isStudio: Boolean = false,
         block: (MaestroSession) -> T,
     ): T {
-        val selectedDevice = selectDevice(host, port, deviceId)
+        val selectedDevice = selectDevice(
+            host = host,
+            port = port,
+            driverHostPort = driverHostPort,
+            deviceId = deviceId
+        )
         val sessionId = UUID.randomUUID().toString()
 
         val heartbeatFuture = executor.scheduleAtFixedRate(
@@ -82,7 +88,8 @@ object MaestroSessionManager {
             createMaestro(
                 selectedDevice = selectedDevice,
                 connectToExistingSession = SessionStore.hasActiveSessions(sessionId, selectedDevice.platform),
-                isStudio = isStudio
+                isStudio = isStudio,
+                driverHostPort = driverHostPort,
             )
         }
         Runtime.getRuntime().addShutdownHook(thread(start = false) {
@@ -104,6 +111,7 @@ object MaestroSessionManager {
     private fun selectDevice(
         host: String?,
         port: Int?,
+        driverHostPort: Int?,
         deviceId: String?,
     ): SelectedDevice {
         if (deviceId == "chromium") {
@@ -113,7 +121,7 @@ object MaestroSessionManager {
         }
 
         if (host == null) {
-            val device = PickDeviceInteractor.pickDevice(deviceId)
+            val device = PickDeviceInteractor.pickDevice(deviceId, driverHostPort)
 
             return SelectedDevice(
                 platform = device.platform,
@@ -142,13 +150,15 @@ object MaestroSessionManager {
         selectedDevice: SelectedDevice,
         connectToExistingSession: Boolean,
         isStudio: Boolean,
+        driverHostPort: Int?,
     ): MaestroSession {
         return when {
             selectedDevice.device != null -> MaestroSession(
                 maestro = when (selectedDevice.device.platform) {
                     Platform.ANDROID -> createAndroid(
                         selectedDevice.device.instanceId,
-                        !connectToExistingSession
+                        !connectToExistingSession,
+                        driverHostPort,
                     )
 
                     Platform.IOS -> createIOS(
@@ -165,6 +175,7 @@ object MaestroSessionManager {
                 maestro = pickAndroidDevice(
                     selectedDevice.host,
                     selectedDevice.port,
+                    driverHostPort,
                     !connectToExistingSession,
                 ),
                 device = null,
@@ -172,8 +183,9 @@ object MaestroSessionManager {
 
             selectedDevice.platform == Platform.IOS -> MaestroSession(
                 maestro = pickIOSDevice(
-                    selectedDevice.deviceId,
-                    !connectToExistingSession,
+                    deviceId = selectedDevice.deviceId,
+                    openDriver = !connectToExistingSession,
+                    driverHostPort = driverHostPort,
                 ),
                 device = null,
             )
@@ -222,6 +234,7 @@ object MaestroSessionManager {
     private fun pickAndroidDevice(
         host: String?,
         port: Int?,
+        driverHostPort: Int?,
         openDriver: Boolean,
     ): Maestro {
         val dadb = if (port != null) {
@@ -233,7 +246,7 @@ object MaestroSessionManager {
         }
 
         return Maestro.android(
-            driver = AndroidDriver(dadb),
+            driver = AndroidDriver(dadb, driverHostPort),
             openDriver = openDriver,
         )
     }
@@ -249,18 +262,20 @@ object MaestroSessionManager {
     private fun pickIOSDevice(
         deviceId: String?,
         openDriver: Boolean,
+        driverHostPort: Int?,
     ): Maestro {
-        val device = PickDeviceInteractor.pickDevice(deviceId)
+        val device = PickDeviceInteractor.pickDevice(deviceId, driverHostPort)
         return createIOS(device.instanceId, openDriver)
     }
 
-    private fun createAndroid(instanceId: String, openDriver: Boolean): Maestro {
+    private fun createAndroid(instanceId: String, openDriver: Boolean, driverHostPort: Int?): Maestro {
         val driver = AndroidDriver(
             dadb = Dadb
                 .list()
                 .find { it.toString() == instanceId }
                 ?: Dadb.discover()
                 ?: error("Unable to find device with id $instanceId"),
+            hostPort = driverHostPort,
         )
 
         return Maestro.android(

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException
 
 object DeviceService {
     val logger = LoggerFactory.getLogger(DeviceService::class.java)
-    fun startDevice(device: Device.AvailableForLaunch): Device.Connected {
+    fun startDevice(device: Device.AvailableForLaunch, driverHostPort: Int?): Device.Connected {
         when (device.platform) {
             Platform.IOS -> {
                 try {
@@ -77,7 +77,7 @@ object DeviceService {
 
                 if (device.language != null && device.country != null) {
                     PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
-                    val driver = AndroidDriver(dadb)
+                    val driver = AndroidDriver(dadb, driverHostPort)
                     driver.installMaestroDriverApp()
                     val result = driver.setDeviceLocale(
                         country = device.country,
