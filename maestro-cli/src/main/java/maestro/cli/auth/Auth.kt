@@ -1,8 +1,7 @@
 package maestro.cli.auth
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.mapBoth
 import maestro.cli.CliError
 import maestro.cli.api.ApiClient
 import maestro.cli.util.PrintUtils
@@ -64,18 +63,19 @@ class Auth(
         }
 
         while (true) {
-            val errResponse = when (val result = client.magicLinkGetToken(requestToken)) {
-                is Ok -> {
-                    if (isLogin) {
-                        message("✅ Login successful")
-                    } else {
-                        message("✅ Team created successfully")
-                    }
-                    setCachedAuthToken(result.value)
-                    return result.value
+            val result = client.magicLinkGetToken(requestToken)
+
+            if (result.isOk) {
+                if (isLogin) {
+                    message("✅ Login successful")
+                } else {
+                    message("✅ Team created successfully")
                 }
-                is Err -> result.error
+                setCachedAuthToken(result.value)
+                return result.value
             }
+
+            val errResponse = result.error
             val errorMessage = errResponse.body?.string() ?: errResponse.message
             if (
                 "Login process not complete" !in errorMessage

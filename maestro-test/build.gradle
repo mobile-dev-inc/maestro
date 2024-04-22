@@ -16,6 +16,8 @@ dependencies {
     testImplementation(libs.wiremock.jre8)
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(11)
+
 test {
     useJUnitPlatform()
 }

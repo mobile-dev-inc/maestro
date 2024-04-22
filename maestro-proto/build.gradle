@@ -4,10 +4,7 @@ plugins {
     id "com.vanniktech.maven.publish"
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(11)
 
 jar {
     from "src/main/proto/maestro_android.proto"

@@ -20,7 +20,7 @@ fun File.asManifest(): ManifestData {
 private fun getManifestData(archive: Archive): ManifestData {
     val manifestPath = archive.contentRoot.resolve("AndroidManifest.xml")
     val manifestBytes = BinaryXmlParser.decodeXml(
-        "AndroidManifest.xml", Files.readAllBytes(manifestPath)
+        Files.readAllBytes(manifestPath)
     )
     return try {
         AndroidManifestParser.parse(ByteArrayInputStream(manifestBytes))

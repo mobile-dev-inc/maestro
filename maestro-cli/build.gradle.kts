@@ -56,10 +56,7 @@ dependencies {
     testImplementation(libs.google.truth)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 
 tasks.create("createProperties") {
     dependsOn("processResources")
