@@ -29,6 +29,7 @@ import maestro.debuglog.DebugLogStore
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
+import java.io.BufferedReader
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -64,7 +65,7 @@ class App {
     var host: String? = null
 
     @Option(names = ["--driver-host-port"], hidden = true)
-    var driverHostPort: Int = 7001
+    var driverHostPort: Int = 9001
 
     @Option(names = ["--port"], hidden = true)
     var port: Int? = null

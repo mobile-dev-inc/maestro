@@ -76,7 +76,8 @@ class MaestroDriverService {
         val uiDevice = UiDevice.getInstance(instrumentation)
         val uiAutomation = instrumentation.uiAutomation
 
-        NettyServerBuilder.forPort(7001)
+        println("[ Maestro Driver Service ] Running at:    PORT [ 9001 ]")
+        NettyServerBuilder.forPort(9001)
             .addService(Service(uiDevice, uiAutomation))
             .build()
             .start()

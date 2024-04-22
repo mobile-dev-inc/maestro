@@ -100,7 +100,7 @@ object PickDeviceInteractor {
 }
 
 fun main() {
-    println(PickDeviceInteractor.pickDevice(driverHostPort = 7001))
+    println(PickDeviceInteractor.pickDevice(driverHostPort = 9001))
 
     println("Ready")
     while (!Thread.interrupted()) {

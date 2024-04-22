@@ -251,9 +251,12 @@ object MaestroSessionManager {
         )
     }
 
+    // Kaan: Default is always 5037, on Adb daemon, as well as this library
+    // Part two of sharding patch requires adbServerPort to be [ 5037 + shardIndex ]
+    // Running on a dedicated port for each shard's ADB / RPC stream, instrumenting 1 device per adb server
     private fun createAdbServerDadb(): Dadb? {
         return try {
-            AdbServer.createDadb()
+            AdbServer.createDadb(adbServerPort = 5038)  // TODO: Iterate 5037 + SHARD_INDEX
         } catch (ignored: Exception) {
             null
         }
@@ -276,6 +279,7 @@ object MaestroSessionManager {
                 ?: Dadb.discover()
                 ?: error("Unable to find device with id $instanceId"),
             hostPort = driverHostPort,
+            emulatorName = instanceId,
         )
 
         return Maestro.android(

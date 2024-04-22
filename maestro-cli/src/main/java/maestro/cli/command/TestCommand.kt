@@ -39,6 +39,7 @@ import okio.buffer
 import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Option
+import java.io.BufferedReader
 import java.io.File
 import java.util.concurrent.Callable
 import kotlin.io.path.absolutePathString
@@ -132,7 +133,15 @@ class TestCommand : Callable<Int> {
 
         TestDebugReporter.install(debugOutputPathAsString = debugOutput)
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
-        
+
+
+        // Print system environment variables
+        System.getenv().forEach { (k, v) -> println("$k = $v") }
+
+        // TODO: Not 100% sure if this is part of the working solution, could be unnecessary now.
+        // Enable port forwarding early on
+        parent?.deviceId?.let { enablePorts(deviceId = it, port = 9001) }
+
         return MaestroSessionManager.newSession(
             host = parent?.host,
             port = parent?.port,
@@ -194,5 +203,32 @@ class TestCommand : Callable<Int> {
         println()
         println("==== Debug output (logs & screenshots) ====")
         PrintUtils.message(TestDebugReporter.getDebugOutputPath().absolutePathString())
+    }
+}
+
+fun String.runCommandAndCaptureOutput(): String = ProcessBuilder(*split(" ").toTypedArray())
+    .redirectErrorStream(false)
+    .start()
+    .inputStream.bufferedReader()
+    .use(BufferedReader::readText)
+
+private fun enablePorts(deviceId: String, port: Int) {
+    // Check if the port is already forwarded
+    fun isPortForwarded(): Boolean {
+        val listOutput = "/opt/homebrew/bin/adb -s $deviceId forward --list".runCommandAndCaptureOutput()
+        return Regex("tcp:$port\\s+tcp:$port").containsMatchIn(listOutput)
+    }
+
+    // Apply port forwarding rule
+    fun forwardPort() {
+        "adb -s $deviceId forward tcp:$port tcp:$port".runCommandAndCaptureOutput().also {
+            println("Port $port is now forwarded for device $deviceId.")
+        }
+    }
+
+    // Logic to check and apply forwarding
+    when {
+        !isPortForwarded() -> forwardPort()
+        else -> println("Port $port is already forwarded for device $deviceId.")
     }
 }
