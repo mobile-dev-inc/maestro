@@ -385,6 +385,7 @@ data class LaunchAppCommand(
     val clearState: Boolean? = null,
     val clearKeychain: Boolean? = null,
     val stopApp: Boolean? = null,
+    val killApp: Boolean? = null,
     var permissions: Map<String, String>? = null,
     val launchArguments: Map<String, Any>? = null,
     val label: String? = null,
@@ -405,8 +406,9 @@ data class LaunchAppCommand(
             result += " and clear keychain"
         }
 
-        if (stopApp == false) {
-            result += " without stopping app"
+        when {
+            killApp == true -> result += " by killing app"
+            stopApp == false -> result += " without stopping app"
         }
 
         if (launchArguments != null) {

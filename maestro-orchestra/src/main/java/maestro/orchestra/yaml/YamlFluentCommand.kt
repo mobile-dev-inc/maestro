@@ -392,6 +392,7 @@ data class YamlFluentCommand(
                 clearState = command.clearState,
                 clearKeychain = command.clearKeychain,
                 stopApp = command.stopApp,
+                killApp = command.killApp,
                 permissions = command.permissions,
                 launchArguments = command.arguments,
                 label = command.label,
@@ -604,6 +605,7 @@ data class YamlFluentCommand(
                         clearState = null,
                         clearKeychain = null,
                         stopApp = null,
+                        killApp = null,
                         permissions = null,
                         arguments = null,
                     )

@@ -161,6 +161,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         driver.close()
     }
 
+    override fun killApp(appId: String) {
+        /* no-op */
+    }
+
     override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         ensureOpen()
 

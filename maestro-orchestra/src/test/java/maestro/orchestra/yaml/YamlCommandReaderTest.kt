@@ -608,6 +608,21 @@ internal class YamlCommandReaderTest {
         )
     }
 
+    @Test
+    fun launchApp_withKillApp(
+        @YamlFile("025_launchApp_withKillApp.yaml") commands: List<Command>
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app",
+            )),
+            LaunchAppCommand(
+                appId = "com.example.app",
+                killApp = true,
+            ),
+        )
+    }
+
     private fun commands(vararg commands: Command): List<MaestroCommand> =
         commands.map(::MaestroCommand).toList()
 }

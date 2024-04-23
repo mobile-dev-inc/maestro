@@ -100,6 +100,10 @@ class IOSDriver(
         iosDevice.stop(appId)
     }
 
+    override fun killApp(appId: String) {
+        /* no-op */
+    }
+
     override fun clearAppState(appId: String) {
         iosDevice.clearAppState(appId)
     }

@@ -24,7 +24,6 @@ import com.google.common.truth.Truth.assertThat
 import maestro.*
 import maestro.utils.ScreenshotUtils
 import okio.Sink
-import okio.Source
 import okio.buffer
 import java.awt.image.BufferedImage
 import java.io.File
@@ -100,6 +99,12 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events.add(Event.StopApp(appId))
+    }
+
+    override fun killApp(appId: String) {
+        ensureOpen()
+
+        events.add(Event.KillApp(appId))
     }
 
     override fun clearAppState(appId: String) {
@@ -418,7 +423,12 @@ class FakeDriver : Driver {
         ) : Event(), UserInteraction
 
         data class StopApp(
-            val appId: String
+            val appId: String,
+        ) : Event()
+
+        data class KillApp(
+            val appId: String,
+            val kill: Boolean = false,
         ) : Event()
 
         data class ClearState(

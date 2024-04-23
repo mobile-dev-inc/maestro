@@ -26,6 +26,7 @@ data class YamlLaunchApp(
     val clearState: Boolean?,
     val clearKeychain: Boolean?,
     val stopApp: Boolean?,
+    val killApp: Boolean?,
     val permissions: Map<String, String>?,
     val arguments: Map<String, Any>?,
     val label: String? = null
@@ -41,6 +42,7 @@ data class YamlLaunchApp(
                 clearState = null,
                 clearKeychain = null,
                 stopApp = null,
+                killApp = null,
                 permissions = null,
                 arguments = null,
             )
