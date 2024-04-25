@@ -102,6 +102,12 @@ class FakeDriver : Driver {
         events.add(Event.StopApp(appId))
     }
 
+    override fun killApp(appId: String) {
+        ensureOpen()
+
+        events.add(Event.KillApp(appId))
+    }
+
     override fun clearAppState(appId: String) {
         ensureOpen()
 
@@ -418,6 +424,10 @@ class FakeDriver : Driver {
         ) : Event(), UserInteraction
 
         data class StopApp(
+            val appId: String
+        ) : Event()
+
+        data class KillApp(
             val appId: String
         ) : Event()
 

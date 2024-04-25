@@ -46,6 +46,7 @@ data class MaestroCommand(
     val hideKeyboardCommand: HideKeyboardCommand? = null,
     val takeScreenshotCommand: TakeScreenshotCommand? = null,
     val stopAppCommand: StopAppCommand? = null,
+    val killAppCommand: KillAppCommand? = null,
     val clearStateCommand: ClearStateCommand? = null,
     val clearKeychainCommand: ClearKeychainCommand? = null,
     val runFlowCommand: RunFlowCommand? = null,
@@ -83,6 +84,7 @@ data class MaestroCommand(
         hideKeyboardCommand = command as? HideKeyboardCommand,
         takeScreenshotCommand = command as? TakeScreenshotCommand,
         stopAppCommand = command as? StopAppCommand,
+        killAppCommand = command as? KillAppCommand,
         clearStateCommand = command as? ClearStateCommand,
         clearKeychainCommand = command as? ClearKeychainCommand,
         runFlowCommand = command as? RunFlowCommand,
@@ -120,6 +122,7 @@ data class MaestroCommand(
         hideKeyboardCommand != null -> hideKeyboardCommand
         takeScreenshotCommand != null -> takeScreenshotCommand
         stopAppCommand != null -> stopAppCommand
+        killAppCommand != null -> killAppCommand
         clearStateCommand != null -> clearStateCommand
         clearKeychainCommand != null -> clearKeychainCommand
         runFlowCommand != null -> runFlowCommand

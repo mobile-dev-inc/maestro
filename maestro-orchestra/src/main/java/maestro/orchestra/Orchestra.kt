@@ -263,6 +263,7 @@ class Orchestra(
             is EraseTextCommand -> eraseTextCommand(command)
             is TakeScreenshotCommand -> takeScreenshotCommand(command)
             is StopAppCommand -> stopAppCommand(command)
+            is KillAppCommand -> killAppCommand(command)
             is ClearStateCommand -> clearAppStateCommand(command)
             is ClearKeychainCommand -> clearKeychainCommand()
             is RunFlowCommand -> runFlowCommand(command, config)
@@ -375,6 +376,12 @@ class Orchestra(
 
     private fun stopAppCommand(command: StopAppCommand): Boolean {
         maestro.stopApp(command.appId)
+
+        return true
+    }
+
+    private fun killAppCommand(command: KillAppCommand): Boolean {
+        maestro.killApp(command.appId)
 
         return true
     }
