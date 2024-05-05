@@ -9,10 +9,11 @@ internal object DeviceCreateUtil {
                           osVersion: Int?,
                           language: String?,
                           country: String?,
-                          forceCreate: Boolean): Device.AvailableForLaunch {
+                          forceCreate: Boolean,
+                          shardIndex: Int? = null): Device.AvailableForLaunch {
         return when (platform) {
             Platform.ANDROID -> {
-                getOrCreateAndroidDevice(osVersion, language, country, forceCreate)
+                getOrCreateAndroidDevice(osVersion, language, country, forceCreate, shardIndex)
             }
 
             Platform.IOS -> {
@@ -87,7 +88,8 @@ internal object DeviceCreateUtil {
     private fun getOrCreateAndroidDevice(version: Int?,
                                          language: String?,
                                          country: String?,
-                                         forceCreate: Boolean): Device.AvailableForLaunch {
+                                         forceCreate: Boolean,
+                                         shardIndex: Int? = null): Device.AvailableForLaunch {
         if (version !in DeviceConfigAndroid.versions) {
             throw CliError("Provided Android version is not supported. Please use one of ${DeviceConfigAndroid.versions}")
         }
@@ -152,7 +154,8 @@ internal object DeviceCreateUtil {
                 systemImage = config.systemImage,
                 tag = config.tag,
                 abi = config.abi,
-                force = forceCreate
+                force = forceCreate,
+                shardIndex = shardIndex,
             )
         } catch (e: IllegalStateException) {
             throw CliError("${e.message}")

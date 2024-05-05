@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 object DeviceService {
-    val logger = LoggerFactory.getLogger(DeviceService::class.java)
-    fun startDevice(device: Device.AvailableForLaunch): Device.Connected {
+    private val logger = LoggerFactory.getLogger(DeviceService::class.java)
+    fun startDevice(device: Device.AvailableForLaunch, driverHostPort: Int?, connectedDevices: Set<String> = setOf()): Device.Connected {
         when (device.platform) {
             Platform.IOS -> {
                 try {
@@ -63,21 +63,23 @@ object DeviceService {
 
                 val dadb = MaestroTimer.withTimeout(60000) {
                     try {
-                        Dadb.discover()
+                        Dadb.list().firstOrNull { dadb ->
+                            !connectedDevices.contains(dadb.toString())
+                        }
                     } catch (ignored: Exception) {
                         Thread.sleep(100)
                         null
                     }
                 } ?: throw CliError("Unable to start device: ${device.modelId}")
 
-                PrintUtils.message("Waiting for emulator to boot...")
+                PrintUtils.message("Waiting for emulator ( ${device.modelId} ) to boot...")
                 while (!bootComplete(dadb)) {
                     Thread.sleep(1000)
                 }
 
                 if (device.language != null && device.country != null) {
                     PrintUtils.message("Setting the device locale to ${device.language}_${device.country}...")
-                    val driver = AndroidDriver(dadb)
+                    val driver = AndroidDriver(dadb, driverHostPort)
                     driver.installMaestroDriverApp()
                     val result = driver.setDeviceLocale(
                         country = device.country,
@@ -137,14 +139,15 @@ object DeviceService {
     }
 
     private fun listAndroidDevices(): List<Device> {
-        val connected = Dadb.list()
-            .map {
+        val connected = runCatching {
+            Dadb.list().map {
                 Device.Connected(
                     instanceId = it.toString(),
                     description = it.toString(),
                     platform = Platform.ANDROID,
                 )
             }
+        }.getOrNull() ?: emptyList()
 
         // Note that there is a possibility that AVD is actually already connected and is present in
         // connectedDevices.
@@ -313,12 +316,14 @@ object DeviceService {
         tag: String,
         abi: String,
         force: Boolean = false,
+        shardIndex: Int? = null,
     ): String {
         val avd = requireAvdManagerBinary()
+        val name = "${deviceName}${"_${(shardIndex ?: 0)+1}"}"
         val command = mutableListOf(
             avd.absolutePath,
             "create", "avd",
-            "--name", deviceName,
+            "--name", name,
             "--package", systemImage,
             "--tag", tag,
             "--abi", abi,
@@ -342,7 +347,7 @@ object DeviceService {
             throw IllegalStateException("Failed to start android emulator: $processOutput")
         }
 
-        return deviceName
+        return name
     }
 
     fun getAvailablePixelDevices(): List<AvdDevice> {
