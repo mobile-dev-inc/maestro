@@ -20,15 +20,11 @@
 package maestro.cli.command
 
 import io.ktor.util.collections.ConcurrentSet
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
-import maestro.cli.device.Device
 import maestro.cli.device.DeviceCreateUtil
 import maestro.cli.device.DeviceService
 import maestro.cli.device.PickDeviceView
@@ -56,6 +52,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
+import kotlin.time.Duration.Companion.seconds
 
 @CommandLine.Command(
     name = "test",
@@ -126,7 +123,8 @@ class TestCommand : Callable<Int> {
 
     private val deviceCreationSemaphore = Semaphore(1)
     private val usedPorts = ConcurrentHashMap<Int, Boolean>()
-    private val activeDevices = ConcurrentSet<String>()
+    private val initialActiveDevices = ConcurrentSet<String>()
+    private val currentActiveDevices = ConcurrentSet<String>()
 
     private fun isWebFlow(): Boolean {
         if (!flowFile.isDirectory) {
@@ -160,145 +158,170 @@ class TestCommand : Callable<Int> {
         return handleSessions(debugOutputPath, executionPlan)
     }
 
-    private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking {
-        val deviceIds = (if (isWebFlow())
-            "chromium".also {
-                PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n")
-            }
-        else parent?.deviceId)
-            .orEmpty()
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
+    private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
+        val sharded = shards > 1
 
-        activeDevices.addAll(DeviceService.listConnectedDevices().map {
-            it.instanceId
-        }.toMutableSet())
-        val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
-        val chunkPlans = plan.flowsToRun
-            .withIndex()
-            .groupBy { it.index % shards }
-            .map { (shardIndex, files) ->
-                ExecutionPlan(
-                    files.map { it.value },
-                    if (shardIndex == 0) plan.sequence else null
-                )
-            }
+        runCatching {
+            val deviceIds = (if (isWebFlow())
+                "chromium".also {
+                    PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n")
+                }
+            else parent?.deviceId)
+                .orEmpty()
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
 
-        val barrier = CountDownLatch(effectiveShards)
-
-        (0 until effectiveShards).map { shardIndex ->
-            async(Dispatchers.IO) {
-                val driverHostPort = (9001..9128).shuffled().first { port ->
-                    usedPorts.putIfAbsent(port, true) == null
+            initialActiveDevices.addAll(DeviceService.listConnectedDevices().map {
+                it.instanceId
+            }.toMutableSet())
+            val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
+            val chunkPlans = plan.flowsToRun
+                .withIndex()
+                .groupBy { it.index % shards }
+                .map { (shardIndex, files) ->
+                    ExecutionPlan(
+                        files.map { it.value },
+                        if (shardIndex == 0) plan.sequence else null
+                    )
                 }
 
-                // Acquire lock to execute device creation block
-                deviceCreationSemaphore.acquire()
+            // Collect device configurations for missing shards, if any
+            val missing = effectiveShards - if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
+            val allDeviceConfigs = (0 until missing).map { shardIndex ->
+                PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
+                // Collect device configurations here, one per shard
+                PickDeviceView.requestDeviceOptions()
+            }.toMutableList()
 
-                val deviceId = deviceIds.getOrNull(shardIndex) // 1. Reuse existing device if deviceId is provided
-                        ?: activeDevices.elementAtOrNull(shardIndex) // 2. Reuse existing device if connected device found
-                        ?: run { // 3. Create a new device
-                            val deviceCreated = createDevice(shardIndex)
-                            launchDevice(deviceCreated, driverHostPort, activeDevices).also {
-                                // Add to active devices as soon as bootload with launchDevice finishes
-                                activeDevices.add(it)
+            val barrier = CountDownLatch(effectiveShards)
+
+            (0 until effectiveShards).map { shardIndex ->
+                async(Dispatchers.IO) {
+                    val driverHostPort = (9001..9128).shuffled().first { port ->
+                        usedPorts.putIfAbsent(port, true) == null
+                    }
+
+                    // Acquire lock to execute device creation block
+                    deviceCreationSemaphore.acquire()
+
+                    val deviceId = deviceIds.getOrNull(shardIndex)                  // 1. Reuse existing device if deviceId provided
+                            ?: initialActiveDevices.elementAtOrNull(shardIndex)     // 2. Reuse existing device if connected device found
+                            ?: run { // 3. Create a new device
+                                val cfg = allDeviceConfigs.first()
+                                allDeviceConfigs.remove(cfg)
+                                val deviceCreated = DeviceCreateUtil.getOrCreateDevice(
+                                    cfg.platform,
+                                    cfg.osVersion,
+                                    null,
+                                    null,
+                                    true,
+                                    shardIndex
+                                )
+
+                                DeviceService.startDevice(deviceCreated, driverHostPort, initialActiveDevices + currentActiveDevices).instanceId.also {
+                                    currentActiveDevices.add(it)
+                                    delay(10.seconds)
+                                }
                             }
-                        }
-                // Release lock if device ID was obtained from the connected devices
-                deviceCreationSemaphore.release()
-                // Signal that this thread has reached the barrier
-                barrier.countDown()
-                // Wait for all threads/shards to complete device creation before proceeding
-                barrier.await()
+                    // Release lock if device ID was obtained from the connected devices
+                    deviceCreationSemaphore.release()
+                    // Signal that this thread has reached the barrier
+                    barrier.countDown()
+                    // Wait for all threads/shards to complete device creation before proceeding
+                    barrier.await()
 
-                MaestroSessionManager.newSession(
-                    host = parent?.host,
-                    port = parent?.port,
-                    driverHostPort = driverHostPort,
-                    deviceId = deviceId
-                ) { session ->
-                    val maestro = session.maestro
-                    val device = session.device
+                    MaestroSessionManager.newSession(
+                        host = parent?.host,
+                        port = parent?.port,
+                        driverHostPort = driverHostPort,
+                        deviceId = deviceId
+                    ) { session ->
+                        val maestro = session.maestro
+                        val device = session.device
 
-                    if (flowFile.isDirectory || format != ReportFormat.NOOP) {
-                        if (continuous) {
-                            throw CommandLine.ParameterException(
-                                commandSpec.commandLine(),
-                                "Continuous mode is not supported for directories. $flowFile is a directory",
+                        if (flowFile.isDirectory || format != ReportFormat.NOOP) {
+                            if (continuous) {
+                                throw CommandLine.ParameterException(
+                                    commandSpec.commandLine(),
+                                    "Continuous mode is not supported for directories. $flowFile is a directory",
+                                )
+                            }
+
+                            val suiteResult = TestSuiteInteractor(
+                                maestro = maestro,
+                                device = device,
+                                reporter = ReporterFactory.buildReporter(format, testSuiteName),
+                            ).runTestSuite(
+                                executionPlan = chunkPlans[shardIndex],
+                                env = env,
+                                reportOut = format.fileExtension
+                                    ?.let { extension ->
+                                        (output ?: File(
+                                            "report${
+                                                if (shardIndex >= 1) {
+                                                    "_" + shardIndex + 1
+                                                } else {
+                                                    ""
+                                                }
+                                            }${extension}"
+                                        )).sink().buffer()
+                                    },
+                                debugOutputPath = debugOutputPath
                             )
-                        }
 
-                        val suiteResult = TestSuiteInteractor(
-                            maestro = maestro,
-                            device = device,
-                            reporter = ReporterFactory.buildReporter(format, testSuiteName),
-                        ).runTestSuite(
-                            executionPlan = chunkPlans[shardIndex],
-                            env = env,
-                            reportOut = format.fileExtension
-                                ?.let { extension ->
-                                    (output ?: File("report$extension"))
-                                        .sink()
-                                        .buffer()
-                                },
-                            debugOutputPath = debugOutputPath
-                        )
-
-                        TestDebugReporter.deleteOldFiles()
-                        if (suiteResult.passed) {
-                            0
-                        } else {
-                            printExitDebugMessage()
-                            1
-                        }
-                    } else {
-                        if (continuous) {
                             TestDebugReporter.deleteOldFiles()
-                            TestRunner.runContinuous(maestro, device, flowFile, env)
-                        } else {
-                            val resultView =
-                                if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
-                                else PlainTextResultView()
-                            val resultSingle = TestRunner.runSingle(
-                                maestro,
-                                device,
-                                flowFile,
-                                env,
-                                resultView,
-                                debugOutputPath
-                            )
-                            if (resultSingle == 1) {
+                            if (suiteResult.passed) {
+                                0
+                            } else {
                                 printExitDebugMessage()
+                                1
                             }
-                            TestDebugReporter.deleteOldFiles()
-                            return@newSession resultSingle
+                        } else {
+                            if (continuous) {
+                                TestDebugReporter.deleteOldFiles()
+                                TestRunner.runContinuous(maestro, device, flowFile, env)
+                            } else {
+                                val resultView =
+                                    if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
+                                    else PlainTextResultView()
+                                val resultSingle = TestRunner.runSingle(
+                                    maestro,
+                                    device,
+                                    flowFile,
+                                    env,
+                                    resultView,
+                                    debugOutputPath
+                                )
+                                if (resultSingle == 1) {
+                                    printExitDebugMessage()
+                                }
+                                TestDebugReporter.deleteOldFiles()
+                                return@newSession resultSingle
+                            }
                         }
                     }
                 }
+            }.awaitAll().sum()
+        }.onFailure {
+            PrintUtils.message("❌ Error: ${it.message}")
+            it.printStackTrace()
+            return@runBlocking 1
+        }.onSuccess { failedCount ->
+            if(sharded) {
+                val totalTests = plan.flowsToRun.size.coerceAtLeast(1)
+                val message = "${totalTests - failedCount}/${totalTests} Flows Passed"
+                val lineWidth = message.length + 2
+                val horizontalLine = "┌" + "─".repeat(lineWidth) + "┐\n" +
+                        "│ $message │\n" +
+                        "└" + "─".repeat(lineWidth) + "┘"
+
+                PrintUtils.message(horizontalLine)
             }
-        }.awaitAll().sum()
+            
+            return@runBlocking failedCount
+        }.getOrDefault(0)
     }
-
-    private fun createDevice(shardIndex: Int): Device.AvailableForLaunch {
-        PrintUtils.clearConsole()
-        val options = PickDeviceView.requestDeviceOptions()
-
-        return DeviceCreateUtil.getOrCreateDevice(
-            options.platform,
-            options.osVersion,
-            null,
-            null,
-            true,
-            shardIndex
-        )
-    }
-
-    private fun launchDevice(
-        deviceAvailable: Device.AvailableForLaunch,
-        deviceHostPort: Int,
-        connectedDevices: MutableSet<String>,
-    ) = DeviceService.startDevice(deviceAvailable, deviceHostPort, connectedDevices).instanceId
 
     private fun printExitDebugMessage() {
         println()

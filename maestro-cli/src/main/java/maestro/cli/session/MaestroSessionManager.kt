@@ -240,7 +240,7 @@ object MaestroSessionManager {
             Dadb.create(host ?: defaultHost, port)
         } else {
             Dadb.discover(host ?: defaultHost)
-                ?: createAdbServerDadb(port = driverHostPort)
+                ?: createAdbServerDadb()
                 ?: error("No android devices found.")
         }
 
@@ -250,9 +250,9 @@ object MaestroSessionManager {
         )
     }
 
-    private fun createAdbServerDadb(port: Int? = null): Dadb? {
+    private fun createAdbServerDadb(): Dadb? {
         return try {
-            AdbServer.createDadb(adbServerPort = 5037 + (port ?: Random.nextInt(1, 63)) % 64)
+            AdbServer.createDadb(adbServerPort = 5038)
         } catch (ignored: Exception) {
             null
         }

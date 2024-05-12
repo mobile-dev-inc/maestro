@@ -1,6 +1,7 @@
 package maestro.cli.device
 
 import dadb.Dadb
+import dadb.adbserver.AdbServer
 import maestro.cli.CliError
 import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.AvdDevice
@@ -226,23 +227,16 @@ object DeviceService {
      * @return true if ios simulator or android emulator is currently connected
      */
     fun isDeviceConnected(deviceName: String, platform: Platform): Device.Connected? {
-        return if (platform == Platform.IOS) {
-            listIOSDevices()
-                .filterIsInstance(Device.Connected::class.java)
+        return when (platform) {
+            Platform.IOS -> listIOSDevices()
+                .filterIsInstance<Device.Connected>()
                 .find { it.description.contains(deviceName, ignoreCase = true) }
-        } else {
-            Dadb.list()
-                .mapNotNull {
-                    runCatching { it.shell("getprop ro.kernel.qemu.avd_name").output }.getOrNull() // Gets AVD name
-                }
-                .map {
-                    Device.Connected(
-                        instanceId = it,
-                        description = it,
-                        platform = Platform.ANDROID,
-                    )
-                }
-                .find { it.description.contains(deviceName, ignoreCase = true) }
+            else -> runCatching {
+                (Dadb.list() + AdbServer.listDadbs(adbServerPort = 5038))
+                    .mapNotNull { dadb -> runCatching { dadb.shell("getprop ro.kernel.qemu.avd_name").output }.getOrNull() }
+                    .map { output -> Device.Connected(instanceId = output, description = output, platform = Platform.ANDROID) }
+                    .find { connectedDevice -> connectedDevice.description.contains(deviceName, ignoreCase = true) }
+            }.getOrNull()
         }
     }
 
