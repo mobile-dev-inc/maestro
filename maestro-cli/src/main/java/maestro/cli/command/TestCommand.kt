@@ -145,16 +145,18 @@ class TestCommand : Callable<Int> {
                     )
                 }
 
+                val reporter = ReporterFactory.buildReporter(format, testSuiteName)
+
                 val suiteResult = TestSuiteInteractor(
                     maestro = maestro,
                     device = device,
-                    reporter = ReporterFactory.buildReporter(format, testSuiteName),
+                    reporter = reporter,
                 ).runTestSuite(
                     executionPlan = executionPlan,
                     env = env,
                     reportOut = format.fileExtension
                         ?.let { extension ->
-                            (output ?: File("report$extension"))
+                            File(debugOutputPath.toFile(), "report$extension")
                                 .sink()
                                 .buffer()
                         },
