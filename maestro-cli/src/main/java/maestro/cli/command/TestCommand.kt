@@ -154,7 +154,7 @@ class TestCommand : Callable<Int> {
                     env = env,
                     reportOut = format.fileExtension
                         ?.let { extension ->
-                            (output ?: File("report$extension"))
+                            File(debugOutputPath.toFile(), "report$extension")
                                 .sink()
                                 .buffer()
                         },
