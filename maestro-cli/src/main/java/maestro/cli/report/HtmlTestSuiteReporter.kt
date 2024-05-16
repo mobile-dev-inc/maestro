@@ -61,13 +61,12 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
             if (flow.failure != null) {
                 htmlBuilder.append("<p class=\"card-text text-danger\">${failedStep[idx]}</p>")
                 htmlBuilder.append("<p class=\"card-text text-danger\">${flow.failure.message}</p>")
-                htmlBuilder.append("<a href=\"https://jenkins.evermosa2z.com/job/qa-ec2-node-playground\" class=\"btn btn-danger\" target=\"_blank\">More Info</a>")
                 idx++
             }
             htmlBuilder.append("</div></div>")
         }
     }
-    htmlBuilder.append("</body></html>")
+    htmlBuilder.append("</div></div></div></body></html>")
     return htmlBuilder.toString()
     }
 }
