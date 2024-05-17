@@ -55,18 +55,22 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
     for (suite in summary.suites) {
         htmlBuilder.append("<div class=\"card mb-4\"><div class=\"card-body\"><center><b>Test Suite</b></center><br>Summary: ${if (suite.passed) "PASSED" else "FAILED"}<br>Duration: ${suite.duration}<br>Test Count: ${suite.flows.size}<br><br>")
         for (flow in suite.flows) {
-            htmlBuilder.append("<div class=\"card mb-4\"><div class=\"card-body\">")
-            htmlBuilder.append("<h5 class=\"card-title\">${flow.name}</h5>")
+            val buttonClass = if (flow.status.toString() == "ERROR") "btn btn-danger" else "btn btn-success"
+            htmlBuilder.append("<div class=\"card mb-4\"><div class=\"card-header\"><h5 class=\"mb-0\">")
+            htmlBuilder.append("<button class=\"$buttonClass\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#${flow.name}\" aria-expanded=\"false\" aria-controls=\"${flow.name}\">${flow.name} : ${flow.status}</button></h5></div>")
+            htmlBuilder.append("<div id=\"${flow.name}\" class=\"collapse\"><div class=\"card-body\">")
+
             htmlBuilder.append("<p class=\"card-text\">Status: ${flow.status}<br>Duration: ${flow.duration}<br>File Name: ${flow.fileName}</p>")
             if (flow.failure != null) {
                 htmlBuilder.append("<p class=\"card-text text-danger\">${failedStep[idx]}</p>")
                 htmlBuilder.append("<p class=\"card-text text-danger\">${flow.failure.message}</p>")
                 idx++
             }
-            htmlBuilder.append("</div></div>")
+            htmlBuilder.append("</div></div></div>")
         }
     }
-    htmlBuilder.append("</div></div></div></body></html>")
+    htmlBuilder.append("<script src=\"https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js\"></script>")
+    htmlBuilder.append("</body></html>")
     return htmlBuilder.toString()
     }
 }

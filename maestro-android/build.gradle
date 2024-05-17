@@ -72,9 +72,6 @@ android {
             excludes += ['META-INF/INDEX.LIST', 'META-INF/io.netty.versions.properties']
         }
     }
-    lintOptions {
-        abortOnError false
-    }
 }
 
 tasks.register("copyMaestroAndroid", Copy) {
