@@ -167,7 +167,9 @@ class TestCommand : Callable<Int> {
                     debugOutputPath = debugOutputPath
                 )
 
-                TestDebugReporter.deleteOldFiles()
+                if(!flattenDebugOutput){
+                    TestDebugReporter.deleteOldFiles()
+                }
                 if (suiteResult.passed) {
                     0
                 } else {
@@ -176,7 +178,9 @@ class TestCommand : Callable<Int> {
                 }
             } else {
                 if (continuous) {
-                    TestDebugReporter.deleteOldFiles()
+                    if(!flattenDebugOutput){
+                        TestDebugReporter.deleteOldFiles()
+                    }
                     TestRunner.runContinuous(maestro, device, flowFile, env)
                 } else {
                     val resultView = if (DisableAnsiMixin.ansiEnabled) AnsiResultView() else PlainTextResultView()
@@ -184,7 +188,9 @@ class TestCommand : Callable<Int> {
                     if (resultSingle == 1) {
                         printExitDebugMessage()
                     }
-                    TestDebugReporter.deleteOldFiles()
+                    if(!flattenDebugOutput){
+                        TestDebugReporter.deleteOldFiles()
+                    }
                     return@newSession resultSingle
                 }
             }
