@@ -75,12 +75,13 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
                 htmlBuilder.append("<p class=\"card-text text-danger\">${flow.failure.message}</p>")
                 // idx++
             }
-            htmlBuilder.append("<div id=\"accordion\"><div class=\"card\"><div class=\"card-header\" id=\"headingOne\"><h5 class=\"mb-0\"><button class=\"btn btn-link\" data-toggle=\"collapse show\" data-target=\"#test-step\" aria-expanded=\"true\" aria-controls=\"test-step\">Detail Steps</button></h5></div>")
-            htmlBuilder.append("<div id=\"test-step\" class=\"collapse show\" aria-labelledby=\"headingOne\" data-parent=\"#accordion\"><div class=\"card-body\"><p class=\"card-text\">")
+            htmlBuilder.append("<div class=\"accordion\"><div class=\"card\"><div class=\"card-header\"><h5 class=\"mb-0\"><button class=\"btn btn-link\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#step-${flow.name}\" aria-expanded=\"false\" aria-controls=\"step-${flow.name}\">Test Step Details</button></h5></div>")
+            htmlBuilder.append("<div id=\"step-${flow.name}\" class=\"collapse\"><div class=\"card-body\">")
             for(step in testSteps[idx]){
                 htmlBuilder.append("${step}<br>")
             }
-            htmlBuilder.append("</p></div></div></div></div>")
+            htmlBuilder.append("</div></div></div></div>")
+            
             htmlBuilder.append("</div></div></div>")
             idx++
         }
