@@ -889,6 +889,16 @@ data class SetAirplaneModeCommand(
     }
 }
 
+object ToggleAirplaneModeCommand : Command {
+    override fun description(): String {
+        return "Toggle airplane mode"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return this
+    }
+}
+
 internal fun tapOnDescription(isLongPress: Boolean?, repeat: TapRepeat?): String {
     return if (isLongPress == true) "Long press"
     else if (repeat != null) {

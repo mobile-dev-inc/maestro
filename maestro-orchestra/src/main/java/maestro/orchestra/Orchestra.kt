@@ -278,6 +278,7 @@ class Orchestra(
             is StopRecordingCommand -> stopRecordingCommand()
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             is SetAirplaneModeCommand -> setAirplaneMode(command)
+            is ToggleAirplaneModeCommand -> toggleAirplaneMode()
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -292,6 +293,11 @@ class Orchestra(
             AirplaneValue.Disable -> maestro.setAirplaneModeState(false)
         }
 
+        return true
+    }
+
+    private fun toggleAirplaneMode(): Boolean {
+        maestro.setAirplaneModeState(!maestro.isAirplaneModeEnabled())
         return true
     }
 
