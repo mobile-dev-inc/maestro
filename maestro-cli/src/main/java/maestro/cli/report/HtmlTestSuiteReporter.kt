@@ -41,7 +41,7 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
           summary.suites.forEach { suite ->
             div(classes = "card mb-4") {
               div(classes = "card-body") {
-                h1(classes = "mt-5 text-center") { +"Test Execution Summary" }
+                h1(classes = "mt-5 text-center") { +"Flow Execution Summary" }
                 br{}
                 +"Test Result: ${if (suite.passed) "PASSED" else "FAILED"}"
                 br{}
@@ -51,13 +51,13 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
                 div(classes = "card-group mb-4") {
                   div(classes = "card") {
                     div(classes = "card-body") {
-                      h5(classes = "card-title text-center") { +"Total Test" }
+                      h5(classes = "card-title text-center") { +"Total number of Flows" }
                       h3(classes = "card-text text-center") { +"${suite.flows.size}" }
                     }
                   }
                   div(classes = "card text-white bg-danger") {
                     div(classes = "card-body") {
-                      h5(classes = "card-title text-center") { +"Failed Test" }
+                      h5(classes = "card-title text-center") { +"Failed Flows" }
                       h3(classes = "card-text text-center") { +"${failedTest.size}" }
                     }
                   }
@@ -71,7 +71,7 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
                 if(failedTest.size != 0){
                   div(classes = "card border-danger mb-3") {
                     div(classes = "card-body text-danger") {
-                      b { +"Failed Test" }
+                      b { +"Failed Flow" }
                       br{}
                       p(classes = "card-text") {
                         failedTest.forEach { test ->
