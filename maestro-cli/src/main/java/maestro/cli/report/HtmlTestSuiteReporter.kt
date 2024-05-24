@@ -63,7 +63,7 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
                   }
                   div(classes = "card text-white bg-success") {
                     div(classes = "card-body") {
-                      h5(classes = "card-title text-center") { +"Success Test" }
+                      h5(classes = "card-title text-center") { +"Successful Flows" }
                       h3(classes = "card-text text-center") { +"${suite.flows.size - failedTest.size}" }
                     }
                   }
