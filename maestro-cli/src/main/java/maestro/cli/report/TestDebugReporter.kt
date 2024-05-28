@@ -127,16 +127,20 @@ object TestDebugReporter {
     fun getDebugOutputPath(): Path {
         if (debugOutputPath != null) return debugOutputPath as Path
 
-        val preamble = if(flattenDebugOutput) arrayOf("") else arrayOf(".maestro", "tests")
-        val foldername = if(flattenDebugOutput) "" else DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
-        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")
-        val debugOutput = Paths.get(debugRootPath, *preamble, foldername)
+        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")        
+        val debugOutput = if(flattenDebugOutput) Paths.get(debugRootPath) else buildDefaultDebugOutputPath(debugRootPath)
         
         if (!debugOutput.exists()) {
             Files.createDirectories(debugOutput)
         }
         debugOutputPath = debugOutput
         return debugOutput
+    }
+
+    fun buildDefaultDebugOutputPath(debugRootPath: String): Path {
+        val preamble = arrayOf(".maestro", "tests")
+        val foldername = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
+        return Paths.get(debugRootPath, *preamble, foldername)
     }
 
 }

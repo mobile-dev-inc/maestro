@@ -89,7 +89,7 @@ class TestCommand : Callable<Int> {
 
     @Option(
         names = ["--flatten-debug-output"],
-        description = ["Don't create subfolders or timestamps for each run. Useful for CI."]
+        description = ["All file outputs from the test case are created in the folder without subfolders or timestamps for each run. It can be used with --debug-output. Useful for CI."]
     )
     private var flattenDebugOutput: Boolean = false
 
@@ -167,7 +167,7 @@ class TestCommand : Callable<Int> {
                     debugOutputPath = debugOutputPath
                 )
 
-                if(!flattenDebugOutput){
+                if (!flattenDebugOutput) {
                     TestDebugReporter.deleteOldFiles()
                 }
                 if (suiteResult.passed) {
