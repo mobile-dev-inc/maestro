@@ -16,7 +16,6 @@ class JUnitTestSuiteReporterTest {
 
         val summary = TestExecutionSummary(
             passed = true,
-            deviceName = "iPhone 14",
             suites = listOf(
                 TestExecutionSummary.SuiteResult(
                     passed = true,
@@ -124,7 +123,6 @@ class JUnitTestSuiteReporterTest {
 
         val summary = TestExecutionSummary(
             passed = true,
-            deviceName = "iPhone 14",
             suites = listOf(
                 TestExecutionSummary.SuiteResult(
                     passed = true,
@@ -142,6 +140,7 @@ class JUnitTestSuiteReporterTest {
                         ),
                     ),
                     duration = 421.seconds,
+                    deviceName = "iPhone 14",
                 )
             )
         )

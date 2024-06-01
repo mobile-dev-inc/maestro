@@ -28,6 +28,7 @@ import maestro.cli.DisableAnsiMixin
 import maestro.cli.device.DeviceCreateUtil
 import maestro.cli.device.DeviceService
 import maestro.cli.device.PickDeviceView
+import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
 import maestro.cli.report.TestDebugReporter
@@ -42,7 +43,6 @@ import maestro.orchestra.util.Env.withInjectedShellEnvVars
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner.ExecutionPlan
 import maestro.orchestra.yaml.YamlCommandReader
-import okio.buffer
 import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Option
@@ -52,6 +52,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
+import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
 @CommandLine.Command(
@@ -196,11 +197,12 @@ class TestCommand : Callable<Int> {
 
             val barrier = CountDownLatch(effectiveShards)
 
-            (0 until effectiveShards).map { shardIndex ->
+            val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
-                    val driverHostPort = (9001..9128).shuffled().first { port ->
-                        usedPorts.putIfAbsent(port, true) == null
-                    }
+                    val driverHostPort = if (!sharded) parent?.port ?: 7001 else
+                        (7001..7128).shuffled().find { port ->
+                            usedPorts.putIfAbsent(port, true) == null
+                        } ?: error("No available ports found")
 
                     // Acquire lock to execute device creation block
                     deviceCreationSemaphore.acquire()
@@ -221,7 +223,7 @@ class TestCommand : Callable<Int> {
 
                                 DeviceService.startDevice(deviceCreated, driverHostPort, initialActiveDevices + currentActiveDevices).instanceId.also {
                                     currentActiveDevices.add(it)
-                                    delay(10.seconds)
+                                    delay(2.seconds)
                                 }
                             }
                     // Release lock if device ID was obtained from the connected devices
@@ -255,28 +257,12 @@ class TestCommand : Callable<Int> {
                             ).runTestSuite(
                                 executionPlan = chunkPlans[shardIndex],
                                 env = env,
-                                reportOut = format.fileExtension
-                                    ?.let { extension ->
-                                        (output ?: File(
-                                            "report${
-                                                if (shardIndex >= 1) {
-                                                    "_" + shardIndex + 1
-                                                } else {
-                                                    ""
-                                                }
-                                            }${extension}"
-                                        )).sink().buffer()
-                                    },
+                                reportOut = null,
                                 debugOutputPath = debugOutputPath
                             )
 
                             TestDebugReporter.deleteOldFiles()
-                            if (suiteResult.passed) {
-                                0
-                            } else {
-                                printExitDebugMessage()
-                                1
-                            }
+                            Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
                         } else {
                             if (continuous) {
                                 TestDebugReporter.deleteOldFiles()
@@ -297,29 +283,26 @@ class TestCommand : Callable<Int> {
                                     printExitDebugMessage()
                                 }
                                 TestDebugReporter.deleteOldFiles()
-                                return@newSession resultSingle
+                                return@newSession Triple(resultSingle, 1, null)
                             }
                         }
                     }
                 }
-            }.awaitAll().sum()
+            }.awaitAll()
+
+            val passed = results.sumOf { it.first ?: 0 }
+            val total = results.sumOf { it.second ?: 0 }
+            val suites = results.mapNotNull { it.third }
+
+            suites.mergeSummaries()?.saveReport()
+
+            if (sharded) printShardsMessage(passed, total, suites)
+            if (passed == total) 0 else 1
         }.onFailure {
             PrintUtils.message("❌ Error: ${it.message}")
             it.printStackTrace()
-            return@runBlocking 1
-        }.onSuccess { failedCount ->
-            if(sharded) {
-                val totalTests = plan.flowsToRun.size.coerceAtLeast(1)
-                val message = "${totalTests - failedCount}/${totalTests} Flows Passed"
-                val lineWidth = message.length + 2
-                val horizontalLine = "┌" + "─".repeat(lineWidth) + "┐\n" +
-                        "│ $message │\n" +
-                        "└" + "─".repeat(lineWidth) + "┘"
 
-                PrintUtils.message(horizontalLine)
-            }
-            
-            return@runBlocking failedCount
+            exitProcess(1)
         }.getOrDefault(0)
     }
 
@@ -327,5 +310,42 @@ class TestCommand : Callable<Int> {
         println()
         println("==== Debug output (logs & screenshots) ====")
         PrintUtils.message(TestDebugReporter.getDebugOutputPath().absolutePathString())
+    }
+
+    private fun printShardsMessage(passedTests: Int, totalTests: Int, shardResults: List<TestExecutionSummary>) {
+        val box = buildString {
+            val lines = listOf("Passed: $passedTests/$totalTests") +
+                    shardResults.mapIndexed { index, result ->
+                        "[ ${result.suites.first().deviceName} ] - ${result.passedCount ?: 0}/${result.totalTests ?: 0}"
+                    }
+
+            val lineWidth = lines.maxOf(String::length)
+            append("┌${"─".repeat(lineWidth)}┐\n")
+            lines.forEach { append("│${it.padEnd(lineWidth)}│\n") }
+            append("└${"─".repeat(lineWidth)}┘")
+        }
+        PrintUtils.message(box)
+    }
+
+    private fun TestExecutionSummary.saveReport() {
+        val reporter = ReporterFactory.buildReporter(format, testSuiteName)
+
+        format.fileExtension?.let { extension ->
+            (output ?: File("report$extension"))
+                .sink()
+        }?.also { sink ->
+            reporter.report(
+                this,
+                sink,
+            )
+        }
+    }
+    private fun List<TestExecutionSummary>.mergeSummaries(): TestExecutionSummary? = reduceOrNull { acc, summary ->
+        TestExecutionSummary(
+            passed = acc.passed && summary.passed,
+            suites = acc.suites + summary.suites,
+            passedCount = sumOf { it.passedCount ?: 0 },
+            totalTests = sumOf { it.totalTests ?: 0 }
+        )
     }
 }

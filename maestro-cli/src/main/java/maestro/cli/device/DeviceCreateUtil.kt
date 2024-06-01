@@ -105,12 +105,11 @@ internal object DeviceCreateUtil {
         }
 
         val systemImage = config.systemImage
-        var deviceName = config.deviceName + shardIndex?.let { "_${it + 1}" }
+        val deviceName = config.deviceName + shardIndex?.let { "_${it + 1}" }
 
         // check connected device
-        while (DeviceService.isDeviceConnected(deviceName, Platform.ANDROID) != null) {
-            deviceName += "_"
-        }
+        if (DeviceService.isDeviceConnected(deviceName, Platform.ANDROID) != null && shardIndex == null)
+            throw CliError("A device with name $deviceName is already connected")
 
         // existing device
         val existingDevice =

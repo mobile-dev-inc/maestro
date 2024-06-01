@@ -85,7 +85,7 @@ class MaestroDriverService {
         val uiDevice = UiDevice.getInstance(instrumentation)
         val uiAutomation = instrumentation.uiAutomation
 
-        val port = InstrumentationRegistry.getArguments().getString("port", "9001").toInt()
+        val port = InstrumentationRegistry.getArguments().getString("port", "7001").toInt()
 
         println("Server running on port [ $port ]")
 

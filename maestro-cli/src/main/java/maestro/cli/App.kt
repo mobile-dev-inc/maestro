@@ -64,9 +64,6 @@ class App {
     @Option(names = ["--host"], hidden = true)
     var host: String? = null
 
-    @Option(names = ["--driver-host-port"], hidden = true)
-    var driverHostPort: Int = Random.nextInt(9001, 9128)
-
     @Option(names = ["--port"], hidden = true)
     var port: Int? = null
 

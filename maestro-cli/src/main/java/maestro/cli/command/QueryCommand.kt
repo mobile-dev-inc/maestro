@@ -63,7 +63,7 @@ class QueryCommand : Runnable {
         MaestroSessionManager.newSession(
             host = parent?.host,
             port = parent?.port,
-            driverHostPort = parent?.driverHostPort,
+            driverHostPort = parent?.port,
             deviceId = parent?.deviceId
         ) { session ->
             val filters = mutableListOf<ElementFilter>()

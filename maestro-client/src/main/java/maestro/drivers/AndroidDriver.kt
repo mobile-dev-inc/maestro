@@ -54,7 +54,7 @@ import java.util.concurrent.TimeoutException
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.use
 
-private const val DefaultDriverHostPort = 9001
+private const val DefaultDriverHostPort = 7001
 
 class AndroidDriver(
     private val dadb: Dadb,
