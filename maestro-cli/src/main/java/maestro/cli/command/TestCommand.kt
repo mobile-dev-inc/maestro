@@ -183,7 +183,10 @@ class TestCommand : Callable<Int> {
                 .map { (shardIndex, files) ->
                     ExecutionPlan(
                         files.map { it.value },
-                        if (shardIndex == 0) plan.sequence else null
+                        plan.sequence.also {
+                            if (it?.flows?.isNotEmpty() == true && sharded)
+                                error("Cannot run sharded tests with sequential execution.")
+                        }
                     )
                 }
 
