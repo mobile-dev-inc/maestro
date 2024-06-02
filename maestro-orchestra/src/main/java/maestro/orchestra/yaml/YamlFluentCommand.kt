@@ -247,7 +247,7 @@ data class YamlFluentCommand(
             resolvedPath
         }
         val mediaAbsolutePathStrings = mediaPaths.mapNotNull { it.absolutePathString() }
-        return AddMediaCommand(mediaAbsolutePathStrings)
+        return AddMediaCommand(mediaAbsolutePathStrings, addMedia.label)
     }
 
     private fun runFlowCommand(

@@ -115,6 +115,10 @@ appId: com.example.app
 - swipe:
     direction: DOWN
     label: "Swipe down a bit"
+- addMedia:
+    files:
+        - "023_image.png"
+    label: "Add a picture to the device"
 
 # Repeats
 - repeat:
