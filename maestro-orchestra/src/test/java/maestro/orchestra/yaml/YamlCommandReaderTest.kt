@@ -5,6 +5,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Paths
 import maestro.KeyCode
 import maestro.ScrollDirection
+import maestro.SwipeDirection
 import maestro.TapRepeat
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.AssertConditionCommand
@@ -39,6 +40,7 @@ import maestro.orchestra.StartRecordingCommand
 import maestro.orchestra.StopAppCommand
 import maestro.orchestra.KillAppCommand
 import maestro.orchestra.StopRecordingCommand
+import maestro.orchestra.SwipeCommand
 import maestro.orchestra.TakeScreenshotCommand
 import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointV2Command
@@ -507,6 +509,10 @@ internal class YamlCommandReaderTest {
             WaitForAnimationToEndCommand(
                 timeout = 4000,
                 label = "Wait for the thing to stop spinning"
+            ),
+            SwipeCommand(
+                direction = SwipeDirection.DOWN,
+                label = "Swipe down a bit"
             ),
             RepeatCommand(
                 condition = Condition(visible = ElementSelector(textRegex = "Some important text")),

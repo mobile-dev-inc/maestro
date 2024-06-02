@@ -112,6 +112,9 @@ appId: com.example.app
 - waitForAnimationToEnd:
     timeout: 4000
     label: "Wait for the thing to stop spinning"
+- swipe:
+    direction: DOWN
+    label: "Swipe down a bit"
 
 # Repeats
 - repeat:
