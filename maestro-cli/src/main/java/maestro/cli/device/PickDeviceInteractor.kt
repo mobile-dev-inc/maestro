@@ -10,7 +10,7 @@ object PickDeviceInteractor {
         if (deviceId != null) {
             return DeviceService.listConnectedDevices()
                 .find {
-                    it.instanceId == deviceId
+                    it.instanceId.equals(deviceId, ignoreCase = true)
                 } ?: throw CliError("Device with id $deviceId is not connected")
         }
 

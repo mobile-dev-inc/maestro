@@ -17,7 +17,7 @@ internal object DeviceCreateUtil {
             }
 
             Platform.IOS -> {
-                getOrCreateIosDevice(osVersion, language, country, forceCreate)
+                getOrCreateIosDevice(osVersion, language, country, forceCreate, shardIndex)
             }
 
             else -> throw CliError("Unsupported platform $platform. Please specify one of: android, ios")
@@ -27,7 +27,8 @@ internal object DeviceCreateUtil {
     private fun getOrCreateIosDevice(version: Int?,
                                      language: String?,
                                      country: String?,
-                                     forceCreate: Boolean): Device.AvailableForLaunch {
+                                     forceCreate: Boolean,
+                                     shardIndex: Int? = null): Device.AvailableForLaunch {
         if (version !in DeviceConfigIos.versions) {
             throw CliError("Provided iOS version is not supported. Please use one of ${DeviceConfigIos.versions}")
         }
@@ -37,11 +38,11 @@ internal object DeviceCreateUtil {
             throw CliError("Provided iOS runtime is not supported $runtime")
         }
 
-        val deviceName = DeviceConfigIos.generateDeviceName(version!!)
+        val deviceName = DeviceConfigIos.generateDeviceName(version!!) + shardIndex?.let { "_${it + 1}" }.orEmpty()
         val device = DeviceConfigIos.device
 
         // check connected device
-        if (DeviceService.isDeviceConnected(deviceName, Platform.IOS) != null) {
+        if (DeviceService.isDeviceConnected(deviceName, Platform.IOS) != null && shardIndex == null && !forceCreate) {
             throw CliError("A device with name $deviceName is already connected")
         }
 
@@ -105,10 +106,10 @@ internal object DeviceCreateUtil {
         }
 
         val systemImage = config.systemImage
-        val deviceName = config.deviceName + shardIndex?.let { "_${it + 1}" }
+        val deviceName = config.deviceName + shardIndex?.let { "_${it + 1}" }.orEmpty()
 
         // check connected device
-        if (DeviceService.isDeviceConnected(deviceName, Platform.ANDROID) != null && shardIndex == null)
+        if (DeviceService.isDeviceConnected(deviceName, Platform.ANDROID) != null && shardIndex == null && !forceCreate)
             throw CliError("A device with name $deviceName is already connected")
 
         // existing device

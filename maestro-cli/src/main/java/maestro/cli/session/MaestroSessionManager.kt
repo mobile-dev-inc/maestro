@@ -44,7 +44,6 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.random.Random
 import kotlin.system.exitProcess
 
 object MaestroSessionManager {
@@ -162,7 +161,8 @@ object MaestroSessionManager {
 
                     Platform.IOS -> createIOS(
                         selectedDevice.device.instanceId,
-                        !connectToExistingSession
+                        !connectToExistingSession,
+                        driverHostPort,
                     )
 
                     Platform.WEB -> pickWebDevice(isStudio)
@@ -184,7 +184,7 @@ object MaestroSessionManager {
                 maestro = pickIOSDevice(
                     deviceId = selectedDevice.deviceId,
                     openDriver = !connectToExistingSession,
-                    driverHostPort = driverHostPort,
+                    driverHostPort = driverHostPort ?: defaultXcTestPort,
                 ),
                 device = null,
             )
@@ -261,10 +261,10 @@ object MaestroSessionManager {
     private fun pickIOSDevice(
         deviceId: String?,
         openDriver: Boolean,
-        driverHostPort: Int?,
+        driverHostPort: Int,
     ): Maestro {
         val device = PickDeviceInteractor.pickDevice(deviceId, driverHostPort)
-        return createIOS(device.instanceId, openDriver)
+        return createIOS(device.instanceId, openDriver, driverHostPort)
     }
 
     private fun createAndroid(
@@ -291,19 +291,20 @@ object MaestroSessionManager {
     private fun createIOS(
         deviceId: String,
         openDriver: Boolean,
+        driverHostPort: Int?,
     ): Maestro {
 
         val xcTestInstaller = LocalXCTestInstaller(
             logger = IOSDriverLogger(LocalXCTestInstaller::class.java),
             deviceId = deviceId,
             host = defaultXctestHost,
-            defaultPort = defaultXcTestPort
+            defaultPort = driverHostPort ?: defaultXcTestPort
         )
 
         val xcTestDriverClient = XCTestDriverClient(
             installer = xcTestInstaller,
             logger = IOSDriverLogger(XCTestDriverClient::class.java),
-            client = XCTestClient(defaultXctestHost, defaultXcTestPort)
+            client = XCTestClient(defaultXctestHost, driverHostPort ?: defaultXcTestPort),
         )
 
         val xcTestDevice = XCTestIOSDevice(
