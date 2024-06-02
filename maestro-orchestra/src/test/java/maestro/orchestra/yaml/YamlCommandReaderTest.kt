@@ -480,6 +480,13 @@ internal class YamlCommandReaderTest {
                 mediaPaths = listOf(Paths.get("build/resources/test/YamlCommandReaderTest/023_image.png").toAbsolutePath().toString()),
                 label = "Add a picture to the device"
             ),
+            SetAirplaneModeCommand(
+                value = AirplaneValue.Enable,
+                label = "Turn on airplane mode for testing"
+            ),
+            ToggleAirplaneModeCommand(
+                label = "Toggle airplane mode for testing"
+            ),
             RepeatCommand(
                 condition = Condition(visible = ElementSelector(textRegex = "Some important text")),
                 commands = listOf(

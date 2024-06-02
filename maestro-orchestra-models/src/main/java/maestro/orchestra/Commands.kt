@@ -19,7 +19,6 @@
 
 package maestro.orchestra
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import maestro.KeyCode
 import maestro.Point
 import maestro.ScrollDirection
@@ -887,20 +886,20 @@ data class StopRecordingCommand(
 }
 
 enum class AirplaneValue {
-    @JsonProperty("enabled")
     Enable,
-    @JsonProperty("disabled")
     Disable,
 }
 
 data class SetAirplaneModeCommand(
     val value: AirplaneValue,
+    val label: String? = null,
 ) : Command {
     override fun description(): String {
-        return when (value) {
-            AirplaneValue.Enable -> "Enable airplane mode"
-            AirplaneValue.Disable -> "Disable airplane mode"
-        }
+        return label
+            ?: when (value) {
+                AirplaneValue.Enable -> "Enable airplane mode"
+                AirplaneValue.Disable -> "Disable airplane mode"
+            }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
@@ -908,9 +907,12 @@ data class SetAirplaneModeCommand(
     }
 }
 
-object ToggleAirplaneModeCommand : Command {
+data class ToggleAirplaneModeCommand(
+    val label: String? = null,
+) : Command {
+
     override fun description(): String {
-        return "Toggle airplane mode"
+        return label ?: "Toggle airplane mode"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {

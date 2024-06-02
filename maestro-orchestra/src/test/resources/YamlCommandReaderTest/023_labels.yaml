@@ -116,9 +116,14 @@ appId: com.example.app
     direction: DOWN
     label: "Swipe down a bit"
 - addMedia:
-    files:
-        - "023_image.png"
-    label: "Add a picture to the device"
+      files:
+          - "023_image.png"
+      label: "Add a picture to the device"
+- setAirplaneMode:
+      value: enabled
+      label: "Turn on airplane mode for testing"
+- toggleAirplaneMode:
+      label: "Toggle airplane mode for testing"
 
 # Repeats
 - repeat:
