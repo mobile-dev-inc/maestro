@@ -224,10 +224,11 @@ class Orchestra(
         }
         val shouldUseGraalJs =
             config?.ext?.get("jsEngine") == "graaljs" || System.getenv("MAESTRO_USE_GRAALJS") == "true"
+        val platform = maestro.deviceInfo().platform.toString().lowercase()
         jsEngine = if (shouldUseGraalJs) {
-            httpClient?.let { GraalJsEngine(it) } ?: GraalJsEngine()
+            httpClient?.let { GraalJsEngine(it, platform) } ?: GraalJsEngine(platform = platform)
         } else {
-            httpClient?.let { RhinoJsEngine(it) } ?: RhinoJsEngine()
+            httpClient?.let { RhinoJsEngine(it, platform) } ?: RhinoJsEngine(platform = platform)
         }
     }
 
@@ -278,12 +279,28 @@ class Orchestra(
             is StartRecordingCommand -> startRecordingCommand(command)
             is StopRecordingCommand -> stopRecordingCommand()
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
+            is SetAirplaneModeCommand -> setAirplaneMode(command)
+            is ToggleAirplaneModeCommand -> toggleAirplaneMode()
             else -> true
         }.also { mutating ->
             if (mutating) {
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
         }
+    }
+
+    private fun setAirplaneMode(command: SetAirplaneModeCommand): Boolean {
+        when (command.value) {
+            AirplaneValue.Enable -> maestro.setAirplaneModeState(true)
+            AirplaneValue.Disable -> maestro.setAirplaneModeState(false)
+        }
+
+        return true
+    }
+
+    private fun toggleAirplaneMode(): Boolean {
+        maestro.setAirplaneModeState(!maestro.isAirplaneModeEnabled())
+        return true
     }
 
     private fun travelCommand(command: TravelCommand): Boolean {

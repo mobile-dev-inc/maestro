@@ -98,4 +98,8 @@ interface Driver {
     fun setPermissions(appId: String, permissions: Map<String, String>)
 
     fun addMedia(mediaFiles: List<File>)
+
+    fun isAirplaneModeEnabled(): Boolean
+
+    fun setAirplaneMode(enabled: Boolean)
 }

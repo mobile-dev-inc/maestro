@@ -3109,7 +3109,17 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 115 - Kill app`() {
+    fun `Case 115 - airplane mode`()  {
+        val commands = readCommands("115_airplane_mode")
+        val driver = driver { }
+
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+    }
+    
+    @Test
+    fun `Case 116 - Kill app`() {
         // Given
         val commands = readCommands("115_kill_app")
 
