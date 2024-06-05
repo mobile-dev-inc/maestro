@@ -61,6 +61,7 @@ data class YamlFluentCommand(
     val takeScreenshot: YamlTakeScreenshot? = null,
     val extendedWaitUntil: YamlExtendedWaitUntil? = null,
     val stopApp: YamlStopApp? = null,
+    val killApp: YamlKillApp? = null,
     val clearState: YamlClearState? = null,
     val runFlow: YamlRunFlow? = null,
     val setLocation: YamlSetLocation? = null,
@@ -74,6 +75,8 @@ data class YamlFluentCommand(
     val startRecording: YamlStartRecording? = null,
     val stopRecording: YamlStopRecording? = null,
     val addMedia: YamlAddMedia? = null,
+    val setAirplaneMode: YamlSetAirplaneMode? = null,
+    val toggleAirplaneMode: YamlToggleAirplaneMode? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -151,6 +154,14 @@ data class YamlFluentCommand(
                     )
                 )
             )
+            killApp != null -> listOf(
+                MaestroCommand(
+                    KillAppCommand(
+                        appId = killApp.appId ?: appId,
+                        label = killApp.label
+                    )
+                )
+            )
             clearState != null -> listOf(
                 MaestroCommand(
                     maestro.orchestra.ClearStateCommand(
@@ -211,6 +222,8 @@ data class YamlFluentCommand(
                 val tapRepeat = TapRepeat(2, delay)
                 listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
             }
+            setAirplaneMode != null -> listOf(MaestroCommand(SetAirplaneModeCommand(setAirplaneMode.value)))
+            toggleAirplaneMode != null -> listOf(MaestroCommand(ToggleAirplaneModeCommand))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
         }
     }
@@ -613,6 +626,10 @@ data class YamlFluentCommand(
                     stopApp = YamlStopApp()
                 )
 
+                "killApp" -> YamlFluentCommand(
+                    killApp = YamlKillApp()
+                )
+
                 "clearState" -> YamlFluentCommand(
                     clearState = YamlClearState(
                         appId = null,
@@ -665,6 +682,10 @@ data class YamlFluentCommand(
 
                 "stopRecording" -> YamlFluentCommand(
                     stopRecording = YamlStopRecording()
+                )
+
+                "toggleAirplaneMode" -> YamlFluentCommand(
+                    toggleAirplaneMode = YamlToggleAirplaneMode()
                 )
 
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")

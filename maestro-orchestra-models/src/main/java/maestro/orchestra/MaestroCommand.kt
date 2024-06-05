@@ -46,6 +46,7 @@ data class MaestroCommand(
     val hideKeyboardCommand: HideKeyboardCommand? = null,
     val takeScreenshotCommand: TakeScreenshotCommand? = null,
     val stopAppCommand: StopAppCommand? = null,
+    val killAppCommand: KillAppCommand? = null,
     val clearStateCommand: ClearStateCommand? = null,
     val clearKeychainCommand: ClearKeychainCommand? = null,
     val runFlowCommand: RunFlowCommand? = null,
@@ -62,6 +63,8 @@ data class MaestroCommand(
     val startRecordingCommand: StartRecordingCommand? = null,
     val stopRecordingCommand: StopRecordingCommand? = null,
     val addMediaCommand: AddMediaCommand? = null,
+    val setAirplaneModeCommand: SetAirplaneModeCommand? = null,
+    val toggleAirplaneModeCommand: ToggleAirplaneModeCommand? = null,
 ) {
 
     constructor(command: Command) : this(
@@ -83,6 +86,7 @@ data class MaestroCommand(
         hideKeyboardCommand = command as? HideKeyboardCommand,
         takeScreenshotCommand = command as? TakeScreenshotCommand,
         stopAppCommand = command as? StopAppCommand,
+        killAppCommand = command as? KillAppCommand,
         clearStateCommand = command as? ClearStateCommand,
         clearKeychainCommand = command as? ClearKeychainCommand,
         runFlowCommand = command as? RunFlowCommand,
@@ -98,7 +102,9 @@ data class MaestroCommand(
         travelCommand = command as? TravelCommand,
         startRecordingCommand = command as? StartRecordingCommand,
         stopRecordingCommand = command as? StopRecordingCommand,
-        addMediaCommand = command as? AddMediaCommand
+        addMediaCommand = command as? AddMediaCommand,
+        setAirplaneModeCommand = command as? SetAirplaneModeCommand,
+        toggleAirplaneModeCommand = command as? ToggleAirplaneModeCommand,
     )
 
     fun asCommand(): Command? = when {
@@ -120,6 +126,7 @@ data class MaestroCommand(
         hideKeyboardCommand != null -> hideKeyboardCommand
         takeScreenshotCommand != null -> takeScreenshotCommand
         stopAppCommand != null -> stopAppCommand
+        killAppCommand != null -> killAppCommand
         clearStateCommand != null -> clearStateCommand
         clearKeychainCommand != null -> clearKeychainCommand
         runFlowCommand != null -> runFlowCommand
@@ -136,6 +143,8 @@ data class MaestroCommand(
         startRecordingCommand != null -> startRecordingCommand
         stopRecordingCommand != null -> stopRecordingCommand
         addMediaCommand != null -> addMediaCommand
+        setAirplaneModeCommand != null -> setAirplaneModeCommand
+        toggleAirplaneModeCommand != null -> toggleAirplaneModeCommand
         else -> null
     }
 

@@ -100,6 +100,11 @@ class IOSDriver(
         iosDevice.stop(appId)
     }
 
+    override fun killApp(appId: String) {
+        // On iOS there is no Process Death like on Android so this command will be a synonym to the stop command
+        stopApp(appId)
+    }
+
     override fun clearAppState(appId: String) {
         iosDevice.clearAppState(appId)
     }
@@ -438,6 +443,15 @@ class IOSDriver(
         LOGGER.info("[Start] Adding media files")
         mediaFiles.forEach { addMediaToDevice(it) }
         LOGGER.info("[Done] Adding media files")
+    }
+
+    override fun isAirplaneModeEnabled(): Boolean {
+        LOGGER.warn("Airplane mode is not available on iOS simulators")
+        return false
+    }
+
+    override fun setAirplaneMode(enabled: Boolean) {
+        LOGGER.warn("Airplane mode is not available on iOS simulators")
     }
 
     private fun addMediaToDevice(mediaFile: File) {

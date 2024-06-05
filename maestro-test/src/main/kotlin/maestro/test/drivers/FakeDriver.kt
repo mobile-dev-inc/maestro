@@ -43,6 +43,8 @@ class FakeDriver : Driver {
 
     private var currentText: String = ""
 
+    private var airplaneMode: Boolean = false
+
     override fun name(): String {
         return "Fake Device"
     }
@@ -100,6 +102,12 @@ class FakeDriver : Driver {
         ensureOpen()
 
         events.add(Event.StopApp(appId))
+    }
+
+    override fun killApp(appId: String) {
+        ensureOpen()
+
+        events.add(Event.KillApp(appId))
     }
 
     override fun clearAppState(appId: String) {
@@ -378,6 +386,14 @@ class FakeDriver : Driver {
         mediaFiles.forEach { _ -> events.add(Event.AddMedia) }
     }
 
+    override fun isAirplaneModeEnabled(): Boolean {
+        return this.airplaneMode
+    }
+
+    override fun setAirplaneMode(enabled: Boolean) {
+        this.airplaneMode = enabled
+    }
+
     sealed class Event {
 
         data class Tap(
@@ -418,6 +434,10 @@ class FakeDriver : Driver {
         ) : Event(), UserInteraction
 
         data class StopApp(
+            val appId: String
+        ) : Event()
+
+        data class KillApp(
             val appId: String
         ) : Event()
 

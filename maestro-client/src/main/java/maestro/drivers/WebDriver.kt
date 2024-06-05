@@ -161,6 +161,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
         driver.close()
     }
 
+    override fun killApp(appId: String) {
+        // On Web there is no Process Death like on Android so this command will be a synonym to the stop command
+        stopApp(appId)
+    }
+
     override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         ensureOpen()
 
@@ -376,6 +381,14 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     override fun addMedia(mediaFiles: List<File>) {
         // noop for web
+    }
+
+    override fun isAirplaneModeEnabled(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun setAirplaneMode(enabled: Boolean) {
+        TODO("Not yet implemented")
     }
 
     companion object {

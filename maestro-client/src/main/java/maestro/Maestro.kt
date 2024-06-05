@@ -79,6 +79,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.stopApp(appId)
     }
 
+    fun killApp(appId: String) {
+        LOGGER.info("Killing app $appId")
+
+        driver.killApp(appId)
+    }
+
     fun clearAppState(appId: String) {
         LOGGER.info("Clearing app state $appId")
 
@@ -579,6 +585,14 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun isUnicodeInputSupported(): Boolean {
         return driver.isUnicodeInputSupported()
+    }
+
+    fun isAirplaneModeEnabled(): Boolean {
+        return driver.isAirplaneModeEnabled()
+    }
+
+    fun setAirplaneModeState(enabled: Boolean) {
+        driver.setAirplaneMode(enabled)
     }
 
     companion object {
