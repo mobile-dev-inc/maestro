@@ -857,7 +857,7 @@ data class StartRecordingCommand(
 
 data class AddMediaCommand(
     val mediaPaths: List<String>,
-    val label: String?
+    val label: String? = null,
 ): Command {
 
     override fun description(): String {
