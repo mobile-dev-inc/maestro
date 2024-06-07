@@ -23,6 +23,7 @@ import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
 import maestro.cli.api.ApiClient
+import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.runner.TestRunner
 import maestro.cli.runner.resultview.AnsiResultView
@@ -41,7 +42,7 @@ import java.util.concurrent.Callable
         "Render a beautiful video of your Flow - Great for demos and bug reports"
     ]
 )
-class RecordCommand : Callable<Int> {
+class RecordCommand : Callable<TestExecutionSummary.FlowResult> {
 
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
@@ -64,7 +65,7 @@ class RecordCommand : Callable<Int> {
     )
     private var debugOutput: String? = null
 
-    override fun call(): Int {
+    override fun call(): TestExecutionSummary.FlowResult {
         if (!flowFile.exists()) {
             throw CommandLine.ParameterException(
                 commandSpec.commandLine(),
