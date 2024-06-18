@@ -609,7 +609,6 @@ internal class YamlCommandReaderTest {
     fun setLocationSyntaxError(
         @YamlFile("026_setLocation_syntaxError.yaml") e: SyntaxError,
     ) {
-        e.printStackTrace()
         assertThat(e.message).contains("Cannot deserialize value of type")
     }
 }
