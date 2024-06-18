@@ -42,4 +42,17 @@ internal class MaestroCommandTest {
         assertThat(description)
             .isEqualTo("Set Location to Test Laboratory")
     }
+
+    @Test
+    fun `description (negative coordinates)`() {
+        // given
+        val maestroCommand = MaestroCommand(SetLocationCommand("-12.5266", "-78.2150", "Set Location with negative coordinates"))
+
+        // when
+        val description = maestroCommand.description()
+
+        // then
+        assertThat(description)
+            .isEqualTo("Set Location with negative coordinates")
+    }
 }
