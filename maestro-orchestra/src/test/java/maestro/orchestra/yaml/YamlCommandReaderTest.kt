@@ -481,8 +481,8 @@ internal class YamlCommandReaderTest {
                 centerElement = false
             ),
             SetLocationCommand(
-                latitude = 12.5266,
-                longitude = 78.2150,
+                latitude = "12.5266",
+                longitude = "78.2150",
                 label = "Set Location to Test Laboratory"
             ),
             StartRecordingCommand(
@@ -502,10 +502,10 @@ internal class YamlCommandReaderTest {
             ),
             TravelCommand(
                 points = listOf(
-                    TravelCommand.GeoPoint(0.0,0.0),
-                    TravelCommand.GeoPoint(0.1,0.0),
-                    TravelCommand.GeoPoint(0.1,0.1),
-                    TravelCommand.GeoPoint(0.0,0.1),
+                    TravelCommand.GeoPoint("0.0","0.0"),
+                    TravelCommand.GeoPoint("0.1","0.0"),
+                    TravelCommand.GeoPoint("0.1","0.1"),
+                    TravelCommand.GeoPoint("0.0","0.1"),
                 ),
                 speedMPS = 2000.0,
                 label = "Run around the north pole"
@@ -646,4 +646,12 @@ internal class YamlCommandReaderTest {
 
     private fun commands(vararg commands: Command): List<MaestroCommand> =
         commands.map(::MaestroCommand).toList()
+
+    @Test
+    fun setLocationSyntaxError(
+        @YamlFile("026_setLocation_syntaxError.yaml") e: SyntaxError,
+    ) {
+        e.printStackTrace()
+        assertThat(e.message).contains("Cannot deserialize value of type")
+    }
 }

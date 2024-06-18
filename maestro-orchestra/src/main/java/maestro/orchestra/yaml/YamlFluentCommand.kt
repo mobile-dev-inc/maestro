@@ -300,8 +300,8 @@ data class YamlFluentCommand(
                         val longitude = spitPoint[1].toDoubleOrNull() ?: throw SyntaxError("Invalid travel point longitude: $point")
 
                         TravelCommand.GeoPoint(
-                            latitude = latitude,
-                            longitude = longitude,
+                            latitude = latitude.toString(),
+                            longitude = longitude.toString(),
                         )
                     },
                 speedMPS = command.speed,
