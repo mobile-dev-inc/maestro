@@ -46,7 +46,7 @@ internal class MaestroCommandTest {
     @Test
     fun `description (negative coordinates)`() {
         // given
-        val maestroCommand = MaestroCommand(SetLocationCommand("-12.5266", "-78.2150", "Set Location with negative coordinates"))
+        val maestroCommand = MaestroCommand(SetLocationCommand("-12.5266", "-78.2150", "Set location with negative coordinates"))
 
         // when
         val description = maestroCommand.description()
