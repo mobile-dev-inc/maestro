@@ -53,6 +53,6 @@ internal class MaestroCommandTest {
 
         // then
         assertThat(description)
-            .isEqualTo("Set Location with negative coordinates")
+            .isEqualTo("Set location with negative coordinates")
     }
 }
