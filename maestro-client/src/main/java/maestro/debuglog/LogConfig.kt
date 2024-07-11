@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import java.util.Properties
 
 object LogConfig {
-    private const val LOG_PATTERN = "[%-5level] %logger{36} - %msg%n"
+    private const val LOG_PATTERN = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n"
 
     fun configure(logFileName: String) {
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
