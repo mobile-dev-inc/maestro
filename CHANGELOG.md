@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.37.0 - 2024-07-11
+- Feature: Add 'maestro.platform' for javascript to determine platform (mobile-dev-inc#1747)
+- Feature: add new test report format: HTML (mobile-dev-inc#1750)
+- Feature: [New Feature] Sharding / Parallel Execution (mobile-dev-inc#1732)
+- Feature: improve waitForAppToSettle to use waitToSettleTimeoutMs
+- Feature: android not wait for settle for faster commands
+- Feature: add timestamp for maestro log
+- Fix: Remove screen record time limit for Android devices running on API levels >= 34 (mobile-dev-inc#1683)
+
 ## 1.36.0 - 2024-02-15
 
 - Feature: Add support for extra keys to Android TV
