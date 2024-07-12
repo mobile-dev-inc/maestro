@@ -42,18 +42,18 @@ object EnvUtils {
         return false
     }
 
-    fun getJavaVersion(): String? {
-        return runCatching {
-            val processBuilder = ProcessBuilder("java", "-version")
-            val process = processBuilder.start()
-            val reader = BufferedReader(InputStreamReader(process.errorStream)) // java -version prints to error stream
-
-            val javaVersionLine = reader.readLine()
-            val versionPattern = "\"(.*?)\"".toRegex() // capture the version between double quotes
-            val matchResult = versionPattern.find(javaVersionLine)
-
-            return matchResult?.groups?.get(1)?.value // return matched version or null if not found
-        }.getOrNull()
+    /**
+     * Returns major version of Java, e.g. 8, 11, 17, 21.
+     */
+    fun getJavaVersion(): Int {
+        // Adapted from https://stackoverflow.com/a/2591122/7009800
+        val version = System.getProperty("java.version")
+        return if (version.startsWith("1.")) {
+            version.substring(2, 3).toInt()
+        } else {
+            val dot = version.indexOf(".")
+            if (dot != -1) version.substring(0, dot).toInt() else 0
+        }
     }
 
     fun getXcodeVersion(): String {

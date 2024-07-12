@@ -11,6 +11,7 @@ import maestro.cli.CliError
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.update.Updates
 import maestro.cli.util.CiUtils
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.PrintUtils
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -511,8 +512,8 @@ class SystemInformationInterceptor : Interceptor {
             .header("X-VERSION", Updates.CLI_VERSION.toString())
             .header("X-OS", Updates.OS_NAME)
             .header("X-OSARCH", Updates.OS_ARCH)
-            .header("X-JAVA", Updates.JAVA_VERSION.toString())
-            .header("X-XCODE", Updates.XCODE)
+            .header("X-JAVA", EnvUtils.getJavaVersion().toString())
+            .header("X-XCODE", EnvUtils.getXcodeVersion())
             .build()
 
         return chain.proceed(newRequest)

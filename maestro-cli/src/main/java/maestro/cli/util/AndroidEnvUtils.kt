@@ -42,17 +42,11 @@ object AndroidEnvUtils {
     }
 
     private fun getRecommendedToolsVersion(): String? {
-        return EnvUtils.getJavaVersion()?.let {
-            if (it.startsWith("1.8") || it.startsWith("8.")) {
-                "8.0"
-            }
-            else if (it.startsWith("11.")) {
-                "10.0"
-            }
-            else if (it.startsWith("17")) {
-                "11.0"
-            }
-            else "latest"
+        return when(EnvUtils.getJavaVersion()) {
+            8 -> "8.0"
+            11 -> "10.0"
+            17 -> "11.0"
+            else -> "latest"
         }
     }
 

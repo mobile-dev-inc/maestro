@@ -23,6 +23,7 @@ import maestro.cli.command.*
 import maestro.cli.command.DownloadSamplesCommand
 import maestro.cli.command.LogoutCommand
 import maestro.cli.update.Updates
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
@@ -86,6 +87,7 @@ fun main(args: Array<String>) {
 
     Dependencies.install()
     Updates.fetchUpdatesAsync()
+    // Analytics.uploadAnalyticsAsync()
 
     val commandLine = CommandLine(App())
         .setUsageHelpWidth(160)
