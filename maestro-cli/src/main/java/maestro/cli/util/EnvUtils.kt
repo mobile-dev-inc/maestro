@@ -81,7 +81,7 @@ object EnvUtils {
             //   $ xcodebuild -version
             //   Xcode 15.4
             //   Build version 15F31d
-            return lines.first().split(".")[1]
+            return lines.first().split(" ")[1]
         }
 
         return "null"
