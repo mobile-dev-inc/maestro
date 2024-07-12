@@ -509,9 +509,10 @@ class SystemInformationInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val newRequest = chain.request().newBuilder()
             .header("X-UUID", Updates.DEVICE_UUID)
-            .header("X-VERSION", Updates.CLI_VERSION.toString())
-            .header("X-OS", Updates.OS_NAME)
-            .header("X-OSARCH", Updates.OS_ARCH)
+            .header("X-VERSION", EnvUtils.getVersion().toString())
+            .header("X-OS", EnvUtils.OS_NAME)
+            .header("X-OSARCH", EnvUtils.OS_ARCH)
+            .header("X-OSVERSION", EnvUtils.OS_VERSION)
             .header("X-JAVA", EnvUtils.getJavaVersion().toString())
             .header("X-XCODE", EnvUtils.getXcodeVersion())
             .header("X-FLUTTER", EnvUtils.getFlutterVersionAndChannel().first)

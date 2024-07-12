@@ -2,10 +2,27 @@ package maestro.cli.util
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import maestro.cli.api.CliVersion
+import maestro.cli.update.Updates
+import maestro.cli.view.red
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 object EnvUtils {
+    val OS_NAME: String = System.getProperty("os.name")
+    val OS_ARCH: String = System.getProperty("os.arch")
+    val OS_VERSION: String = System.getProperty("os.version")
+
+    val CLI_VERSION: CliVersion? = getCLIVersion()
+
+    fun getVersion(): CliVersion? {
+        return getCLIVersion().apply {
+            if (this == null) {
+                System.err.println("\nWarning: Failed to parse current version".red())
+            }
+        }
+    }
 
     fun androidHome(): String? {
         return System.getenv("ANDROID_HOME")
@@ -102,6 +119,20 @@ object EnvUtils {
         } else {
             ArchitectureDetectionStrategy.MacOsArchitectureDetection
         }
+    }
+
+    private fun getCLIVersion(): CliVersion? {
+        val props = try {
+            Updates::class.java.classLoader.getResourceAsStream("version.properties").use {
+                Properties().apply { load(it) }
+            }
+        } catch (e: Exception) {
+            return null
+        }
+
+        val versionString = props["version"] as? String ?: return null
+
+        return CliVersion.parse(versionString)
     }
 }
 
