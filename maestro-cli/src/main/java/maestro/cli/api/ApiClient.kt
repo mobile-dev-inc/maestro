@@ -511,6 +511,8 @@ class SystemInformationInterceptor : Interceptor {
             .header("X-VERSION", Updates.CLI_VERSION.toString())
             .header("X-OS", Updates.OS_NAME)
             .header("X-OSARCH", Updates.OS_ARCH)
+            .header("X-JAVA", Updates.JAVA_VERSION.toString())
+            .header("X-XCODE", Updates.XCODE)
             .build()
 
         return chain.proceed(newRequest)
