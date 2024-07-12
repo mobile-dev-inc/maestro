@@ -1,7 +1,7 @@
 package maestro.cli.util
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -57,7 +57,39 @@ object EnvUtils {
     }
 
     fun getXcodeVersion(): String {
-        return runProcess("xcodebuild", "-version").first().split(" ")[1]
+        val lines = runProcess("xcodebuild", "-version")
+
+        if (lines.size == 2) {
+            // Correct xcodebuild invocation is always 2 lines. Example:
+            //   $ xcodebuild -version
+            //   Xcode 15.4
+            //   Build version 15F31d
+            return lines.first().split(".")[1]
+        }
+
+        return "null"
+    }
+
+    fun getFlutterVersionAndChannel(): Pair<String, String> {
+        val stdout = runProcess(
+            "flutter",
+            "--no-version-check", "--version", "--machine",
+        ).joinToString(separator = "")
+
+        val mapper = jacksonObjectMapper()
+        val version = runCatching {
+            val obj: Map<String, String> = mapper.readValue(stdout)
+            obj["flutterVersion"].toString()
+        }
+        val channel = runCatching {
+            val obj: Map<String, String> = mapper.readValue(stdout)
+            obj["channel"].toString()
+        }
+
+        return Pair(
+            first = version.getOrNull() ?: "null",
+            second = channel.getOrNull() ?: "null",
+        )
     }
 
     fun getMacOSArchitecture(): MACOS_ARCHITECTURE {
