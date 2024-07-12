@@ -514,14 +514,13 @@ class SystemInformationInterceptor : Interceptor {
             .header("X-OSARCH", EnvUtils.OS_ARCH)
             .header("X-OSVERSION", EnvUtils.OS_VERSION)
             .header("X-JAVA", EnvUtils.getJavaVersion().toString())
-            .header("X-XCODE", EnvUtils.getXcodeVersion())
-            .header("X-FLUTTER", EnvUtils.getFlutterVersionAndChannel().first)
-            .header("X-FLUTTER-CHANNEL", EnvUtils.getFlutterVersionAndChannel().second)
+            .header("X-XCODE", EnvUtils.getXcodeVersion() ?: "Undefined")
+            .header("X-FLUTTER", EnvUtils.getFlutterVersionAndChannel().first ?: "Undefined")
+            .header("X-FLUTTER-CHANNEL", EnvUtils.getFlutterVersionAndChannel().second ?: "Undefined")
             .build()
 
         println("SystemInformationInterceptor sent request with headers: ${newRequest.headers}")
 
         return chain.proceed(newRequest)
     }
-
 }

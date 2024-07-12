@@ -7,6 +7,7 @@ import maestro.Driver
 import maestro.MaestroException
 import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
+import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
@@ -106,13 +107,14 @@ object TestDebugReporter {
         val logger = LoggerFactory.getLogger("MAESTRO")
         logger.info("---- System Info ----")
         logger.info("Maestro Version: ${EnvUtils.CLI_VERSION ?: "Undefined"}")
+        logger.info("CI: ${CiUtils.getCiProvider() ?: "Undefined"}")
         logger.info("OS Name: ${EnvUtils.OS_NAME}")
         logger.info("OS Version: ${EnvUtils.OS_VERSION}")
         logger.info("Architecture: ${EnvUtils.OS_ARCH}")
         logger.info("Java Version: ${EnvUtils.getJavaVersion()}")
         logger.info("Xcode Version: ${EnvUtils.getXcodeVersion()}")
-        logger.info("Flutter Version: ${EnvUtils.getFlutterVersionAndChannel().first}")
-        logger.info("Flutter Channel: ${EnvUtils.getFlutterVersionAndChannel().second}")
+        logger.info("Flutter Version: ${EnvUtils.getFlutterVersionAndChannel().first ?: "Undefined"}")
+        logger.info("Flutter Channel: ${EnvUtils.getFlutterVersionAndChannel().second ?: "Undefined"}")
         logger.info("---------------------")
     }
 

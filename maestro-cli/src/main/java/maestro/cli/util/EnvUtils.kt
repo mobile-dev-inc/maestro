@@ -73,7 +73,7 @@ object EnvUtils {
         }
     }
 
-    fun getXcodeVersion(): String {
+    fun getXcodeVersion(): String? {
         val lines = runProcess("xcodebuild", "-version")
 
         if (lines.size == 2) {
@@ -84,10 +84,10 @@ object EnvUtils {
             return lines.first().split(" ")[1]
         }
 
-        return "null"
+        return null
     }
 
-    fun getFlutterVersionAndChannel(): Pair<String, String> {
+    fun getFlutterVersionAndChannel(): Pair<String?, String?> {
         val stdout = runProcess(
             "flutter",
             "--no-version-check", "--version", "--machine",
@@ -103,10 +103,7 @@ object EnvUtils {
             obj["channel"].toString()
         }
 
-        return Pair(
-            first = version.getOrNull() ?: "null",
-            second = channel.getOrNull() ?: "null",
-        )
+        return Pair(first = version.getOrNull(), second = channel.getOrNull())
     }
 
     fun getMacOSArchitecture(): MACOS_ARCHITECTURE {
