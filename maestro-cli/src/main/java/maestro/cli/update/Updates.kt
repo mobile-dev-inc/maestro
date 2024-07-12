@@ -3,6 +3,7 @@ package maestro.cli.update
 import maestro.cli.api.ApiClient
 import maestro.cli.api.CliVersion
 import maestro.cli.util.CiUtils
+import maestro.cli.util.EnvUtils
 import maestro.cli.view.red
 import java.nio.file.Paths
 import java.util.Properties
@@ -27,6 +28,9 @@ object Updates {
                 if (dot != -1) version.substring(0, dot).toInt() else 0
             }
         }
+
+    val XCODE: String
+        get() = EnvUtils.getXcodeVersion()
 
     val OS_NAME: String = System.getProperty("os.name")
     val OS_ARCH: String = System.getProperty("os.arch")

@@ -56,6 +56,10 @@ object EnvUtils {
         }.getOrNull()
     }
 
+    fun getXcodeVersion(): String {
+        return runProcess("xcodeubuild", "-version").first().split(" ")[1]
+    }
+
     fun getMacOSArchitecture(): MACOS_ARCHITECTURE {
         return determineArchitectureDetectionStrategy().detectArchitecture()
     }
