@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.cli.api.CliVersion
 import maestro.cli.update.Updates
 import maestro.cli.view.red
+import java.io.File
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -22,6 +23,14 @@ object EnvUtils {
                 System.err.println("\nWarning: Failed to parse current version".red())
             }
         }
+    }
+
+    fun xdgStateHome(): File {
+        if (System.getenv("XDG_STATE_HOME") != null) {
+            return File(System.getenv("XDG_STATE_HOME"), ".maestro")
+        }
+
+        return File(System.getProperty("user.home"), ".maestro")
     }
 
     fun androidHome(): String? {
