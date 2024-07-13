@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.37.1 - 2024-07-13
+- HOTFIX testSingle exit code return 1 for pass and 0 for failed
+
 ## 1.37.0 - 2024-07-11
 - Feature: Add 'maestro.platform' for javascript to determine platform (mobile-dev-inc#1747)
 - Feature: add new test report format: HTML (mobile-dev-inc#1750)
