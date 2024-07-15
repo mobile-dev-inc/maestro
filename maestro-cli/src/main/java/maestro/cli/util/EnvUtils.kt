@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 object EnvUtils {
+    private const val PROD_API_URL = "https://api.mobile.dev"
+
     val OS_NAME: String = System.getProperty("os.name")
     val OS_ARCH: String = System.getProperty("os.arch")
     val OS_VERSION: String = System.getProperty("os.version")
@@ -26,6 +28,9 @@ object EnvUtils {
             }
         }
     }
+
+    val BASE_API_URL: String
+        get() = System.getenv("MAESTRO_API_URL") ?: PROD_API_URL
 
     /**
      * Where Maestro config and state files were located before v1.37.0.

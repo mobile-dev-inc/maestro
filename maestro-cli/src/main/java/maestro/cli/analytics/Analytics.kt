@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.cli.api.ApiClient
-import maestro.cli.update.Updates.BASE_API_URL
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import org.slf4j.LoggerFactory
@@ -121,7 +120,7 @@ object Analytics {
         logger.debug("Will upload analytics report")
         logger.debug(report.toString())
 
-        ApiClient(BASE_API_URL).sendAnalyticsReport(report)
+        ApiClient(EnvUtils.BASE_API_URL).sendAnalyticsReport(report)
 
         updateAnalyticsState()
     }
@@ -172,16 +171,16 @@ data class AnalyticsState(
 // mobile.dev/api/models/src/main/java/models/maestro/AnalyticsReport.kt
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AnalyticsReport(
-    @JsonProperty("uuid") val uuid: String,
-    @JsonProperty("fresh_install") val freshInstall: Boolean,
-    @JsonProperty("cli_version") val version: String,
+    @JsonProperty("deviceUuid") val uuid: String,
+    @JsonProperty("freshInstall") val freshInstall: Boolean,
+    @JsonProperty("version") val version: String,
     @JsonProperty("os") val os: String,
-    @JsonProperty("os_arch") val osArch: String,
-    @JsonProperty("os_version") val osVersion: String,
-    @JsonProperty("java_version") val javaVersion: String?,
-    @JsonProperty("xcode_version") val xcodeVersion: String?,
-    @JsonProperty("flutter_version") val flutterVersion: String?,
-    @JsonProperty("flutter_channel") val flutterChannel: String?,
+    @JsonProperty("osArch") val osArch: String,
+    @JsonProperty("osVersion") val osVersion: String,
+    @JsonProperty("javaVersion") val javaVersion: String?,
+    @JsonProperty("xcodeVersion") val xcodeVersion: String?,
+    @JsonProperty("flutterVersion") val flutterVersion: String?,
+    @JsonProperty("flutterChannel") val flutterChannel: String?,
     // TODO(bartek): List of Android versions of created Android emulators (alternative: list of downlaoded system-images)
     // TODO(bartek): List of installed iOS Simulator runtimes
 )

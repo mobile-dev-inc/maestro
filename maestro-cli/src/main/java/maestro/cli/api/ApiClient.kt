@@ -11,7 +11,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import maestro.cli.CliError
 import maestro.cli.runner.resultview.AnsiResultView
-import maestro.cli.update.Updates
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import maestro.cli.util.PrintUtils

@@ -2,16 +2,13 @@ package maestro.cli.update
 
 import maestro.cli.api.ApiClient
 import maestro.cli.api.CliVersion
-import maestro.cli.util.CiUtils
+import maestro.cli.util.EnvUtils
 import maestro.cli.util.EnvUtils.CLI_VERSION
-import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object Updates {
-    const val BASE_API_URL = "https://api.mobile.dev"
-
     private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()
     private val EXECUTOR = Executors.newCachedThreadPool {
         DEFAULT_THREAD_FACTORY.newThread(it).apply { isDaemon = true }
@@ -40,7 +37,7 @@ object Updates {
             return null
         }
 
-        val latestCliVersion = ApiClient(BASE_API_URL).getLatestCliVersion()
+        val latestCliVersion = ApiClient(EnvUtils.BASE_API_URL).getLatestCliVersion()
 
         return if (latestCliVersion > CLI_VERSION) {
             latestCliVersion
