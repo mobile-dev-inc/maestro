@@ -11,6 +11,7 @@ import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import kotlin.io.path.createDirectories
@@ -21,7 +22,7 @@ import kotlin.io.path.writeText
 
 /**
  * The new analytics system for Maestro CLI.
- *  - Sends data to /maestro/cli-analytics endpoint.
+ *  - Sends data to /maestro/analytics endpoint.
  *  - Uses configuration from $XDG_CONFIG_HOME/maestro/analytics.json.
  */
 object Analytics {
@@ -39,6 +40,17 @@ object Analytics {
 
     private val analyticsState: AnalyticsState
         get() = JSON.readValue<AnalyticsState>(analyticsStatePath.readText())
+
+    private val uploadConditionsMet: Boolean
+        get() {
+            val lastUploadedTime = analyticsState.lastUploadedTime ?: return true
+            val passed = lastUploadedTime.plus(Duration.ofDays(7)).isAfter(Instant.now())
+            logger.debug(
+                if (passed) "Last upload was more than a week ago, uploading"
+                else "Last upload was less than a week ago, not uploading"
+            )
+            return passed
+        }
 
 
     val uuid: String
@@ -62,7 +74,6 @@ object Analytics {
             print("Enable analytics? [Y/n] ")
 
             val str = readlnOrNull()?.lowercase()
-            logger.info("User response to analytics enable prompt: $str")
             val granted = str?.isBlank() == true || str == "y" || str == "yes"
             println(
                 if (granted) "Usage data collection enabled. Thank you!"
@@ -80,12 +91,17 @@ object Analytics {
      */
     fun maybeUploadAnalyticsAsync() {
         if (!hasRunBefore) {
-            logger.info("First run, not uploading")
+            logger.debug("First run, not uploading")
             return
         }
 
         if (!analyticsState.enabled) {
-            logger.info("Analytics disabled, not uploading")
+            logger.debug("Analytics disabled, not uploading")
+            return
+        }
+
+        if (!uploadConditionsMet) {
+            logger.debug("Upload conditions not met, not uploading")
             return
         }
 
@@ -102,8 +118,8 @@ object Analytics {
             flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
         )
 
-        logger.info("Will upload analytics report")
-        logger.info(report.toString())
+        logger.debug("Will upload analytics report")
+        logger.debug(report.toString())
 
         ApiClient(BASE_API_URL).sendAnalyticsReport(report)
 
