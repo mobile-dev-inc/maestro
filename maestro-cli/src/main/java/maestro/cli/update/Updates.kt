@@ -4,15 +4,10 @@ import maestro.cli.api.ApiClient
 import maestro.cli.api.CliVersion
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils.CLI_VERSION
-import java.nio.file.Paths
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
 object Updates {
     const val BASE_API_URL = "https://api.mobile.dev"
@@ -24,12 +19,10 @@ object Updates {
 
     private var future: CompletableFuture<CliVersion?>? = null
 
-    private fun generateUUID(): String {
-        return CiUtils.getCiProvider() ?: UUID.randomUUID().toString()
-    }
-
     fun fetchUpdatesAsync() {
+        println("fetchUpdatesAsync")
         getFuture()
+        println("fetchUpdatesAsync done")
     }
 
     fun checkForUpdates(): CliVersion? {
