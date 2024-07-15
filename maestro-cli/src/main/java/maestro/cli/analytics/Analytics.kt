@@ -2,11 +2,11 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.time.Instant
@@ -27,10 +27,6 @@ object Analytics {
     private val analyticsStatePath: Path = EnvUtils.xdgStateHome().resolve("analytics.json")
     private val legacyUuidPath: Path = EnvUtils.legacyMaestroHome().resolve("uuid")
 
-    init {
-        maybeMigrate()
-    }
-
     private val JSON = jacksonObjectMapper().apply {
         registerModule(JavaTimeModule())
         enable(SerializationFeature.INDENT_OUTPUT)
@@ -42,7 +38,7 @@ object Analytics {
     val uuid: String
         get() = analyticsState.uuid
 
-    private fun maybeMigrate() {
+    fun maybeMigrate() {
         // Previous versions of Maestro (<1.36.0) used ~/.maestro/uuid to store uuid.
         // If ~/.maestro/uuid already exists, assume permission was granted (for backward compatibility).
         if (legacyUuidPath.exists()) {

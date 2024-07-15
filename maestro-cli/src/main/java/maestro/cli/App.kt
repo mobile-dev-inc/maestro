@@ -85,6 +85,7 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
+    Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()
 
     Dependencies.install()
