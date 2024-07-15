@@ -15,10 +15,7 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 object Updates {
-    val DEVICE_UUID: String
-
     const val BASE_API_URL = "https://api.mobile.dev"
-    private val FRESH_INSTALL: Boolean
 
     private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()
     private val EXECUTOR = Executors.newCachedThreadPool {
@@ -26,18 +23,6 @@ object Updates {
     }
 
     private var future: CompletableFuture<CliVersion?>? = null
-
-    init {
-        val uuidPath = Paths.get(System.getProperty("user.home"), ".maestro", "uuid")
-        FRESH_INSTALL = if (uuidPath.exists()) {
-            false
-        } else {
-            uuidPath.parent.createDirectories()
-            uuidPath.writeText(generateUUID())
-            true
-        }
-        DEVICE_UUID = uuidPath.readText()
-    }
 
     private fun generateUUID(): String {
         return CiUtils.getCiProvider() ?: UUID.randomUUID().toString()
@@ -64,9 +49,7 @@ object Updates {
             return null
         }
 
-        val latestCliVersion = ApiClient(BASE_API_URL).getLatestCliVersion(
-            freshInstall = FRESH_INSTALL,
-        )
+        val latestCliVersion = ApiClient(BASE_API_URL).getLatestCliVersion()
 
         return if (latestCliVersion > CLI_VERSION) {
             latestCliVersion

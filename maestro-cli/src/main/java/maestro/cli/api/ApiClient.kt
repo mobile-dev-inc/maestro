@@ -1,5 +1,6 @@
 package maestro.cli.api
 
+import Analytics
 import AnalyticsReport
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -35,7 +36,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
-import kotlin.io.use
 
 class ApiClient(
     private val baseUrl: String,
@@ -84,11 +84,8 @@ class ApiClient(
         )
     }
 
-    fun getLatestCliVersion(
-        freshInstall: Boolean,
-    ): CliVersion {
+    fun getLatestCliVersion(): CliVersion {
         val request = Request.Builder()
-            .header("X-FRESH-INSTALL", if (freshInstall) "true" else "false")
             .url("$baseUrl/maestro/version")
             .get()
             .build()
@@ -516,18 +513,11 @@ data class CliVersion(
 class SystemInformationInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val newRequest = chain.request().newBuilder()
-            .header("X-UUID", Updates.DEVICE_UUID)
+            .header("X-UUID", Analytics.uuid)
             .header("X-VERSION", EnvUtils.getVersion().toString())
             .header("X-OS", EnvUtils.OS_NAME)
             .header("X-OSARCH", EnvUtils.OS_ARCH)
-            .header("X-OSVERSION", EnvUtils.OS_VERSION)
-            .header("X-JAVA", EnvUtils.getJavaVersion().toString())
-            .header("X-XCODE", EnvUtils.getXcodeVersion() ?: "Undefined")
-            .header("X-FLUTTER", EnvUtils.getFlutterVersionAndChannel().first ?: "Undefined")
-            .header("X-FLUTTER-CHANNEL", EnvUtils.getFlutterVersionAndChannel().second ?: "Undefined")
             .build()
-
-        println("SystemInformationInterceptor sent request with headers: ${newRequest.headers}")
 
         return chain.proceed(newRequest)
     }

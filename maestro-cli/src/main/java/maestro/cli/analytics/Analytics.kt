@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -5,8 +6,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.time.Instant
 import java.util.UUID
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
@@ -24,36 +27,33 @@ object Analytics {
     private val analyticsStatePath: Path = EnvUtils.xdgStateHome().resolve("analytics.json")
     private val legacyUuidPath: Path = EnvUtils.legacyMaestroHome().resolve("uuid")
 
+    init {
+        maybeMigrate()
+    }
+
     private val JSON = jacksonObjectMapper().apply {
+        registerModule(JavaTimeModule())
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
     private val hasRunBefore: Boolean
         get() = legacyUuidPath.exists() || analyticsStatePath.exists()
 
-    private val enabled: Boolean
-        get() {
-            // Previous versions of Maestro (<1.36.0) used ~/.maestro/uuid to store uuid.
-            // If ~/.maestro/uuid already exists, assume permission was granted (for backward compatibility)
-            if (legacyUuidPath.exists()) {
-                // Migrate to new location
-                val uuid = legacyUuidPath.readText()
-                saveAnalyticsState(granted = true, uuid = uuid)
-                legacyUuidPath.deleteExisting()
-                return true
-            }
+    val uuid: String
+        get() = analyticsState.uuid
 
-            return analyticsState?.enabled ?: false
+    private fun maybeMigrate() {
+        // Previous versions of Maestro (<1.36.0) used ~/.maestro/uuid to store uuid.
+        // If ~/.maestro/uuid already exists, assume permission was granted (for backward compatibility).
+        if (legacyUuidPath.exists()) {
+            val uuid = legacyUuidPath.readText()
+            saveAnalyticsState(granted = true, uuid = uuid)
+            legacyUuidPath.deleteExisting()
         }
+    }
 
-    private val analyticsState: AnalyticsState?
-        get() {
-            if (analyticsStatePath.exists()) {
-                return JSON.readValue<AnalyticsState>(analyticsStatePath.readText())
-            }
-
-            return null
-        }
+    private val analyticsState: AnalyticsState
+        get() = JSON.readValue<AnalyticsState>(analyticsStatePath.readText())
 
     fun maybeAskToEnableAnalytics() {
         if (hasRunBefore) return
@@ -65,6 +65,10 @@ object Analytics {
             val str = readlnOrNull()?.lowercase()
             logger.info("User response to analytics enable prompt: $str")
             val granted = str?.isBlank() == true || str == "y" || str == "yes"
+            println(
+                if (granted) "Usage data collection enabled. Thank you!"
+                else "Usage data collection disabled."
+            )
             saveAnalyticsState(granted)
             return
         }
@@ -72,18 +76,33 @@ object Analytics {
         error("Interrupted")
     }
 
-    private fun saveAnalyticsState(granted: Boolean, uuid: String? = null) {
-        Thread.dumpStack()
-
+    private fun saveAnalyticsState(
+        granted: Boolean,
+        uuid: String? = null,
+    ): AnalyticsState {
         val state = AnalyticsState(
             uuid = uuid ?: generateUUID(),
             enabled = granted,
             lastUploadedForCLI = null,
+            lastUploadedTime = null,
         )
-        val stateJson = jacksonObjectMapper().writeValueAsString(state)
+        val stateJson = JSON.writeValueAsString(state)
         analyticsStatePath.parent.createDirectories()
-        analyticsStatePath.writeText(stateJson)
-        logger.info("Saved analytics to $analyticsStatePath, value: $state")
+        analyticsStatePath.writeText(stateJson + "\n")
+        logger.debug("Saved analytics to {}, value: {}", analyticsStatePath, stateJson)
+        return state
+    }
+
+    private fun updateAnalyticsState() {
+        val stateJson = JSON.writeValueAsString(
+            analyticsState.copy(
+                lastUploadedForCLI = EnvUtils.CLI_VERSION?.toString(),
+                lastUploadedTime = Instant.now(),
+            )
+        )
+
+        analyticsStatePath.writeText(stateJson + "\n")
+        logger.debug("Updated analytics at {}, value: {}", analyticsStatePath, stateJson)
     }
 
     private fun generateUUID(): String {
@@ -99,16 +118,14 @@ object Analytics {
             return
         }
 
-        if (!enabled) {
+        if (!analyticsState.enabled) {
             logger.info("Analytics disabled, not uploading")
             return
         }
 
-        val state = analyticsState ?: return
-        if (!state.enabled) return
-
         val report = AnalyticsReport(
-            uuid = state.uuid,
+            uuid = analyticsState.uuid,
+            freshInstall = !hasRunBefore,
             version = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
             os = EnvUtils.OS_NAME,
             osArch = EnvUtils.OS_ARCH,
@@ -122,12 +139,11 @@ object Analytics {
         logger.info("Will upload analytics report")
         logger.info(report.toString())
 
-        // Update CLI state with last uploaded time/version
-    }
 
-//        val latestCliVersion = ApiClient(BASE_API_URL).getLatestCliVersion(
-//            freshInstall = FRESH_INSTALL,
-//        )
+        // TODO: Update CLI state with last uploaded time/version
+
+        updateAnalyticsState()
+    }
 }
 
 
@@ -136,6 +152,7 @@ data class AnalyticsState(
     val uuid: String,
     val enabled: Boolean,
     val lastUploadedForCLI: String?,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC") val lastUploadedTime: Instant?,
 )
 
 // analytics data:
@@ -152,6 +169,7 @@ data class AnalyticsState(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AnalyticsReport(
     @JsonProperty("uuid") val uuid: String,
+    @JsonProperty("fresh_install") val freshInstall: Boolean,
     @JsonProperty("cli_version") val version: String,
     @JsonProperty("os") val os: String,
     @JsonProperty("os_arch") val osArch: String,
