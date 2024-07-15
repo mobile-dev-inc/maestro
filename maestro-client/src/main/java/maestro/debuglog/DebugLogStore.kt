@@ -110,7 +110,6 @@ object DebugLogStore {
     }
 
     fun logSystemInfo() {
-        println("LOGGED SYSTEM INFO into ${logFile("system_info").absolutePath}")
         val logData = """
             Maestro version: ${appVersion()}
             OS: ${System.getProperty("os.name")}

@@ -20,9 +20,7 @@ object Updates {
     private var future: CompletableFuture<CliVersion?>? = null
 
     fun fetchUpdatesAsync() {
-        println("fetchUpdatesAsync")
         getFuture()
-        println("fetchUpdatesAsync done")
     }
 
     fun checkForUpdates(): CliVersion? {

@@ -79,7 +79,7 @@ class ApiClient(
 
     fun sendAnalyticsReport(analyticsReport: AnalyticsReport) {
         post<Unit>(
-            path = "/maestro/cli-analytics",
+            path = "/maestro/analytics",
             body = analyticsReport,
         )
     }
