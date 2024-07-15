@@ -3,11 +3,8 @@ package maestro.cli.update
 import maestro.cli.api.ApiClient
 import maestro.cli.api.CliVersion
 import maestro.cli.util.CiUtils
-import maestro.cli.util.EnvUtils
 import maestro.cli.util.EnvUtils.CLI_VERSION
-import maestro.cli.view.red
 import java.nio.file.Paths
-import java.util.Properties
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors

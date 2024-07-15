@@ -6,6 +6,8 @@ import maestro.cli.api.CliVersion
 import maestro.cli.update.Updates
 import maestro.cli.view.red
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -25,12 +27,19 @@ object EnvUtils {
         }
     }
 
-    fun xdgStateHome(): File {
+    /**
+     * Where Maestro config and state files were located before v1.37.0.
+     */
+    fun legacyMaestroHome(): Path {
+        return Paths.get(System.getProperty("user.home"), ".maestro")
+    }
+
+    fun xdgStateHome(): Path {
         if (System.getenv("XDG_STATE_HOME") != null) {
-            return File(System.getenv("XDG_STATE_HOME"), ".maestro")
+            return Paths.get(System.getenv("XDG_STATE_HOME"), "maestro")
         }
 
-        return File(System.getProperty("user.home"), ".maestro")
+        return Paths.get(System.getProperty("user.home"), ".maestro")
     }
 
     fun androidHome(): String? {

@@ -85,9 +85,11 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
+    Analytics.maybeAskToEnableAnalytics()
+
     Dependencies.install()
     Updates.fetchUpdatesAsync()
-    // Analytics.uploadAnalyticsAsync()
+    Analytics.maybeUploadAnalyticsAsync()
 
     val commandLine = CommandLine(App())
         .setUsageHelpWidth(160)

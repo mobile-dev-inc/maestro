@@ -1,5 +1,6 @@
 package maestro.cli.api
 
+import AnalyticsReport
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -73,6 +74,13 @@ class ApiClient(
             body = mapOf(
                 "maxDepth" to maxDepth
             )
+        )
+    }
+
+    fun sendAnalyticsReport(analyticsReport: AnalyticsReport) {
+        post<Unit>(
+            path = "/maestro/cli-analytics",
+            body = analyticsReport,
         )
     }
 
