@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import maestro.cli.api.ApiClient
+import maestro.cli.update.Updates.BASE_API_URL
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import org.slf4j.LoggerFactory
@@ -35,6 +37,10 @@ object Analytics {
     private val hasRunBefore: Boolean
         get() = legacyUuidPath.exists() || analyticsStatePath.exists()
 
+    private val analyticsState: AnalyticsState
+        get() = JSON.readValue<AnalyticsState>(analyticsStatePath.readText())
+
+
     val uuid: String
         get() = analyticsState.uuid
 
@@ -47,9 +53,6 @@ object Analytics {
             legacyUuidPath.deleteExisting()
         }
     }
-
-    private val analyticsState: AnalyticsState
-        get() = JSON.readValue<AnalyticsState>(analyticsStatePath.readText())
 
     fun maybeAskToEnableAnalytics() {
         if (hasRunBefore) return
@@ -70,6 +73,41 @@ object Analytics {
         }
 
         error("Interrupted")
+    }
+
+    /**
+     * Uploads analytics if there was a version update.
+     */
+    fun maybeUploadAnalyticsAsync() {
+        if (!hasRunBefore) {
+            logger.info("First run, not uploading")
+            return
+        }
+
+        if (!analyticsState.enabled) {
+            logger.info("Analytics disabled, not uploading")
+            return
+        }
+
+        val report = AnalyticsReport(
+            uuid = analyticsState.uuid,
+            freshInstall = !hasRunBefore,
+            version = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
+            os = EnvUtils.OS_NAME,
+            osArch = EnvUtils.OS_ARCH,
+            osVersion = EnvUtils.OS_VERSION,
+            javaVersion = EnvUtils.getJavaVersion().toString(),
+            xcodeVersion = EnvUtils.getXcodeVersion(),
+            flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
+            flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
+        )
+
+        logger.info("Will upload analytics report")
+        logger.info(report.toString())
+
+        ApiClient(BASE_API_URL).sendAnalyticsReport(report)
+
+        updateAnalyticsState()
     }
 
     private fun saveAnalyticsState(
@@ -104,44 +142,7 @@ object Analytics {
     private fun generateUUID(): String {
         return CiUtils.getCiProvider() ?: UUID.randomUUID().toString()
     }
-
-    /**
-     * Uploads analytics if there was a version update.
-     */
-    fun maybeUploadAnalyticsAsync() {
-        if (!hasRunBefore) {
-            logger.info("First run, not uploading")
-            return
-        }
-
-        if (!analyticsState.enabled) {
-            logger.info("Analytics disabled, not uploading")
-            return
-        }
-
-        val report = AnalyticsReport(
-            uuid = analyticsState.uuid,
-            freshInstall = !hasRunBefore,
-            version = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
-            os = EnvUtils.OS_NAME,
-            osArch = EnvUtils.OS_ARCH,
-            osVersion = EnvUtils.OS_VERSION,
-            javaVersion = EnvUtils.getJavaVersion().toString(),
-            xcodeVersion = EnvUtils.getXcodeVersion(),
-            flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
-            flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
-        )
-
-        logger.info("Will upload analytics report")
-        logger.info(report.toString())
-
-
-        // TODO: Update CLI state with last uploaded time/version
-
-        updateAnalyticsState()
-    }
 }
-
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AnalyticsState(
@@ -151,17 +152,8 @@ data class AnalyticsState(
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC") val lastUploadedTime: Instant?,
 )
 
-// analytics data:
-// .header("X-UUID", Updates.DEVICE_UUID)
-// .header("X-VERSION", EnvUtils.getVersion().toString())
-// .header("X-OS", EnvUtils.OS_NAME)
-// .header("X-OSARCH", EnvUtils.OS_ARCH)
-// .header("X-OSVERSION", EnvUtils.OS_VERSION)
-// .header("X-JAVA", EnvUtils.getJavaVersion().toString())
-// .header("X-XCODE", EnvUtils.getXcodeVersion() ?: "Undefined")
-// .header("X-FLUTTER", EnvUtils.getFlutterVersionAndChannel().first ?: "Undefined")
-// .header("X-FLUTTER-CHANNEL", EnvUtils.getFlutterVersionAndChannel().second ?: "Undefined")
-
+// AnalyticsReport must match equivalent monorepo model in:
+// mobile.dev/api/models/src/main/java/models/maestro/AnalyticsReport.kt
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AnalyticsReport(
     @JsonProperty("uuid") val uuid: String,
