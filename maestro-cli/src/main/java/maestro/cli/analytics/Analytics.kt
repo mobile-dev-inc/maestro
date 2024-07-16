@@ -39,7 +39,7 @@ object Analytics {
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
-    private val hasRunBefore: Boolean
+    val hasRunBefore: Boolean
         get() = legacyUuidPath.exists() || analyticsStatePath.exists()
 
     private val analyticsState: AnalyticsState
