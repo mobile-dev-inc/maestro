@@ -69,13 +69,13 @@ object EnvUtils {
             .listFiles { file -> file.extension == "ini" }
             ?.map { it } ?: emptyList()
 
-        val versions = mutableListOf<String>()
-        for (iniFile in iniFiles) {
-            val line = iniFile.readLines().firstOrNull { it.startsWith("target=") } ?: continue
-            val lineParts = line.split('=')
-            if (lineParts.size != 2) continue
-            versions.add(lineParts[1])
-        }
+        val versions = iniFiles
+            .map { iniFile -> iniFile.readLines().firstOrNull { it.startsWith("target=") } }
+            .filterNotNull()
+            .map { line -> line.split('=') }
+            .filter { lineParts -> lineParts.size == 2 }
+            .map { lineParts -> lineParts[1] }
+            .distinct()
 
         return versions
     }
