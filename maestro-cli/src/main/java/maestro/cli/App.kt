@@ -88,9 +88,6 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
-    println("versions of emus: ${AndroidEnvUtils.androidEmulatorSdkVersions}")
-    println("versions of simus: ${IOSEnvUtils.simulatorRuntimes}")
-
     Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()
 
