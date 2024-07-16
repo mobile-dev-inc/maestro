@@ -1,3 +1,5 @@
+package maestro.cli.analytics
+
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -9,6 +11,7 @@ import maestro.cli.api.ApiClient
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
 import org.slf4j.LoggerFactory
+import java.net.ConnectException
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
@@ -43,8 +46,8 @@ object Analytics {
     private val uploadConditionsMet: Boolean
         get() {
             val lastUploadedTime = analyticsState.lastUploadedTime ?: return true
-            val passed = lastUploadedTime.plus(Duration.ofDays(7)).isAfter(Instant.now())
-            logger.debug(
+            val passed = lastUploadedTime.plus(Duration.ofDays(7)).isBefore(Instant.now())
+            logger.trace(
                 if (passed) "Last upload was more than a week ago, uploading"
                 else "Last upload was less than a week ago, not uploading"
             )
@@ -90,24 +93,24 @@ object Analytics {
      */
     fun maybeUploadAnalyticsAsync() {
         if (!hasRunBefore) {
-            logger.debug("First run, not uploading")
+            logger.trace("First run, not uploading")
             return
         }
 
         if (!analyticsState.enabled) {
-            logger.debug("Analytics disabled, not uploading")
+            logger.trace("Analytics disabled, not uploading")
             return
         }
 
         if (!uploadConditionsMet) {
-            logger.debug("Upload conditions not met, not uploading")
+            logger.trace("Upload conditions not met, not uploading")
             return
         }
 
         val report = AnalyticsReport(
             uuid = analyticsState.uuid,
             freshInstall = !hasRunBefore,
-            version = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
+            cliVersion = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
             os = EnvUtils.OS_NAME,
             osArch = EnvUtils.OS_ARCH,
             osVersion = EnvUtils.OS_VERSION,
@@ -117,12 +120,16 @@ object Analytics {
             flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
         )
 
-        logger.debug("Will upload analytics report")
-        logger.debug(report.toString())
+        logger.trace("Will upload analytics report")
+        logger.trace(report.toString())
 
-        ApiClient(EnvUtils.BASE_API_URL).sendAnalyticsReport(report)
-
-        updateAnalyticsState()
+        try {
+            ApiClient(EnvUtils.BASE_API_URL).sendAnalyticsReport(report)
+            updateAnalyticsState()
+        } catch (e: ConnectException) {
+            // This is fine. We don't care that much about analytics to bug user about it.
+            return
+        }
     }
 
     private fun saveAnalyticsState(
@@ -138,7 +145,7 @@ object Analytics {
         val stateJson = JSON.writeValueAsString(state)
         analyticsStatePath.parent.createDirectories()
         analyticsStatePath.writeText(stateJson + "\n")
-        logger.debug("Saved analytics to {}, value: {}", analyticsStatePath, stateJson)
+        logger.trace("Saved analytics to {}, value: {}", analyticsStatePath, stateJson)
         return state
     }
 
@@ -151,7 +158,7 @@ object Analytics {
         )
 
         analyticsStatePath.writeText(stateJson + "\n")
-        logger.debug("Updated analytics at {}, value: {}", analyticsStatePath, stateJson)
+        logger.trace("Updated analytics at {}, value: {}", analyticsStatePath, stateJson)
     }
 
     private fun generateUUID(): String {
@@ -173,7 +180,7 @@ data class AnalyticsState(
 data class AnalyticsReport(
     @JsonProperty("deviceUuid") val uuid: String,
     @JsonProperty("freshInstall") val freshInstall: Boolean,
-    @JsonProperty("version") val version: String,
+    @JsonProperty("version") val cliVersion: String,
     @JsonProperty("os") val os: String,
     @JsonProperty("osArch") val osArch: String,
     @JsonProperty("osVersion") val osVersion: String,

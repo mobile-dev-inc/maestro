@@ -19,6 +19,7 @@
 
 package maestro.cli
 
+import maestro.cli.analytics.Analytics
 import maestro.cli.command.*
 import maestro.cli.command.DownloadSamplesCommand
 import maestro.cli.command.LogoutCommand

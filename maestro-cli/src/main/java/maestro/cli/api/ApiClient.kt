@@ -1,7 +1,5 @@
 package maestro.cli.api
 
-import Analytics
-import AnalyticsReport
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -10,6 +8,8 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import maestro.cli.CliError
+import maestro.cli.analytics.Analytics
+import maestro.cli.analytics.AnalyticsReport
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
