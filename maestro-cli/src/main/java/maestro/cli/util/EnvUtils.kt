@@ -47,39 +47,6 @@ object EnvUtils {
         return Paths.get(System.getProperty("user.home"), ".maestro")
     }
 
-    fun androidHome(): String? {
-        return System.getenv("ANDROID_HOME")
-            ?: System.getenv("ANDROID_SDK_ROOT")
-            ?: System.getenv("ANDROID_SDK_HOME")
-            ?: System.getenv("ANDROID_SDK")
-            ?: System.getenv("ANDROID")
-    }
-
-    private val androidUserHome: Path
-        get() {
-            if (System.getenv("ANDROID_USER_HOME") != null) {
-                return Paths.get(System.getenv("ANDROID_USER_HOME"))
-            }
-
-            return Paths.get(System.getProperty("user.home"), ".android")
-        }
-
-    fun androidEmulatorSdkVersions(): List<String> {
-        val iniFiles = androidUserHome.resolve("avd").toFile()
-            .listFiles { file -> file.extension == "ini" }
-            ?.map { it } ?: emptyList()
-
-        val versions = iniFiles
-            .map { iniFile -> iniFile.readLines().firstOrNull { it.startsWith("target=") } }
-            .filterNotNull()
-            .map { line -> line.split('=') }
-            .filter { lineParts -> lineParts.size == 2 }
-            .map { lineParts -> lineParts[1] }
-            .distinct()
-
-        return versions
-    }
-
     fun maestroCloudApiKey(): String? {
         return System.getenv("MAESTRO_CLOUD_API_KEY")
     }
