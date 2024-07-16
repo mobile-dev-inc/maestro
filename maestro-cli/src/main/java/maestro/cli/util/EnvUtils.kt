@@ -55,6 +55,31 @@ object EnvUtils {
             ?: System.getenv("ANDROID")
     }
 
+    private val androidUserHome: Path
+        get() {
+            if (System.getenv("ANDROID_USER_HOME") != null) {
+                return Paths.get(System.getenv("ANDROID_USER_HOME"))
+            }
+
+            return Paths.get(System.getProperty("user.home"), ".android")
+        }
+
+    fun androidEmulatorSdkVersions(): List<String> {
+        val iniFiles = androidUserHome.resolve("avd").toFile()
+            .listFiles { file -> file.extension == "ini" }
+            ?.map { it } ?: emptyList()
+
+        val versions = mutableListOf<String>()
+        for (iniFile in iniFiles) {
+            val line = iniFile.readLines().firstOrNull { it.startsWith("target=") } ?: continue
+            val lineParts = line.split('=')
+            if (lineParts.size != 2) continue
+            versions.add(lineParts[1])
+        }
+
+        return versions
+    }
+
     fun maestroCloudApiKey(): String? {
         return System.getenv("MAESTRO_CLOUD_API_KEY")
     }
