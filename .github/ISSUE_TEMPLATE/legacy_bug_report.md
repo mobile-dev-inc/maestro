@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Bug report (legacy)
 about: Create a bug report to help us improve Maestro
 title: "[Maestro version, e.g. v1.2.3]"
 labels: bug
@@ -7,6 +7,7 @@ assignees: ""
 ---
 
 **Describe the bug**
+
 A clear and concise description of what the bug is.
 
 **To Reproduce**
