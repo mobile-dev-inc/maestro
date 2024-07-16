@@ -8,8 +8,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import maestro.cli.api.ApiClient
+import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
+import maestro.cli.util.IOSEnvUtils
 import org.slf4j.LoggerFactory
 import java.net.ConnectException
 import java.nio.file.Path
@@ -118,6 +120,8 @@ object Analytics {
             xcodeVersion = EnvUtils.getXcodeVersion(),
             flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
             flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
+            androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,
+            iosVersions = IOSEnvUtils.simulatorRuntimes,
         )
 
         logger.trace("Will upload analytics report")
@@ -188,6 +192,6 @@ data class AnalyticsReport(
     @JsonProperty("xcodeVersion") val xcodeVersion: String?,
     @JsonProperty("flutterVersion") val flutterVersion: String?,
     @JsonProperty("flutterChannel") val flutterChannel: String?,
-    // TODO(bartek): List of Android versions of created Android emulators (alternative: list of downlaoded system-images)
-    // TODO(bartek): List of installed iOS Simulator runtimes
+    @JsonProperty("androidVersions") val androidVersions: List<String>,
+    @JsonProperty("iosVersions") val iosVersions: List<String>,
 )

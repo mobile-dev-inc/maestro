@@ -24,8 +24,10 @@ import maestro.cli.command.*
 import maestro.cli.command.DownloadSamplesCommand
 import maestro.cli.command.LogoutCommand
 import maestro.cli.update.Updates
+import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.EnvUtils
 import maestro.cli.util.ErrorReporter
+import maestro.cli.util.IOSEnvUtils
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
 import picocli.CommandLine
@@ -86,7 +88,8 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
-    println("versions of emus: ${EnvUtils.androidEmulatorSdkVersions()}")
+    println("versions of emus: ${AndroidEnvUtils.androidEmulatorSdkVersions}")
+    println("versions of simus: ${IOSEnvUtils.simulatorRuntimes}")
 
     Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()
