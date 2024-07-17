@@ -2,6 +2,7 @@ package maestro.cli.command
 
 import maestro.cli.App
 import maestro.cli.CliError
+import maestro.cli.ShowHelpMixin
 import maestro.cli.device.DeviceCreateUtil
 import maestro.cli.device.DeviceService
 import maestro.cli.device.Platform
@@ -28,6 +29,9 @@ import java.util.concurrent.Callable
 )
 class StartDeviceCommand : Callable<Int> {
 
+    @CommandLine.Mixin
+    var showHelpMixin: ShowHelpMixin? = null
+
     @CommandLine.ParentCommand
     private val parent: App? = null
 
@@ -42,7 +46,7 @@ class StartDeviceCommand : Callable<Int> {
     @CommandLine.Option(
         order = 1,
         names = ["--os-version"],
-        description = ["OS version to use:", "iOS: 15, 16", "Android: 28, 29, 30, 31, 33"],
+        description = ["OS version to use:", "iOS: 15, 16, 17", "Android: 28, 29, 30, 31, 33"],
     )
     private lateinit var osVersion: String
 
