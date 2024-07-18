@@ -5,8 +5,6 @@
 
 [versions]
 androidPlugin = "4.2.1"
-androidToolsApkParser = "30.3.0"
-androidToolsSdk = "30.3.0"
 androidxAppcompat = "1.5.1"
 androidxConstraintlayout = "2.1.4"
 androidxCore = "1.9.0"
@@ -50,8 +48,6 @@ logback = "1.2.6"
 coroutines = "1.6.3"
 
 [libraries]
-android-tools-apkparser = { module = "com.android.tools.apkparser:apkanalyzer", version.ref = "androidToolsApkParser" }
-android-tools-sdk = { module = "com.android.tools:sdk-common", version.ref = "androidToolsSdk" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
