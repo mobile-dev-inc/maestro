@@ -51,6 +51,13 @@ body:
         make it easier for us to understand and fix the problem. Screenshots and
         videos are welcome.
 
+           > [!TIP]
+          > If you're recording a video on Android, we recommend enabling these options to show taps and gestures:
+          > ```
+          > adb shell settings put system show_touches 1
+          > adb shell settings put system pointer_location 1
+          > ```
+
 
          > [!WARNING]
         > Issues that cannot be reproduced are much more likely to be closed.
