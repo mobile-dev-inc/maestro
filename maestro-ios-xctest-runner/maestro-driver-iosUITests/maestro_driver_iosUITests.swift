@@ -1,5 +1,6 @@
 import XCTest
 import FlyingFox
+import os
 
 class maestro_driver_iosUITests: XCTestCase {
     private static var swizzledOutIdle = false
@@ -10,6 +11,12 @@ class maestro_driver_iosUITests: XCTestCase {
         // when an XCTest internal error happes (eg: when using .allElementsBoundByIndex
         // on a ReactNative app)
         continueAfterFailure = true
+      
+        let logger = Logger(
+            subsystem: Bundle.main.bundleIdentifier!,
+            category: String(describing: Self.self)
+        )
+        logger.info("HELLO TEST STARTING")
 
         // Disable waiting for quiescence
         if !maestro_driver_iosUITests.swizzledOutIdle { // ensure the swizzle only happens once

@@ -107,9 +107,16 @@ class LocalXCTestInstaller(
     private fun ensureOpen(): Boolean {
         return MaestroTimer.retryUntilTrue(10_000, 200) {
             try {
-                XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
-                    xcTestDriverStatusCheck().use { it.isSuccessful }
+                val appAlive = XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
+                logger.info("[Start] Perform XCUITest runner status check on $deviceId, appAlive: $appAlive")
+                appAlive &&
+                    xcTestDriverStatusCheck().use {
+                        logger.info("[Done] Perform XCUITest runner status check on $deviceId")
+
+                        it.isSuccessful
+                    }
             } catch (ignore: IOException) {
+                logger.info("[Failed] Perform XCUITest runner status check on $deviceId, error: $ignore")
                 false
             }
         }
