@@ -117,7 +117,7 @@ object Analytics {
             osArch = EnvUtils.OS_ARCH,
             osVersion = EnvUtils.OS_VERSION,
             javaVersion = EnvUtils.getJavaVersion().toString(),
-            xcodeVersion = EnvUtils.getXcodeVersion(),
+            xcodeVersion = IOSEnvUtils.xcodeVersion,
             flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
             flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
             androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,

@@ -88,20 +88,6 @@ object EnvUtils {
         }
     }
 
-    fun getXcodeVersion(): String? {
-        val lines = runProcess("xcodebuild", "-version")
-
-        if (lines.size == 2) {
-            // Correct xcodebuild invocation is always 2 lines. Example:
-            //   $ xcodebuild -version
-            //   Xcode 15.4
-            //   Build version 15F31d
-            return lines.first().split(" ")[1]
-        }
-
-        return null
-    }
-
     fun getFlutterVersionAndChannel(): Pair<String?, String?> {
         val stdout = runProcess(
             "flutter",
@@ -185,7 +171,7 @@ enum class MACOS_ARCHITECTURE {
     UNKNOWN
 }
 
-private fun runProcess(program: String, vararg arguments: String): List<String> {
+internal fun runProcess(program: String, vararg arguments: String): List<String> {
     val process = ProcessBuilder(program, *arguments).start()
     return try {
         process.inputStream.reader().use { it.readLines().map(String::trim) }

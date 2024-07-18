@@ -20,4 +20,19 @@ object IOSEnvUtils {
 
             return installedRuntimes
         }
+
+    val xcodeVersion: String?
+        get() {
+            val lines = runProcess("xcodebuild", "-version")
+
+            if (lines.size == 2 && lines.first().contains(' ')) {
+                // Correct xcodebuild invocation is always 2 lines. Example:
+                //   $ xcodebuild -version
+                //   Xcode 15.4
+                //   Build version 15F31d
+                return lines.first().split(' ')[1]
+            }
+
+            return null
+        }
 }

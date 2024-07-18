@@ -9,6 +9,7 @@ import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
 import maestro.cli.util.CiUtils
 import maestro.cli.util.EnvUtils
+import maestro.cli.util.IOSEnvUtils
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
@@ -112,7 +113,7 @@ object TestDebugReporter {
         logger.info("OS Version: ${EnvUtils.OS_VERSION}")
         logger.info("Architecture: ${EnvUtils.OS_ARCH}")
         logger.info("Java Version: ${EnvUtils.getJavaVersion()}")
-        logger.info("Xcode Version: ${EnvUtils.getXcodeVersion()}")
+        logger.info("Xcode Version: ${IOSEnvUtils.xcodeVersion}")
         logger.info("Flutter Version: ${EnvUtils.getFlutterVersionAndChannel().first ?: "Undefined"}")
         logger.info("Flutter Channel: ${EnvUtils.getFlutterVersionAndChannel().second ?: "Undefined"}")
         logger.info("---------------------")
