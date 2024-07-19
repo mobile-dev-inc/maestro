@@ -63,6 +63,7 @@ object MaestroSessionManager {
         isStudio: Boolean = false,
         block: (MaestroSession) -> T,
     ): T {
+        println("MaestroSessionManager.newSession(): host=$host, port=$port, driverHostPort=$driverHostPort")
         val selectedDevice = selectDevice(
             host = host,
             port = port,
@@ -150,6 +151,7 @@ object MaestroSessionManager {
         isStudio: Boolean,
         driverHostPort: Int?,
     ): MaestroSession {
+        println("MaestroSessionManager.createMaestro(): driverHostPort=$driverHostPort")
         return when {
             selectedDevice.device != null -> MaestroSession(
                 maestro = when (selectedDevice.device.platform) {
@@ -263,6 +265,7 @@ object MaestroSessionManager {
         openDriver: Boolean,
         driverHostPort: Int,
     ): Maestro {
+        println("MaestroSessionManager.pickIOSDevice(): driverHostPort=$driverHostPort")
         val device = PickDeviceInteractor.pickDevice(deviceId, driverHostPort)
         return createIOS(device.instanceId, openDriver, driverHostPort)
     }
@@ -288,12 +291,13 @@ object MaestroSessionManager {
         )
     }
 
+    // Default port for iOS is set to be 22087 here.
     private fun createIOS(
         deviceId: String,
         openDriver: Boolean,
         driverHostPort: Int?,
     ): Maestro {
-
+        println("MaestroSessionManager.createIOS(): driverHostPort=$driverHostPort")
         val xcTestInstaller = LocalXCTestInstaller(
             logger = IOSDriverLogger(LocalXCTestInstaller::class.java),
             deviceId = deviceId,

@@ -216,6 +216,7 @@ class TestCommand : Callable<Int> {
                         (7001..7128).shuffled().find { port ->
                             usedPorts.putIfAbsent(port, true) == null
                         } ?: error("No available ports found")
+                    println("TestCommand.handleSession(): driver host port: $driverHostPort")
 
                     // Acquire lock to execute device creation block
                     deviceCreationSemaphore.acquire()

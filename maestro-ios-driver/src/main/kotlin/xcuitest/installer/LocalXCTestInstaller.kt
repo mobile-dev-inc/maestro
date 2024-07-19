@@ -105,11 +105,13 @@ class LocalXCTestInstaller(
     }
 
     private fun ensureOpen(): Boolean {
+        println("ensureOpen: ${useXcodeTestRunner}")
         return MaestroTimer.retryUntilTrue(10_000, 200) {
             try {
                 XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId) &&
                     xcTestDriverStatusCheck().use { it.isSuccessful }
             } catch (ignore: IOException) {
+                logger.info("[Failed] Perform XCUITest runner status check on $deviceId, error: $ignore")
                 false
             }
         }
