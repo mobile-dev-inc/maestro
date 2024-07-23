@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.37.3 - 2024-07-23
+- fix race condition on android sharding
+
 ## 1.37.2 - 2024-07-19
 - [fix tags include from OR to AND](https://github.com/rasyid7/maestro/commit/9949f1b204e86dedb3f2912ffdfa65cca2e6121f)
 
