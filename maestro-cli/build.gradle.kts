@@ -101,6 +101,7 @@ jreleaser {
         }
         authors.set(listOf("Dmitry Zaytsev", "Amanjeet Singh", "Leland Takamine", "Arthur Saveliev", "Axel Niklasson", "Berik Visschers"))
         license.set("Apache-2.0")
+        copyright.set("mobile.dev 2024")
     }
 
     distributions {
