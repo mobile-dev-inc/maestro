@@ -80,6 +80,9 @@ class TestCommand : Callable<Int> {
     @CommandLine.Parameters
     private lateinit var flowFile: File
 
+    @Option(names = ["--config"])
+    private var configFile: File? = null
+
     @Option(
         names = ["-s", "--shards"],
         description = ["Number of parallel shards to distribute tests across"]
@@ -155,11 +158,16 @@ class TestCommand : Callable<Int> {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
 
+        if (configFile != null && configFile?.exists()?.not() == true) {
+            PrintUtils.warn("The file ${configFile?.absolutePath} does not exist.")
+        }
+
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
                 flowFile.toPath().toAbsolutePath(),
                 includeTags,
-                excludeTags
+                excludeTags,
+                configFile,
             )
         } catch (e: ValidationError) {
             throw CliError(e.message)
