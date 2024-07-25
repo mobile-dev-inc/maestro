@@ -2,7 +2,7 @@ import XCTest
 
 struct ScreenSizeHelper {
     static func physicalScreenSize() -> (Float, Float) {
-        let springboardBundleId = "com.apple.springboard"
+        let springboardBundleId = "com.example.example"
         let springboardApp = XCUIApplication(bundleIdentifier: springboardBundleId)
         let screenSize = springboardApp.frame.size
         return (Float(screenSize.width), Float(screenSize.height))
@@ -21,5 +21,19 @@ struct ScreenSizeHelper {
         }
         
         return (actualWidth, actualHeight)
+    }
+    
+    static func orientation() -> String {
+        let orientation = XCUIDevice.shared.orientation
+        return switch (orientation) {
+        case .portrait: "portrait"
+        case .portraitUpsideDown: "portraitUpsideDown"
+        case .landscapeLeft: "landscapeLeft"
+        case .landscapeRight: "landscapeRight"
+        case .faceDown: "faceDown"
+        case .faceUp: "faceUp"
+        case .unknown: "unknown"
+        @unknown default: "unknown default"
+        }
     }
 }

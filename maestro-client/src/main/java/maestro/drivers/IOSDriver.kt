@@ -42,16 +42,14 @@ class IOSDriver(
     private val iosDevice: IOSDevice,
 ) : Driver {
 
-    private val deviceInfo by lazy {
-        iosDevice.deviceInfo()
-    }
+    private val deviceInfo
+        get() = iosDevice.deviceInfo()
 
-    private val widthPoints by lazy {
-        deviceInfo.widthPoints
-    }
-    private val heightPoints by lazy {
-        deviceInfo.heightPoints
-    }
+    private val widthPoints
+        get() = deviceInfo.widthPoints
+
+    private val heightPoints
+        get() = deviceInfo.heightPoints
 
     private var appId: String? = null
     private var proxySet = false
@@ -114,6 +112,7 @@ class IOSDriver(
     }
 
     override fun tap(point: Point) {
+        LOGGER.warn("BARTEK tap, x: ${point.x}, y: ${point.y}")
         runDeviceCall { iosDevice.tap(point.x, point.y) }
     }
 

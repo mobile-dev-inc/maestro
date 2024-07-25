@@ -179,7 +179,19 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     private func elementHierarchy(xcuiElement: XCUIElement) throws -> AXElement {
+        let orientation = XCUIDevice.shared.orientation
+        
         let snapshotDictionary = try xcuiElement.snapshot().dictionaryRepresentation
-        return AXElement(snapshotDictionary)
+        
+        return switch (orientation) {
+        case .portrait: AXElement(snapshotDictionary)
+        case .landscapeLeft: AXElement(snapshotDictionary)
+        case .landscapeRight: AXElement(snapshotDictionary)
+        default: fatalError("Not implemented yet")
+        }
     }
+}
+
+extension AXElement {
+    
 }

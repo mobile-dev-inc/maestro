@@ -30,9 +30,11 @@ import maestro.cli.util.ErrorReporter
 import maestro.cli.util.IOSEnvUtils
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import maestro.debuglog.DebugLogStore.logDirectory
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
+import util.XCRunnerCLIUtils
 import java.util.Properties
 import kotlin.random.Random
 import kotlin.system.exitProcess
@@ -90,6 +92,8 @@ fun main(args: Array<String>) {
     // Disable icon in Mac dock
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
+
+    println("iOS log dir: ${XCRunnerCLIUtils.logDirectory.path}")
 
     Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()

@@ -18,7 +18,7 @@ object XCRunnerCLIUtils {
     private const val MAX_COUNT_XCTEST_LOGS = 5
 
     private val dateFormatter by lazy { DateTimeFormatter.ofPattern(LOG_DIR_DATE_FORMAT) }
-    private val logDirectory by lazy {
+     val logDirectory by lazy {
         val parentName = AppDirsFactory.getInstance().getUserLogDir(APP_NAME, null, APP_AUTHOR)
         val logsDirectory = File(parentName, "xctest_runner_logs")
         File(parentName).apply {

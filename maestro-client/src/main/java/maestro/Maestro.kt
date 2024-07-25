@@ -40,9 +40,9 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     private val sessionId = UUID.randomUUID()
 
-    private val cachedDeviceInfo by lazy {
-        fetchDeviceInfo()
-    }
+    // FIXME: NOT REALLY CACHED NOW
+    private val cachedDeviceInfo
+        get() = fetchDeviceInfo()
 
     private var screenRecordingInProgress = false
 
@@ -130,6 +130,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
             swipeDirection != null -> driver.swipe(swipeDirection, duration)
             startPoint != null && endPoint != null -> driver.swipe(startPoint, endPoint, duration)
             startRelative != null && endRelative != null -> {
+
+
                 val startPoints = startRelative.replace("%", "")
                     .split(",").map { it.trim().toInt() }
                 val startX = cachedDeviceInfo.widthGrid * startPoints[0] / 100
@@ -234,6 +236,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     ) {
         val x = cachedDeviceInfo.widthGrid * percentX / 100
         val y = cachedDeviceInfo.heightGrid * percentY / 100
+
+        LOGGER.warn("BARTEK tapOnRelative, x: $x, y: $y")
         tap(
             x = x,
             y = y,

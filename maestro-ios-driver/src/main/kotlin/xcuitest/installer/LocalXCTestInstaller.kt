@@ -22,7 +22,7 @@ class LocalXCTestInstaller(
     private val logger: Logger,
     private val deviceId: String,
     private val host: String = "[::1]",
-    private val enableXCTestOutputFileLogging: Boolean = false,
+    private val enableXCTestOutputFileLogging: Boolean = true,
     defaultPort: Int? = null
 ) : XCTestInstaller {
     // Set this flag to allow using a test runner started from Xcode

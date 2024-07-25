@@ -13,10 +13,7 @@ struct DeviceInfoHandler: HTTPHandler {
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         do {
-            let springboardBundleId = "com.apple.springboard"
-            let springboardApp = XCUIApplication(bundleIdentifier: springboardBundleId)
-            let screenSize = springboardApp.frame.size
-
+            let orientation = ScreenSizeHelper.orientation()
             let (width, height) = ScreenSizeHelper.actualScreenSize()
             let deviceInfo = DeviceInfoResponse(
                 widthPoints: Int(width),
@@ -24,6 +21,9 @@ struct DeviceInfoHandler: HTTPHandler {
                 widthPixels: Int(CGFloat(width) * UIScreen.main.scale),
                 heightPixels: Int(CGFloat(height) * UIScreen.main.scale)
             )
+            
+            
+            logger.info("device info is: \(orientation), width: \(width), height: \(height)")
 
             let responseBody = try JSONEncoder().encode(deviceInfo)
             return HTTPResponse(statusCode: .ok, body: responseBody)
