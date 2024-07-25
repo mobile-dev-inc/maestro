@@ -6,6 +6,7 @@ import maestro.orchestra.WorkspaceConfig
 import maestro.orchestra.error.ValidationError
 import maestro.orchestra.workspace.ExecutionOrderPlanner.getFlowsToRunInSequence
 import maestro.orchestra.yaml.YamlCommandReader
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -17,6 +18,7 @@ object WorkspaceExecutionPlanner {
         input: Path,
         includeTags: List<String>,
         excludeTags: List<String>,
+        config: File?,
     ): ExecutionPlan {
         if (input.notExists()) {
             throw ValidationError("""
@@ -41,10 +43,13 @@ object WorkspaceExecutionPlanner {
         }
 
         // Filter flows based on flows config
-
-        val workspaceConfig = findConfigFile(input)
-            ?.let { YamlCommandReader.readWorkspaceConfig(it) }
-            ?: WorkspaceConfig()
+        val workspaceConfig = if(config?.exists() == true) {
+            YamlCommandReader.readWorkspaceConfig(config.toPath().toAbsolutePath())
+        } else {
+            findConfigFile(input)
+                ?.let { YamlCommandReader.readWorkspaceConfig(it) }
+                ?: WorkspaceConfig()
+        }
 
         val globs = workspaceConfig.flows ?: listOf("*")
 
