@@ -80,7 +80,7 @@ class TestCommand : Callable<Int> {
     @CommandLine.Parameters
     private lateinit var flowFile: File
 
-    @Option(names = ["--config"])
+    @Option(names = ["--config"], description = ["Optional .yaml configuration file for Flows. If not provided, Maestro will look for a config.yaml file in the root directory."])
     private var configFile: File? = null
 
     @Option(
@@ -159,7 +159,7 @@ class TestCommand : Callable<Int> {
         }
 
         if (configFile != null && configFile?.exists()?.not() == true) {
-            PrintUtils.warn("The file ${configFile?.absolutePath} does not exist.")
+            throw CliError("The config file ${configFile?.absolutePath} does not exist.")
         }
 
         val executionPlan = try {
