@@ -65,6 +65,13 @@ These artifacts are built by the `build-maestro-ios-runner.sh` script. It places
 
 `maestro-cli` depends on both `maestro-ios-driver` and `maestro-client`. This is how the CLI gets these artifacts.
 
+## Debugging
+
+Maestro stores logs for every test run in the following locations:
+
+- CLI Logs: `~/.maestro/tests/*/maestro.log`
+- iOS test runner logs: `~/Library/Logs/maestro/xctest_runner_logs`
+
 ## Architectural considerations
 
 Keep the following things in mind when working on a PR:
