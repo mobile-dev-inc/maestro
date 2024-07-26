@@ -45,10 +45,11 @@ If you made changes to the iOS XCUITest driver, rebuild it by running `./maestro
 
 Maestro requires 2 artifacts to run on Android:
 
-- `maestro-app.apk`
+- `maestro-app.apk` - the host app. Does nothing.
 - `maestro-server.apk` - the test runner app. Starts an HTTP server inside an infinite JUnit/UIAutomator test.
 
-These artifacts are built by 
+These artifacts are built by `./gradlew :maestro-android:assemble` and `./gradlew :maestro-android:assembleAndroidTest`, respectively.
+They are placed in `maestro-android/build/outputs/apk`, and are copied over to `maestro-client/src/main/resources`.
 
 ### Running on iOS
 
