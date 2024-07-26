@@ -22,4 +22,15 @@ struct ScreenSizeHelper {
         
         return (actualWidth, actualHeight)
     }
+    
+    static func orientationAwarePoint(width: Float, height: Float, point: CGPoint) -> CGPoint {
+        let orientation = XCUIDevice.shared.orientation
+        
+        return switch (orientation) {
+        case .portrait: point
+        case .landscapeLeft: CGPoint(x: CGFloat(width) - point.y, y: CGFloat(point.x))
+        case .landscapeRight: CGPoint(x: CGFloat(point.y), y: CGFloat(height) - point.x)
+        default: fatalError("Not implemented yet")
+        }
+    }
 }
