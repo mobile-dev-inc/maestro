@@ -16,13 +16,13 @@ struct TouchRouteHandler: HTTPHandler {
             return AppError(type: .precondition, message: "incorrect request body provided for tap route").httpResponse
         }
         
-        let (width, height) = ScreenSizeHelper.physicalScreenSize()
-        let point = ScreenSizeHelper.orientationAwarePoint(
-            width: width,
-            height: height,
-            point: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y))
-        )
-        let (x, y) = (point.x, point.y)
+//        let (width, height) = ScreenSizeHelper.physicalScreenSize()
+//        let point = ScreenSizeHelper.orientationAwarePoint(
+//            width: width,
+//            height: height,
+//            point: CGPoint(x: CGFloat(requestBody.x), y: CGFloat(requestBody.y))
+//        )
+        let (x, y) = (requestBody.x, requestBody.y)
 
         if requestBody.duration != nil {
             logger.info("Long pressing \(x), \(y) for \(requestBody.duration!)s")
@@ -30,8 +30,11 @@ struct TouchRouteHandler: HTTPHandler {
             logger.info("Tapping \(x), \(y)")
         }
 
+        
+        let orientation = XCUIDevice.shared.orientation.toInterfaceOrientation()
+        
         do {
-            let eventRecord = EventRecord(orientation: .portrait)
+            let eventRecord = EventRecord(orientation: orientation)
             _ = eventRecord.addPointerTouchEvent(
                 at: CGPoint(x: CGFloat(x), y: CGFloat(y)),
                 touchUpAfter: requestBody.duration

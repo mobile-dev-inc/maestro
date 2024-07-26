@@ -34,3 +34,14 @@ struct ScreenSizeHelper {
         }
     }
 }
+
+extension UIDeviceOrientation {
+    func toInterfaceOrientation() -> UIInterfaceOrientation {
+        return switch (self) {
+        case .portrait: UIInterfaceOrientation.portrait
+        case .landscapeLeft: UIInterfaceOrientation.landscapeRight
+        case .landscapeRight: UIInterfaceOrientation.landscapeLeft
+        default: fatalError("Not implemented yet")
+        }
+    }
+}
