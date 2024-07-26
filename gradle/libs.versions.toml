@@ -126,3 +126,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 google-protobuf = { id = "com.google.protobuf", version.ref = "googleProtobufPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-publish = { id = "com.vanniktech.maven.publish", version = "0.19.0" }
+vanniktech-graphGenerator = { id = "com.vanniktech.dependency.graph.generator", version = "0.8.0" }
