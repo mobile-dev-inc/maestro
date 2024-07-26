@@ -1,0 +1,2 @@
+https://storage.googleapis.com/mobile.dev/samples/e2e_apps/wikipedia.apk
+https://storage.googleapis.com/mobile.dev/samples/e2e_apps/Wikipedia.zip
