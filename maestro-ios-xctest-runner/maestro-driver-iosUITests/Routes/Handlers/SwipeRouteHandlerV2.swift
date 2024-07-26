@@ -23,7 +23,7 @@ struct SwipeRouteHandlerV2: HTTPHandler {
     }
 
     func swipePrivateAPI(_ request: SwipeRequest) async throws {
-        let description = "Swipe from \(request.start) to \(request.end) with \(request.duration) duration"
+        let description = "Swipe v2 from \(request.start) to \(request.end) with \(request.duration) duration"
         logger.info("\(description)")
 
         let runningAppId = RunningApp.getForegroundAppId(request.appIds ?? [])
