@@ -1,0 +1,61 @@
+name: E2E test
+
+on:
+  workflow_dispatch:
+  push:
+  
+
+jobs:
+  build:
+    runs-on: macos-latest
+    if: github.repository == 'mobile-dev-inc/maestro'
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build xctest-runner
+        run: ./maestro-ios-xctest-runner/build-maestro-ios-runner.sh
+
+      - name: Build Maestro CLI
+        run: ./gradlew :maestro-cli
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maestro-${{ github.run_id }}
+          path: maestro-cli/build/install/maestro
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    if: github.repository == 'mobile-dev-inc/maestro'
+    needs: build
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 8
+
+      - uses: actions/download-artifact@v4
+        with:
+          # Name of the artifact to download.
+          # If unspecified, all artifacts for the run are downloaded.
+          # Optional.
+          name: maestro-${{ github.run_id }}
+
+      - name: Run Maestro CLI
+        run: ./maestro --help
