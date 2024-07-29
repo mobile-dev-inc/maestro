@@ -19,6 +19,7 @@
 
 package maestro.cli.command
 
+import kotlinx.coroutines.runBlocking
 import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
@@ -28,6 +29,7 @@ import maestro.cli.runner.TestRunner
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.session.MaestroSessionManager
 import maestro.cli.view.ProgressBar
+import maestro.cli.util.FileDownloader
 import okio.sink
 import org.fusesource.jansi.Ansi
 import picocli.CommandLine
@@ -63,6 +65,18 @@ class RecordCommand : Callable<Int> {
         description = ["Configures the debug output in this path, instead of default"]
     )
     private var debugOutput: String? = null
+
+    @Option(
+        names = ["--upload-when-failed"],
+        description = ["Uploads the video to Maestro only if the test fails"]
+    )
+    private var uploadIfFailed: Boolean = false
+
+    @Option(
+        names = ["--auto-download"],
+        description = ["Automatically download the video after the render is completed"]
+    )
+    private var autoDownload: Boolean = false
 
     override fun call(): Int {
         if (!flowFile.exists()) {
@@ -104,68 +118,101 @@ class RecordCommand : Callable<Int> {
                 }
             }
 
-            System.err.println()
-            System.err.println("@|bold Rendering your video. This usually takes a couple minutes...|@".render())
-            System.err.println()
+            val upload = !uploadIfFailed || (this.uploadIfFailed && (exitCode != 0))
 
-            val frames = resultView.getFrames()
-            val client = ApiClient("")
+            if (upload) {
+                System.err.println()
+                System.err.println("@|bold Rendering your video. This usually takes a couple minutes...|@".render())
+                System.err.println()
 
-            val uploadProgress = ProgressBar(50)
-            System.err.println("Uploading raw files for render...")
-            val id = client.render(screenRecording, frames) { totalBytes, bytesWritten ->
-                uploadProgress.set(bytesWritten.toFloat() / totalBytes)
-            }
-            System.err.println()
+                val frames = resultView.getFrames()
+                val client = ApiClient("")
 
-            var renderProgress: ProgressBar? = null
-            var status: String? = null
-            var positionInQueue: Int? = null
-            while (true) {
-                val state = client.getRenderState(id)
+                val uploadProgress = ProgressBar(50)
+                System.err.println("Uploading raw files for render...")
+                val id = client.render(screenRecording, frames) { totalBytes, bytesWritten ->
+                    uploadProgress.set(bytesWritten.toFloat() / totalBytes)
+                }
+                System.err.println()
 
-                // If new position or status, print header
-                if (state.status != status || state.positionInQueue != positionInQueue) {
-                    status = state.status
-                    positionInQueue = state.positionInQueue
+                var renderProgress: ProgressBar? = null
+                var status: String? = null
+                var positionInQueue: Int? = null
+                var downloadUrl: String? = null
 
-                    if (renderProgress != null) {
-                        renderProgress.set(1f)
+                while (true) {
+                    val state = client.getRenderState(id)
+
+                    // If new position or status, print header
+                    if (state.status != status || state.positionInQueue != positionInQueue) {
+                        status = state.status
+                        positionInQueue = state.positionInQueue
+
+                        if (renderProgress != null) {
+                            renderProgress.set(1f)
+                            System.err.println()
+                        }
+
                         System.err.println()
+
+                        System.err.println("Status : ${styledStatus(state.status)}")
+                        if (state.positionInQueue != null) {
+                            System.err.println("Position In Queue : ${state.positionInQueue}")
+                        }
                     }
 
-                    System.err.println()
-
-                    System.err.println("Status : ${styledStatus(state.status)}")
-                    if (state.positionInQueue != null) {
-                        System.err.println("Position In Queue : ${state.positionInQueue}")
+                    // Add ticks to progress bar
+                    if (state.currentTaskProgress != null) {
+                        if (renderProgress == null) renderProgress = ProgressBar(50)
+                        renderProgress.set(state.currentTaskProgress)
                     }
-                }
 
-                // Add ticks to progress bar
-                if (state.currentTaskProgress != null) {
-                    if (renderProgress == null) renderProgress = ProgressBar(50)
-                    renderProgress.set(state.currentTaskProgress)
-                }
-
-                // Print download url or error and return
-                if (state.downloadUrl != null || state.error != null) {
-                    System.err.println()
-                    if (state.downloadUrl != null) {
-                        System.err.println("@|bold Signed Download URL:|@".render())
+                    // Print download url or error and return
+                    if (state.downloadUrl != null || state.error != null) {
                         System.err.println()
-                        print("@|cyan,bold ${state.downloadUrl}|@".render())
-                        System.err.println()
-                        System.err.println()
-                        System.err.println("Open the link above to download your video. If you're sharing on Twitter be sure to tag us @|bold @mobile__dev|@!".render())
-                    } else {
-                        System.err.println("@|bold Render encountered during rendering:|@".render())
-                        System.err.println(state.error)
+                        if (state.downloadUrl != null) {
+                            System.err.println("@|bold Signed Download URL:|@".render())
+                            System.err.println()
+                            print("@|cyan,bold ${state.downloadUrl}|@".render())
+                            System.err.println()
+                            System.err.println()
+                            System.err.println("Open the link above to download your video. If you're sharing on Twitter be sure to tag us @|bold @mobile__dev|@!".render())
+                            downloadUrl = state.downloadUrl
+                        } else {
+                            System.err.println("@|bold Render encountered during rendering:|@".render())
+                            System.err.println(state.error)
+                        }
+                        break
                     }
-                    break
+
+                    Thread.sleep(2000)
                 }
 
-                Thread.sleep(2000)
+                if (autoDownload && downloadUrl != null) {
+                    println("Downloading Video...")
+                    val downloadFile = File(flowFile.name.removeSuffix(".yaml") + ".mp4")
+                    runBlocking {
+                        FileDownloader.downloadFile(downloadUrl, downloadFile).collect { result ->
+                            when (result) {
+                                is FileDownloader.DownloadResult.Success -> {
+                                    System.err.println("Download completed: ${downloadFile.absolutePath}")
+                                }
+                                is FileDownloader.DownloadResult.Error -> {
+                                    System.err.println("Download failed: ${result.message}")
+                                }
+                                is FileDownloader.DownloadResult.Progress -> {
+                                    // Do nothing
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    println("Not downloading video since autoDownload is $autoDownload and downloadUrl is ${downloadUrl}")
+                }
+            } else {
+                System.err.println()
+                System.err.println("@|bold Not uploading video since the test is PASS |@".render())
+                System.err.println()
             }
 
             TestDebugReporter.deleteOldFiles()
