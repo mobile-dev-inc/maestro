@@ -570,6 +570,12 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         ScreenshotUtils.waitUntilScreenIsStatic(timeout, SCREENSHOT_DIFF_THRESHOLD, driver)
     }
 
+    fun sleep(time: Long?) {
+        val time = time ?: ANIMATION_TIMEOUT_MS
+        LOGGER.info("Sleep for $time ms")
+        Thread.sleep(time)
+    }
+
     fun setProxy(
         host: String = SocketUtils.localIp(),
         port: Int
