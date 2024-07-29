@@ -31,14 +31,19 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: maestro-${{ github.run_id }}
-          path: maestro-cli/build/install/maestro
+          name: maestro-cli
+          path: maestro-cli/build/distributions/maestro.zip
           retention-days: 1
 
   test-local:
     runs-on: ubuntu-latest
     if: github.repository == 'mobile-dev-inc/maestro'
     needs: build
+    
+    env:
+      EMULATOR_API_LEVEL: 33
+      EMULATOR_TARGET: google_apis
+      EMULATOR_ARCH: x86_64
 
     steps:
       - name: Set up JDK
@@ -53,10 +58,30 @@ jobs:
           # Name of the artifact to download.
           # If unspecified, all artifacts for the run are downloaded.
           # Optional.
-          name: maestro-${{ github.run_id }}
+          name: maestro-cli
 
-      - name: Run Maestro CLI
-        run: ./maestro --help
+      - name: Add Maestro CLI executable to PATH
+        run: |
+          unzip maestro.zip
+          echo "$PWD/maestro/bin" >> $GITHUB_PATH
+
+      - name: Check if Maestro CLI executable starts up
+        run: |
+          printf "e2e" > "$HOME/.maestro/uuid"
+          maestro --help
+
+      - name: Start emulator and run a Flow
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.EMULATOR_API_LEVEL }}
+          target: ${{ env.EMULATOR_TARGET }}
+          arch: ${{ env.EMULATOR_ARCH }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          working-directory: ${{ github.workspace }}/packages/patrol/example/android
+          script: |
+            maestro test
   
   test-cloud:
     runs-on: ubuntu-latest
@@ -70,10 +95,60 @@ jobs:
           # Name of the artifact to download.
           # If unspecified, all artifacts for the run are downloaded.
           # Optional.
-          name: maestro-${{ github.run_id }}
+          name: maestro-cli
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 8
+
+      - name: Check if Maestro CLI executable starts up
+        run: |
+          printf "e2e" > "$HOME/.maestro/uuid"
+          maestro --help
+
+      - name: maestro download-samples
+        run: maestro download-samples
+
+      - name: Run Android test
+        run: |
+          maestro cloud \
+            --apiKey ${{secrets.E2E_MOBILE_DEV_API_KEY}} \
+            --fail-on-cancellation \
+            --include-tags advanced \
+            samples/sample.apk \
+            samples
+
+      - name: Run iOS test
+        run: |
+          maestro cloud \
+            --apiKey=${{secrets.E2E_MOBILE_DEV_API_KEY}} \
+            --timeout 180 \
+            --fail-on-cancellation \
+            --include-tags advanced \
+            samples/sample.zip \
+            samples
+
+      - name: Trigger alert on failure
+        if: ${{ false }}
+        # if: failure()
+        run: |
+          curl --request POST \
+              --url "https://events.pagerduty.com/v2/enqueue" \
+              --header 'Content-Type: application/json' \
+              --data '{
+            "payload": {
+              "summary": "E2E test failed",
+              "source": "E2E test",
+              "severity": "critical"
+            },
+            "routing_key": "${{ secrets.E2E_PAGER_DUTY_INTEGRATION_KEY }}",
+            "event_action": "trigger",
+            "links": [
+                {
+                  "href": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "text": "Failed E2E test - Github Action"
+                }
+            ]
+          }'
