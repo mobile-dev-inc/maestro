@@ -7,4 +7,4 @@ appId: com.example.app
     speed: 100
     visibilityPercentage: 100
     direction: DOWN
-    timeout: 10
+    timeout: 50
