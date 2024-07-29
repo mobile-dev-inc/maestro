@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.37.4 - 2024-07-29
+- [add sleep feature on maestro](https://github.com/rasyid7/maestro/commit/2a8575583af3aaf71de23c7def902db30041fa06)
+- [add upload-when-failed option for maestro record](https://github.com/rasyid7/maestro/commit/371f4163cf68de6f5ad5e767990164f2f558315b)
+`record --upload-when-failed`
+- [add auto-download option for maestro record](https://github.com/rasyid7/maestro/commit/371f4163cf68de6f5ad5e767990164f2f558315b)
+`record --auto-download`
+
 ## 1.37.3 - 2024-07-23
 - fix race condition on android sharding
 
