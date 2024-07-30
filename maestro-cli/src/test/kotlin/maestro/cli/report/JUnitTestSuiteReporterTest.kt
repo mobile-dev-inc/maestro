@@ -3,8 +3,8 @@ package maestro.cli.report
 import com.google.common.truth.Truth.assertThat
 import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
-import okio.Buffer
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
 class JUnitTestSuiteReporterTest {
@@ -12,7 +12,7 @@ class JUnitTestSuiteReporterTest {
     @Test
     fun `XML - Test passed`() {
         // Given
-        val testee = JUnitTestSuiteReporter.xml()
+        val testee = JUnitTestSuiteReporter.xml(null, null)
 
         val summary = TestExecutionSummary(
             passed = true,
@@ -38,14 +38,14 @@ class JUnitTestSuiteReporterTest {
                 )
             )
         )
-        val sink = Buffer()
+        val reportOutput = File("tmpReportOutput")
 
         // When
         testee.report(
             summary = summary,
-            out = sink
+            out = reportOutput
         )
-        val resultStr = sink.readUtf8()
+        val resultStr = reportOutput.readText(Charsets.UTF_8)
 
         // Then
         assertThat(resultStr).isEqualTo(
@@ -65,7 +65,7 @@ class JUnitTestSuiteReporterTest {
     @Test
     fun `XML - Test failed`() {
         // Given
-        val testee = JUnitTestSuiteReporter.xml()
+        val testee = JUnitTestSuiteReporter.xml(null, null)
 
         val summary = TestExecutionSummary(
             passed = false,
@@ -91,14 +91,14 @@ class JUnitTestSuiteReporterTest {
                 )
             )
         )
-        val sink = Buffer()
+        val reportOutput = File("tmpReportOutput")
 
         // When
         testee.report(
             summary = summary,
-            out = sink
+            out = reportOutput
         )
-        val resultStr = sink.readUtf8()
+        val resultStr = reportOutput.readText(Charsets.UTF_8)
 
         // Then
         assertThat(resultStr).isEqualTo(
@@ -120,7 +120,7 @@ class JUnitTestSuiteReporterTest {
     @Test
     fun `XML - Custom test suite name is used when present`() {
         // Given
-        val testee = JUnitTestSuiteReporter.xml("Custom test suite name")
+        val testee = JUnitTestSuiteReporter.xml("Custom test suite name", "fileExtension")
 
         val summary = TestExecutionSummary(
             passed = true,
@@ -145,14 +145,14 @@ class JUnitTestSuiteReporterTest {
                 )
             )
         )
-        val sink = Buffer()
+        val reportOutput = File("tmpReportOutput")
 
         // When
         testee.report(
             summary = summary,
-            out = sink
+            out = reportOutput
         )
-        val resultStr = sink.readUtf8()
+        val resultStr = reportOutput.readText(Charsets.UTF_8)
 
         // Then
         assertThat(resultStr).isEqualTo(
