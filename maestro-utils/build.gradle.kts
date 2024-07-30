@@ -1,11 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.vanniktech.maven.publish.SonatypeHost
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id 'maven-publish'
-    id "kotlin"
-    id "idea"
-    id "com.vanniktech.maven.publish"
+    alias(libs.plugins.kotlin.jvm)
+    `maven-publish`
+    alias(libs.plugins.vanniktech.publish)
 }
 
 dependencies {
@@ -18,25 +19,23 @@ dependencies {
 
 // From https://jakewharton.com/kotlins-jdk-release-compatibility-flag
 
-def javaVersion = JavaVersion.VERSION_1_8
+val javaVersion = JavaVersion.VERSION_1_8
 java {
-    sourceCompatibility = javaVersion.toString()
-    targetCompatibility = javaVersion.toString()
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
-tasks.withType(KotlinCompile).configureEach {
+tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_1_8
+        jvmTarget.set(JvmTarget.JVM_1_8)
         freeCompilerArgs.add("-Xjdk-release=$javaVersion")
     }
 }
 
-plugins.withId("com.vanniktech.maven.publish") {
-    mavenPublish {
-        sonatypeHost = "S01"
-    }
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
 }
 
-test {
+tasks.named<Test>("test") {
     useJUnitPlatform()
 }

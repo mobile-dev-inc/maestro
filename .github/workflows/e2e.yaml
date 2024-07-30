@@ -70,6 +70,7 @@ jobs:
           mkdir -p "$HOME/.maestro"
           printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
+          maestro --version
 
       - name: Start emulator and run a Flow
         uses: reactivecircus/android-emulator-runner@v2
@@ -114,6 +115,7 @@ jobs:
           mkdir -p "$HOME/.maestro"
           printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
+          maestro --version
 
       - name: maestro download-samples
         run: maestro download-samples
