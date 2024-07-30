@@ -46,18 +46,21 @@ jobs:
       EMULATOR_ARCH: x86_64
 
     steps:
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 8
+          java-version: 11
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          # Name of the artifact to download.
-          # If unspecified, all artifacts for the run are downloaded.
-          # Optional.
           name: maestro-cli
 
       - name: Add Maestro CLI executable to PATH
@@ -81,9 +84,11 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          working-directory: ${{ github.workspace }}/packages/patrol/example/android
+          working-directory: ${{ github.workspace }}/e2e
           script: |
-            maestro test
+            ./download_apps
+            ./install_apps
+            ./run_tests
   
   test-cloud:
     runs-on: ubuntu-latest
@@ -94,9 +99,6 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          # Name of the artifact to download.
-          # If unspecified, all artifacts for the run are downloaded.
-          # Optional.
           name: maestro-cli
 
       - name: Set up JDK

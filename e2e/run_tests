@@ -10,8 +10,8 @@ for file in ./flows/*; do
 	filename="$(basename "$file")"
 
 	if [ -z "$selected_app" ] || [ "$selected_app" = "$filename" ]; then
-		cd "$file"
+		cd "$file" || exit 1
 		maestro --device emulator-5554 test . # --format junit
-		cd - >/dev/null
+		cd - >/dev/null || exit 1
 	fi
 done
