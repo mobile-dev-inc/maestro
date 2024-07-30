@@ -79,8 +79,16 @@ object Analytics {
 
         // Fix for https://github.com/mobile-dev-inc/maestro/issues/1846
         if (CiUtils.getCiProvider() != null) {
-            println("CI detected, analytics was automatically enabled.")
-            println("To opt out, set $DISABLE_ANALYTICS_ENV_VAR environment variable to any value before running Maestro.")
+            if (!analyticsDisabledWithEnvVar) {
+                println("CI detected, analytics was automatically enabled.")
+                println("To opt out, set $DISABLE_ANALYTICS_ENV_VAR environment variable to any value before running Maestro.")
+            } else {
+                println("CI detected and $DISABLE_ANALYTICS_ENV_VAR environment variable set, analytics disabled.")
+            }
+            return
+        }
+
+        if (analyticsDisabledWithEnvVar) {
             return
         }
 
