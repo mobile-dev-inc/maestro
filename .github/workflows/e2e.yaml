@@ -67,6 +67,7 @@ jobs:
 
       - name: Check if Maestro CLI executable starts up
         run: |
+          mkdir -p "$HOME/.maestro"
           printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
 
@@ -105,6 +106,7 @@ jobs:
 
       - name: Check if Maestro CLI executable starts up
         run: |
+          mkdir -p "$HOME/.maestro"
           printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
 
