@@ -22,10 +22,12 @@ object CiUtils {
             return mdevCiEnvVar
         }
 
-        for (ciVar in ciEnvVarMap.entries) {
+        for (ciEnvVar in ciEnvVarMap.entries) {
             try {
-                if (isTruthy(System.getenv(ciVar.key).lowercase())) return ciVar.value
-            } catch (e: Exception) {}
+                if (isTruthy(System.getenv(ciEnvVar.key).lowercase())) return ciEnvVar.value
+            } catch (e: Exception) {
+                // We don't care
+            }
         }
 
         return null
