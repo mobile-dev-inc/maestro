@@ -611,6 +611,11 @@ class Maestro(
         driver.setAirplaneMode(enabled)
     }
 
+    fun installApk(apkPath: String?) {
+        val apkFile = File(apkPath.orEmpty())
+        driver.installApk(apkFile)
+    }
+
     companion object {
 
         private val LOGGER = LoggerFactory.getLogger(Maestro::class.java)
