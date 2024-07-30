@@ -2,13 +2,17 @@ package maestro.cli.util
 
 object CiUtils {
     private val ciEnvVarMap = mapOf(
-        "JENKINS_HOME" to "jenkins",
+        "APPVEYOR" to "appveyor",
+        "BITBUCKET_BUILD_NUMBER" to "bitbucket",
         "BITRISE_IO" to "bitrise",
+        "BUILDKITE" to "buildkite",
         "CIRCLECI" to "circleci",
         "CIRRUS_CI" to "cirrusci",
-        "GITLAB_CI" to "gitlab",
+        "DRONE" to "drone",
         "GITHUB_ACTIONS" to "github",
-        "BITBUCKET_BUILD_NUMBER" to "bitbucket",
+        "GITLAB_CI" to "gitlab",
+        "JENKINS_HOME" to "jenkins",
+        "TEAMCITY_VERSION" to "teamcity",
         "CI" to "ci"
     )
 
