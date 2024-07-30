@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 11
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
