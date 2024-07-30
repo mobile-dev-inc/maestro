@@ -394,6 +394,10 @@ class FakeDriver : Driver {
         this.airplaneMode = enabled
     }
 
+    override fun installApk(apk: File) {
+        events.add(Event.InstallApp)
+    }
+
     sealed class Event {
 
         data class Tap(
@@ -486,6 +490,8 @@ class FakeDriver : Driver {
         object StartRecording : Event()
 
         object StopRecording : Event()
+
+        object InstallApp: Event()
     }
 
     interface UserInteraction

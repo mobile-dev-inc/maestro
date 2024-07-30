@@ -920,6 +920,20 @@ data class ToggleAirplaneModeCommand(
     }
 }
 
+data class InstallApplicationCommand(
+    val apkPath: String? = null,
+    val label: String? = null,
+): Command {
+    override fun description(): String {
+        return label ?: "Installing $apkPath"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return this
+    }
+
+}
+
 internal fun tapOnDescription(isLongPress: Boolean?, repeat: TapRepeat?): String {
     return if (isLongPress == true) "Long press"
     else if (repeat != null) {
