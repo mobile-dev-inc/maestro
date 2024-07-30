@@ -104,6 +104,11 @@ jobs:
           distribution: zulu
           java-version: 8
 
+      - name: Add Maestro CLI executable to PATH
+        run: |
+          unzip maestro.zip
+          echo "$PWD/maestro/bin" >> $GITHUB_PATH
+
       - name: Check if Maestro CLI executable starts up
         run: |
           mkdir -p "$HOME/.maestro"
