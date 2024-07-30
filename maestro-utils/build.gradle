@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id 'maven-publish'
     id "kotlin"
@@ -13,9 +16,19 @@ dependencies {
     testImplementation(libs.google.truth)
 }
 
+// From https://jakewharton.com/kotlins-jdk-release-compatibility-flag
+
+def javaVersion = JavaVersion.VERSION_1_8
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = javaVersion.toString()
+    targetCompatibility = javaVersion.toString()
+}
+
+tasks.withType(KotlinCompile).configureEach {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+        freeCompilerArgs.add("-Xjdk-release=$javaVersion")
+    }
 }
 
 plugins.withId("com.vanniktech.maven.publish") {
