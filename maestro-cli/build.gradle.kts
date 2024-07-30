@@ -115,7 +115,7 @@ jreleaser {
             artifact {
                 setPath("build/distributions/maestro.zip")
             }
-
+            
             release {
                 github {
                     repoOwner.set("mobile-dev-inc")

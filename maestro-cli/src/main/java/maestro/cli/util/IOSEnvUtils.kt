@@ -1,5 +1,6 @@
 package maestro.cli.util
 
+import java.io.IOException
 import kotlin.io.path.Path
 
 object IOSEnvUtils {
@@ -15,15 +16,20 @@ object IOSEnvUtils {
             val installedRuntimes = topLevelDirs
                 .map { it.resolve("Library/Developer/CoreSimulator/Profiles/Runtimes") }
                 .map { it.listFiles() }
-                .reduce { acc, list -> acc + list }
-                .map { file -> file.nameWithoutExtension }
+                .reduceOrNull { acc, list -> acc + list }
+                ?.map { file -> file.nameWithoutExtension }
 
-            return installedRuntimes
+            return installedRuntimes ?: emptyList()
         }
 
     val xcodeVersion: String?
         get() {
-            val lines = runProcess("xcodebuild", "-version")
+            val lines = try {
+                runProcess("xcodebuild", "-version")
+            } catch (e: IOException) {
+                // Xcode toolchain is probably not installed
+                return null
+            }
 
             if (lines.size == 2 && lines.first().contains(' ')) {
                 // Correct xcodebuild invocation is always 2 lines. Example:
