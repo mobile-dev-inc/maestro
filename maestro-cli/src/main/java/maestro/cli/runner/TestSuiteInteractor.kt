@@ -35,7 +35,7 @@ class TestSuiteInteractor(
 
     fun runTestSuite(
         executionPlan: WorkspaceExecutionPlanner.ExecutionPlan,
-        reportOut: Sink?,
+        reportOut: File?,
         env: Map<String, String>,
         debugOutputPath: Path
     ): TestExecutionSummary {
