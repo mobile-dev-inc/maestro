@@ -5,6 +5,7 @@ object CiUtils {
         "JENKINS_HOME" to "jenkins",
         "BITRISE_IO" to "bitrise",
         "CIRCLECI" to "circleci",
+        "CIRRUS_CI" to "cirrusci",
         "GITLAB_CI" to "gitlab",
         "GITHUB_ACTIONS" to "github",
         "BITBUCKET_BUILD_NUMBER" to "bitbucket",
