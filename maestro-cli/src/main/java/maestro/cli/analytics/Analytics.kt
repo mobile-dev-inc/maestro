@@ -113,49 +113,55 @@ object Analytics {
      * Uploads analytics if there was a version update.
      */
     fun maybeUploadAnalyticsAsync() {
-        if (!hasRunBefore) {
-            logger.trace("First run, not uploading")
-            return
-        }
-
-        if (analyticsDisabledWithEnvVar) {
-            logger.trace("Analytics disabled with env var, not uploading")
-        }
-
-        if (!analyticsState.enabled) {
-            logger.trace("Analytics disabled with config file, not uploading")
-            return
-        }
-
-        if (!uploadConditionsMet) {
-            logger.trace("Upload conditions not met, not uploading")
-            return
-        }
-
-        val report = AnalyticsReport(
-            uuid = analyticsState.uuid,
-            freshInstall = !hasRunBefore,
-            cliVersion = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
-            os = EnvUtils.OS_NAME,
-            osArch = EnvUtils.OS_ARCH,
-            osVersion = EnvUtils.OS_VERSION,
-            javaVersion = EnvUtils.getJavaVersion().toString(),
-            xcodeVersion = IOSEnvUtils.xcodeVersion,
-            flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
-            flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
-            androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,
-            iosVersions = IOSEnvUtils.simulatorRuntimes,
-        )
-
-        logger.trace("Will upload analytics report")
-        logger.trace(report.toString())
-
         try {
+            if (!hasRunBefore) {
+                logger.trace("First run, not uploading")
+                return
+            }
+
+            if (analyticsDisabledWithEnvVar) {
+                logger.trace("Analytics disabled with env var, not uploading")
+            }
+
+            if (!analyticsState.enabled) {
+                logger.trace("Analytics disabled with config file, not uploading")
+                return
+            }
+
+            if (!uploadConditionsMet) {
+                logger.trace("Upload conditions not met, not uploading")
+                return
+            }
+
+            val report = AnalyticsReport(
+                uuid = analyticsState.uuid,
+                freshInstall = !hasRunBefore,
+                cliVersion = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
+                os = EnvUtils.OS_NAME,
+                osArch = EnvUtils.OS_ARCH,
+                osVersion = EnvUtils.OS_VERSION,
+                javaVersion = EnvUtils.getJavaVersion().toString(),
+                xcodeVersion = IOSEnvUtils.xcodeVersion,
+                flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
+                flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
+                androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,
+                iosVersions = IOSEnvUtils.simulatorRuntimes,
+            )
+
+            logger.trace("Will upload analytics report")
+            logger.trace(report.toString())
+
             ApiClient(EnvUtils.BASE_API_URL).sendAnalyticsReport(report)
             updateAnalyticsState()
         } catch (e: ConnectException) {
-            // This is fine. We don't care that much about analytics to bug user about it.
+            // This is fine. The user probably doesn't have internet connection.
+            // We don't care that much about analytics to bug user about it.
             return
+        } catch (e: Exception) {
+            // This is less fine. Don't crash, but ask the user to report this.
+            println("Exception ocurred while uploading analytics. This is not a fatal issue, but we ask you to report it.")
+            println(e.message)
+            println(e.stackTraceToString())
         }
     }
 
