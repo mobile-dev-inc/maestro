@@ -160,6 +160,7 @@ object Analytics {
         } catch (e: Exception) {
             // This is also fine. We don't want to bug the user.
             // See discussion at https://github.com/mobile-dev-inc/maestro/pull/1858
+            return
         }
     }
 
