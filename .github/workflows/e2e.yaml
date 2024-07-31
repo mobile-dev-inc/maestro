@@ -122,14 +122,8 @@ jobs:
       - name: maestro download-samples
         run: maestro download-samples
 
-      - name: Run Android test
-        run: |
-          maestro cloud \
-            --apiKey ${{secrets.E2E_MOBILE_DEV_API_KEY}} \
-            --fail-on-cancellation \
-            --include-tags advanced \
-            samples/sample.apk \
-            samples
+      - name: Run curl command
+        run: curl https://api.mobile.dev/welcome -v
 
       - name: Run iOS test
         run: |
@@ -139,6 +133,15 @@ jobs:
             --fail-on-cancellation \
             --include-tags advanced \
             samples/sample.zip \
+            samples
+
+      - name: Run Android test
+        run: |
+          maestro cloud \
+            --apiKey ${{secrets.E2E_MOBILE_DEV_API_KEY}} \
+            --fail-on-cancellation \
+            --include-tags advanced \
+            samples/sample.apk \
             samples
 
       - name: Trigger alert on failure
