@@ -158,10 +158,8 @@ object Analytics {
             // We don't care that much about analytics to bug user about it.
             return
         } catch (e: Exception) {
-            // This is less fine. Don't crash, but ask the user to report this.
-            println("Exception ocurred while uploading analytics. This is not a fatal issue, but we ask you to report it.")
-            println(e.message)
-            println(e.stackTraceToString())
+            // This is also fine. We don't want to bug the user.
+            // See discussion at https://github.com/mobile-dev-inc/maestro/pull/1858
         }
     }
 
