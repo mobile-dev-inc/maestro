@@ -184,9 +184,14 @@ jobs:
 
       - name: Install Maestro
         run: |
+          export MAESTRO_VERSION=1.36.0;
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
           echo -n "e2e" > ${HOME}/.maestro/uuid
+
+      - name: Print Maestro version
+        run: maestro --version
+
       - name: Download samples
         run: |
           # python3 ./.github/scripts/download_samples.py
