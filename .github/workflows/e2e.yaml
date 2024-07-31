@@ -192,28 +192,10 @@ jobs:
       - name: Print Maestro version
         run: maestro --version
 
-      - name: Set env as secret
-        env:
-          MY_VAL: ${{ secrets.E2E_MOBILE_DEV_API_KEY }}
-        run: |
-          import os
-          print("Starting")
-          for q in (os.getenv("MY_VAL")):
-            print(q)
-        shell: python
-
-      - name: Dump secret
-        run: echo -n "${{ secrets.E2E_MOBILE_DEV_API_KEY }}" | xxd -ps
-
       - name: Download samples
         run: |
           # python3 ./.github/scripts/download_samples.py
           maestro download-samples
-
-      
-      - name: Run curl command
-        run: curl https://api.mobile.dev/welcome -v
-
 
       - name: Run iOS test
         run: |
