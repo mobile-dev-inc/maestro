@@ -1,5 +1,10 @@
 package maestro.cli.model
 
+import maestro.MaestroException
+import maestro.cli.report.CommandDebugMetadata
+import maestro.cli.report.ScreenshotDebugMetadata
+import maestro.orchestra.MaestroCommand
+import java.util.*
 import kotlin.time.Duration
 
 data class TestExecutionSummary(
@@ -26,6 +31,8 @@ data class TestExecutionSummary(
 
     data class Failure(
         val message: String,
+        val commands: IdentityHashMap<MaestroCommand, CommandDebugMetadata>? = null,
+        val screenshots: MutableList<ScreenshotDebugMetadata>? = null,
+        var exception: MaestroException? = null
     )
-
 }
