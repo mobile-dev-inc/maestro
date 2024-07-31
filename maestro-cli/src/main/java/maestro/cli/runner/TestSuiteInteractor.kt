@@ -239,6 +239,9 @@ class TestSuiteInteractor(
             failure = if (flowStatus == FlowStatus.ERROR) {
                 TestExecutionSummary.Failure(
                     message = errorMessage ?: debug.exception?.message ?: "Unknown error",
+                    commands = debug.commands,
+                    screenshots = debug.screenshots,
+                    exception = debug.exception
                 )
             } else null,
             duration = flowDuration,
