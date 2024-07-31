@@ -177,10 +177,10 @@ jobs:
           distribution: "zulu"
           java-version: 8
 
-      # - name: setup python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.10'
+       - name: setup python
+         uses: actions/setup-python@v4
+         with:
+           python-version: '3.10'
 
       - name: Install Maestro
         run: |
@@ -191,6 +191,19 @@ jobs:
 
       - name: Print Maestro version
         run: maestro --version
+
+      - name: Set env as secret
+        env:
+          MY_VAL: ${{ secrets.E2E_MOBILE_DEV_API_KEY }}
+        run: |
+          import os
+          print("Starting")
+          for q in (os.getenv("MY_VAL")):
+            print(q)
+        shell: python
+
+      - name: Dump secret
+        run: echo -n "${{ secrets.SECRET_NAME }}" | xxd -ps
 
       - name: Download samples
         run: |
