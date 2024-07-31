@@ -333,7 +333,8 @@ class ApiClient(
 
             client.newCall(request).execute()
         } catch (e: IOException) {
-            return retry("Upload failed due to socket exception")
+            e.printStackTrace()
+            return retry("Upload failed due to socket exception: ${e.message}")
         }
 
         response.use {
