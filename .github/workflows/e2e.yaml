@@ -78,7 +78,8 @@ jobs:
       - name: Set up Android SDK
         uses: malinskiy/action-android/install-sdk@release/0.1.7
         with:
-          url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+          url: https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          # url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip # classFile version 61 (java17)
           # Above URL points to Command Line Tools v8.0 - the last version compatible with Java 8
           # Found via https://stackoverflow.com/a/75763391/7009800
 
