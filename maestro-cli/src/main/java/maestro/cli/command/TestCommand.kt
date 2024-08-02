@@ -211,7 +211,7 @@ class TestCommand : Callable<Int> {
             val barrier = CountDownLatch(effectiveShards)
 
             val results = (0 until effectiveShards).map { shardIndex ->
-                async(Dispatchers.IO) {
+                async(CoroutineName("shard $shardIndex") + Dispatchers.IO) {
                     val driverHostPort = if (!sharded) parent?.port ?: 7001 else
                         (7001..7128).shuffled().find { port ->
                             usedPorts.putIfAbsent(port, true) == null
