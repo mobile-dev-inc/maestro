@@ -1,18 +1,14 @@
 # Changelog
 
-<<<<<<< Updated upstream
-## 1.37.4 - 2024-07-30
-=======
 ## 1.37.5
 
-Released on 2024-07-30
+Released on 2024-08-02
 
 - Fix cryptic "SocketException" when API token is invalid ([#1871](https://github.com/mobile-dev-inc/maestro/pull/1871))
 
 ## 1.37.4
 
 Released on 2024-07-30
->>>>>>> Stashed changes
 
 - Don't ask for analytics permission on CI + add `MAESTRO_CLI_NO_ANALYTICS` env var ([#1848](https://github.com/mobile-dev-inc/maestro/pull/1848))
 
