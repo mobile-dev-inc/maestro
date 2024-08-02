@@ -99,7 +99,16 @@ jreleaser {
             homepage.set("https://maestro.mobile.dev")
             bugTracker.set("https://github.com/mobile-dev-inc/maestro/issues")
         }
-        authors.set(listOf("Dmitry Zaytsev", "Amanjeet Singh", "Leland Takamine", "Arthur Saveliev", "Axel Niklasson", "Berik Visschers"))
+        authors.set(
+            listOf(
+                "Dmitry Zaytsev",
+                "Amanjeet Singh",
+                "Leland Takamine",
+                "Arthur Saveliev",
+                "Axel Niklasson",
+                "Berik Visschers"
+            )
+        )
         license.set("Apache-2.0")
         copyright.set("mobile.dev 2024")
     }
@@ -115,7 +124,7 @@ jreleaser {
             artifact {
                 setPath("build/distributions/maestro.zip")
             }
-            
+
             release {
                 github {
                     repoOwner.set("mobile-dev-inc")
@@ -123,6 +132,19 @@ jreleaser {
                     tagName.set("cli-$CLI_VERSION")
                     releaseName.set("CLI $CLI_VERSION")
                     overwrite.set(true)
+
+                    changelog {
+                        // GitHub removes dots Markdown headers (1.37.5 becomes 1375)
+                        extraProperties.put("versionHeader", CLI_VERSION.replace(".", ""))
+
+                        content.set(
+                            """
+                                [See changelog in the CHANGELOG.md file][link]
+                                
+                                [link]: projectVersion
+                        """.trimIndent()
+                        )
+                    }
                 }
             }
         }
