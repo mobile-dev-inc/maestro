@@ -1,0 +1,10 @@
+appId: com.google.samples.apps.nowinandroid.demo.debug
+---
+- launchApp:
+    clearState: true
+- tapOn: Headlines
+- tapOn: Done
+- tapOn: Bookmark
+- tapOn: Saved
+- tapOn: Unbookmark
+- assertVisible: No saved updates FAIL
