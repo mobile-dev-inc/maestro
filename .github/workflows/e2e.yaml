@@ -92,6 +92,7 @@ jobs:
           api: ${{ env.EMULATOR_API_LEVEL }}
           tag: ${{ env.EMULATOR_TARGET }}
           abi: ${{ env.EMULATOR_ARCH }}
+          cmdOptions: -noaudio -no-boot-anim -no-window
           cmd: |
             export JAVA_HOME="$JAVA_HOME_8_X64"
             ./download_apps
