@@ -595,9 +595,8 @@ class Maestro(private val driver: Driver) : AutoCloseable {
         driver.setAirplaneMode(enabled)
     }
 
-    fun installApk(apkPath: String?) {
-        val apkFile = File(apkPath.orEmpty())
-        driver.installApk(apkFile)
+    fun installApp(path: String?) {
+        driver.installApp(path.orEmpty())
     }
 
     companion object {

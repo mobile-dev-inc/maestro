@@ -228,7 +228,7 @@ data class YamlFluentCommand(
             installApp != null -> listOf(
                 MaestroCommand(
                     InstallApplicationCommand(
-                        apkPath = installApp.apkPath,
+                        path = installApp.path,
                         label = installApp.label
                     )
                 )
