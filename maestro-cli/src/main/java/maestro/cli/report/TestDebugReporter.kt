@@ -39,7 +39,6 @@ object TestDebugReporter {
     private var flattenDebugOutput: Boolean = false
 
     init {
-
         // json
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
@@ -98,13 +97,6 @@ object TestDebugReporter {
     }
 
     private fun logSystemInfo() {
-        val appVersion = runCatching {
-            val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
-                Properties().apply { load(it) }
-            }
-            props["version"].toString()
-        }
-
         val logger = LoggerFactory.getLogger("MAESTRO")
         logger.info("---- System Info ----")
         logger.info("Maestro Version: ${EnvUtils.CLI_VERSION ?: "Undefined"}")
@@ -119,11 +111,11 @@ object TestDebugReporter {
         logger.info("---------------------")
     }
 
-    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false) {
+    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false, printToConsole: Boolean) {
         this.debugOutputPathAsString = debugOutputPathAsString
         this.flattenDebugOutput = flattenDebugOutput
         val path = getDebugOutputPath()
-        LogConfig.configure(path.absolutePathString() + "/maestro.log")
+        LogConfig.configure(logFileName = path.absolutePathString() + "/maestro.log", printToConsole = printToConsole)
         logSystemInfo()
         DebugLogStore.logSystemInfo()
     }
@@ -141,12 +133,11 @@ object TestDebugReporter {
         return debugOutput
     }
 
-    fun buildDefaultDebugOutputPath(debugRootPath: String): Path {
+    private fun buildDefaultDebugOutputPath(debugRootPath: String): Path {
         val preamble = arrayOf(".maestro", "tests")
         val foldername = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
         return Paths.get(debugRootPath, *preamble, foldername)
     }
-
 }
 
 private data class CommandDebugWrapper(

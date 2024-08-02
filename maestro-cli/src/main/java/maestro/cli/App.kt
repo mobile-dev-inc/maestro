@@ -55,7 +55,6 @@ import kotlin.system.exitProcess
     ]
 )
 class App {
-
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
@@ -76,6 +75,9 @@ class App {
 
     @Option(names = ["--device", "--udid"], description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "])
     var deviceId: String? = null
+
+    @Option(names = ["--verbose"], description = ["Enable verbose logging"])
+    var verbose: Boolean? = false
 }
 
 private fun printVersion() {
