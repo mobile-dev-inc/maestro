@@ -42,7 +42,7 @@ jobs:
     env:
       EMULATOR_API_LEVEL: 33
       EMULATOR_TARGET: google_apis
-      EMULATOR_ARCH: x86
+      EMULATOR_ARCH: x86_64
 
     steps:
       - name: Enable KVM group perms
