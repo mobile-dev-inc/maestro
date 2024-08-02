@@ -54,11 +54,13 @@ jobs:
       - name: Clone repository (only needed for the e2e directory)
         uses: actions/checkout@v4
 
-      - name: Set up JDK 8
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 8
+          java-version: |
+            8
+            11
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -91,6 +93,7 @@ jobs:
           tag: ${{ env.EMULATOR_TARGET }}
           abi: ${{ env.EMULATOR_ARCH }}
           cmd: |
+            export JAVA_HOME="$JAVA_HOME_8_X64"
             ./download_apps
             ./install_apps
             ./run_tests
