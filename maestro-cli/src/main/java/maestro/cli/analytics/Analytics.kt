@@ -203,6 +203,7 @@ data class AnalyticsState(
     val uuid: String,
     val enabled: Boolean,
     val lastUploadedForCLI: String?,
+    val freshInstall: Boolean? = false,
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC") val lastUploadedTime: Instant?,
 )
 
