@@ -392,7 +392,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun installApk(apk: File) {
+    override fun installApp(path: String) {
         TODO("Not yet implemented")
     }
 

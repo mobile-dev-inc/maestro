@@ -952,11 +952,11 @@ data class ToggleAirplaneModeCommand(
 }
 
 data class InstallApplicationCommand(
-    val apkPath: String? = null,
+    val path: String? = null,
     val label: String? = null,
 ): Command {
     override fun description(): String {
-        return label ?: "Installing $apkPath"
+        return label ?: "Installing $path"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {

@@ -712,8 +712,9 @@ class AndroidDriver(
         shell("cmd connectivity airplane-mode $value")
     }
 
-    override fun installApk(apk: File) {
-        install(apk)
+    override fun installApp(path: String) {
+        val apkFile = File(path)
+        install(apkFile)
     }
 
 

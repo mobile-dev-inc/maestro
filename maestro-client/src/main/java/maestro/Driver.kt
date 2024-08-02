@@ -103,5 +103,5 @@ interface Driver {
 
     fun setAirplaneMode(enabled: Boolean)
 
-    fun installApk(apk: File)
+    fun installApp(path: String)
 }

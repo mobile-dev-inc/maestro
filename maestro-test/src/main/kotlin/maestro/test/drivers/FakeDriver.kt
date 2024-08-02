@@ -394,7 +394,7 @@ class FakeDriver : Driver {
         this.airplaneMode = enabled
     }
 
-    override fun installApk(apk: File) {
+    override fun installApp(path: String) {
         events.add(Event.InstallApp)
     }
 

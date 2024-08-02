@@ -286,7 +286,7 @@ class Orchestra(
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             is SetAirplaneModeCommand -> setAirplaneMode(command)
             is ToggleAirplaneModeCommand -> toggleAirplaneMode()
-            is InstallApplicationCommand -> installApk(command)
+            is InstallApplicationCommand -> installApp(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -295,8 +295,8 @@ class Orchestra(
         }
     }
 
-    private fun installApk(command: InstallApplicationCommand): Boolean {
-        maestro.installApk(command.apkPath)
+    private fun installApp(command: InstallApplicationCommand): Boolean {
+        maestro.installApp(command.path)
 
         return true
     }
