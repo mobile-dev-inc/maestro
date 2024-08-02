@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -eu
+
 command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
