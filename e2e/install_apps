@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -euo pipefail
+set -eu
 
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
 

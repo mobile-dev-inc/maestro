@@ -69,7 +69,8 @@ jobs:
         run: |
           ls -la
           unzip maestro.zip -d maestro_extracted
-          echo "$PWD/maestro_extracted/bin" >> $GITHUB_PATH
+          ls -la maestro_extracted
+          echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
 
       - name: Check if Maestro CLI executable starts up
         run: |
@@ -174,17 +175,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Clone repository
+        uses: actions/checkout@v4
 
-      - name: Install JDK 8
-        uses: actions/setup-java@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
+          distribution: zulu
           java-version: 8
 
       - name: Install Maestro
         run: |
-          export MAESTRO_VERSION=1.36.0;
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
           echo -n "e2e" > ${HOME}/.maestro/uuid

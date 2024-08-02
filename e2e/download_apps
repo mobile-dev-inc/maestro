@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -euo pipefail
+set -eu
 
 # Download apps from URLs listed in manifest.txt.
 #
