@@ -3,7 +3,6 @@ name: E2E test
 on:
   workflow_dispatch:
   pull_request:
-  
 
 jobs:
   build:
@@ -68,8 +67,8 @@ jobs:
 
       - name: Add Maestro CLI executable to PATH
         run: |
-          unzip maestro.zip
-          echo "$PWD/maestro/bin" >> $GITHUB_PATH
+          unzip maestro.zip -d maestro_extracted
+          echo "$PWD/maestro_extracted/bin" >> $GITHUB_PATH
 
       - name: Check if Maestro CLI executable starts up
         run: |
