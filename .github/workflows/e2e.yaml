@@ -74,8 +74,8 @@ jobs:
 
       - name: Check if Maestro CLI executable starts up
         run: |
-          maestro --help
-          maestro --version
+          JAVA_HOME="$JAVA_HOME_8_X64" maestro --help
+          JAVA_HOME="$JAVA_HOME_8_X64" maestro --version
 
       # - name: Set up Android SDK
       #   uses: malinskiy/action-android/install-sdk@release/0.1.7
@@ -94,10 +94,9 @@ jobs:
           abi: ${{ env.EMULATOR_ARCH }}
           cmdOptions: -noaudio -no-boot-anim -no-window
           cmd: |
-            export JAVA_HOME="$JAVA_HOME_8_X64"
-            ./download_apps
-            ./install_apps
-            ./run_tests
+            JAVA_HOME="$JAVA_HOME_8_X64" ./download_apps
+            JAVA_HOME="$JAVA_HOME_8_X64" ./install_apps
+            JAVA_HOME="$JAVA_HOME_8_X64" ./run_tests
 
       - name: Start emulator and run a Flow
         uses: reactivecircus/android-emulator-runner@v2
@@ -140,13 +139,11 @@ jobs:
 
       - name: Add Maestro CLI executable to PATH
         run: |
-          unzip maestro.zip
-          echo "$PWD/maestro/bin" >> $GITHUB_PATH
+          unzip maestro.zip -d maestro_extracted
+          echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
 
       - name: Check if Maestro CLI executable starts up
         run: |
-          mkdir -p "$HOME/.maestro"
-          printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
           maestro --version
 
