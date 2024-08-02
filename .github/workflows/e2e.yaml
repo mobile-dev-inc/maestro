@@ -67,17 +67,11 @@ jobs:
 
       - name: Add Maestro CLI executable to PATH
         run: |
-          ls -la
           unzip maestro.zip -d maestro_extracted
-          ls -la maestro_extracted
           echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
 
       - name: Check if Maestro CLI executable starts up
         run: |
-          ls -la
-          echo "PATH: $PATH"
-          mkdir -p "$HOME/.maestro"
-          printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
           maestro --version
 
@@ -188,7 +182,6 @@ jobs:
         run: |
           curl -Ls --retry 3 --retry-all-errors "https://get.maestro.mobile.dev" | bash
           echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
-          echo -n "e2e" > ${HOME}/.maestro/uuid
 
       - name: Print Maestro version
         run: maestro --version
