@@ -67,11 +67,14 @@ jobs:
 
       - name: Add Maestro CLI executable to PATH
         run: |
+          ls -la
           unzip maestro.zip -d maestro_extracted
           echo "$PWD/maestro_extracted/bin" >> $GITHUB_PATH
 
       - name: Check if Maestro CLI executable starts up
         run: |
+          ls -la
+          echo "PATH: $PATH"
           mkdir -p "$HOME/.maestro"
           printf "e2e" > "$HOME/.maestro/uuid"
           maestro --help
