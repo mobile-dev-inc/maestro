@@ -13,11 +13,11 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 11
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 11
+          java-version: 8
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -58,9 +58,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: |
-            8
-            11
+          java-version: 17
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -74,18 +72,11 @@ jobs:
 
       - name: Check if Maestro CLI executable starts up
         run: |
-          JAVA_HOME="$JAVA_HOME_8_X64" maestro --help
-          JAVA_HOME="$JAVA_HOME_8_X64" maestro --version
+          maestro --help
+          maestro --version
 
-      # - name: Set up Android SDK
-      #   uses: malinskiy/action-android/install-sdk@release/0.1.7
-      #   with:
-      #     url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
-      #     # url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip # classFile version 61 (java17)
-      #     #url: https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-      #     # Above URL points to Command Line Tools v8.0 - the last version compatible with Java 8
-      #     # Found via https://stackoverflow.com/a/75763391/7009800
-      #     # Another useful website: https://androidsdkmanager.azurewebsites.net/cmdline-tools.html
+      - name: Set up Android SDK
+        uses: malinskiy/action-android/install-sdk@release/0.1.7
 
       - uses: malinskiy/action-android/emulator-run-cmd@release/0.1.7
         with:
@@ -94,9 +85,10 @@ jobs:
           abi: ${{ env.EMULATOR_ARCH }}
           cmdOptions: -noaudio -no-boot-anim -no-window
           cmd: |
-            JAVA_HOME="$JAVA_HOME_8_X64" ./download_apps
-            JAVA_HOME="$JAVA_HOME_8_X64" ./install_apps
-            JAVA_HOME="$JAVA_HOME_8_X64" ./run_tests
+            cd ./e2e
+            ./download_apps
+            ./install_apps
+            ./run_tests
 
       - name: Start emulator and run a Flow
         uses: reactivecircus/android-emulator-runner@v2
