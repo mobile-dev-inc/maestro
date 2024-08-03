@@ -133,7 +133,7 @@ jreleaser {
                         content.set("""
                             [See changelog in the CHANGELOG.md file][link]
 
-                            [link]: https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#{{versionHeader}}
+                            [link]: https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#{{changelogVersionHeader}}
                         """.trimIndent()
                         )
                     }
