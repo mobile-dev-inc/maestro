@@ -3,6 +3,9 @@
 # How to sort with AS:
 # "Select all in block" -> "Edit" -> "Sort lines"
 
+# File should follow the naming convention:
+# https://blog.gradle.org/best-practices-naming-version-catalog-entries
+
 [versions]
 androidPlugin = "4.2.1"
 androidxEspresso = "3.4.0"
@@ -42,9 +45,11 @@ squareMockWebServer = "4.11.0"
 wiremock = "2.35.0"
 logback = "1.2.6"
 coroutines = "1.6.3"
+kotlinx-html = "0.8.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html", version.ref = "kotlinx-html" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestJunit" }
 androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidxUiautomator" }

@@ -30,7 +30,6 @@ tasks.named<JavaExec>("run") {
 }
 
 dependencies {
-    val kotlinxHtmlVersion = "0.8.0"
     implementation(project(path = ":maestro-utils"))
     annotationProcessor(libs.picocli.codegen)
 
@@ -53,7 +52,7 @@ dependencies {
     implementation(libs.jarchivelib)
     implementation(libs.commons.codec)
     implementation(libs.kotlinx.coroutines.core)
-    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+    implementation(libs.kotlinx.html)
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
