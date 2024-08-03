@@ -2,11 +2,12 @@ import org.jreleaser.model.Active.ALWAYS
 import org.jreleaser.model.Stereotype
 import java.util.Properties
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("jvm")
     application
-    id("org.jreleaser") version "1.13.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.jreleaser)
+    alias(libs.plugins.shadow)
 }
 
 group = "dev.mobile"
