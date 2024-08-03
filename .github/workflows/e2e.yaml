@@ -75,27 +75,12 @@ jobs:
           maestro --help
           maestro --version
 
-      - name: Set up Android SDK
-        uses: malinskiy/action-android/install-sdk@release/0.1.7
-
-      - uses: malinskiy/action-android/emulator-run-cmd@release/0.1.7
-        with:
-          api: ${{ env.EMULATOR_API_LEVEL }}
-          tag: ${{ env.EMULATOR_TARGET }}
-          abi: ${{ env.EMULATOR_ARCH }}
-          cmdOptions: -noaudio -no-boot-anim -no-window
-          cmd: |
-            cd ./e2e
-            ./download_apps
-            ./install_apps
-            ./run_tests
-
       - name: Start emulator and run a Flow
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 
+          api-level: ${{ env.EMULATOR_API_LEVEL }}
           target: ${{ env.EMULATOR_TARGET }}
-          arch:
+          arch: ${{ env.EMULATOR_ARCH }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
