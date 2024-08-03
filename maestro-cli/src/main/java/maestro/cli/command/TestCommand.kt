@@ -352,11 +352,10 @@ class TestCommand : Callable<Int> {
 
         format.fileExtension?.let { extension ->
             (output ?: File("report$extension"))
-                .sink()
-        }?.also { sink ->
+        }?.also { file ->
             reporter.report(
                 this,
-                sink,
+                file,
             )
         }
     }
