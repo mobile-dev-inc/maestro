@@ -82,13 +82,16 @@ object Analytics {
             if (!analyticsDisabledWithEnvVar) {
                 println("CI detected, analytics was automatically enabled.")
                 println("To opt out, set $DISABLE_ANALYTICS_ENV_VAR environment variable to any value before running Maestro.")
+                saveAnalyticsState(granted = true)
             } else {
                 println("CI detected and $DISABLE_ANALYTICS_ENV_VAR environment variable set, analytics disabled.")
+                saveAnalyticsState(granted = false)
             }
             return
         }
 
         if (analyticsDisabledWithEnvVar) {
+            saveAnalyticsState(granted = false)
             return
         }
 
@@ -102,7 +105,7 @@ object Analytics {
                 if (granted) "Usage data collection enabled. Thank you!"
                 else "Usage data collection disabled."
             )
-            saveAnalyticsState(granted)
+            saveAnalyticsState(granted = granted)
             return
         }
 
@@ -113,48 +116,54 @@ object Analytics {
      * Uploads analytics if there was a version update.
      */
     fun maybeUploadAnalyticsAsync() {
-        if (!hasRunBefore) {
-            logger.trace("First run, not uploading")
-            return
-        }
-
-        if (analyticsDisabledWithEnvVar) {
-            logger.trace("Analytics disabled with env var, not uploading")
-        }
-
-        if (!analyticsState.enabled) {
-            logger.trace("Analytics disabled with config file, not uploading")
-            return
-        }
-
-        if (!uploadConditionsMet) {
-            logger.trace("Upload conditions not met, not uploading")
-            return
-        }
-
-        val report = AnalyticsReport(
-            uuid = analyticsState.uuid,
-            freshInstall = !hasRunBefore,
-            cliVersion = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
-            os = EnvUtils.OS_NAME,
-            osArch = EnvUtils.OS_ARCH,
-            osVersion = EnvUtils.OS_VERSION,
-            javaVersion = EnvUtils.getJavaVersion().toString(),
-            xcodeVersion = IOSEnvUtils.xcodeVersion,
-            flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
-            flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
-            androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,
-            iosVersions = IOSEnvUtils.simulatorRuntimes,
-        )
-
-        logger.trace("Will upload analytics report")
-        logger.trace(report.toString())
-
         try {
+            if (!hasRunBefore) {
+                logger.trace("First run, not uploading")
+                return
+            }
+
+            if (analyticsDisabledWithEnvVar) {
+                logger.trace("Analytics disabled with env var, not uploading")
+                return
+            }
+
+            if (!analyticsState.enabled) {
+                logger.trace("Analytics disabled with config file, not uploading")
+                return
+            }
+
+            if (!uploadConditionsMet) {
+                logger.trace("Upload conditions not met, not uploading")
+                return
+            }
+
+            val report = AnalyticsReport(
+                uuid = analyticsState.uuid,
+                freshInstall = !hasRunBefore,
+                cliVersion = EnvUtils.CLI_VERSION?.toString() ?: "Unknown",
+                os = EnvUtils.OS_NAME,
+                osArch = EnvUtils.OS_ARCH,
+                osVersion = EnvUtils.OS_VERSION,
+                javaVersion = EnvUtils.getJavaVersion().toString(),
+                xcodeVersion = IOSEnvUtils.xcodeVersion,
+                flutterVersion = EnvUtils.getFlutterVersionAndChannel().first,
+                flutterChannel = EnvUtils.getFlutterVersionAndChannel().second,
+                androidVersions = AndroidEnvUtils.androidEmulatorSdkVersions,
+                iosVersions = IOSEnvUtils.simulatorRuntimes,
+            )
+
+            logger.trace("Will upload analytics report")
+            logger.trace(report.toString())
+
             ApiClient(EnvUtils.BASE_API_URL).sendAnalyticsReport(report)
             updateAnalyticsState()
         } catch (e: ConnectException) {
-            // This is fine. We don't care that much about analytics to bug user about it.
+            // This is fine. The user probably doesn't have internet connection.
+            // We don't care that much about analytics to bug user about it.
+            return
+        } catch (e: Exception) {
+            // This is also fine. We don't want to bug the user.
+            // See discussion at https://github.com/mobile-dev-inc/maestro/pull/1858
             return
         }
     }

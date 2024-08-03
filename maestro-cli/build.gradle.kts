@@ -1,3 +1,4 @@
+import org.jreleaser.model.Active.ALWAYS
 import org.jreleaser.model.Stereotype
 import java.util.Properties
 
@@ -115,7 +116,7 @@ jreleaser {
             artifact {
                 setPath("build/distributions/maestro.zip")
             }
-            
+
             release {
                 github {
                     repoOwner.set("mobile-dev-inc")
@@ -123,6 +124,19 @@ jreleaser {
                     tagName.set("cli-$CLI_VERSION")
                     releaseName.set("CLI $CLI_VERSION")
                     overwrite.set(true)
+
+                    changelog {
+                        // GitHub removes dots Markdown headers (1.37.5 becomes 1375)
+                        extraProperties.put("versionHeader", CLI_VERSION.replace(".", ""))
+
+                        formatted.set(ALWAYS)
+                        content.set("""
+                            [See changelog in the CHANGELOG.md file][link]
+
+                            [link]: https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#{{versionHeader}}
+                        """.trimIndent()
+                        )
+                    }
                 }
             }
         }
