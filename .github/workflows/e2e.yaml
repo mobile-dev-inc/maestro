@@ -103,6 +103,9 @@ jobs:
     if: github.repository == 'mobile-dev-inc/maestro'
     needs: build
 
+    env:
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 60000
+
     steps:
       - name: Clone repository (only needed for the e2e directory)
         uses: actions/checkout@v4
