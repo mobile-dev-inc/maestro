@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id "com.google.protobuf"
+    alias(libs.plugins.detekt)
 }
 
 protobuf {
