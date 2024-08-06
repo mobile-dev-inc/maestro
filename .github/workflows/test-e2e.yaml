@@ -104,7 +104,7 @@ jobs:
     needs: build
 
     env:
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: 120000 # 120s
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
 
     steps:
       - name: Clone repository (only needed for the e2e directory)
