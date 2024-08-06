@@ -7,6 +7,7 @@ import maestro.orchestra.MaestroCommand
 object Env {
 
     fun String.evaluateScripts(jsEngine: JsEngine): String {
+        // Look for strings starting with ${ and ending with }
         val result = "(?<!\\\\)\\\$\\{([^\$]*)}".toRegex()
             .replace(this) { match ->
                 val script = match.groups[1]?.value ?: ""

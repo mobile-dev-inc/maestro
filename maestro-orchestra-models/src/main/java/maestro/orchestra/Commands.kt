@@ -364,6 +364,25 @@ data class AssertConditionCommand(
     }
 }
 
+data class AssertVisualCommand(
+    val baseline: String,
+    val thresholdPercentage: Int, // from 1 to 100
+    val optional: Boolean = false, /// If true, the command will not fail the flow, but print a warning
+    val label: String? = null,
+) : Command {
+    override fun description(): String {
+        return label ?: "Assert visual difference with baseline $baseline (threshold: $thresholdPercentage%)"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            baseline = baseline.evaluateScripts(jsEngine)
+            // TODO: Allow for evaluating script for more properties
+        )
+    }
+
+}
+
 data class InputTextCommand(
     val text: String,
     val label: String? = null,
@@ -919,6 +938,7 @@ data class ToggleAirplaneModeCommand(
         return this
     }
 }
+
 
 internal fun tapOnDescription(isLongPress: Boolean?, repeat: TapRepeat?): String {
     return if (isLongPress == true) "Long press"
