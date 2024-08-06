@@ -380,7 +380,6 @@ data class AssertVisualCommand(
             // TODO: Allow for evaluating script for more properties
         )
     }
-
 }
 
 data class InputTextCommand(
