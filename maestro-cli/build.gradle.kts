@@ -1,10 +1,13 @@
+import org.jreleaser.model.Active.ALWAYS
+import org.jreleaser.model.Stereotype
 import java.util.Properties
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("jvm")
     application
-    id("org.jreleaser") version "1.0.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.jreleaser)
+    alias(libs.plugins.shadow)
 }
 
 group = "dev.mobile"
@@ -28,7 +31,6 @@ tasks.named<JavaExec>("run") {
 }
 
 dependencies {
-    val kotlinxHtmlVersion = "0.8.0"
     implementation(project(path = ":maestro-utils"))
     annotationProcessor(libs.picocli.codegen)
 
@@ -43,6 +45,7 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.dataformat.xml)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jansi)
     implementation(libs.square.okhttp)
     implementation(libs.ktor.client.core)
@@ -50,7 +53,7 @@ dependencies {
     implementation(libs.jarchivelib)
     implementation(libs.commons.codec)
     implementation(libs.kotlinx.coroutines.core)
-    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+    implementation(libs.kotlinx.html)
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -91,36 +94,70 @@ jreleaser {
     gitRootSearch.set(true)
 
     project {
-        website.set("https://maestro.mobile.dev")
-        description.set("Maestro CLI")
+        name.set("Maestro CLI")
+        description.set("The easiest way to automate UI testing for your mobile app")
+        links {
+            homepage.set("https://maestro.mobile.dev")
+            bugTracker.set("https://github.com/mobile-dev-inc/maestro/issues")
+        }
         authors.set(listOf("Dmitry Zaytsev", "Amanjeet Singh", "Leland Takamine", "Arthur Saveliev", "Axel Niklasson", "Berik Visschers"))
         license.set("Apache-2.0")
-    }
-
-    release {
-        github {
-            owner.set("mobile-dev-inc")
-            name.set("maestro")
-            tagName.set("cli-$CLI_VERSION")
-            releaseName.set("CLI $CLI_VERSION")
-            overwrite.set(true)
-        }
+        copyright.set("mobile.dev 2024")
     }
 
     distributions {
         create("maestro") {
+            stereotype.set(Stereotype.CLI)
+
+            executable {
+                name.set("maestro")
+            }
+
             artifact {
                 setPath("build/distributions/maestro.zip")
             }
-            brew {
-                extraProperties.put("skipJava", "true")
-                setActive("RELEASE")
-                formulaName.set("Maestro")
 
-                repoTap {
-                    owner.set("mobile-dev-inc")
-                    name.set("homebrew-tap")
+            release {
+                github {
+                    repoOwner.set("mobile-dev-inc")
+                    name.set("maestro")
+                    tagName.set("cli-$CLI_VERSION")
+                    releaseName.set("CLI $CLI_VERSION")
+                    overwrite.set(true)
+
+                    changelog {
+                        // GitHub removes dots Markdown headers (1.37.5 becomes 1375)
+                        extraProperties.put("versionHeader", CLI_VERSION.replace(".", ""))
+
+                        formatted.set(ALWAYS)
+                        content.set("""
+                            [See changelog in the CHANGELOG.md file][link]
+
+                            [link]: https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#{{changelogVersionHeader}}
+                        """.trimIndent()
+                        )
+                    }
                 }
+            }
+        }
+    }
+
+    packagers {
+        brew {
+            setActive("RELEASE")
+            extraProperties.put("skipJava", "true")
+            formulaName.set("Maestro")
+
+            // The default template path
+            templateDirectory.set(file("src/jreleaser/distributions/maestro/brew"))
+
+            repoTap {
+                repoOwner.set("mobile-dev-inc")
+                name.set("homebrew-tap")
+            }
+
+            dependencies {
+                dependency("openjdk")
             }
         }
     }

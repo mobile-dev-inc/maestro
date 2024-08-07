@@ -1,9 +1,8 @@
 plugins {
-    id 'maven-publish'
-    id "kotlin"
-    id "idea"
-    id "com.vanniktech.maven.publish"
-    id "com.google.protobuf"
+    id("maven-publish")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.protobuf)
 }
 
 protobuf {
@@ -62,8 +61,6 @@ dependencies {
     api(libs.dadb)
     api(libs.square.okio)
     api(libs.image.comparison)
-    api(libs.android.tools.sdk)
-    api(libs.android.tools.apkparser)
     api(libs.mozilla.rhino)
     api(libs.square.okhttp)
     api(libs.jarchivelib)

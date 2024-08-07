@@ -1,5 +1,6 @@
 # Changelog
 
+=== My Changes ===
 ## 1.37.4 - 2024-07-29
 - [add sleep feature on maestro](https://github.com/rasyid7/maestro/commit/2a8575583af3aaf71de23c7def902db30041fa06)
 - [add upload-when-failed option for maestro record](https://github.com/rasyid7/maestro/commit/371f4163cf68de6f5ad5e767990164f2f558315b)
@@ -24,6 +25,89 @@
 - Feature: android not wait for settle for faster commands
 - Feature: add timestamp for maestro log
 - Fix: Remove screen record time limit for Android devices running on API levels >= 34 (mobile-dev-inc#1683)
+
+=======
+
+## 1.37.7
+
+Released on 2024-08-03
+
+- Fix cryptic "Socket Exception" when `CI` env var is set, once and for all (#1882)
+
+## 1.37.6
+
+Released on 2024-08-02
+
+- Print stack trace on 3rd retry ([#1877](https://github.com/mobile-dev-inc/maestro/pull/1877))
+
+## 1.37.5
+
+Released on 2024-08-02
+
+- Fix cryptic "SocketException" when API token is invalid ([#1871](https://github.com/mobile-dev-inc/maestro/pull/1871))
+
+## 1.37.4
+
+Released on 2024-07-30
+
+- Don't ask for analytics permission on CI + add `MAESTRO_CLI_NO_ANALYTICS` env var ([#1848](https://github.com/mobile-dev-inc/maestro/pull/1848))
+
+## 1.37.3
+
+Released on 2024-07-29
+
+### Bug fixes
+
+- Fix `FileNotFoundException: ~.maestro/sessions` ([#1843](https://github.com/mobile-dev-inc/maestro/pull/1843)) 
+
+## 1.37.2 - 2024-07-29
+
+### Bug fixes
+
+- Fix `UnsupportedOperationException: Empty collection can't be reduced` ([#1840](https://github.com/mobile-dev-inc/maestro/pull/1840))
+
+## 1.37.1 - 2024-07-29
+
+### Bug fixes
+
+- Fix crash when `flutter` or `xcodebuild` is not installed ([#1839](https://github.com/mobile-dev-inc/maestro/pull/1839))
+
+## 1.37.0 - 2024-07-29
+
+### New features
+
+- **Sharding tests for parallel execution on many devices 🎉** ([#1732](https://github.com/mobile-dev-inc/maestro/pull/1732) by [Kaan](https://github.com/sdfgsdfgd))
+
+  You can now pass `--shards` argument to `maestro test` to split up your test suite into chunks that run in parallel. If you have feedback or suggestions about this huge new feature, please share them with us in [issue #1818](https://github.com/mobile-dev-inc/maestro/issues/1818).
+
+- **Reports in HTML** ([#1750](https://github.com/mobile-dev-inc/maestro/pull/1750) by [Depa Panjie Purnama](https://github.com/depapp))
+
+  To see it, run `maestro test --format HTML <your-flow.yaml>`
+
+- **Homebrew is back!**
+
+  If you prefer to switch your installation of Maestro to use Homebrew:
+    1. `rm -rf ~/.maestro`
+    2. `brew tap mobile-dev-inc/tap && brew install maestro` 🎉
+
+    Script install method is still supported.
+
+- **Current platform exposed in JavaScript** ([#1747](https://github.com/mobile-dev-inc/maestro/pull/1747) by [Dan Caseley](https://github.com/Fishbowler))
+
+  In JavaScript, you can now access `maestro.platform` to express logic that depends on whether the test runs on iOS or Android.
+- **Control airplane mode** ([#1672](https://github.com/mobile-dev-inc/maestro/pull/1672) by [NyCodeGHG](https://github.com/NyCodeGHG))
+
+  New commands: `setAirplaneMode` and `toggleAirplaneMode`. Android-only because of iOS simulator restrictions.
+- **New `killApp` command** ([#1727](https://github.com/mobile-dev-inc/maestro/pull/1727) by [Alexandre Favre](https://github.com/alexandrefavre4))
+
+  To trigger a System-Initiated Process Death on Android. On iOS, works the same as `stopApp`.
+
+### Bug fixes
+
+- Fix cleaning up retries in iOS driver ([#1669](https://github.com/mobile-dev-inc/maestro/pull/1669))
+- Fix some commands not respecting custom labels ([#1762](https://github.com/mobile-dev-inc/maestro/pull/1762) by [Dan Caseley](https://github.com/Fishbowler))
+- Fix “Protocol family unavailable” when rerunning iOS tests ([#1671](https://github.com/mobile-dev-inc/maestro/pull/1671) by [Stanisław Chmiela](https://github.com/sjchmiela))
+
 
 ## 1.36.0 - 2024-02-15
 
