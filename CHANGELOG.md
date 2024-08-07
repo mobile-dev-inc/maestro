@@ -108,7 +108,6 @@ Released on 2024-07-29
 - Fix some commands not respecting custom labels ([#1762](https://github.com/mobile-dev-inc/maestro/pull/1762) by [Dan Caseley](https://github.com/Fishbowler))
 - Fix “Protocol family unavailable” when rerunning iOS tests ([#1671](https://github.com/mobile-dev-inc/maestro/pull/1671) by [Stanisław Chmiela](https://github.com/sjchmiela))
 
-
 ## 1.36.0 - 2024-02-15
 
 - Feature: Add support for extra keys to Android TV
