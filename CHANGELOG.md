@@ -1,10 +1,32 @@
 # Changelog
 
-## 1.37.4 - 2024-07-30
+## 1.37.7
+
+Released on 2024-08-03
+
+- Fix cryptic "Socket Exception" when `CI` env var is set, once and for all (#1882)
+
+## 1.37.6
+
+Released on 2024-08-02
+
+- Print stack trace on 3rd retry ([#1877](https://github.com/mobile-dev-inc/maestro/pull/1877))
+
+## 1.37.5
+
+Released on 2024-08-02
+
+- Fix cryptic "SocketException" when API token is invalid ([#1871](https://github.com/mobile-dev-inc/maestro/pull/1871))
+
+## 1.37.4
+
+Released on 2024-07-30
 
 - Don't ask for analytics permission on CI + add `MAESTRO_CLI_NO_ANALYTICS` env var ([#1848](https://github.com/mobile-dev-inc/maestro/pull/1848))
 
-## 1.37.3 - 2024-07-29
+## 1.37.3
+
+Released on 2024-07-29
 
 ### Bug fixes
 
