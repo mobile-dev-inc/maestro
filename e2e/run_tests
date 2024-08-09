@@ -14,7 +14,7 @@ for file in ./flows/*; do
 
 	if [ -z "$selected_app" ] || [ "$selected_app" = "$filename" ]; then
 		cd "$file" || exit 1
-		maestro --device emulator-5554 test . || FAILED=true
+		maestro test . || FAILED=true
 		cd - >/dev/null || exit 1
 	fi
 done
