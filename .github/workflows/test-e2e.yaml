@@ -25,6 +25,9 @@ jobs:
       - name: Build xctest-runner
         run: ./maestro-ios-xctest-runner/build-maestro-ios-runner.sh
 
+      - name: Build example
+        run: ./gradlew :example:build
+
       - name: Build Maestro CLI
         run: ./gradlew :maestro-cli:distZip
 
