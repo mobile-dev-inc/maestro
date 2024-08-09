@@ -454,6 +454,10 @@ class IOSDriver(
         LOGGER.warn("Airplane mode is not available on iOS simulators")
     }
 
+    override fun installApp(path: String) {
+        iosDevice.installApp(path)
+    }
+
     private fun addMediaToDevice(mediaFile: File) {
         val namedSource = NamedSource(
             mediaFile.name,
