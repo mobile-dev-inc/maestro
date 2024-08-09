@@ -48,7 +48,7 @@ internal class WorkspaceExecutionPlannerErrorsTest {
         val excludeTags = path.resolve("excludeTags.txt").takeIf { it.isRegularFile() }?.readLines() ?: emptyList()
         try {
             val inputPath = singleFlowFilePath?.let { workspacePath.resolve(it) } ?: workspacePath
-            WorkspaceExecutionPlanner.plan(inputPath, includeTags, excludeTags)
+            WorkspaceExecutionPlanner.plan(inputPath, includeTags, excludeTags, null)
             assertWithMessage("No exception was not thrown. Ensure this test case triggers a ValidationError.").fail()
         } catch (e: Exception) {
             if (e !is ValidationError) {
