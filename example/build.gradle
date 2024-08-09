@@ -7,9 +7,14 @@ repositories {
     mavenLocal()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
 dependencies {
     implementation 'dev.mobile:maestro-client:1.0.1'
     implementation 'dev.mobile:maestro-orchestra:1.0.1'
     implementation 'dev.mobile:maestro-ios:1.0.1'
 }
-
