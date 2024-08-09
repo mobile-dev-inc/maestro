@@ -41,6 +41,7 @@ data class YamlFluentCommand(
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: YamlAssertTrue? = null,
+    val assertVisualAI: YamlAssertVisualAI? = null,
     val back: YamlActionBack? = null,
     val clearKeychain: YamlActionClearKeychain? = null,
     val hideKeyboard: YamlActionHideKeyboard? = null,
@@ -112,6 +113,15 @@ data class YamlFluentCommand(
                             scriptCondition = assertTrue.condition,
                         ),
                         label = assertTrue.label
+                    )
+                )
+            )
+            assertVisualAI != null -> listOf(
+                MaestroCommand(
+                    AssertVisualAICommand(
+                        assertion = assertVisualAI.assertion,
+                        optional = assertVisualAI.optional,
+                        label = assertVisualAI.label,
                     )
                 )
             )
@@ -686,6 +696,10 @@ data class YamlFluentCommand(
 
                 "toggleAirplaneMode" -> YamlFluentCommand(
                     toggleAirplaneMode = YamlToggleAirplaneMode()
+                )
+
+                "assertVisualAI" -> YamlFluentCommand(
+                    assertVisualAI = YamlAssertVisualAI()
                 )
 
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")

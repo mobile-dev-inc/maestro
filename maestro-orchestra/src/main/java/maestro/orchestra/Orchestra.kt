@@ -19,8 +19,12 @@
 
 package maestro.orchestra
 
+import kotlinx.coroutines.runBlocking
 import maestro.*
 import maestro.Filters.asFilter
+import maestro.orchestra.ai.AI
+import maestro.orchestra.ai.Prediction
+import maestro.orchestra.ai.openai.OpenAI
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
 import maestro.js.RhinoJsEngine
@@ -35,11 +39,13 @@ import maestro.utils.Insights
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
 import okhttp3.OkHttpClient
+import okio.Buffer
 import okio.buffer
 import okio.sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
+import java.time.LocalDateTime
 
 class Orchestra(
     private val maestro: Maestro,
@@ -58,6 +64,8 @@ class Orchestra(
 ) {
 
     private lateinit var jsEngine: JsEngine
+
+    private val ai: AI? = initAI()
 
     private var copiedText: String? = null
 
@@ -232,6 +240,14 @@ class Orchestra(
         }
     }
 
+    private fun initAI(): AI? {
+        val apikey = System.getenv("OPENAI_TOKEN_COPILOT]")
+        return if (apikey != null) OpenAI(apiKey = apikey) else null
+    }
+
+    /**
+     * Returns true if the command mutated device state (i.e. interacted with the device), false otherwise.
+     */
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val command = maestroCommand.asCommand()
 
@@ -256,6 +272,7 @@ class Orchestra(
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
+            is AssertVisualAICommand -> assertVisualAICommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
@@ -332,6 +349,45 @@ class Orchestra(
         }
 
         return false
+    }
+
+    private fun assertVisualAICommand(command: AssertVisualAICommand): Boolean = runBlocking {
+        // TODO: make all of Orchestra suspending
+
+
+        if (ai == null) {
+            throw MaestroException.AINotAvailable("AI is not available")
+        }
+
+        val imageData = Buffer()
+        maestro.takeScreenshot(imageData, compressed = false)
+        val imageDataBytes = imageData.readByteArray()
+
+        File("${LocalDateTime.now()}.png").apply {
+            createNewFile()
+            writeBytes(imageDataBytes)
+        }
+
+        val response = Prediction.findDefects(
+            aiClient = ai,
+            screen = imageDataBytes,
+            previousFalsePositives = listOf(), // TODO: take it from WorkspaceConfig (or MaestroConfig?)
+        )
+
+        // TODO: request response in a specific JSON from AI
+        // https://platform.openai.com/docs/guides/structured-outputs/introduction
+        if (!response.response.contains("No defects found")) {
+            // TODO: Check optional flag (see assertConditionCommand)
+
+            throw MaestroException.AssertionFailure(
+                "Visual AI found defects: ${response.response}",
+                maestro.viewHierarchy().root,
+            )
+        }
+
+        // TODO: Add resul to some "post-flow analysis store" (so results can be viewed in Maestro Studio)
+
+        false
     }
 
     private fun isOptional(condition: Condition): Boolean {

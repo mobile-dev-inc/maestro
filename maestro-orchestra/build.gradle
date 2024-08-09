@@ -1,6 +1,7 @@
 plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.mavenPublish)
 }
 
@@ -14,11 +15,16 @@ dependencies {
     api(libs.jackson.module.kotlin)
     api(libs.jackson.dataformat.yaml)
 
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.serial.json)
+    implementation(libs.ktor.client.content.negotiation)
+
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(libs.junit.jupiter.engine)
 
     testImplementation(libs.google.truth)
+    implementation(libs.kotlinx.coroutines.core)
 }
 
 java {
