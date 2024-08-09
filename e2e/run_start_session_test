@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# The point of this test is to ensure that the 'maestro start-session' works correctly
+# - Running it should reinstall Maestro APKs on device
+# - Running 'maestro test' while a 'maestro start-session' is open should not reinstall Maestro APKs
+
+command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
+
+[ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
+
+get_maestro_apk_install_time() {
+  adb shell dumpsys package dev.mobile.maestro | grep "lastUpdateTime" | awk -F= '{print $2}'
+}
+
+start_maestro_session() {
+  LOG_FILE=$(mktemp)
+  MAX_TIMEOUT=60
+  START_TIME=$(date +%s)
+
+  # Start the Maestro session in the background and redirect output to logs.txt
+  echo "Starting Maestro session..."
+  maestro --device emulator-5554 start-session > "$LOG_FILE" 2>&1 &
+  MAESTRO_START_SESSION_PID=$!
+  trap "kill -9 $MAESTRO_START_SESSION_PID" EXIT
+
+  # Loop to check for the "Maestro session started." message
+  while true; do
+      if grep -q "Maestro session started." "$LOG_FILE"; then
+          echo "Maestro session started successfully."
+          break
+      fi
+      CURRENT_TIME=$(date +%s)
+      ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+
+      if [ "$ELAPSED_TIME" -ge "$MAX_TIMEOUT" ]; then
+          echo "Timed out waiting for Maestro session to start."
+          break
+      fi
+      sleep 1
+  done
+}
+
+# Test Start session doesn't reinstall APKs
+PREVIOUS_INSTALL_TIME=$(get_maestro_apk_install_time)
+start_maestro_session
+
+# Ensure maestro start-session did reinstall APKs
+AFTER_START_SESSION_INSTALL_TIME=$(get_maestro_apk_install_time)
+
+if [ "$PREVIOUS_INSTALL_TIME" = "$AFTER_START_SESSION_INSTALL_TIME" ]; then
+  echo "'maestro start-session' didn't reinstall APKs while it should have"
+  exit 1
+fi
+
+# Ensure subsequent maestro test do not reinstall APKs
+# We don't really care if the test fails or not since it should be taken care of in run_tests
+maestro --device emulator-5554 test ./flows/nowinandroid/bookmarks.yaml || FAILED=true
+AFTER_TEST_INSTALL_TIME=$(get_maestro_apk_install_time)
+
+if [ "$AFTER_START_SESSION_INSTALL_TIME" != "$AFTER_TEST_INSTALL_TIME" ]; then
+  echo "'maestro test' reinstalled APKs while it shouldn't have"
+  exit 1
+fi
+
+echo $PREVIOUS_INSTALL_TIME
+echo $AFTER_START_SESSION_INSTALL_TIME
+echo $AFTER_TEST_INSTALL_TIME

@@ -51,7 +51,8 @@ import kotlin.system.exitProcess
         LogoutCommand::class,
         BugReportCommand::class,
         StudioCommand::class,
-        StartDeviceCommand::class
+        StartDeviceCommand::class,
+        StartSessionCommand::class
     ]
 )
 class App {
