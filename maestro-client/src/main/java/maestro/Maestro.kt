@@ -29,6 +29,7 @@ import maestro.utils.SocketUtils
 import okio.Sink
 import okio.buffer
 import okio.sink
+import okio.use
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.File
@@ -498,7 +499,7 @@ class Maestro(private val driver: Driver) : AutoCloseable {
     }
 
     fun takeScreenshot(outFile: File, compressed: Boolean) {
-        LOGGER.info("Taking screenshot: $outFile")
+        LOGGER.info("Taking screenshot to a file: $outFile")
 
         val absoluteOutFile = outFile.absoluteFile
 
@@ -514,6 +515,16 @@ class Maestro(private val driver: Driver) : AutoCloseable {
                 "Failed to create directory for screenshot: ${absoluteOutFile.parentFile}"
             )
         }
+    }
+
+    fun takeScreenshot(sink: Sink, compressed: Boolean) {
+        LOGGER.info("Taking screenshot")
+
+        sink
+            .buffer()
+            .use {
+                ScreenshotUtils.takeScreenshot(it, compressed, driver)
+            }
     }
 
     fun startScreenRecording(out: Sink): ScreenRecording {

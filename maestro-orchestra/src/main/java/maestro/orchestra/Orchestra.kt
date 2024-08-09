@@ -35,6 +35,7 @@ import maestro.utils.Insights
 import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
 import okhttp3.OkHttpClient
+import okio.Buffer
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -232,6 +233,9 @@ class Orchestra(
         }
     }
 
+    /**
+     * Returns true if the command mutated device state (i.e. interacted with the device), false otherwise.
+     */
     private fun executeCommand(maestroCommand: MaestroCommand, config: MaestroConfig?): Boolean {
         val command = maestroCommand.asCommand()
 
@@ -256,6 +260,7 @@ class Orchestra(
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
+            is AssertVisualAICommand -> assertVisualAICommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
@@ -330,6 +335,15 @@ class Orchestra(
                 throw CommandSkipped
             }
         }
+
+        return false
+    }
+
+    private fun assertVisualAICommand(command: AssertVisualAICommand): Boolean {
+        val imageData = Buffer()
+        val screenshot = maestro.takeScreenshot(imageData, compressed = false)
+
+        // Make call async and add to "post-flow analysis store"
 
         return false
     }

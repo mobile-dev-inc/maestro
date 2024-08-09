@@ -364,6 +364,26 @@ data class AssertConditionCommand(
     }
 }
 
+data class AssertVisualAICommand(
+    val assertion: String?,
+    val optional: Boolean = false, /// If true, the command will not fail the flow, but print a warning
+    val label: String? = null,
+) : Command {
+    override fun description(): String {
+        if (label != null) return label
+
+        return if (assertion != null) "Assert visual with AI: $assertion"
+            else "Assert visual with AI"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            assertion = assertion?.evaluateScripts(jsEngine),
+            // TODO: Allow for evaluating script for more properties
+        )
+    }
+}
+
 data class InputTextCommand(
     val text: String,
     val label: String? = null,
