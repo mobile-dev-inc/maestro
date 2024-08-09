@@ -6,13 +6,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-tasks.withType(KotlinJvmCompile).configureEach {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_1_8
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
     }
 }
 
