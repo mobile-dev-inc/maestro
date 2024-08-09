@@ -3,7 +3,7 @@ package maestro.orchestra.yaml
 private const val DEFAULT_DIFF_THRESHOLD = 95
 
 data class YamlAssertVisualAI(
-    val assertion: String?,
+    val assertion: String? = null,
     val optional: Boolean = false,
     val label: String? = null,
 ) {

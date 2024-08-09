@@ -698,6 +698,10 @@ data class YamlFluentCommand(
                     toggleAirplaneMode = YamlToggleAirplaneMode()
                 )
 
+                "assertVisualAI" -> YamlFluentCommand(
+                    assertVisualAI = YamlAssertVisualAI()
+                )
+
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
             }
         }

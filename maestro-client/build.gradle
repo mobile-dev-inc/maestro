@@ -1,6 +1,7 @@
 plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.protobuf)
 }
@@ -69,6 +70,10 @@ dependencies {
     api(libs.jackson.dataformat.yaml)
     api(libs.jackson.dataformat.xml)
     api(libs.apk.parser)
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.serial.json)
+    implementation(libs.ktor.client.content.negotiation)
 
     implementation project(':maestro-ios')
     implementation(libs.google.findbugs)

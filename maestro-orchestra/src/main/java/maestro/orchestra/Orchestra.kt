@@ -41,6 +41,7 @@ import okio.sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
+import java.time.LocalDateTime
 
 class Orchestra(
     private val maestro: Maestro,
@@ -341,7 +342,14 @@ class Orchestra(
 
     private fun assertVisualAICommand(command: AssertVisualAICommand): Boolean {
         val imageData = Buffer()
-        val screenshot = maestro.takeScreenshot(imageData, compressed = false)
+        maestro.takeScreenshot(imageData, compressed = false)
+
+        File("${LocalDateTime.now()}.png").apply {
+            createNewFile()
+            writeBytes(imageData.readByteArray())
+        }
+
+        val response = maestro.
 
         // Make call async and add to "post-flow analysis store"
 

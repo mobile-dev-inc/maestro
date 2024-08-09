@@ -22,6 +22,8 @@ package maestro
 import com.github.romankh3.image.comparison.ImageComparison
 import maestro.Filters.asFilter
 import maestro.UiElement.Companion.toUiElementOrNull
+import maestro.ai.AI
+import maestro.ai.Prediction
 import maestro.drivers.WebDriver
 import maestro.utils.MaestroTimer
 import maestro.utils.ScreenshotUtils
@@ -37,7 +39,10 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class Maestro(private val driver: Driver) : AutoCloseable {
+class Maestro(
+    private val driver: Driver,
+    private val ai: AI,
+) : AutoCloseable {
 
     private val sessionId = UUID.randomUUID()
 
@@ -604,6 +609,16 @@ class Maestro(private val driver: Driver) : AutoCloseable {
 
     fun setAirplaneModeState(enabled: Boolean) {
         driver.setAirplaneMode(enabled)
+    }
+
+    fun assertVisualAI() {
+        Prediction.findDefects(
+            client = ai,
+        )
+
+        ai.chatCompletion(
+            prompt =
+        )
     }
 
     companion object {
