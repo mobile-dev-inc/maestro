@@ -19,6 +19,7 @@
 
 package maestro.orchestra
 
+import com.github.romankh3.image.comparison.ImageComparison
 import maestro.*
 import maestro.Filters.asFilter
 import maestro.js.GraalJsEngine
@@ -256,6 +257,7 @@ class Orchestra(
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
+            is AssertVisualCommand -> assertVisualCommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
@@ -329,6 +331,34 @@ class Orchestra(
             } else {
                 throw CommandSkipped
             }
+        }
+
+        return false
+    }
+
+    private fun assertVisualCommand(command: AssertVisualCommand): Boolean {
+        val baseline = command.baseline
+        val thresholdPercentage = command.thresholdPercentage
+
+        val file = screenshotsDir
+            ?.let { File(it, baseline) }
+            ?: File("actual_screenshots")
+
+        val actual = maestro.takeScreenshot()
+
+        val imageDiff = ImageComparison(
+                        startScreenshot,
+                        endScreenshot
+                    ).compareImages().differencePercent
+
+        maestro.takeScreenshot(file, false)
+
+        if (!actual.matches(expected)) {
+            throw MaestroException.VisualAssertionFailure(
+                "Visual assertion failed: ${command.selector.description()}",
+                expected,
+                actual,
+            )
         }
 
         return false
