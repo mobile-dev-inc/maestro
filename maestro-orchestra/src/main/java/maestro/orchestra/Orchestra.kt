@@ -210,6 +210,7 @@ class Orchestra(
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
+                    println("ignored CommandSkipped")
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
 
@@ -241,7 +242,7 @@ class Orchestra(
     }
 
     private fun initAI(): AI? {
-        val apikey = System.getenv("OPENAI_TOKEN_COPILOT]")
+        val apikey = System.getenv("OPENAI_TOKEN_COPILOT")
         return if (apikey != null) OpenAI(apiKey = apikey) else null
     }
 
@@ -353,7 +354,6 @@ class Orchestra(
 
     private fun assertVisualAICommand(command: AssertVisualAICommand): Boolean = runBlocking {
         // TODO: make all of Orchestra suspending
-
 
         if (ai == null) {
             throw MaestroException.AINotAvailable("AI is not available")
