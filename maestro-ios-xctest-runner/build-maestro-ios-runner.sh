@@ -1,16 +1,21 @@
+#!/usr/bin/env sh
 
-if [ "$PWD" != "maestro" ]; then
+set -eu
+
+if [ "$(basename "$PWD")" != "maestro" ]; then
   echo "This script must be run from the maestro root directory"
   exit 1
 fi
 
 ## Build the UI test
-## TODO: make destination generic for iOS 15 simulator
+
 rm -rf ./build/Products || exit 1
 xcodebuild ARCHS="x86_64 arm64" \
   ONLY_ACTIVE_ARCH=NO \
   -project ./maestro-ios-xctest-runner/maestro-driver-ios.xcodeproj \
-  -scheme maestro-driver-ios -sdk iphonesimulator \
+  -scheme maestro-driver-ios \
+  -sdk iphonesimulator \
+  -destination "generic/platform=iOS Simulator" \
   -IDEBuildLocationStyle=Custom \
   -IDECustomBuildLocationType=Absolute \
   -IDECustomBuildProductsPath="$PWD/build/Products" \

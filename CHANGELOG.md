@@ -1,20 +1,62 @@
 # Changelog
 
-## 1.37.0 - 2024-07-25
+## 1.37.7
 
-[**Release Medium post**](https://blog.mobile.dev/whats-new-in-maestro-1-37-0-581431428562)
+Released on 2024-08-03
+
+- Fix cryptic "Socket Exception" when `CI` env var is set, once and for all (#1882)
+
+## 1.37.6
+
+Released on 2024-08-02
+
+- Print stack trace on 3rd retry ([#1877](https://github.com/mobile-dev-inc/maestro/pull/1877))
+
+## 1.37.5
+
+Released on 2024-08-02
+
+- Fix cryptic "SocketException" when API token is invalid ([#1871](https://github.com/mobile-dev-inc/maestro/pull/1871))
+
+## 1.37.4
+
+Released on 2024-07-30
+
+- Don't ask for analytics permission on CI + add `MAESTRO_CLI_NO_ANALYTICS` env var ([#1848](https://github.com/mobile-dev-inc/maestro/pull/1848))
+
+## 1.37.3
+
+Released on 2024-07-29
+
+### Bug fixes
+
+- Fix `FileNotFoundException: ~.maestro/sessions` ([#1843](https://github.com/mobile-dev-inc/maestro/pull/1843)) 
+
+## 1.37.2 - 2024-07-29
+
+### Bug fixes
+
+- Fix `UnsupportedOperationException: Empty collection can't be reduced` ([#1840](https://github.com/mobile-dev-inc/maestro/pull/1840))
+
+## 1.37.1 - 2024-07-29
+
+### Bug fixes
+
+- Fix crash when `flutter` or `xcodebuild` is not installed ([#1839](https://github.com/mobile-dev-inc/maestro/pull/1839))
+
+## 1.37.0 - 2024-07-29
 
 ### New features
 
-- **Sharding tests for parallel execution on many devices 🎉** ([#1732](https://github.com/mobile-dev-inc/maestro/pull/1732) by [Kaan](https://github.com/sdfgsdfgd))
+- **Sharding tests for parallel execution on many devices 🎉** ([#1732](https://github.com/mobile-dev-inc/maestro/pull/1732) by [Kaan](https://github.com/sdfgsdfgd))
 
   You can now pass `--shards` argument to `maestro test` to split up your test suite into chunks that run in parallel. If you have feedback or suggestions about this huge new feature, please share them with us in [issue #1818](https://github.com/mobile-dev-inc/maestro/issues/1818).
 
-- **Reports in HTML** ([#1750](https://github.com/mobile-dev-inc/maestro/pull/1750) by [Depa Panjie Purnama](https://github.com/depapp))
+- **Reports in HTML** ([#1750](https://github.com/mobile-dev-inc/maestro/pull/1750) by [Depa Panjie Purnama](https://github.com/depapp))
 
   To see it, run `maestro test --format HTML <your-flow.yaml>`
 
-- **Homebrew is back!**
+- **Homebrew is back!**
 
   If you prefer to switch your installation of Maestro to use Homebrew:
     1. `rm -rf ~/.maestro`
