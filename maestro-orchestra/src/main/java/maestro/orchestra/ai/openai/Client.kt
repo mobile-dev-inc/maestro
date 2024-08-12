@@ -9,12 +9,15 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import maestro.orchestra.ai.AI
 import maestro.orchestra.ai.CompletionData
 import org.slf4j.LoggerFactory
+import java.io.File
 
 private const val API_URL = "https://api.openai.com/v1/chat/completions"
 
@@ -22,7 +25,7 @@ private val logger = LoggerFactory.getLogger(OpenAI::class.java)
 
 class OpenAI(
     private val apiKey: String,
-    private val defaultModel: String = "gpt-4o",
+    private val defaultModel: String = "gpt-4o-2024-08-06",
     private val defaultTemperature: Double = 0.2,
     private val defaultMaxTokens: Int = 2048,
     private val defaultImageDetail: String = "low",
@@ -51,6 +54,7 @@ class OpenAI(
         maxTokens: Int?,
         imageDetail: String?,
         identifier: String?,
+        jsonSchema: JsonObject?,
     ): CompletionData {
         val imagesBase64 = images.map { it.encodeBase64() }
 
@@ -81,7 +85,10 @@ class OpenAI(
             messages = messages,
             maxTokens = actualMaxTokens,
             seed = 1566,
-            responseFormat = null,
+            responseFormat = if (jsonSchema == null) null else ResponseFormat(
+                type = "json_schema",
+                jsonSchema = jsonSchema,
+            ),
         )
 
         val chatCompletionResponse = try {
@@ -89,6 +96,11 @@ class OpenAI(
                 contentType(ContentType.Application.Json)
                 headers["Authorization"] = "Bearer $apiKey"
                 setBody(json.encodeToString(chatCompletionRequest))
+            }
+
+            if (!httpResponse.status.isSuccess()) {
+                logger.error("Failed to complete request to OpenAI: ${httpResponse.status}, ${httpResponse.bodyAsText()}")
+                throw Exception("Failed to complete request to OpenAI: ${httpResponse.status}, ${httpResponse.bodyAsText()}")
             }
 
             json.decodeFromString<ChatCompletionResponse>(httpResponse.bodyAsText())

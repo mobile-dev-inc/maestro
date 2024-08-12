@@ -45,7 +45,6 @@ import okio.sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
-import java.time.LocalDateTime
 
 class Orchestra(
     private val maestro: Maestro,
@@ -363,29 +362,23 @@ class Orchestra(
         maestro.takeScreenshot(imageData, compressed = false)
         val imageDataBytes = imageData.readByteArray()
 
-        File("${LocalDateTime.now()}.png").apply {
-            createNewFile()
-            writeBytes(imageDataBytes)
-        }
-
-        val response = Prediction.findDefects(
+        val defects = Prediction.findDefects(
             aiClient = ai,
+            assertion = null,
             screen = imageDataBytes,
             previousFalsePositives = listOf(), // TODO: take it from WorkspaceConfig (or MaestroConfig?)
         )
 
-        // TODO: request response in a specific JSON from AI
-        // https://platform.openai.com/docs/guides/structured-outputs/introduction
-        if (!response.response.contains("No defects found")) {
-            // TODO: Check optional flag (see assertConditionCommand)
+        if (defects.isNotEmpty()) {
+            if (command.optional) throw CommandSkipped
 
             throw MaestroException.AssertionFailure(
-                "Visual AI found defects: ${response.response}",
+                "Visual AI found possible defects: ${defects.joinToString { "${it.category}: ${it.reasoning}" }}",
                 maestro.viewHierarchy().root,
             )
         }
 
-        // TODO: Add resul to some "post-flow analysis store" (so results can be viewed in Maestro Studio)
+        // TODO: Add result to some "post-flow analysis store" (so results can be viewed in Maestro Studio)
 
         false
     }

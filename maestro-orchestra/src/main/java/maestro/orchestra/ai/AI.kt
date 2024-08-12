@@ -1,5 +1,6 @@
 package maestro.orchestra.ai
 
+import kotlinx.serialization.json.JsonObject
 import java.io.Closeable
 
 data class CompletionData(
@@ -21,6 +22,20 @@ abstract class AI : Closeable {
         maxTokens: Int? = null,
         imageDetail: String? = null,
         identifier: String? = null,
+        jsonSchema: JsonObject? = null,
     ): CompletionData
+
+    companion object {
+        // We use JSON mode/Structured Outputs to define the schema of the response we expect from the LLM.
+        // * OpenAI: https://platform.openai.com/docs/guides/structured-outputs
+        // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode
+
+        val assertVisualSchema: String = run {
+            val resourceStream = this::class.java.getResourceAsStream("/assertVisualAI_schema.json")
+                ?: throw IllegalStateException("Could not find assertVisualAI_schema.json in resources")
+
+            resourceStream.bufferedReader().use { it.readText() }
+        }
+    }
 
 }

@@ -2,6 +2,7 @@ package maestro.orchestra.ai.openai
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class ChatCompletionRequest(
@@ -14,8 +15,9 @@ data class ChatCompletionRequest(
 )
 
 @Serializable
-data class ResponseFormat(
+class ResponseFormat(
     val type: String,
+    @SerialName("json_schema") val jsonSchema: JsonObject,
 )
 
 @Serializable
