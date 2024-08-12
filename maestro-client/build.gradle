@@ -94,12 +94,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-// Causes weird failures
-//tasks.named("compileKotlin", KotlinCompilationTask) {
-//    compilerOptions {
-//        freeCompilerArgs.addAll("-Xjdk-release=1.8")
-//    }
-//}
+tasks.named("compileKotlin", KotlinCompilationTask) {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjdk-release=1.8")
+    }
+}
 
 plugins.withId("com.vanniktech.maven.publish") {
     mavenPublish {
