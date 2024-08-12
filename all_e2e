@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+set -eu
+
+[ "$(basename "$PWD")" = "maestro" ] || { echo "must be run from maestro directory" && exit 1; }
+
+cd ./e2e
+./download_apps
+./install_apps
+./run_tests

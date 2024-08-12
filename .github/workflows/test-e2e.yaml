@@ -58,7 +58,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 8
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -75,20 +75,22 @@ jobs:
           maestro --help
           maestro --version
 
-      - name: Start emulator and run a Flow
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Set up Android SDK
+        uses: malinskiy/action-android/install-sdk@release/cmdlinetoolsversion
         with:
-          api-level: ${{ env.EMULATOR_API_LEVEL }}
-          target: ${{ env.EMULATOR_TARGET }}
-          arch: ${{ env.EMULATOR_ARCH }}
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          working-directory: ${{ github.workspace }}/e2e
-          script: |
-            ./download_apps
-            ./install_apps
-            ./run_tests
+          url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+          # url: https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip # classFile version 61 (java17)
+          # url: https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          # Above URL points to Command Line Tools v8.0 - the last version compatible with Java 8
+          # Found via https://stackoverflow.com/a/75763391/7009800
+          # Another useful website: https://androidsdkmanager.azurewebsites.net/cmdline-tools.html
+
+      - uses: malinskiy/action-android/emulator-run-cmd@release/cmdlinetoolsversion
+        with:
+          api: ${{ env.EMULATOR_API_LEVEL }}
+          tag: ${{ env.EMULATOR_TARGET }}
+          abi: ${{ env.EMULATOR_ARCH }}
+          cmd: all_e2e
 
       - name: Upload ~/.maestro artifacts
         uses: actions/upload-artifact@v4
