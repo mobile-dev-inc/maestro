@@ -1,6 +1,7 @@
 package maestro.cli.report
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import maestro.Driver
@@ -13,6 +14,7 @@ import maestro.cli.util.IOSEnvUtils
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
+import maestro.orchestra.ai.Defect
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
@@ -29,6 +31,7 @@ import java.util.Properties
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
+// TODO(bartekpacia): Rename to TestOutputReporter, because it's not only for "debug" stuff
 object TestDebugReporter {
 
     private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
@@ -45,11 +48,12 @@ object TestDebugReporter {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
     }
 
-    fun saveFlow(flowName: String, data: FlowDebugMetadata, path: Path) {
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: AIOutput, path: Path) {
+        println("TestDebugReporter.saveFlow: saving flow metadata to $path")
 
         // commands
         try {
-            val commandMetadata = data.commands
+            val commandMetadata = debugOutput.commands
             if (commandMetadata.isNotEmpty()) {
                 val commandsFilename = "commands-(${flowName.replace("/", "_")}).json"
                 val file = File(path.absolutePathString(), commandsFilename)
@@ -62,7 +66,7 @@ object TestDebugReporter {
         }
 
         // screenshots
-        data.screenshots.forEach {
+        debugOutput.screenshots.forEach {
             val status = when (it.status) {
                 CommandStatus.COMPLETED -> "✅"
                 CommandStatus.FAILED -> "❌"
@@ -80,17 +84,18 @@ object TestDebugReporter {
             val currentTime = Instant.now()
             val daysLimit = currentTime.minus(Duration.of(days, ChronoUnit.DAYS))
 
-            Files.walk(getDebugOutputPath())
+            Files
+                .walk(getDebugOutputPath())
                 .filter {
                     val fileTime = Files.getAttribute(it, "basic:lastModifiedTime") as FileTime
                     val isOlderThanLimit = fileTime.toInstant().isBefore(daysLimit)
                     Files.isDirectory(it) && isOlderThanLimit
                 }
                 .sorted(Comparator.reverseOrder())
-                .forEach {
-                    Files.walk(it)
+                .forEach { dir ->
+                    Files.walk(dir)
                         .sorted(Comparator.reverseOrder())
-                        .forEach { Files.delete(it) }
+                        .forEach { file -> Files.delete(file) }
                 }
         } catch (e: Exception) {
             logger.warn("Failed to delete older files", e)
@@ -98,13 +103,6 @@ object TestDebugReporter {
     }
 
     private fun logSystemInfo() {
-        val appVersion = runCatching {
-            val props = Driver::class.java.classLoader.getResourceAsStream("version.properties").use {
-                Properties().apply { load(it) }
-            }
-            props["version"].toString()
-        }
-
         val logger = LoggerFactory.getLogger("MAESTRO")
         logger.info("---- System Info ----")
         logger.info("Maestro Version: ${EnvUtils.CLI_VERSION ?: "Undefined"}")
@@ -131,9 +129,9 @@ object TestDebugReporter {
     fun getDebugOutputPath(): Path {
         if (debugOutputPath != null) return debugOutputPath as Path
 
-        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")        
+        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")
         val debugOutput = if(flattenDebugOutput) Paths.get(debugRootPath) else buildDefaultDebugOutputPath(debugRootPath)
-        
+
         if (!debugOutput.exists()) {
             Files.createDirectories(debugOutput)
         }
@@ -150,8 +148,7 @@ object TestDebugReporter {
 }
 
 private data class CommandDebugWrapper(
-    val command: MaestroCommand,
-    val metadata: CommandDebugMetadata
+    val command: MaestroCommand, val metadata: CommandDebugMetadata
 )
 
 data class CommandDebugMetadata(
@@ -168,14 +165,23 @@ data class CommandDebugMetadata(
     }
 }
 
-data class ScreenshotDebugMetadata(
-    val screenshot: File,
-    val timestamp: Long,
-    val status: CommandStatus
+data class FlowDebugOutput(
+    val commands: IdentityHashMap<MaestroCommand, CommandDebugMetadata> = IdentityHashMap<MaestroCommand, CommandDebugMetadata>(),
+    val screenshots: MutableList<Screenshot> = mutableListOf(),
+    var exception: MaestroException? = null,
+) {
+    data class Screenshot(
+        val screenshot: File, val timestamp: Long, val status: CommandStatus
+    )
+}
+
+data class FlowAIOutput(
+    @JsonProperty("flow_name") var flowName: String,
+    @JsonProperty("flow_file_path") var flowFilePath: String,
+    val outputs: MutableList<AIOutput> = mutableListOf(),
 )
 
-data class FlowDebugMetadata(
-    val commands: IdentityHashMap<MaestroCommand, CommandDebugMetadata> = IdentityHashMap<MaestroCommand, CommandDebugMetadata>(),
-    val screenshots: MutableList<ScreenshotDebugMetadata> = mutableListOf(),
-    var exception: MaestroException? = null
+data class AIOutput(
+    @JsonProperty("screenshot_path") val screenshotPath: File,
+    val defect: List<Defect>,
 )

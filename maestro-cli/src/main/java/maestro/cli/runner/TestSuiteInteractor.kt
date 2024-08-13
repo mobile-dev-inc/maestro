@@ -17,14 +17,17 @@ import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.yaml.YamlCommandReader
 import okio.Sink
-import okio.sink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Path
-import kotlin.math.roundToLong
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Similar to [TestRunner], but:
+ *  * can run many flows at once
+ *  * does not support continuous mode
+ */
 class TestSuiteInteractor(
     private val maestro: Maestro,
     private val device: Device? = null,
@@ -129,7 +132,7 @@ class TestSuiteInteractor(
         var errorMessage: String? = null
 
         // debug
-        val debug = FlowDebugMetadata()
+        val debug = FlowDebugOutput()
         val debugCommands = debug.commands
         val debugScreenshots = debug.screenshots
 
@@ -221,7 +224,7 @@ class TestSuiteInteractor(
         }
         val flowDuration = TimeUtils.durationInSeconds(flowTimeMillis)
 
-        TestDebugReporter.saveFlow(flowName, debug, debugOutputPath)
+        TestDebugReporter.saveFlow(flowName = flowName, persistentOutput = debug, path = debugOutputPath)
 
         TestSuiteStatusView.showFlowCompletion(
             TestSuiteViewModel.FlowResult(

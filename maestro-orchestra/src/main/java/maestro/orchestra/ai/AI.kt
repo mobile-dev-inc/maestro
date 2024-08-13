@@ -26,6 +26,8 @@ abstract class AI : Closeable {
     ): CompletionData
 
     companion object {
+        const val AI_KEY_ENV_VAR = "MAESTRO_CLI_AI_KEY"
+
         // We use JSON mode/Structured Outputs to define the schema of the response we expect from the LLM.
         // * OpenAI: https://platform.openai.com/docs/guides/structured-outputs
         // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode

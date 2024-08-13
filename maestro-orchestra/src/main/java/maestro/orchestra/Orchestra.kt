@@ -241,7 +241,7 @@ class Orchestra(
     }
 
     private fun initAI(): AI? {
-        val apikey = System.getenv("OPENAI_TOKEN_COPILOT")
+        val apikey = System.getenv(AI.AI_KEY_ENV_VAR)
         return if (apikey != null) OpenAI(apiKey = apikey) else null
     }
 

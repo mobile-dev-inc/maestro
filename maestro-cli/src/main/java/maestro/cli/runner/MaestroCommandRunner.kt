@@ -23,8 +23,7 @@ import maestro.Maestro
 import maestro.MaestroException
 import maestro.cli.device.Device
 import maestro.cli.report.CommandDebugMetadata
-import maestro.cli.report.FlowDebugMetadata
-import maestro.cli.report.ScreenshotDebugMetadata
+import maestro.cli.report.FlowDebugOutput
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
 import maestro.orchestra.ApplyConfigurationCommand
@@ -47,7 +46,7 @@ object MaestroCommandRunner {
         device: Device?,
         view: ResultView,
         commands: List<MaestroCommand>,
-        debug: FlowDebugMetadata
+        debug: FlowDebugOutput
     ): Result {
         val config = YamlCommandReader.getConfig(commands)
         val initFlow = config?.initFlow
@@ -74,7 +73,7 @@ object MaestroCommandRunner {
                     .also { it.deleteOnExit() } // save to another dir before exiting
                 maestro.takeScreenshot(out, false)
                 debugScreenshots.add(
-                    ScreenshotDebugMetadata(
+                    FlowDebugOutput.Screenshot(
                         screenshot = out,
                         timestamp = System.currentTimeMillis(),
                         status = status

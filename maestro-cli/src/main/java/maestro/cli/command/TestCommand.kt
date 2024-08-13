@@ -256,6 +256,8 @@ class TestCommand : Callable<Int> {
                         val device = session.device
 
                         if (flowFile.isDirectory || format != ReportFormat.NOOP) {
+                            // Run multiple flows
+
                             if (continuous) {
                                 throw CommandLine.ParameterException(
                                     commandSpec.commandLine(),
@@ -279,6 +281,8 @@ class TestCommand : Callable<Int> {
                             }
                             Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
                         } else {
+                            // Run a single flow
+
                             if (continuous) {
                                 if (!flattenDebugOutput) {
                                     TestDebugReporter.deleteOldFiles()

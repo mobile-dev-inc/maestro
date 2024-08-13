@@ -8,15 +8,14 @@ import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.onFailure
 import maestro.Maestro
 import maestro.cli.device.Device
-import maestro.cli.report.FlowDebugMetadata
+import maestro.cli.report.FlowAIOutput
+import maestro.cli.report.FlowDebugOutput
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
 import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.OrchestraAppState
@@ -24,13 +23,8 @@ import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
-import kotlin.io.path.absolutePathString
 
 object TestRunner {
 
@@ -44,9 +38,8 @@ object TestRunner {
         resultView: ResultView,
         debugOutputPath: Path
     ): Int {
-
-        // debug
-        val debug = FlowDebugMetadata()
+        val debugOutput = FlowDebugOutput()
+        val aiOutput = FlowAIOutput()
 
         val result = runCatching(resultView, maestro) {
             val commands = YamlCommandReader.readCommands(flowFile.toPath())
@@ -56,12 +49,19 @@ object TestRunner {
                 device,
                 resultView,
                 commands,
-                debug
+                debugOutput,
+                aiOutput,
             )
         }
 
-        TestDebugReporter.saveFlow(flowFile.name, debug, debugOutputPath)
-        if (debug.exception != null) PrintUtils.err("${debug.exception?.message}")
+        TestDebugReporter.saveFlow(
+            flowName = flowFile.name,
+            debugOutput = debugOutput,
+            aiOutput = aiOutput,
+            path = debugOutputPath,
+        )
+
+        if (debugOutput.exception != null) PrintUtils.err("${debugOutput.exception?.message}")
 
         return if (result.get()?.flowSuccess == true) 0 else 1
     }
@@ -112,7 +112,7 @@ object TestRunner {
                                 device,
                                 resultView,
                                 commands,
-                                FlowDebugMetadata()
+                                FlowDebugOutput()
                             )
                         }.get()
                     }
