@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import maestro.Driver
 import maestro.MaestroException
 import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
@@ -27,7 +26,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.IdentityHashMap
-import java.util.Properties
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
@@ -48,7 +46,9 @@ object TestDebugReporter {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
     }
 
-    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: AIOutput, path: Path) {
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
+        // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput object
+
         println("TestDebugReporter.saveFlow: saving flow metadata to $path")
 
         // commands
@@ -72,10 +72,17 @@ object TestDebugReporter {
                 CommandStatus.FAILED -> "❌"
                 else -> "﹖"
             }
-            val name = "screenshot-$status-${it.timestamp}-(${flowName}).png"
-            val file = File(path.absolutePathString(), name)
+            val filename = "screenshot-$status-${it.timestamp}-(${flowName}).png"
+            val file = File(path.absolutePathString(), filename)
 
             it.screenshot.copyTo(file)
+        }
+
+        // AI output
+        aiOutput?.let {
+            val filename = "ai-(${flowName.replace("/", "_")}).json"
+            val file = File(path.absolutePathString(), filename)
+            mapper.writeValue(file, it)
         }
     }
 
@@ -139,7 +146,7 @@ object TestDebugReporter {
         return debugOutput
     }
 
-    fun buildDefaultDebugOutputPath(debugRootPath: String): Path {
+    private fun buildDefaultDebugOutputPath(debugRootPath: String): Path {
         val preamble = arrayOf(".maestro", "tests")
         val foldername = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
         return Paths.get(debugRootPath, *preamble, foldername)
@@ -171,17 +178,19 @@ data class FlowDebugOutput(
     var exception: MaestroException? = null,
 ) {
     data class Screenshot(
-        val screenshot: File, val timestamp: Long, val status: CommandStatus
+        val screenshot: File,
+        val timestamp: Long,
+        val status: CommandStatus,
     )
 }
 
 data class FlowAIOutput(
-    @JsonProperty("flow_name") var flowName: String,
-    @JsonProperty("flow_file_path") var flowFilePath: String,
+    @JsonProperty("flow_name") val flowName: String,
+    @JsonProperty("flow_file_path") val flowFilePath: String,
     val outputs: MutableList<AIOutput> = mutableListOf(),
 )
 
 data class AIOutput(
     @JsonProperty("screenshot_path") val screenshotPath: File,
-    val defect: List<Defect>,
+    val defects: List<Defect>,
 )

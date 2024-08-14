@@ -22,7 +22,9 @@ package maestro.cli.runner
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.cli.device.Device
+import maestro.cli.report.AIOutput
 import maestro.cli.report.CommandDebugMetadata
+import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
@@ -33,6 +35,7 @@ import maestro.orchestra.Orchestra
 import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.utils.Insight
+import okio.Buffer
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.IdentityHashMap
@@ -46,7 +49,8 @@ object MaestroCommandRunner {
         device: Device?,
         view: ResultView,
         commands: List<MaestroCommand>,
-        debug: FlowDebugOutput
+        debugOutput: FlowDebugOutput,
+        aiOutput: FlowAIOutput,
     ): Result {
         val config = YamlCommandReader.getConfig(commands)
         val initFlow = config?.initFlow
@@ -56,12 +60,8 @@ object MaestroCommandRunner {
         val commandStatuses = IdentityHashMap<MaestroCommand, CommandStatus>()
         val commandMetadata = IdentityHashMap<MaestroCommand, Orchestra.CommandMetadata>()
 
-        // debug
-        val debugCommands = debug.commands
-        val debugScreenshots = debug.screenshots
-
         fun takeDebugScreenshot(status: CommandStatus): File? {
-            val containsFailed = debugScreenshots.any { it.status == CommandStatus.FAILED }
+            val containsFailed = debugOutput.screenshots.any { it.status == CommandStatus.FAILED }
 
             // Avoids duplicate failed images from parent commands
             if (containsFailed && status == CommandStatus.FAILED) {
@@ -69,10 +69,11 @@ object MaestroCommandRunner {
             }
 
             val result = kotlin.runCatching {
-                val out = File.createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
+                val out = File
+                    .createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
                     .also { it.deleteOnExit() } // save to another dir before exiting
                 maestro.takeScreenshot(out, false)
-                debugScreenshots.add(
+                debugOutput.screenshots.add(
                     FlowDebugOutput.Screenshot(
                         screenshot = out,
                         timestamp = System.currentTimeMillis(),
@@ -83,6 +84,12 @@ object MaestroCommandRunner {
             }
 
             return result.getOrNull()
+        }
+
+        fun writeAIscreenshot(buffer: Buffer): File {
+            val out = File.createTempFile("ai-screenshot-${System.currentTimeMillis()}", ".png")
+            out.outputStream().use { it.write(buffer.readByteArray()) }
+            return out
         }
 
         fun refreshUi() {
@@ -120,7 +127,7 @@ object MaestroCommandRunner {
             onCommandStart = { _, command ->
                 logger.info("${command.description()} RUNNING")
                 commandStatuses[command] = CommandStatus.RUNNING
-                debugCommands[command] = CommandDebugMetadata(
+                debugOutput.commands[command] = CommandDebugMetadata(
                     timestamp = System.currentTimeMillis(),
                     status = CommandStatus.RUNNING
                 )
@@ -130,17 +137,17 @@ object MaestroCommandRunner {
             onCommandComplete = { _, command ->
                 logger.info("${command.description()} COMPLETED")
                 commandStatuses[command] = CommandStatus.COMPLETED
-                debugCommands[command]?.let {
-                    it.status = CommandStatus.COMPLETED
-                    it.calculateDuration()
+                debugOutput.commands[command]?.apply {
+                    status = CommandStatus.COMPLETED
+                    calculateDuration()
                 }
                 refreshUi()
             },
             onCommandFailed = { _, command, e ->
-                debugCommands[command]?.let {
-                    it.status = CommandStatus.FAILED
-                    it.calculateDuration()
-                    it.error = e
+                debugOutput.commands[command]?.apply {
+                    status = CommandStatus.FAILED
+                    calculateDuration()
+                    error = e
                 }
 
                 takeDebugScreenshot(CommandStatus.FAILED)
@@ -148,7 +155,7 @@ object MaestroCommandRunner {
                 if (e !is MaestroException) {
                     throw e
                 } else {
-                    debug.exception = e
+                    debugOutput.exception = e
                 }
 
                 logger.info("${command.description()} FAILED")
@@ -159,16 +166,16 @@ object MaestroCommandRunner {
             onCommandSkipped = { _, command ->
                 logger.info("${command.description()} SKIPPED")
                 commandStatuses[command] = CommandStatus.SKIPPED
-                debugCommands[command]?.let {
-                    it.status = CommandStatus.SKIPPED
+                debugOutput.commands[command]?.apply {
+                    status = CommandStatus.SKIPPED
                 }
                 refreshUi()
             },
             onCommandReset = { command ->
                 logger.info("${command.description()} PENDING")
                 commandStatuses[command] = CommandStatus.PENDING
-                debugCommands[command]?.let {
-                    it.status = CommandStatus.PENDING
+                debugOutput.commands[command]?.apply {
+                    status = CommandStatus.PENDING
                 }
                 refreshUi()
             },
@@ -177,6 +184,16 @@ object MaestroCommandRunner {
                 commandMetadata[command] = metadata
                 refreshUi()
             },
+            onCommandGeneratedOutput = { command, defects, screenshot ->
+                logger.info("${command.description()} OUTPUTTED")
+                val screenshotPath = writeAIscreenshot(screenshot)
+                aiOutput.outputs.add(
+                    AIOutput(
+                        screenshotPath = screenshotPath,
+                        defects = defects
+                    )
+                )
+            }
         )
 
         val flowSuccess = orchestra.runFlow(commands)

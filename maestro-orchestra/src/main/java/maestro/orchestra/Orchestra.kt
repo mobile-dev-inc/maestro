@@ -28,6 +28,7 @@ import maestro.orchestra.ai.openai.OpenAI
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
 import maestro.js.RhinoJsEngine
+import maestro.orchestra.ai.Defect
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters
@@ -60,6 +61,7 @@ class Orchestra(
     private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandReset: (MaestroCommand) -> Unit = {},
     private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
+    private val onCommandGeneratedOutput: (command: Command, defects: List<Defect>, screenshot: Buffer) -> Unit = { _, _, _ -> },
 ) {
 
     private lateinit var jsEngine: JsEngine
@@ -340,8 +342,8 @@ class Orchestra(
         if (!evaluateCondition(command.condition, timeoutMs = timeout)) {
             if (!isOptional(command.condition)) {
                 throw MaestroException.AssertionFailure(
-                    "Assertion is false: ${command.condition.description()}",
-                    maestro.viewHierarchy().root,
+                    message = "Assertion is false: ${command.condition.description()}",
+                    hierarchyRoot = maestro.viewHierarchy().root,
                 )
             } else {
                 throw CommandSkipped
@@ -370,15 +372,15 @@ class Orchestra(
         )
 
         if (defects.isNotEmpty()) {
+            onCommandGeneratedOutput(command, defects, imageData)
+
             if (command.optional) throw CommandSkipped
 
             throw MaestroException.AssertionFailure(
-                "Visual AI found possible defects: ${defects.joinToString { "${it.category}: ${it.reasoning}" }}",
+                "Visual AI found possible defects:\n  ${defects.joinToString("\n  ") { "${it.category}: ${it.reasoning}" }}",
                 maestro.viewHierarchy().root,
             )
         }
-
-        // TODO: Add result to some "post-flow analysis store" (so results can be viewed in Maestro Studio)
 
         false
     }

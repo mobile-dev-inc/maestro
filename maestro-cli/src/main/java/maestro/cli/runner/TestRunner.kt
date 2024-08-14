@@ -39,11 +39,19 @@ object TestRunner {
         debugOutputPath: Path
     ): Int {
         val debugOutput = FlowDebugOutput()
-        val aiOutput = FlowAIOutput()
+        var aiOutput = FlowAIOutput(
+            flowName = flowFile.nameWithoutExtension,
+            flowFilePath = flowFile.absolutePath,
+        )
 
         val result = runCatching(resultView, maestro) {
             val commands = YamlCommandReader.readCommands(flowFile.toPath())
                 .withEnv(env)
+
+            YamlCommandReader.getConfig(commands)?.name?.let {
+                aiOutput = aiOutput.copy(flowName = it)
+            }
+
             MaestroCommandRunner.runCommands(
                 maestro,
                 device,
@@ -112,7 +120,12 @@ object TestRunner {
                                 device,
                                 resultView,
                                 commands,
-                                FlowDebugOutput()
+                                FlowDebugOutput(),
+                                // TODO: bartekpacia - make AI outputs work in continuous mode
+                                FlowAIOutput(
+                                    flowName = "TODO",
+                                    flowFilePath = flowFile.absolutePath,
+                                ),
                             )
                         }.get()
                     }

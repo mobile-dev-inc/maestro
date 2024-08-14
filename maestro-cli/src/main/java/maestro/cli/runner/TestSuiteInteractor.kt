@@ -6,7 +6,12 @@ import maestro.cli.CliError
 import maestro.cli.device.Device
 import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
-import maestro.cli.report.*
+import maestro.cli.report.AIOutput
+import maestro.cli.report.CommandDebugMetadata
+import maestro.cli.report.FlowAIOutput
+import maestro.cli.report.FlowDebugOutput
+import maestro.cli.report.TestDebugReporter
+import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
 import maestro.cli.util.TimeUtils
 import maestro.cli.view.ErrorViewUtils
@@ -132,12 +137,11 @@ class TestSuiteInteractor(
         var errorMessage: String? = null
 
         // debug
-        val debug = FlowDebugOutput()
-        val debugCommands = debug.commands
-        val debugScreenshots = debug.screenshots
+        val debugOutput = FlowDebugOutput()
+        val aiOutput: FlowAIOutput? = null
 
         fun takeDebugScreenshot(status: CommandStatus): File? {
-            val containsFailed = debugScreenshots.any { it.status == CommandStatus.FAILED }
+            val containsFailed = debugOutput.screenshots.any { it.status == CommandStatus.FAILED }
 
             // Avoids duplicate failed images from parent commands
             if (containsFailed && status == CommandStatus.FAILED) {
@@ -148,8 +152,8 @@ class TestSuiteInteractor(
                 val out = File.createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
                     .also { it.deleteOnExit() } // save to another dir before exiting
                 maestro.takeScreenshot(out, false)
-                debugScreenshots.add(
-                    ScreenshotDebugMetadata(
+                debugOutput.screenshots.add(
+                    FlowDebugOutput.Screenshot(
                         screenshot = out,
                         timestamp = System.currentTimeMillis(),
                         status = status
@@ -163,31 +167,32 @@ class TestSuiteInteractor(
 
         val flowTimeMillis = measureTimeMillis {
             try {
-                val commands = YamlCommandReader.readCommands(flowFile.toPath())
+                val commands = YamlCommandReader
+                    .readCommands(flowFile.toPath())
                     .withEnv(env)
 
-                val config = YamlCommandReader.getConfig(commands)
+                YamlCommandReader.getConfig(commands)?.name?.let { flowName = it }
 
                 val orchestra = Orchestra(
                     maestro = maestro,
                     onCommandStart = { _, command ->
                         logger.info("${command.description()} RUNNING")
-                        debugCommands[command] = CommandDebugMetadata(
+                        debugOutput.commands[command] = CommandDebugMetadata(
                             timestamp = System.currentTimeMillis(),
                             status = CommandStatus.RUNNING
                         )
                     },
                     onCommandComplete = { _, command ->
                         logger.info("${command.description()} COMPLETED")
-                        debugCommands[command]?.let {
+                        debugOutput.commands[command]?.let {
                             it.status = CommandStatus.COMPLETED
                             it.calculateDuration()
                         }
                     },
                     onCommandFailed = { _, command, e ->
                         logger.info("${command.description()} FAILED")
-                        if (e is MaestroException) debug.exception = e
-                        debugCommands[command]?.let {
+                        if (e is MaestroException) debugOutput.exception = e
+                        debugOutput.commands[command]?.let {
                             it.status = CommandStatus.FAILED
                             it.calculateDuration()
                             it.error = e
@@ -198,21 +203,27 @@ class TestSuiteInteractor(
                     },
                     onCommandSkipped = { _, command ->
                         logger.info("${command.description()} SKIPPED")
-                        debugCommands[command]?.let {
+                        debugOutput.commands[command]?.let {
                             it.status = CommandStatus.SKIPPED
                         }
                     },
                     onCommandReset = { command ->
                         logger.info("${command.description()} PENDING")
-                        debugCommands[command]?.let {
+                        debugOutput.commands[command]?.let {
                             it.status = CommandStatus.PENDING
                         }
                     },
+                    // another name idea: onCommandFoundDefects
+                    onCommandGeneratedOutput = { command, defects, screenshot ->
+                        logger.info("${command.description()} OUTPUTTED")
+                        aiOutput?.outputs?.add(
+                            AIOutput(
+                                screenshotPath = File("TODO"), // TODO
+                                defects = defects,
+                            )
+                        )
+                    }
                 )
-
-                config?.name?.let {
-                    flowName = it
-                }
 
                 val flowSuccess = orchestra.runFlow(commands)
                 flowStatus = if (flowSuccess) FlowStatus.SUCCESS else FlowStatus.ERROR
@@ -224,14 +235,19 @@ class TestSuiteInteractor(
         }
         val flowDuration = TimeUtils.durationInSeconds(flowTimeMillis)
 
-        TestDebugReporter.saveFlow(flowName = flowName, persistentOutput = debug, path = debugOutputPath)
+        TestDebugReporter.saveFlow(
+            flowName = flowName,
+            debugOutput = debugOutput,
+            aiOutput = aiOutput,
+            path = debugOutputPath
+        )
 
         TestSuiteStatusView.showFlowCompletion(
             TestSuiteViewModel.FlowResult(
                 name = flowName,
                 status = flowStatus,
                 duration = flowDuration,
-                error = debug.exception?.message,
+                error = debugOutput.exception?.message,
             )
         )
 
@@ -241,7 +257,7 @@ class TestSuiteInteractor(
             status = flowStatus,
             failure = if (flowStatus == FlowStatus.ERROR) {
                 TestExecutionSummary.Failure(
-                    message = errorMessage ?: debug.exception?.message ?: "Unknown error",
+                    message = errorMessage ?: debugOutput.exception?.message ?: "Unknown error",
                 )
             } else null,
             duration = flowDuration,
