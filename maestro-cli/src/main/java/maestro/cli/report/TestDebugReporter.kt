@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.MaestroException
 import maestro.TreeNode
 import maestro.cli.runner.CommandStatus
@@ -33,18 +34,14 @@ import kotlin.io.path.exists
 object TestDebugReporter {
 
     private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
-    private val mapper = ObjectMapper()
+    private val mapper = jacksonObjectMapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .writerWithDefaultPrettyPrinter()
 
     private var debugOutputPath: Path? = null
     private var debugOutputPathAsString: String? = null
     private var flattenDebugOutput: Boolean = false
-
-    init {
-
-        // json
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-    }
 
     fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput object
@@ -78,11 +75,18 @@ object TestDebugReporter {
             it.screenshot.copyTo(file)
         }
 
-        // AI output
-        aiOutput?.let {
+        // AI screenshots
+        aiOutput?.outputs?.forEach { output ->
+            val screenshotFilename = output.screenshotPath.name
+            val screenshotFile = File(path.absolutePathString(), screenshotFilename)
+            output.screenshotPath.copyTo(screenshotFile)
+        }
+
+        // AI JSON output
+        aiOutput?.let { flowAiOutput ->
             val filename = "ai-(${flowName.replace("/", "_")}).json"
             val file = File(path.absolutePathString(), filename)
-            mapper.writeValue(file, it)
+            mapper.writeValue(file, flowAiOutput)
         }
     }
 

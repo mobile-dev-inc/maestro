@@ -87,7 +87,9 @@ object MaestroCommandRunner {
         }
 
         fun writeAIscreenshot(buffer: Buffer): File {
-            val out = File.createTempFile("ai-screenshot-${System.currentTimeMillis()}", ".png")
+            val out = File
+                .createTempFile("ai-screenshot-${System.currentTimeMillis()}", ".png")
+                .also { it.deleteOnExit() }
             out.outputStream().use { it.write(buffer.readByteArray()) }
             return out
         }
