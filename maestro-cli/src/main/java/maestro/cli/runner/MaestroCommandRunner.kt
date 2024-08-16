@@ -187,12 +187,12 @@ object MaestroCommandRunner {
                 refreshUi()
             },
             onCommandGeneratedOutput = { command, defects, screenshot ->
-                logger.info("${command.description()} OUTPUTTED")
+                logger.info("${command.description()} generated output")
                 val screenshotPath = writeAIscreenshot(screenshot)
                 aiOutput.outputs.add(
                     AIOutput(
                         screenshotPath = screenshotPath,
-                        defects = defects
+                        defects = defects,
                     )
                 )
             }

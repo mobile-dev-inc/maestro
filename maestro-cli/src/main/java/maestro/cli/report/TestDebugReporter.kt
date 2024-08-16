@@ -57,7 +57,8 @@ object TestDebugReporter {
             if (commandMetadata.isNotEmpty()) {
                 val commandsFilename = "commands-(${flowName.replace("/", "_")}).json"
                 val file = File(path.absolutePathString(), commandsFilename)
-                commandMetadata.map { CommandDebugWrapper(it.key, it.value) }.let {
+                commandMetadata.map {
+                    CommandDebugWrapper(it.key, it.value) }.let {
                     mapper.writeValue(file, it)
                 }
             }

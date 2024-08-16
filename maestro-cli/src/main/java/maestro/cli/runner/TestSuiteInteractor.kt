@@ -21,6 +21,7 @@ import maestro.orchestra.Orchestra
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.yaml.YamlCommandReader
+import okio.Buffer
 import okio.Sink
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -136,9 +137,11 @@ class TestSuiteInteractor(
         var flowStatus: FlowStatus
         var errorMessage: String? = null
 
-        // debug
         val debugOutput = FlowDebugOutput()
-        val aiOutput: FlowAIOutput? = null
+        val aiOutput = FlowAIOutput(
+            flowName = flowFile.nameWithoutExtension,
+            flowFilePath = flowFile.absolutePath,
+        )
 
         fun takeDebugScreenshot(status: CommandStatus): File? {
             val containsFailed = debugOutput.screenshots.any { it.status == CommandStatus.FAILED }
@@ -163,6 +166,14 @@ class TestSuiteInteractor(
             }
 
             return result.getOrNull()
+        }
+
+        fun writeAIscreenshot(buffer: Buffer): File {
+            val out = File
+                .createTempFile("ai-screenshot-${System.currentTimeMillis()}", ".png")
+                .also { it.deleteOnExit() }
+            out.outputStream().use { it.write(buffer.readByteArray()) }
+            return out
         }
 
         val flowTimeMillis = measureTimeMillis {
@@ -215,10 +226,11 @@ class TestSuiteInteractor(
                     },
                     // another name idea: onCommandFoundDefects
                     onCommandGeneratedOutput = { command, defects, screenshot ->
-                        logger.info("${command.description()} OUTPUTTED")
-                        aiOutput?.outputs?.add(
+                        logger.info("${command.description()} generated output")
+                        val screenshotPath = writeAIscreenshot(screenshot)
+                        aiOutput.outputs.add(
                             AIOutput(
-                                screenshotPath = File("TODO"), // TODO
+                                screenshotPath = screenshotPath,
                                 defects = defects,
                             )
                         )
