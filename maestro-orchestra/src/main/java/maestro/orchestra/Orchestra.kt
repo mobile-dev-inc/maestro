@@ -47,6 +47,18 @@ import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
 
+// TODO(bartkepacia): Use this in onCommandGeneratedOutput.
+//  Caveat:
+//    Large files should not be held in memory, instead they should be directly written to a Buffer
+//    that is streamed to disk.
+//  Idea:
+//    Orchestra should expose a callback like "onResourceRequested: (Command, CommandOutputType)"
+sealed class CommandOutput {
+    data class Screenshot(val screenshot: Buffer) : CommandOutput()
+    data class ScreenRecording(val screenRecording: Buffer) : CommandOutput()
+    data class AIDefects(val defects: List<Defect>, val screenshot: Buffer) : CommandOutput()
+}
+
 class Orchestra(
     private val maestro: Maestro,
     private val stateDir: File? = null,
