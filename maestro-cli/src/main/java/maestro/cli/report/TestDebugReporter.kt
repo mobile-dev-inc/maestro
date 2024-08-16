@@ -2,6 +2,8 @@ package maestro.cli.report
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.util.DefaultIndenter
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -35,16 +37,17 @@ object TestDebugReporter {
 
     private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
     private val mapper = jacksonObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .writerWithDefaultPrettyPrinter()
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+        .writerWithDefaultPrettyPrinter()
 
     private var debugOutputPath: Path? = null
     private var debugOutputPathAsString: String? = null
     private var flattenDebugOutput: Boolean = false
 
     fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
-        // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput object
+        // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
+        // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
 
         println("TestDebugReporter.saveFlow: saving flow metadata to $path")
 
@@ -75,18 +78,22 @@ object TestDebugReporter {
             it.screenshot.copyTo(file)
         }
 
-        // AI screenshots
-        aiOutput?.outputs?.forEach { output ->
-            val screenshotFilename = output.screenshotPath.name
-            val screenshotFile = File(path.absolutePathString(), screenshotFilename)
-            output.screenshotPath.copyTo(screenshotFile)
-        }
+        aiOutput?.run {
+            // Write AI screenshots. Paths need to be changed to the final ones.
+            val updatedOutputs = outputs.map { output ->
+                val screenshotFilename = output.screenshotPath.name
+                val screenshotFile = File(path.absolutePathString(), screenshotFilename)
+                output.screenshotPath.copyTo(screenshotFile)
+                output.copy(screenshotPath = screenshotFile)
+            }
 
-        // AI JSON output
-        aiOutput?.let { flowAiOutput ->
+            outputs.clear()
+            outputs.addAll(updatedOutputs)
+
+            // Write AI JSON output
             val filename = "ai-(${flowName.replace("/", "_")}).json"
             val file = File(path.absolutePathString(), filename)
-            mapper.writeValue(file, flowAiOutput)
+            mapper.writeValue(file, this)
         }
     }
 
@@ -140,8 +147,10 @@ object TestDebugReporter {
     fun getDebugOutputPath(): Path {
         if (debugOutputPath != null) return debugOutputPath as Path
 
-        val debugRootPath = if(debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")
-        val debugOutput = if(flattenDebugOutput) Paths.get(debugRootPath) else buildDefaultDebugOutputPath(debugRootPath)
+        val debugRootPath =
+            if (debugOutputPathAsString != null) debugOutputPathAsString!! else System.getProperty("user.home")
+        val debugOutput =
+            if (flattenDebugOutput) Paths.get(debugRootPath) else buildDefaultDebugOutputPath(debugRootPath)
 
         if (!debugOutput.exists()) {
             Files.createDirectories(debugOutput)

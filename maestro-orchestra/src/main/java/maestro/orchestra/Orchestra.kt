@@ -362,12 +362,11 @@ class Orchestra(
 
         val imageData = Buffer()
         maestro.takeScreenshot(imageData, compressed = false)
-        val imageDataBytes = imageData.readByteArray()
 
         val defects = Prediction.findDefects(
             aiClient = ai,
             assertion = null,
-            screen = imageDataBytes,
+            screen = imageData.copy().readByteArray(),
             previousFalsePositives = listOf(), // TODO: take it from WorkspaceConfig (or MaestroConfig?)
         )
 
