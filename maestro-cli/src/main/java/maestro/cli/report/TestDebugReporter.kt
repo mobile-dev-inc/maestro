@@ -43,7 +43,7 @@ object TestDebugReporter {
     private var debugOutputPathAsString: String? = null
     private var flattenDebugOutput: Boolean = false
 
-    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: SingleFlowAIOutput?, path: Path) {
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
         // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
 
@@ -203,7 +203,7 @@ data class FlowDebugOutput(
     )
 }
 
-data class SingleFlowAIOutput(
+data class FlowAIOutput(
     @JsonProperty("flow_name") val flowName: String,
     @JsonProperty("flow_file_path") val flowFile: File,
     @JsonProperty("outputs") val screenOutputs: MutableList<SingleScreenFlowAIOutput> = mutableListOf(),

@@ -8,7 +8,7 @@ import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.report.CommandDebugMetadata
-import maestro.cli.report.SingleFlowAIOutput
+import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
@@ -138,7 +138,7 @@ class TestSuiteInteractor(
         var errorMessage: String? = null
 
         val debugOutput = FlowDebugOutput()
-        val aiOutput = SingleFlowAIOutput(
+        val aiOutput = FlowAIOutput(
             flowName = flowFile.nameWithoutExtension,
             flowFile = flowFile,
         )

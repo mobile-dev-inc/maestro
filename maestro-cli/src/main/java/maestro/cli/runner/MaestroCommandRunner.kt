@@ -24,7 +24,7 @@ import maestro.MaestroException
 import maestro.cli.device.Device
 import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.report.CommandDebugMetadata
-import maestro.cli.report.SingleFlowAIOutput
+import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
 import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
@@ -50,7 +50,7 @@ object MaestroCommandRunner {
         view: ResultView,
         commands: List<MaestroCommand>,
         debugOutput: FlowDebugOutput,
-        aiOutput: SingleFlowAIOutput,
+        aiOutput: FlowAIOutput,
     ): Result {
         val config = YamlCommandReader.getConfig(commands)
         val initFlow = config?.initFlow

@@ -19,14 +19,14 @@ import okio.buffer
 // TODO(bartekpacia): Decide if AI output can be considered "test output", and therefore be present in e.g. JUnit report
 class HtmlAITestSuiteReporter {
 
-    fun report(summary: SingleFlowAIOutput, out: Sink) {
+    fun report(summary: FlowAIOutput, out: Sink) {
         val bufferedOut = out.buffer()
         val htmlContent = buildHtmlReport(summary)
         bufferedOut.writeUtf8(htmlContent)
         bufferedOut.close()
     }
 
-    private fun buildHtmlReport(summary: SingleFlowAIOutput): String {
+    private fun buildHtmlReport(summary: FlowAIOutput): String {
         return buildString {
             appendLine("<!DOCTYPE html>")
             appendHTML().html {
@@ -55,22 +55,24 @@ class HtmlAITestSuiteReporter {
                             }
                         }
                         main(classes = "container mx-auto flex flex-col gap-4") {
-                            p(classes = "text-[#4f4b5c]") { +"10 possible defects found" }
+                            p(classes = "text-[#4f4b5c]") {
+                                val word = if (summary.defectCount == 1) "defect" else "defects"
+                                +"${summary.defectCount} possible $word found"
+                            }
 
-                            summary.screenOutputs.forEach { singleScreenOutput ->
+                            summary.screenOutputs.forEach { screenSummary ->
                                 div(classes = "flex items-start gap-4 bg-white") {
-                                    p(classes = "text-lg") {
-                                        +"${singleScreenOutput.defects.size} possible defects"
+                                    img(classes = "w-64 rounded-lg border-2 border-[#4f4b5c]") {
+                                        alt = "Screenshot of the defect"
+                                        // Use relative path, so when file is moved across machines, it still works
+                                        src = screenSummary.screenshotPath.name.toString()
                                     }
-
-                                    singleScreenOutput.defects.forEach { defect ->
-                                        img(classes = "w-64 rounded-lg border-2 border-[#4f4b5c]") {
-                                            alt = "Screenshot of the defect"
-                                            // Use relative path, so when file is moved across machines, it still works
-                                            src = singleScreenOutput.screenshotPath.name.toString()
+                                    div(classes = "flex flex-col gap-4 grow") {
+                                        p(classes = "text-lg") {
+                                            val word = if (screenSummary.defects.size == 1) "defect" else "defects"
+                                            +"${screenSummary.defects.size} possible $word"
                                         }
-
-                                        div(classes = "flex flex-col gap-4") {
+                                        screenSummary.defects.forEachIndexed { i, defect ->
                                             div(classes = "flex flex-col items-start gap-2 rounded-lg bg-[#f8f8f8] p-2") {
                                                 p(classes = "text-[#110c22]") {
                                                     +defect.reasoning
@@ -79,6 +81,10 @@ class HtmlAITestSuiteReporter {
                                                 div(classes = "rounded-lg bg-[#ececec] p-1 font-semibold text-[#4f4b5c]") {
                                                     +defect.category
                                                 }
+                                            }
+
+                                            if (i != screenSummary.defects.size - 1) {
+                                                div(classes = "h-0.5 rounded-sm bg-[#4f4b5c]")
                                             }
                                         }
                                     }
@@ -91,4 +97,6 @@ class HtmlAITestSuiteReporter {
         }
     }
 
+    private val FlowAIOutput.defectCount: Int
+        get() = screenOutputs.flatMap { it.defects }.size
 }

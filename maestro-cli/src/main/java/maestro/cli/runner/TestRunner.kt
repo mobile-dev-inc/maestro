@@ -8,7 +8,7 @@ import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.onFailure
 import maestro.Maestro
 import maestro.cli.device.Device
-import maestro.cli.report.SingleFlowAIOutput
+import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.runner.resultview.AnsiResultView
@@ -39,7 +39,7 @@ object TestRunner {
         debugOutputPath: Path
     ): Int {
         val debugOutput = FlowDebugOutput()
-        var aiOutput = SingleFlowAIOutput(
+        var aiOutput = FlowAIOutput(
             flowName = flowFile.nameWithoutExtension,
             flowFile = flowFile,
         )
@@ -122,7 +122,7 @@ object TestRunner {
                                 commands,
                                 FlowDebugOutput(),
                                 // TODO: bartekpacia - make AI outputs work in continuous mode
-                                SingleFlowAIOutput(
+                                FlowAIOutput(
                                     flowName = "TODO",
                                     flowFile = flowFile,
                                 ),
