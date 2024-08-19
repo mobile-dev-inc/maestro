@@ -279,7 +279,8 @@ class TestCommand : Callable<Int> {
                             if (!flattenDebugOutput) {
                                 TestDebugReporter.deleteOldFiles()
                             }
-                            Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
+
+                            return@newSession Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
                         } else {
                             // Run a single flow
 

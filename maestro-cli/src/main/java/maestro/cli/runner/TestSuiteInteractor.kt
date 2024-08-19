@@ -6,9 +6,9 @@ import maestro.cli.CliError
 import maestro.cli.device.Device
 import maestro.cli.model.FlowStatus
 import maestro.cli.model.TestExecutionSummary
-import maestro.cli.report.AIOutput
+import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.report.CommandDebugMetadata
-import maestro.cli.report.FlowAIOutput
+import maestro.cli.report.SingleFlowAIOutput
 import maestro.cli.report.FlowDebugOutput
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
@@ -138,9 +138,9 @@ class TestSuiteInteractor(
         var errorMessage: String? = null
 
         val debugOutput = FlowDebugOutput()
-        val aiOutput = FlowAIOutput(
+        val aiOutput = SingleFlowAIOutput(
             flowName = flowFile.nameWithoutExtension,
-            flowFilePath = flowFile.absolutePath,
+            flowFile = flowFile,
         )
 
         fun takeDebugScreenshot(status: CommandStatus): File? {
@@ -228,8 +228,8 @@ class TestSuiteInteractor(
                     onCommandGeneratedOutput = { command, defects, screenshot ->
                         logger.info("${command.description()} generated output")
                         val screenshotPath = writeAIscreenshot(screenshot)
-                        aiOutput.outputs.add(
-                            AIOutput(
+                        aiOutput.screenOutputs.add(
+                            SingleScreenFlowAIOutput(
                                 screenshotPath = screenshotPath,
                                 defects = defects,
                             )

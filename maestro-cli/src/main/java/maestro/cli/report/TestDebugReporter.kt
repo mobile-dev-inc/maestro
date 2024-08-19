@@ -2,10 +2,7 @@ package maestro.cli.report
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.util.DefaultIndenter
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import maestro.MaestroException
 import maestro.TreeNode
@@ -17,6 +14,7 @@ import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.ai.Defect
+import okio.sink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
@@ -45,7 +43,7 @@ object TestDebugReporter {
     private var debugOutputPathAsString: String? = null
     private var flattenDebugOutput: Boolean = false
 
-    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: SingleFlowAIOutput?, path: Path) {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
         // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
 
@@ -82,21 +80,27 @@ object TestDebugReporter {
 
         aiOutput?.run {
             // Write AI screenshots. Paths need to be changed to the final ones.
-            val updatedOutputs = outputs.map { output ->
+            val updatedOutputs = screenOutputs.map { output ->
                 val screenshotFilename = output.screenshotPath.name
                 val screenshotFile = File(path.absolutePathString(), screenshotFilename)
                 output.screenshotPath.copyTo(screenshotFile)
                 output.copy(screenshotPath = screenshotFile)
             }
 
-            outputs.clear()
-            outputs.addAll(updatedOutputs)
+            screenOutputs.clear()
+            screenOutputs.addAll(updatedOutputs)
 
             // Write AI JSON output
-            val filename = "ai-(${flowName.replace("/", "_")}).json"
-            val file = File(path.absolutePathString(), filename)
-            mapper.writeValue(file, this)
+            val jsonFilename = "ai-(${flowName.replace("/", "_")}).json"
+            val jsonFile = File(path.absolutePathString(), jsonFilename)
+            mapper.writeValue(jsonFile, this)
+
+            // Write HTML file
+            val htmlFilename = "ai-(${flowName.replace("/", "_")}).html"
+            val htmlFile = File(path.absolutePathString(), htmlFilename)
+            HtmlAITestSuiteReporter().report(aiOutput, htmlFile.sink())
         }
+
     }
 
     fun deleteOldFiles(days: Long = 14) {
@@ -199,13 +203,13 @@ data class FlowDebugOutput(
     )
 }
 
-data class FlowAIOutput(
+data class SingleFlowAIOutput(
     @JsonProperty("flow_name") val flowName: String,
-    @JsonProperty("flow_file_path") val flowFilePath: String,
-    val outputs: MutableList<AIOutput> = mutableListOf(),
+    @JsonProperty("flow_file_path") val flowFile: File,
+    @JsonProperty("outputs") val screenOutputs: MutableList<SingleScreenFlowAIOutput> = mutableListOf(),
 )
 
-data class AIOutput(
+data class SingleScreenFlowAIOutput(
     @JsonProperty("screenshot_path") val screenshotPath: File,
     val defects: List<Defect>,
 )
