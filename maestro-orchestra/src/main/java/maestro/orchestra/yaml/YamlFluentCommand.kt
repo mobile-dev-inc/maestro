@@ -246,7 +246,7 @@ data class YamlFluentCommand(
             toggleAirplaneMode != null -> listOf(MaestroCommand(ToggleAirplaneModeCommand(toggleAirplaneMode.label)))
             installApp != null -> listOf(
                 MaestroCommand(
-                    InstallApplicationCommand(
+                    InstallAppCommand(
                         path = installApp.path,
                         label = installApp.label
                     )

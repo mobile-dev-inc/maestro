@@ -951,7 +951,7 @@ data class ToggleAirplaneModeCommand(
     }
 }
 
-data class InstallApplicationCommand(
+data class InstallAppCommand(
     val path: String? = null,
     val label: String? = null,
 ): Command {
