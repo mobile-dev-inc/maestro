@@ -23,6 +23,9 @@ import maestro.cli.analytics.Analytics
 import maestro.cli.command.*
 import maestro.cli.command.DownloadSamplesCommand
 import maestro.cli.command.LogoutCommand
+import maestro.cli.report.FlowAIOutput
+import maestro.cli.report.HtmlAITestSuiteReporter
+import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.update.Updates
 import maestro.cli.util.AndroidEnvUtils
 import maestro.cli.util.EnvUtils
@@ -30,9 +33,12 @@ import maestro.cli.util.ErrorReporter
 import maestro.cli.util.IOSEnvUtils
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import maestro.orchestra.ai.Defect
+import okio.sink
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
+import java.io.File
 import java.util.Properties
 import kotlin.random.Random
 import kotlin.system.exitProcess
@@ -74,7 +80,10 @@ class App {
     @Option(names = ["--port"], hidden = true)
     var port: Int? = null
 
-    @Option(names = ["--device", "--udid"], description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "])
+    @Option(
+        names = ["--device", "--udid"],
+        description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "]
+    )
     var deviceId: String? = null
 }
 
@@ -90,6 +99,52 @@ fun main(args: Array<String>) {
     // Disable icon in Mac dock
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
+
+    val reporter = HtmlAITestSuiteReporter()
+    val flowOutputs = listOf(
+        FlowAIOutput(
+            flowName = "Flow 1",
+            flowFile = File("flow1.yaml"),
+            screenOutputs = mutableListOf(
+                SingleScreenFlowAIOutput(
+                    screenshotPath = File("/Users/bartek/Desktop/example_1.png"),
+                    defects = mutableListOf(
+                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                    )
+                ),
+                SingleScreenFlowAIOutput(
+                    screenshotPath = File("/Users/bartek/Desktop/example_2.png"),
+                    defects = mutableListOf(
+                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                    )
+                ),
+            ),
+        ),
+        FlowAIOutput(
+            flowName = "Flow 2",
+            flowFile = File("flow2.yaml"),
+            screenOutputs = mutableListOf(
+                SingleScreenFlowAIOutput(
+                    screenshotPath = File("/Users/bartek/Desktop/example_3.png"),
+                    defects = mutableListOf(
+                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                    )
+                ),
+            ),
+        ),
+    )
+    flowOutputs.forEach { flowAIoutput ->
+        val file = File("/Users/bartek/Desktop/${flowAIoutput.flowName}.html")
+        file.delete()
+        val created = file.createNewFile()
+        println("Generating report for ${flowAIoutput.flowName}, created: $created")
+        reporter.report(flowAIoutput, file.sink())
+    }
+
+    return
 
     Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()
