@@ -10,6 +10,7 @@ import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.report.CommandDebugMetadata
 import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
+import maestro.cli.report.HtmlAITestSuiteReporter
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
@@ -58,12 +59,14 @@ class TestSuiteInteractor(
         println()
 
         var passed = true
+        val aiOutputs = mutableListOf<FlowAIOutput>()
 
         // first run sequence of flows if present
         val flowSequence = executionPlan.sequence
         for (flow in flowSequence?.flows ?: emptyList()) {
-            val result = runFlow(flow.toFile(), env, maestro, debugOutputPath)
+            val (result, aiOutput) = runFlow(flow.toFile(), env, maestro, debugOutputPath)
             flowResults.add(result)
+            aiOutputs.add(aiOutput)
 
             if (result.status == FlowStatus.ERROR) {
                 passed = false
@@ -77,7 +80,8 @@ class TestSuiteInteractor(
 
         // proceed to run all other Flows
         executionPlan.flowsToRun.forEach { flow ->
-            val result = runFlow(flow.toFile(), env, maestro, debugOutputPath)
+            val (result, aiOutput) = runFlow(flow.toFile(), env, maestro, debugOutputPath)
+            aiOutputs.add(aiOutput)
 
             if (result.status == FlowStatus.ERROR) {
                 passed = false
@@ -124,6 +128,9 @@ class TestSuiteInteractor(
             )
         }
 
+        // TODO(bartekpacia): Should it also be saving to debugOutputPath?
+        TestDebugReporter.saveSuggestions(aiOutputs, debugOutputPath)
+
         return summary
     }
 
@@ -132,7 +139,9 @@ class TestSuiteInteractor(
         env: Map<String, String>,
         maestro: Maestro,
         debugOutputPath: Path
-    ): TestExecutionSummary.FlowResult {
+    ): Pair<TestExecutionSummary.FlowResult, FlowAIOutput> {
+        // TODO(bartekpacia): merge TestExecutionSummary with AI suggestions (i.e. consider them also part of the test output)
+
         var flowName: String = flowFile.nameWithoutExtension
         var flowStatus: FlowStatus
         var errorMessage: String? = null
@@ -247,12 +256,12 @@ class TestSuiteInteractor(
         }
         val flowDuration = TimeUtils.durationInSeconds(flowTimeMillis)
 
-        // FIXME(bartekpacia): Save AI output as well
         TestDebugReporter.saveFlow(
             flowName = flowName,
             debugOutput = debugOutput,
             path = debugOutputPath,
         )
+        // FIXME(bartekpacia): Save AI output as well
 
         TestSuiteStatusView.showFlowCompletion(
             TestSuiteViewModel.FlowResult(
@@ -263,16 +272,19 @@ class TestSuiteInteractor(
             )
         )
 
-        return TestExecutionSummary.FlowResult(
-            name = flowName,
-            fileName = flowFile.nameWithoutExtension,
-            status = flowStatus,
-            failure = if (flowStatus == FlowStatus.ERROR) {
-                TestExecutionSummary.Failure(
-                    message = errorMessage ?: debugOutput.exception?.message ?: "Unknown error",
-                )
-            } else null,
-            duration = flowDuration,
+        return Pair(
+            first = TestExecutionSummary.FlowResult(
+                name = flowName,
+                fileName = flowFile.nameWithoutExtension,
+                status = flowStatus,
+                failure = if (flowStatus == FlowStatus.ERROR) {
+                    TestExecutionSummary.Failure(
+                        message = errorMessage ?: debugOutput.exception?.message ?: "Unknown error",
+                    )
+                } else null,
+                duration = flowDuration,
+            ),
+            second = aiOutput,
         )
     }
 

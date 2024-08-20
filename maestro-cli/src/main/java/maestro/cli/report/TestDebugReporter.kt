@@ -33,10 +33,8 @@ import kotlin.io.path.exists
 object TestDebugReporter {
 
     private val logger = LoggerFactory.getLogger(TestDebugReporter::class.java)
-    private val mapper = jacksonObjectMapper()
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-        .writerWithDefaultPrettyPrinter()
+    private val mapper = jacksonObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY).writerWithDefaultPrettyPrinter()
 
     private var debugOutputPath: Path? = null
     private var debugOutputPathAsString: String? = null
@@ -44,6 +42,8 @@ object TestDebugReporter {
 
     // AI outputs must be saved separately at the end of the flow.
     fun saveSuggestions(outputs: List<FlowAIOutput>, path: Path) {
+        println("TestDebugReporter.saveSuggestions: saving suggestions for ${outputs.size} flows to $path")
+
         // This mutates the output.
         outputs.forEach { output ->
             // Write AI screenshots. Paths need to be changed to the final ones.
@@ -61,7 +61,6 @@ object TestDebugReporter {
             val jsonFilename = "ai-(${output.flowName.replace("/", "_")}).json"
             val jsonFile = File(path.absolutePathString(), jsonFilename)
             mapper.writeValue(jsonFile, output)
-
         }
 
         HtmlAITestSuiteReporter().report(outputs, path.toFile())
@@ -112,19 +111,13 @@ object TestDebugReporter {
             val currentTime = Instant.now()
             val daysLimit = currentTime.minus(Duration.of(days, ChronoUnit.DAYS))
 
-            Files
-                .walk(getDebugOutputPath())
-                .filter {
-                    val fileTime = Files.getAttribute(it, "basic:lastModifiedTime") as FileTime
-                    val isOlderThanLimit = fileTime.toInstant().isBefore(daysLimit)
-                    Files.isDirectory(it) && isOlderThanLimit
-                }
-                .sorted(Comparator.reverseOrder())
-                .forEach { dir ->
-                    Files.walk(dir)
-                        .sorted(Comparator.reverseOrder())
-                        .forEach { file -> Files.delete(file) }
-                }
+            Files.walk(getDebugOutputPath()).filter {
+                val fileTime = Files.getAttribute(it, "basic:lastModifiedTime") as FileTime
+                val isOlderThanLimit = fileTime.toInstant().isBefore(daysLimit)
+                Files.isDirectory(it) && isOlderThanLimit
+            }.sorted(Comparator.reverseOrder()).forEach { dir ->
+                Files.walk(dir).sorted(Comparator.reverseOrder()).forEach { file -> Files.delete(file) }
+            }
         } catch (e: Exception) {
             logger.warn("Failed to delete older files", e)
         }

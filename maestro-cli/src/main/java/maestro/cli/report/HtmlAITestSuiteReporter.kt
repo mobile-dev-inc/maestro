@@ -27,7 +27,7 @@ class HtmlAITestSuiteReporter {
         get() = "ai-report-${flowName}.html"
 
     /**
-     * Creates HTML files in [outputDestination] for each flow in [summary].
+     * Creates HTML files in [outputDestination] for each flow in [outputs].
      */
     fun report(outputs: List<FlowAIOutput>, outputDestination: File) {
         if (!outputDestination.isDirectory) throw IllegalArgumentException("Output destination must be a directory")
