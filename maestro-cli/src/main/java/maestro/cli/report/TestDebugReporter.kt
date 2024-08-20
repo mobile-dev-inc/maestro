@@ -14,7 +14,6 @@ import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.ai.Defect
-import okio.sink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
@@ -43,9 +42,38 @@ object TestDebugReporter {
     private var debugOutputPathAsString: String? = null
     private var flattenDebugOutput: Boolean = false
 
-    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, aiOutput: FlowAIOutput?, path: Path) {
+    // AI outputs must be saved separately at the end of the flow.
+    fun saveSuggestions(outputs: List<FlowAIOutput>, path: Path) {
+        // This mutates the output.
+        outputs.forEach { output ->
+            // Write AI screenshots. Paths need to be changed to the final ones.
+            val updatedOutputs = output.screenOutputs.map { newOutput ->
+                val screenshotFilename = newOutput.screenshotPath.name
+                val screenshotFile = File(path.absolutePathString(), screenshotFilename)
+                newOutput.screenshotPath.copyTo(screenshotFile)
+                newOutput.copy(screenshotPath = screenshotFile)
+            }
+
+            output.screenOutputs.clear()
+            output.screenOutputs.addAll(updatedOutputs)
+
+            // Write AI JSON output
+            val jsonFilename = "ai-(${output.flowName.replace("/", "_")}).json"
+            val jsonFile = File(path.absolutePathString(), jsonFilename)
+            mapper.writeValue(jsonFile, output)
+
+        }
+
+        HtmlAITestSuiteReporter().report(outputs, path.toFile())
+    }
+
+    /**
+     * Save debug information about a single flow, after it has finished.
+     */
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, path: Path) {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
         // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
+        //  Be aware that this goal somewhat conflicts with including links to other flows in the HTML report.
 
         println("TestDebugReporter.saveFlow: saving flow metadata to $path")
 
@@ -77,30 +105,6 @@ object TestDebugReporter {
 
             it.screenshot.copyTo(file)
         }
-
-        aiOutput?.run {
-            // Write AI screenshots. Paths need to be changed to the final ones.
-            val updatedOutputs = screenOutputs.map { output ->
-                val screenshotFilename = output.screenshotPath.name
-                val screenshotFile = File(path.absolutePathString(), screenshotFilename)
-                output.screenshotPath.copyTo(screenshotFile)
-                output.copy(screenshotPath = screenshotFile)
-            }
-
-            screenOutputs.clear()
-            screenOutputs.addAll(updatedOutputs)
-
-            // Write AI JSON output
-            val jsonFilename = "ai-(${flowName.replace("/", "_")}).json"
-            val jsonFile = File(path.absolutePathString(), jsonFilename)
-            mapper.writeValue(jsonFile, this)
-
-            // Write HTML file
-            val htmlFilename = "ai-(${flowName.replace("/", "_")}).html"
-            val htmlFile = File(path.absolutePathString(), htmlFilename)
-            HtmlAITestSuiteReporter().report(aiOutput, htmlFile.sink())
-        }
-
     }
 
     fun deleteOldFiles(days: Long = 14) {

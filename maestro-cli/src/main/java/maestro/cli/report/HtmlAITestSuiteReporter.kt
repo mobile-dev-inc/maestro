@@ -11,27 +11,42 @@ import kotlinx.html.img
 import kotlinx.html.lang
 import kotlinx.html.main
 import kotlinx.html.meta
-import kotlinx.html.onClick
 import kotlinx.html.p
 import kotlinx.html.script
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.style
 import kotlinx.html.title
 import kotlinx.html.unsafe
-import okio.Sink
-import okio.buffer
+import java.io.File
 
 // TODO(bartekpacia): Decide if AI output can be considered "test output", and therefore be present in e.g. JUnit report
 class HtmlAITestSuiteReporter {
 
-    fun report(summary: FlowAIOutput, out: Sink) {
-        val bufferedOut = out.buffer()
-        val htmlContent = buildHtmlReport(summary)
-        bufferedOut.writeUtf8(htmlContent)
-        bufferedOut.close()
+    private val FlowAIOutput.htmlReportFilename
+        get() = "ai-report-${flowName}.html"
+
+    /**
+     * Creates HTML files in [outputDestination] for each flow in [summary].
+     */
+    fun report(outputs: List<FlowAIOutput>, outputDestination: File) {
+        if (!outputDestination.isDirectory) throw IllegalArgumentException("Output destination must be a directory")
+
+        outputs.forEachIndexed { index, output ->
+            val htmlContent = buildHtmlReport(outputs, index)
+            val file = File(outputDestination, output.htmlReportFilename)
+            // FIXME(bartekpacia): what if file doesn't exist?
+            file.writeText(htmlContent)
+        }
     }
 
-    private fun buildHtmlReport(summary: FlowAIOutput): String {
+    /**
+     * Build HTML report for a single flow.
+     *
+     * Information about other flows is needed to generate links to them.
+     */
+    private fun buildHtmlReport(outputs: List<FlowAIOutput>, index: Int): String {
+        val summary = outputs[index]
+
         return buildString {
             appendLine("<!DOCTYPE html>")
             appendHTML().html {
@@ -97,7 +112,7 @@ class HtmlAITestSuiteReporter {
                             }
                     
                             .divider {
-                              @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1;
+                              @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1 py-2;
                             }
 
                             .btn {
@@ -119,10 +134,14 @@ class HtmlAITestSuiteReporter {
                             div(classes = "group relative inline-block self-start") {
                                 button(classes = "btn") { +"→ Select different report" }
                                 div(classes = "absolute z-10 hidden min-w-32 group-hover:block") {
-                                    summary.screenOutputs.forEachIndexed { i, screenSummary ->
+                                    outputs.forEachIndexed { outputIndex, outputFlow ->
+                                        val selected = outputIndex == index
+
                                         a(classes = "toggle-link") {
-                                            href = "#"
-                                            +"Report ${i + 1} (XD)"
+                                            href = "./" + outputs[outputIndex].htmlReportFilename
+                                            val name = outputFlow.flowFile.nameWithoutExtension
+                                            val maybeSelected = if (selected) "(X)" else ""
+                                            +"Report ${outputIndex + 1} $name $maybeSelected"
                                         }
                                     }
                                 }
@@ -171,10 +190,10 @@ class HtmlAITestSuiteReporter {
                                             }
                                         }
                                     }
+                                }
 
-                                    if (screenIndex != screenSummary.defects.size - 1) {
-                                        div(classes = "divider")
-                                    }
+                                if (screenIndex != screenSummary.defects.size - 1) {
+                                    div(classes = "divider")
                                 }
                             }
                         }

@@ -247,11 +247,11 @@ class TestSuiteInteractor(
         }
         val flowDuration = TimeUtils.durationInSeconds(flowTimeMillis)
 
+        // FIXME(bartekpacia): Save AI output as well
         TestDebugReporter.saveFlow(
             flowName = flowName,
             debugOutput = debugOutput,
-            aiOutput = aiOutput,
-            path = debugOutputPath
+            path = debugOutputPath,
         )
 
         TestSuiteStatusView.showFlowCompletion(

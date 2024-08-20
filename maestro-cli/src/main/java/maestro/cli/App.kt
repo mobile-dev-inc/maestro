@@ -82,7 +82,7 @@ class App {
 
     @Option(
         names = ["--device", "--udid"],
-        description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "]
+        description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "],
     )
     var deviceId: String? = null
 }
@@ -100,51 +100,47 @@ fun main(args: Array<String>) {
     // https://stackoverflow.com/a/17544259
     System.setProperty("apple.awt.UIElement", "true")
 
-    val reporter = HtmlAITestSuiteReporter()
-    val flowOutputs = listOf(
-        FlowAIOutput(
-            flowName = "Flow 1",
-            flowFile = File("flow1.yaml"),
-            screenOutputs = mutableListOf(
-                SingleScreenFlowAIOutput(
-                    screenshotPath = File("/Users/bartek/Desktop/example_1.png"),
-                    defects = mutableListOf(
-                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
-                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
-                    )
-                ),
-                SingleScreenFlowAIOutput(
-                    screenshotPath = File("/Users/bartek/Desktop/example_2.png"),
-                    defects = mutableListOf(
-                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
-                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
-                    )
-                ),
-            ),
-        ),
-        FlowAIOutput(
-            flowName = "Flow 2",
-            flowFile = File("flow2.yaml"),
-            screenOutputs = mutableListOf(
-                SingleScreenFlowAIOutput(
-                    screenshotPath = File("/Users/bartek/Desktop/example_3.png"),
-                    defects = mutableListOf(
-                        Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
-                        Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
-                    )
+    if (false) {
+        val reporter = HtmlAITestSuiteReporter()
+        val flowOutputs = listOf(
+            FlowAIOutput(
+                flowName = "Flow 1",
+                flowFile = File("flow1.yaml"),
+                screenOutputs = mutableListOf(
+                    SingleScreenFlowAIOutput(
+                        screenshotPath = File("/Users/bartek/Desktop/example_1.png"),
+                        defects = mutableListOf(
+                            Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                            Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                        )
+                    ),
+                    SingleScreenFlowAIOutput(
+                        screenshotPath = File("/Users/bartek/Desktop/example_2.png"),
+                        defects = mutableListOf(
+                            Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                            Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                        )
+                    ),
                 ),
             ),
-        ),
-    )
-    flowOutputs.forEach { flowAIoutput ->
-        val file = File("/Users/bartek/Desktop/${flowAIoutput.flowName}.html")
-        file.delete()
-        val created = file.createNewFile()
-        println("Generating report for ${flowAIoutput.flowName}, created: $created")
-        reporter.report(flowAIoutput, file.sink())
-    }
+            FlowAIOutput(
+                flowName = "Flow 2",
+                flowFile = File("flow2.yaml"),
+                screenOutputs = mutableListOf(
+                    SingleScreenFlowAIOutput(
+                        screenshotPath = File("/Users/bartek/Desktop/example_3.png"),
+                        defects = mutableListOf(
+                            Defect(reasoning = "Lorem impsum dolor sit amet".repeat(20), category = "Category 1"),
+                            Defect(reasoning = "Defect 2".repeat(5), category = "Category 2"),
+                        )
+                    ),
+                ),
+            ),
+        )
+        reporter.report(flowOutputs, File("/Users/bartek/Desktop/"))
 
-    return
+        return
+    }
 
     Analytics.maybeMigrate()
     Analytics.maybeAskToEnableAnalytics()
@@ -169,7 +165,7 @@ fun main(args: Array<String>) {
             println()
 
             // make errors red
-            cmd.colorScheme =  CommandLine.Help.ColorScheme.Builder()
+            cmd.colorScheme = CommandLine.Help.ColorScheme.Builder()
                 .errors(CommandLine.Help.Ansi.Style.fg_red)
                 .build()
 

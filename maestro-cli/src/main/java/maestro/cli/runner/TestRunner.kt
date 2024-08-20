@@ -65,7 +65,10 @@ object TestRunner {
         TestDebugReporter.saveFlow(
             flowName = flowFile.name,
             debugOutput = debugOutput,
-            aiOutput = aiOutput,
+            path = debugOutputPath,
+        )
+        TestDebugReporter.saveSuggestions(
+            outputs = listOf(aiOutput),
             path = debugOutputPath,
         )
 
