@@ -59,6 +59,7 @@ class HtmlAITestSuiteReporter {
                                   "gray-dark": "#110c22", // text-gray-dark
                                   "gray-medium": "#4f4b5c", // text-gray-medium
                                   "gray-1": "#f8f8f8", // surface-gray-1
+                                  "gray-0": "#110C22", // surface-gray-0
                                 },
                               },
                             },
@@ -76,7 +77,7 @@ class HtmlAITestSuiteReporter {
                             }
 
                             .screenshot-image {
-                                @apply w-64 rounded-lg border-2 border-[#4f4b5c];
+                                @apply w-64 rounded-lg border-2 border-gray-medium dark:border-gray-1;
                             }
 
                             .screen-card {
@@ -88,11 +89,11 @@ class HtmlAITestSuiteReporter {
                             }
 
                             .badge {
-                              @apply dark:text-red-500 rounded-lg bg-[#ececec] dark:bg-gray-dark p-1 font-semibold text-[#4f4b5c] dark:text-gray-1;
+                              @apply dark:text-red-500 rounded-lg bg-[#ececec] dark:bg-gray-dark p-1 font-semibold text-gray-medium dark:text-gray-1;
                             }
 
                             .toggle-link {
-                              @apply block border-2 border-[#4f4b5c] bg-[#ececec] px-3 py-4 text-[#4f4b5c] hover:bg-[#4f4b5c] hover:text-[#ececec];
+                              @apply block border-2 border-gray-medium bg-[#ececec] px-3 py-4 text-gray-medium hover:bg-gray-medium hover:text-[#ececec];
                             }
                     
                             .divider {
@@ -141,7 +142,7 @@ class HtmlAITestSuiteReporter {
                         // Container for list of screenshots
                         main(classes = "container mx-auto flex flex-col gap-4") {
                             // Overall defect count for the flow
-                            p(classes = "text-[#4f4b5c]") {
+                            p {
                                 val word = if (summary.defectCount == 1) "defect" else "defects"
                                 +"${summary.defectCount} possible $word found"
                             }
