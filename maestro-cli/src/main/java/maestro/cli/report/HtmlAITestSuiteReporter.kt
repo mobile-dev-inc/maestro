@@ -13,6 +13,7 @@ import kotlinx.html.main
 import kotlinx.html.meta
 import kotlinx.html.p
 import kotlinx.html.script
+import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.style
 import kotlinx.html.title
@@ -92,7 +93,7 @@ class HtmlAITestSuiteReporter {
                             }
 
                             .screenshot-image {
-                                @apply w-64 rounded-lg border-2 border-gray-medium dark:border-gray-1;
+                                @apply w-64 rounded-lg border-2 border-gray-medium dark:border-gray-1 pb-1;
                             }
 
                             .screen-card {
@@ -112,7 +113,7 @@ class HtmlAITestSuiteReporter {
                             }
                     
                             .divider {
-                              @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1 py-2;
+                              @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1 my-2;
                             }
 
                             .btn {
@@ -128,7 +129,12 @@ class HtmlAITestSuiteReporter {
 
                         // Header area
                         div(classes = "container mx-auto py-6 space-y-2") {
-                            h1(classes = "text-3xl") { +"Flow \"${summary.flowName}\" – AI output" }
+                            h1(classes = "text-3xl") {
+                                +"AI suggestions for flow "
+                                span(classes = "text-gray-medium") {
+                                    +summary.flowName
+                                }
+                            }
 
                             // File chooser for different reports
                             div(classes = "group relative inline-block self-start") {
@@ -176,7 +182,7 @@ class HtmlAITestSuiteReporter {
                                     }
 
                                     // defect-card-container
-                                    div(classes = "flex flex-col gap-4") {
+                                    div(classes = "flex flex-col gap-4 flex-grow") {
                                         // Defect count for the screen
                                         p(classes = "text-lg") {
                                             val word = if (screenSummary.defects.size == 1) "defect" else "defects"
@@ -192,7 +198,7 @@ class HtmlAITestSuiteReporter {
                                     }
                                 }
 
-                                if (screenIndex != screenSummary.defects.size - 1) {
+                                if (screenIndex != summary.screenOutputs.size - 1) {
                                     div(classes = "divider")
                                 }
                             }
