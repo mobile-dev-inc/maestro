@@ -1,3 +1,4 @@
 appId: com.example.app
 ---
-- installApp: "maestro-client/src/main/resources/maestro-app.apk"
+- installApp:
+    "maestro-client/src/main/resources/maestro-app.apk"
