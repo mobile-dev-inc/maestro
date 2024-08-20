@@ -38,6 +38,7 @@ object Prediction {
 
         val prompt = """
             |You are a QA engineer performing quality assurance for a mobile application. Identify any defects in the provided screenshot.
+            |${if (assertion != null) "Additionally, you were asked to do the following: $assertion" else ""}
             |
             |RULES:
             |* All defects you find must belong to one of the following categories:
@@ -53,8 +54,6 @@ object Prediction {
             |${if (previousFalsePositives.isNotEmpty()) "Additionally, the following defects are false positives:" else ""}
             |${if (previousFalsePositives.isNotEmpty()) previousFalsePositives.joinToString("\n") { "  * $it" } else ""}
         """.trimMargin("|")
-
-        // println("Prompt:\n$prompt")
 
         val aiResponse = aiClient.chatCompletion(
             prompt,

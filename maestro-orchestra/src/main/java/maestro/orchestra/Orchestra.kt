@@ -377,7 +377,7 @@ class Orchestra(
 
         val defects = Prediction.findDefects(
             aiClient = ai,
-            assertion = null,
+            assertion = command.assertion,
             screen = imageData.copy().readByteArray(),
             previousFalsePositives = listOf(), // TODO: take it from WorkspaceConfig (or MaestroConfig?)
         )

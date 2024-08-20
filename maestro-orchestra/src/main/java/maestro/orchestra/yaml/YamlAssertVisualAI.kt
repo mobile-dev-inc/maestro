@@ -1,6 +1,6 @@
 package maestro.orchestra.yaml
 
-private const val DEFAULT_DIFF_THRESHOLD = 95
+import com.fasterxml.jackson.annotation.JsonCreator
 
 data class YamlAssertVisualAI(
     val assertion: String? = null,
@@ -10,18 +10,13 @@ data class YamlAssertVisualAI(
 
     companion object {
 
-        // TODO(bartek): This might be needed if single value is passed in YAML
-        // @JvmStatic
-        // @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        // fun parse(appId: String): YamlLaunchApp {
-        //     return YamlLaunchApp(
-        //         appId = appId,
-        //         clearState = null,
-        //         clearKeychain = null,
-        //         stopApp = null,
-        //         permissions = null,
-        //         arguments = null,
-        //     )
-        // }
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        fun parse(assertion: String): YamlAssertVisualAI {
+            return YamlAssertVisualAI(
+                assertion = assertion,
+                optional = true,
+            )
+        }
     }
 }
