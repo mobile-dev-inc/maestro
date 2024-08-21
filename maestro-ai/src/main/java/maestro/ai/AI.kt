@@ -12,7 +12,9 @@ data class CompletionData(
     val response: String,
 )
 
-abstract class AI : Closeable {
+abstract class AI(
+    val defaultModel: String,
+) : Closeable {
 
     /**
      * Chat completion with the AI model.

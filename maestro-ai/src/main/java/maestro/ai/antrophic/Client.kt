@@ -24,12 +24,12 @@ private const val API_URL = "https://api.anthropic.com/v1/messages"
 private val logger = LoggerFactory.getLogger(Claude::class.java)
 
 class Claude(
-    private val apiToken: String,
-    private val defaultModel: String = "claude-3-5-sonnet-20240620",
+    defaultModel: String = "claude-3-5-sonnet-20240620",
+    private val apiKey: String,
     private val defaultTemperature: Float = 0.2f,
     private val defaultMaxTokens: Int = 2048,
     private val defaultImageDetail: String = "high",
-) : AI() {
+) : AI(defaultModel = defaultModel) {
     private val client = HttpClient {
         install(ContentNegotiation) {
             Json {
@@ -87,7 +87,7 @@ class Claude(
         val response = try {
             val httpResponse = client.post(API_URL) {
                 contentType(ContentType.Application.Json)
-                headers["x-api-key"] = apiToken
+                headers["x-api-key"] = apiKey
                 headers["anthropic-version"] = "2023-06-01"
                 setBody(json.encodeToString(chatCompletionRequest))
             }

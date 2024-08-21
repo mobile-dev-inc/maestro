@@ -23,12 +23,12 @@ private const val API_URL = "https://api.openai.com/v1/chat/completions"
 private val logger = LoggerFactory.getLogger(OpenAI::class.java)
 
 class OpenAI(
+    defaultModel: String = "gpt-4o-2024-08-06",
     private val apiKey: String,
-    private val defaultModel: String = "gpt-4o-2024-08-06",
     private val defaultTemperature: Float = 0.2f,
     private val defaultMaxTokens: Int = 2048,
     private val defaultImageDetail: String = "low",
-) : AI() {
+) : AI(defaultModel = defaultModel) {
     private val client = HttpClient {
         install(ContentNegotiation) {
             Json {

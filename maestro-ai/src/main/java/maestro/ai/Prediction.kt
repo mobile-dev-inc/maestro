@@ -3,6 +3,7 @@ package maestro.ai
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import maestro.ai.openai.OpenAI
 
 @Serializable
 data class Defect(
@@ -28,6 +29,8 @@ object Prediction {
         screen: ByteArray,
         assertion: String?,
         previousFalsePositives: List<String>,
+        printPrompt: Boolean = false,
+        printRawResponse: Boolean = false,
     ): List<Defect> {
 
         // List of failed attempts to not make up false positives:
@@ -55,19 +58,27 @@ object Prediction {
             |${if (previousFalsePositives.isNotEmpty()) previousFalsePositives.joinToString("\n") { "  * $it" } else ""}
         """.trimMargin("|")
 
-        println("--- PROMPT START ---")
-        println(prompt)
-        println("--- PROMPT END ---")
+        if (printPrompt) {
+            println("--- PROMPT START ---")
+            println(prompt)
+            println("--- PROMPT END ---")
+        }
 
         val aiResponse = aiClient.chatCompletion(
             prompt,
-            model = "gpt-4o-2024-08-06",
+            model = aiClient.defaultModel,
             maxTokens = 4096,
             identifier = "find-defects",
             imageDetail = "high",
             images = listOf(screen),
-            jsonSchema = json.parseToJsonElement(AI.assertVisualSchema).jsonObject,
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.assertVisualSchema).jsonObject else null,
         )
+
+        if (printRawResponse) {
+            println("--- RAW RESPONSE START ---")
+            println(aiResponse.response)
+            println("--- RAW RESPONSE END ---")
+        }
 
         val defects = json.decodeFromString<FindDefectsResponse>(aiResponse.response)
         return defects.defects
