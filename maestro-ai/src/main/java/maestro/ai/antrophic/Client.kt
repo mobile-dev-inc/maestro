@@ -27,7 +27,7 @@ class Claude(
     defaultModel: String = "claude-3-5-sonnet-20240620",
     private val apiKey: String,
     private val defaultTemperature: Float = 0.2f,
-    private val defaultMaxTokens: Int = 2048,
+    private val defaultMaxTokens: Int = 1024,
     private val defaultImageDetail: String = "high",
 ) : AI(defaultModel = defaultModel) {
     private val client = HttpClient {

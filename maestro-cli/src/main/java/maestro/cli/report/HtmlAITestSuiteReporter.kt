@@ -18,6 +18,7 @@ import kotlinx.html.stream.appendHTML
 import kotlinx.html.style
 import kotlinx.html.title
 import kotlinx.html.unsafe
+import readResourceAsText
 import java.io.File
 
 // TODO(bartekpacia): Decide if AI output can be considered "test output", and therefore be present in e.g. JUnit report
@@ -25,6 +26,12 @@ class HtmlAITestSuiteReporter {
 
     private val FlowAIOutput.htmlReportFilename
         get() = "ai-report-${flowName}.html"
+
+    private val reportCss: String
+        get() = readResourceAsText(this::class, "/ai_report.css")
+
+    private val reportJs: String
+        get() = readResourceAsText(this::class, "/tailwind.config.js")
 
     /**
      * Creates HTML files in [outputDestination] for each flow in [outputs].
@@ -35,7 +42,6 @@ class HtmlAITestSuiteReporter {
         outputs.forEachIndexed { index, output ->
             val htmlContent = buildHtmlReport(outputs, index)
             val file = File(outputDestination, output.htmlReportFilename)
-            // FIXME(bartekpacia): what if file doesn't exist?
             file.writeText(htmlContent)
         }
     }
@@ -60,68 +66,10 @@ class HtmlAITestSuiteReporter {
                     script { src = "https://cdn.tailwindcss.com/3.4.5" }
 
                     script {
-                        unsafe {
-                            // TODO(bartekpacia): Load it from jar resources
-                            +"""
-                          function myFunction() {
-                            alert("Hello! I am an alert box!");
-                          }
-
-                          tailwind.config = {
-                            darkMode: "media",
-                            theme: {
-                              extend: {
-                                colors: {
-                                  "gray-dark": "#110c22", // text-gray-dark
-                                  "gray-medium": "#4f4b5c", // text-gray-medium
-                                  "gray-1": "#f8f8f8", // surface-gray-1
-                                  "gray-0": "#110C22", // surface-gray-0
-                                },
-                              },
-                            },
-                          };
-                        """.trimIndent()
-                        }
+                        unsafe { +reportJs }
                     }
 
-                    style(type = "text/tailwindcss") {
-                        // TODO(bartekpacia): Load it from jar resources
-                        +"""
-                        @layer components {
-                            body {
-                              @apply dark:bg-gray-dark dark:text-gray-1 text-gray-dark;
-                            }
-
-                            .screenshot-image {
-                                @apply w-64 rounded-lg border-2 border-gray-medium dark:border-gray-1 pb-1;
-                            }
-
-                            .screen-card {
-                                @apply flex items-start gap-4;
-                            }
-
-                            .defect-card {
-                              @apply flex flex-col items-start gap-2 rounded-lg bg-[#f8f8f8] p-2 text-gray-dark dark:bg-gray-medium dark:text-gray-1;
-                            }
-
-                            .badge {
-                              @apply dark:text-red-500 rounded-lg bg-[#ececec] dark:bg-gray-dark p-1 font-semibold text-gray-medium dark:text-gray-1;
-                            }
-
-                            .toggle-link {
-                              @apply block border-2 border-gray-medium bg-[#ececec] px-3 py-4 text-gray-medium hover:bg-gray-medium hover:text-[#ececec];
-                            }
-                    
-                            .divider {
-                              @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1 my-2;
-                            }
-
-                            .btn {
-                              @apply hover:text-gray-medium dark:hover:text-gray-medium;
-                            }
-                        }
-                        """.trimIndent()
-                    }
+                    style(type = "text/tailwindcss") { +reportCss }
                 }
 
                 body {

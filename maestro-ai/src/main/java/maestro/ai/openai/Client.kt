@@ -27,7 +27,7 @@ class OpenAI(
     defaultModel: String = "gpt-4o-2024-08-06",
     private val apiKey: String,
     private val defaultTemperature: Float = 0.2f,
-    private val defaultMaxTokens: Int = 2048,
+    private val defaultMaxTokens: Int = 1024,
     private val defaultImageDetail: String = "low",
 ) : AI(defaultModel = defaultModel) {
     private val client = HttpClient {

@@ -14,6 +14,7 @@ data class WorkspaceConfig(
     @JsonAnySetter
     fun setOtherField(key: String, other: Any?) {
         // Do nothing
+
     }
 
     @Deprecated("Use ExecutionOrder instead")
