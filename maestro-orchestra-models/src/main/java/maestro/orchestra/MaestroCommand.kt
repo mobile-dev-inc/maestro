@@ -36,6 +36,7 @@ data class MaestroCommand(
     val backPressCommand: BackPressCommand? = null,
     @Deprecated("Use assertConditionCommand") val assertCommand: AssertCommand? = null,
     val assertConditionCommand: AssertConditionCommand? = null,
+    val assertVisualCommand: AssertVisualCommand? = null,
     val inputTextCommand: InputTextCommand? = null,
     val inputRandomTextCommand: InputRandomCommand? = null,
     val launchAppCommand: LaunchAppCommand? = null,
@@ -75,6 +76,7 @@ data class MaestroCommand(
         swipeCommand = command as? SwipeCommand,
         backPressCommand = command as? BackPressCommand,
         assertCommand = command as? AssertCommand,
+        assertVisualCommand = command as? AssertVisualCommand,
         assertConditionCommand = command as? AssertConditionCommand,
         inputTextCommand = command as? InputTextCommand,
         inputRandomTextCommand = command as? InputRandomCommand,
@@ -116,6 +118,7 @@ data class MaestroCommand(
         backPressCommand != null -> backPressCommand
         assertCommand != null -> assertCommand
         assertConditionCommand != null -> assertConditionCommand
+        assertVisualCommand != null -> assertVisualCommand
         inputTextCommand != null -> inputTextCommand
         inputRandomTextCommand != null -> inputRandomTextCommand
         launchAppCommand != null -> launchAppCommand
