@@ -8,6 +8,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.float
 import com.github.ajalt.clikt.parameters.types.path
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import maestro.ai.antrophic.Claude
@@ -52,9 +55,7 @@ fun main(args: Array<String>) = DemoApp().main(args)
  * - bar_good_2.png
  */
 class DemoApp : CliktCommand() {
-    private val inputFiles: List<Path> by argument(help = "screenshots to use")
-        .path(mustExist = true)
-        .multiple()
+    private val inputFiles: List<Path> by argument(help = "screenshots to use").path(mustExist = true).multiple()
 
     private val model: String by option(help = "LLM to use").default("gpt-4o-2024-08-06")
 
@@ -64,19 +65,18 @@ class DemoApp : CliktCommand() {
 
     private val temperature: Float by option(help = "Temperature for LLM").float().default(0.2f)
 
+    private val parallel: Boolean by option(help = "Run in parallel. May get rate limited").flag()
+
     override fun run() = runBlocking {
         val apiKey = System.getenv("MAESTRO_CLI_AI_KEY")
         require(apiKey != null) { "OpenAI API key is not provided" }
 
-        val testCases = inputFiles
-            .map { it.toFile() }
-            .map { file ->
+        val testCases = inputFiles.map { it.toFile() }.map { file ->
                 require(!file.isDirectory) { "Provided file is a directory, not a file" }
                 require(file.exists()) { "Provided file does not exist" }
                 require(file.extension == "png") { "Provided file is not a PNG file" }
                 file
-            }
-            .map { file ->
+            }.map { file ->
                 val filename = file.nameWithoutExtension
                 val parts = filename.split("_")
                 require(parts.size == 3) { "Screenshot name is invalid: ${file.name}" }
@@ -86,15 +86,7 @@ class DemoApp : CliktCommand() {
 
                 val promptFile = "${file.parent}/${appName}_${parts[1]}_$index.txt"
                 println("Prompt file: $promptFile")
-                val prompt = File(promptFile)
-                    .run {
-                        if (exists()) {
-                            readText()
-                        } else {
-                            println("There is no prompt for ${file.path}")
-                            null
-                        }
-                    }
+                val prompt = File(promptFile).run { if (exists()) readText() else null }
 
                 TestCase(
                     screenshot = file,
@@ -121,12 +113,10 @@ class DemoApp : CliktCommand() {
             else -> throw IllegalArgumentException("Unknown model: $model")
         }
 
-        // println("---\nRunning ${testCases.size} test cases\n---")
-
         testCases.forEach { testCase ->
             val bytes = testCase.screenshot.readBytes()
 
-            launch {
+            val job = async {
                 val defects = Prediction.findDefects(
                     aiClient = aiClient,
                     screen = bytes,
@@ -138,7 +128,11 @@ class DemoApp : CliktCommand() {
 
                 verify(testCase, defects)
             }
+
+            if (parallel) job.await()
         }
+
+        println("Exited, bye!")
     }
 
     private fun verify(testCase: TestCase, defects: List<Defect>) {
@@ -147,9 +141,9 @@ class DemoApp : CliktCommand() {
             if (defects.isNotEmpty()) {
                 println(
                     """
-                PASS ${testCase.screenshot.name}: ${defects.size} defects found (as expected)
-                ${defects.joinToString("\n") { "\t* ${it.category}: ${it.reasoning}" }}
-                """.trimIndent()
+                    PASS ${testCase.screenshot.name}: ${defects.size} defects found (as expected)
+                    ${defects.joinToString("\n") { "\t* ${it.category}: ${it.reasoning}" }}
+                    """.trimIndent()
                 )
             } else {
                 println("FAIL ${testCase.screenshot.name} false-negative: No defects found but some were expected")
@@ -160,15 +154,15 @@ class DemoApp : CliktCommand() {
             if (defects.isEmpty()) {
                 println(
                     """
-                PASS ${testCase.screenshot.name}: No defects found (as expected)
-                """.trimIndent()
+                    PASS ${testCase.screenshot.name}: No defects found (as expected)
+                    """.trimIndent()
                 )
             } else {
                 println(
                     """
-                FAIL ${testCase.screenshot.name} false-positive: ${defects.size} defects found but none were expected
-                ${defects.joinToString("\n") { "\t* ${it.category}: ${it.reasoning}" }}
-                """.trimIndent()
+                    FAIL ${testCase.screenshot.name} false-positive: ${defects.size} defects found but none were expected
+                    ${defects.joinToString("\n") { "\t* ${it.category}: ${it.reasoning}" }}
+                    """.trimIndent()
                 )
             }
         }

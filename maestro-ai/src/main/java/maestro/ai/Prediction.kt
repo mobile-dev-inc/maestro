@@ -49,22 +49,32 @@ object Prediction {
                 """.trimIndent()
             )
 
-            if (assertion != null) {
-                appendLine("Additionally, you must ensure the following assertion is true: $assertion")
-            }
-
             append(
                 """
+                |
                 |RULES:
                 |* All defects you find must belong to one of the following categories:
                 |${categories.joinToString(separator = "\n") { "  * ${it.first}: ${it.second}" }}
                 |* If you see defects, your response MUST only include defect name and detailed reasoning for each defect.
                 |* Provide response as a list of JSON objects, each representing <category>:<reasoning>
                 |* Do not raise false positives. Some example responses that have a high chance of being a false positive:
-                |* button is partially cropped at the bottom
-                |* button is not aligned horizontally/vertically within its container
+                |  * button is partially cropped at the bottom
+                |  * button is not aligned horizontally/vertically within its container
                 """.trimMargin("|")
             )
+
+            if (assertion != null) {
+                append(
+                    """
+                    |
+                    |
+                    |Additionally, if the following assertion isn't true, consider it as a defect with category "assertion":
+                    |
+                    |  "${assertion.removeSuffix("\n")}"
+                    |
+                    |""".trimMargin("|")
+                )
+            }
 
             // Claude doesn't have a JSON mode as of 21-08-2024
             //  https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
@@ -98,6 +108,8 @@ object Prediction {
                     appendLine("  * $falsePositive")
                 }
             }
+
+            appendLine("Be brief.")
         }
 
         if (printPrompt) {

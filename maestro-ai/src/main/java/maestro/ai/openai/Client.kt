@@ -10,6 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.encodeBase64
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -103,8 +104,15 @@ class OpenAI(
                 throw Exception("Failed to complete request to OpenAI: ${httpResponse.status}, $body")
             }
 
+            print(body)
+
             json.decodeFromString<ChatCompletionResponse>(body)
-        } catch (e: Exception) {
+        } catch (e: SerializationException) {
+            logger.error("Failed to parse response from OpenAI", e)
+            logger.error("Response body: ${e.message}")
+            throw e
+        }
+        catch (e: Exception) {
             logger.error("Failed to complete request to OpenAI", e)
             throw e
         }
