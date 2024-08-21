@@ -13,7 +13,7 @@ import maestro.cli.util.IOSEnvUtils
 import maestro.debuglog.DebugLogStore
 import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.ai.Defect
+import maestro.ai.Defect
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files

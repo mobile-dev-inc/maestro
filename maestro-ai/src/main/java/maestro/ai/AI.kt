@@ -1,4 +1,4 @@
-package maestro.orchestra.ai
+package maestro.ai
 
 import kotlinx.serialization.json.JsonObject
 import java.io.Closeable

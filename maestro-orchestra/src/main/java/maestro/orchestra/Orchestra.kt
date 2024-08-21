@@ -22,13 +22,13 @@ package maestro.orchestra
 import kotlinx.coroutines.runBlocking
 import maestro.*
 import maestro.Filters.asFilter
-import maestro.orchestra.ai.AI
-import maestro.orchestra.ai.Prediction
-import maestro.orchestra.ai.openai.OpenAI
+import maestro.ai.Defect
+import maestro.ai.AI
+import maestro.ai.Prediction
+import maestro.ai.openai.OpenAI
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
 import maestro.js.RhinoJsEngine
-import maestro.orchestra.ai.Defect
 import maestro.orchestra.error.UnicodeNotSupportedError
 import maestro.orchestra.filter.FilterWithDescription
 import maestro.orchestra.filter.TraitFilters

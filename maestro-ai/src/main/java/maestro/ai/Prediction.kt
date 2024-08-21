@@ -1,4 +1,4 @@
-package maestro.orchestra.ai
+package maestro.ai
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -38,7 +38,7 @@ object Prediction {
 
         val prompt = """
             |You are a QA engineer performing quality assurance for a mobile application. Identify any defects in the provided screenshot.
-            |${if (assertion != null) "Additionally, you were asked to do the following: $assertion" else ""}
+            |${if (assertion != null) "Additionally, you must ensure the following assertion is true: $assertion" else ""}
             |
             |RULES:
             |* All defects you find must belong to one of the following categories:
@@ -54,6 +54,10 @@ object Prediction {
             |${if (previousFalsePositives.isNotEmpty()) "Additionally, the following defects are false positives:" else ""}
             |${if (previousFalsePositives.isNotEmpty()) previousFalsePositives.joinToString("\n") { "  * $it" } else ""}
         """.trimMargin("|")
+
+        println("--- PROMPT START ---")
+        println(prompt)
+        println("--- PROMPT END ---")
 
         val aiResponse = aiClient.chatCompletion(
             prompt,

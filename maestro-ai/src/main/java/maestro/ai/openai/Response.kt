@@ -1,4 +1,4 @@
-package maestro.orchestra.ai.openai
+package maestro.ai.openai
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

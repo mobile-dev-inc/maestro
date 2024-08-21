@@ -1,4 +1,4 @@
-package maestro.orchestra.ai.openai
+package maestro.ai.openai
 
 
 import io.ktor.client.HttpClient
@@ -14,10 +14,9 @@ import io.ktor.util.encodeBase64
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import maestro.orchestra.ai.AI
-import maestro.orchestra.ai.CompletionData
+import maestro.ai.AI
+import maestro.ai.CompletionData
 import org.slf4j.LoggerFactory
-import java.io.File
 
 private const val API_URL = "https://api.openai.com/v1/chat/completions"
 
