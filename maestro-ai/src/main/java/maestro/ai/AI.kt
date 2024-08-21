@@ -14,10 +14,16 @@ data class CompletionData(
 
 abstract class AI : Closeable {
 
+    /**
+     * Chat completion with the AI model.
+     *
+     * Caveats:
+     *  - `jsonSchema` is only supported by OpenAI ("Structured Outputs" feature)
+     */
     abstract suspend fun chatCompletion(
         prompt: String,
         images: List<ByteArray> = listOf(),
-        temperature: Double? = null,
+        temperature: Float? = null,
         model: String? = null,
         maxTokens: Int? = null,
         imageDetail: String? = null,

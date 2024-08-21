@@ -1,5 +1,6 @@
-package maestro.ai.openai
+package maestro.ai.antrophic
 
+import Response
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -7,6 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.encodeBase64
@@ -15,19 +17,18 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import maestro.ai.AI
 import maestro.ai.CompletionData
-import maestro.ai.common.Base64Image
 import org.slf4j.LoggerFactory
 
-private const val API_URL = "https://api.openai.com/v1/chat/completions"
+private const val API_URL = "https://api.anthropic.com/v1/messages"
 
-private val logger = LoggerFactory.getLogger(OpenAI::class.java)
+private val logger = LoggerFactory.getLogger(Claude::class.java)
 
-class OpenAI(
-    private val apiKey: String,
-    private val defaultModel: String = "gpt-4o-2024-08-06",
+class Claude(
+    private val apiToken: String,
+    private val defaultModel: String = "claude-3-5-sonnet-20240620",
     private val defaultTemperature: Float = 0.2f,
     private val defaultMaxTokens: Int = 2048,
-    private val defaultImageDetail: String = "low",
+    private val defaultImageDetail: String = "high",
 ) : AI() {
     private val client = HttpClient {
         install(ContentNegotiation) {
@@ -57,55 +58,53 @@ class OpenAI(
     ): CompletionData {
         val imagesBase64 = images.map { it.encodeBase64() }
 
-        // Fallback to OpenAI defaults
+        // Fallback to Antrophic defaults
         val actualTemperature = temperature ?: defaultTemperature
         val actualModel = model ?: defaultModel
         val actualMaxTokens = maxTokens ?: defaultMaxTokens
         val actualImageDetail = imageDetail ?: defaultImageDetail
 
-        val imagesContent = imagesBase64.map { image ->
-            ContentDetail(
-                type = "image_url",
-                imageUrl = Base64Image(url = "data:image/png;base64,$image", detail = actualImageDetail),
-            )
-        }
-        val textContent = ContentDetail(type = "text", text = prompt)
+        val imageContents = imagesBase64
+            .map { imageBase64 ->
+                Content(
+                    type = "image",
+                    source = ContentSource(
+                        type = "base64",
+                        mediaType = "image/png",
+                        data = imageBase64,
+                    ),
+                )
+            }
 
-        val messages = listOf(
-            MessageContent(
-                role = "user",
-                content = imagesContent + textContent,
-            )
-        )
+        val textContent = Content(type = "text", text = prompt)
 
-        val chatCompletionRequest = ChatCompletionRequest(
+        val chatCompletionRequest = Request(
             model = actualModel,
-            temperature = actualTemperature,
-            messages = messages,
             maxTokens = actualMaxTokens,
-            seed = 1566,
-            responseFormat = if (jsonSchema == null) null else ResponseFormat(
-                type = "json_schema",
-                jsonSchema = jsonSchema,
-            ),
+            messages = listOf(Message("user", imageContents + textContent)),
         )
 
-        val chatCompletionResponse = try {
+        val response = try {
             val httpResponse = client.post(API_URL) {
                 contentType(ContentType.Application.Json)
-                headers["Authorization"] = "Bearer $apiKey"
+                headers["x-api-key"] = apiToken
+                headers["anthropic-version"] = "2023-06-01"
                 setBody(json.encodeToString(chatCompletionRequest))
             }
 
             val body = httpResponse.bodyAsText()
             if (!httpResponse.status.isSuccess()) {
-                logger.error("Failed to complete request to OpenAI: ${httpResponse.status}, $body")
-                throw Exception("Failed to complete request to OpenAI: ${httpResponse.status}, $body")
+                logger.error("Failed to complete request to Anthropic: ${httpResponse.status}, $body")
+                throw Exception("Failed to complete request to Anthropic: ${httpResponse.status}, $body")
             }
 
-            json.decodeFromString<ChatCompletionResponse>(body)
+            if (httpResponse.status != HttpStatusCode.OK) {
+                throw IllegalStateException("Call to Anthropic AI failed: $body")
+            }
+
+            json.decodeFromString<Response>(httpResponse.bodyAsText())
         } catch (e: Exception) {
-            logger.error("Failed to complete request to OpenAI", e)
+            logger.error("Failed to complete request to Antrophic", e)
             throw e
         }
 
@@ -115,7 +114,7 @@ class OpenAI(
             maxTokens = actualMaxTokens,
             images = imagesBase64,
             model = actualModel,
-            response = chatCompletionResponse.choices.first().message.content,
+            response = response.content.first().text!!,
         )
     }
 

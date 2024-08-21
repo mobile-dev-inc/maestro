@@ -18,6 +18,7 @@ data class TestCase(
 //  * --only-fail - show only failing test cases
 //  * --json – to allow for easy filtering with JQ
 //  * --show-prompts – show prompts that were used
+//  * --model - model to use
 //  * Possibility to pass a single screenshot
 //  Note: maybe instead of building this purpose CLI program, we can use something
 //  purpose-made for this.
