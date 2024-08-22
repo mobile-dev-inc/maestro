@@ -10,7 +10,6 @@ import maestro.cli.report.SingleScreenFlowAIOutput
 import maestro.cli.report.CommandDebugMetadata
 import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
-import maestro.cli.report.HtmlAITestSuiteReporter
 import maestro.cli.report.TestDebugReporter
 import maestro.cli.report.TestSuiteReporter
 import maestro.cli.util.PrintUtils
@@ -31,7 +30,7 @@ import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Similar to [TestRunner], but:
+ * Similar to [MaestroFlowRunner], but:
  *  * can run many flows at once
  *  * does not support continuous mode
  */
@@ -233,7 +232,6 @@ class TestSuiteInteractor(
                             it.status = CommandStatus.PENDING
                         }
                     },
-                    // another name idea: onCommandFoundDefects
                     onCommandGeneratedOutput = { command, defects, screenshot ->
                         logger.info("${command.description()} generated output")
                         val screenshotPath = writeAIscreenshot(screenshot)

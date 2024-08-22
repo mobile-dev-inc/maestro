@@ -37,7 +37,7 @@ import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
 import maestro.cli.report.TestDebugReporter
-import maestro.cli.runner.TestRunner
+import maestro.cli.runner.MaestroFlowRunner
 import maestro.cli.runner.TestSuiteInteractor
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.runner.resultview.PlainTextResultView
@@ -297,12 +297,13 @@ class TestCommand : Callable<Int> {
                                 if (!flattenDebugOutput) {
                                     TestDebugReporter.deleteOldFiles()
                                 }
-                                TestRunner.runContinuous(maestro, device, flowFile, env)
+                                MaestroFlowRunner.runContinuous(maestro, device, flowFile, env)
+
                             } else {
                                 val resultView =
                                     if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
                                     else PlainTextResultView()
-                                val resultSingle = TestRunner.runSingle(
+                                val resultSingle = MaestroFlowRunner.runSingle(
                                     maestro,
                                     device,
                                     flowFile,

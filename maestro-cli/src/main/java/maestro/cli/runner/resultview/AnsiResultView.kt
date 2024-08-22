@@ -23,7 +23,6 @@ import io.ktor.util.encodeBase64
 import maestro.cli.runner.CommandState
 import maestro.cli.runner.CommandStatus
 import maestro.utils.Insight
-import maestro.utils.Insights
 import maestro.utils.chunkStringByWordCount
 import org.fusesource.jansi.Ansi
 

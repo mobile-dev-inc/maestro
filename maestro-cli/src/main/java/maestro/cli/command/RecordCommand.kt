@@ -25,7 +25,7 @@ import maestro.cli.DisableAnsiMixin
 import maestro.cli.ShowHelpMixin
 import maestro.cli.api.ApiClient
 import maestro.cli.report.TestDebugReporter
-import maestro.cli.runner.TestRunner
+import maestro.cli.runner.MaestroFlowRunner
 import maestro.cli.runner.resultview.AnsiResultView
 import maestro.cli.session.MaestroSessionManager
 import maestro.cli.view.ProgressBar
@@ -104,7 +104,7 @@ class RecordCommand : Callable<Int> {
             val screenRecording = kotlin.io.path.createTempFile(suffix = ".mp4").toFile()
             val exitCode = screenRecording.sink().use { out ->
                 maestro.startScreenRecording(out).use {
-                    TestRunner.runSingle(maestro, device, flowFile, env, resultView, path)
+                    MaestroFlowRunner.runSingle(maestro, device, flowFile, env, resultView, path)
                 }
             }
 

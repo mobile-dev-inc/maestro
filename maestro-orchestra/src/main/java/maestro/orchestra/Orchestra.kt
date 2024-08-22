@@ -22,8 +22,8 @@ package maestro.orchestra
 import kotlinx.coroutines.runBlocking
 import maestro.*
 import maestro.Filters.asFilter
-import maestro.ai.Defect
 import maestro.ai.AI
+import maestro.ai.Defect
 import maestro.ai.Prediction
 import maestro.ai.openai.OpenAI
 import maestro.js.GraalJsEngine
@@ -43,6 +43,7 @@ import okhttp3.OkHttpClient
 import okio.Buffer
 import okio.buffer
 import okio.sink
+import okio.Sink
 import java.io.File
 import java.lang.Long.max
 import java.nio.file.Files
@@ -59,10 +60,19 @@ sealed class CommandOutput {
     data class AIDefects(val defects: List<Defect>, val screenshot: Buffer) : CommandOutput()
 }
 
+/**
+ * Orchestra translates high-level Maestro commands into method calls on the [Maestro] object.
+ * It's the glue between the CLI and platform-specific [Driver]s (encapsulated in the [Maestro] object).
+ * It's one of the core classes in this codebase.
+ *
+ * Orchestra should not know about:
+ *  - Specific platforms where tests can be executed, such as Android, iOS, or the web.
+ *  - File systems. It should instead write to [Sink]s that it requests from the caller.
+ */
 class Orchestra(
     private val maestro: Maestro,
     private val stateDir: File? = null,
-    private val screenshotsDir: File? = null,
+    private val screenshotsDir: File? = null, // TODO(bartekpacia): Orchestra shouldn't interact with files directly.
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
     private val httpClient: OkHttpClient? = null,
@@ -223,7 +233,6 @@ class Orchestra(
                     onCommandComplete(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
-                    println("ignored CommandSkipped")
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
 
@@ -379,7 +388,7 @@ class Orchestra(
             aiClient = ai,
             assertion = command.assertion,
             screen = imageData.copy().readByteArray(),
-            previousFalsePositives = listOf(), // TODO: take it from WorkspaceConfig (or MaestroConfig?)
+            previousFalsePositives = listOf(), // TODO(bartekpacia): take it from WorkspaceConfig (or MaestroConfig?)
         )
 
         if (defects.isNotEmpty()) {
@@ -387,8 +396,9 @@ class Orchestra(
 
             if (command.optional) throw CommandSkipped
 
+            val word = if (defects.size == 1) "defect" else "defects"
             throw MaestroException.AssertionFailure(
-                "Visual AI found possible defects:\n  ${defects.joinToString("\n  ") { "${it.category}: ${it.reasoning}" }}",
+                "Visual AI found ${defects.size} possible $word. See the report to learn more.",
                 maestro.viewHierarchy().root,
             )
         }

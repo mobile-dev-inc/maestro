@@ -36,10 +36,16 @@ import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.utils.Insight
 import okio.Buffer
+import okio.sink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.IdentityHashMap
 
+/**
+ * Knows how to run a list of Maestro commands and update the UI.
+ *
+ * Should not know what a "flow" is.
+ */
 object MaestroCommandRunner {
 
     private val logger = LoggerFactory.getLogger(MaestroCommandRunner::class.java)
@@ -72,7 +78,7 @@ object MaestroCommandRunner {
                 val out = File
                     .createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
                     .also { it.deleteOnExit() } // save to another dir before exiting
-                maestro.takeScreenshot(out, false)
+                maestro.takeScreenshot(out.sink(), false)
                 debugOutput.screenshots.add(
                     FlowDebugOutput.Screenshot(
                         screenshot = out,
@@ -125,7 +131,7 @@ object MaestroCommandRunner {
         refreshUi()
 
         val orchestra = Orchestra(
-            maestro,
+            maestro = maestro,
             onCommandStart = { _, command ->
                 logger.info("${command.description()} RUNNING")
                 commandStatuses[command] = CommandStatus.RUNNING

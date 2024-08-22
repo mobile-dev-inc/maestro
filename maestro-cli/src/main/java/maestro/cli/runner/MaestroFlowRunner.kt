@@ -26,10 +26,18 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.concurrent.thread
 
-object TestRunner {
+/**
+ * Knows how to run a single Maestro flow (either one-shot or continuously).
+ */
+object MaestroFlowRunner {
 
-    private val logger = LoggerFactory.getLogger(TestRunner::class.java)
+    private val logger = LoggerFactory.getLogger(MaestroFlowRunner::class.java)
 
+    /**
+     * Runs a single flow, one-shot style.
+     *
+     * If the flow generates artifacts, they should be placed in [debugOutputPath].
+     */
     fun runSingle(
         maestro: Maestro,
         device: Device?,
@@ -53,12 +61,12 @@ object TestRunner {
             }
 
             MaestroCommandRunner.runCommands(
-                maestro,
-                device,
-                resultView,
-                commands,
-                debugOutput,
-                aiOutput,
+                maestro = maestro,
+                device = device,
+                view = resultView,
+                commands = commands,
+                debugOutput = debugOutput,
+                aiOutput = aiOutput,
             )
         }
 
@@ -77,6 +85,9 @@ object TestRunner {
         return if (result.get()?.flowSuccess == true) 0 else 1
     }
 
+    /**
+     * Runs a single flow continuously.
+     */
     fun runContinuous(
         maestro: Maestro,
         device: Device?,
@@ -119,13 +130,13 @@ object TestRunner {
 
                         previousResult = runCatching(resultView, maestro) {
                             MaestroCommandRunner.runCommands(
-                                maestro,
-                                device,
-                                resultView,
-                                commands,
-                                FlowDebugOutput(),
-                                // TODO: bartekpacia - make AI outputs work in continuous mode
-                                FlowAIOutput(
+                                maestro = maestro,
+                                device = device,
+                                view = resultView,
+                                commands = commands,
+                                debugOutput = FlowDebugOutput(),
+                                // TODO(bartekpacia): make AI outputs work in continuous mode
+                                aiOutput = FlowAIOutput(
                                     flowName = "TODO",
                                     flowFile = flowFile,
                                 ),
