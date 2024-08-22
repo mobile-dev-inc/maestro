@@ -500,6 +500,7 @@ class Maestro(
         driver.close()
     }
 
+    @Deprecated("Use takeScreenshot(Sink, Boolean) instead")
     fun takeScreenshot(outFile: File, compressed: Boolean) {
         LOGGER.info("Taking screenshot to a file: $outFile")
 
@@ -530,6 +531,8 @@ class Maestro(
     }
 
     fun startScreenRecording(out: Sink): ScreenRecording {
+        LOGGER.info("Starting screen recording")
+
         if (screenRecordingInProgress) {
             LOGGER.info("Screen recording not started: Already in progress")
             return object : ScreenRecording {
