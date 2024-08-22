@@ -12,6 +12,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.encodeBase64
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -103,6 +104,9 @@ class Claude(
             }
 
             json.decodeFromString<Response>(httpResponse.bodyAsText())
+        } catch (e: SerializationException) {
+            logger.error("Failed to parse response from Antrophic", e)
+            throw e
         } catch (e: Exception) {
             logger.error("Failed to complete request to Antrophic", e)
             throw e

@@ -21,13 +21,6 @@ import java.nio.file.Path
 
 fun main(args: Array<String>) = DemoApp().main(args)
 
-// TODO(bartekpacia): Improvement ideas:
-//  * --only-fail - show only failing test cases
-//  * --json – to allow for easy filtering with JQ
-//  * --show-prompts – show prompts that were used
-//  * Possibility to pass a single screenshot
-//  Note: maybe instead of building this purpose CLI program, we can use something
-//  purpose-made for this.
 /**
  * This is a small helper program to help evaluate LLM results against a directory of screenshots and prompts.
  *
@@ -59,6 +52,8 @@ class DemoApp : CliktCommand() {
 
     private val model: String by option(help = "LLM to use").default("gpt-4o-2024-08-06")
 
+    private val showOnlyFails: Boolean by option(help = "Show only failed tests").flag()
+
     private val showPrompts: Boolean by option(help = "Show prompts").flag()
 
     private val showRawResponse: Boolean by option(help = "Show raw LLM response").flag()
@@ -67,35 +62,42 @@ class DemoApp : CliktCommand() {
 
     private val parallel: Boolean by option(help = "Run in parallel. May get rate limited").flag()
 
+    // IDEA: "--json" flag to allow for easy filtering with jq
+
     override fun run() = runBlocking {
         val apiKey = System.getenv("MAESTRO_CLI_AI_KEY")
         require(apiKey != null) { "OpenAI API key is not provided" }
 
         val testCases = inputFiles.map { it.toFile() }.map { file ->
-                require(!file.isDirectory) { "Provided file is a directory, not a file" }
-                require(file.exists()) { "Provided file does not exist" }
-                require(file.extension == "png") { "Provided file is not a PNG file" }
-                file
-            }.map { file ->
-                val filename = file.nameWithoutExtension
-                val parts = filename.split("_")
-                require(parts.size == 3) { "Screenshot name is invalid: ${file.name}" }
+            require(!file.isDirectory) { "Provided file is a directory, not a file" }
+            require(file.exists()) { "Provided file does not exist" }
+            require(file.extension == "png") { "Provided file is not a PNG file" }
+            file
+        }.map { file ->
+            val filename = file.nameWithoutExtension
+            val parts = filename.split("_")
+            require(parts.size == 3) { "Screenshot name is invalid: ${file.name}" }
 
-                val appName = parts[0]
-                val index = parts[2].toInt()
+            val appName = parts[0]
+            val index = parts[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid screenshot name: ${file.name}")
+            val status = parts[2]
 
-                val promptFile = "${file.parent}/${appName}_${parts[1]}_$index.txt"
-                println("Prompt file: $promptFile")
-                val prompt = File(promptFile).run { if (exists()) readText() else null }
+            val promptFile = "${file.parent}/${appName}_${index}_${status}.txt"
+            val prompt = File(promptFile).run {
+                if (exists()) {
+                    println("Found prompt file: $promptFile")
+                    readText()
+                } else null
+            }
 
-                TestCase(
-                    screenshot = file,
-                    appName = appName,
-                    hasDefects = parts[1] == "bad",
-                    index = index,
-                    prompt = prompt,
-                )
-            }.toList()
+            TestCase(
+                screenshot = file,
+                appName = appName,
+                hasDefects = status == "bad",
+                index = index,
+                prompt = prompt,
+            )
+        }.toList()
 
         val aiClient: AI = when {
             model.startsWith("gpt") -> OpenAI(
@@ -129,16 +131,16 @@ class DemoApp : CliktCommand() {
                 verify(testCase, defects)
             }
 
-            if (parallel) job.await()
+            if (!parallel) job.await()
         }
-
-        println("Exited, bye!")
     }
 
     private fun verify(testCase: TestCase, defects: List<Defect>) {
         if (testCase.hasDefects) {
             // Check LLM found defects as well (i.e. didn't commit false negative)
             if (defects.isNotEmpty()) {
+                if (showOnlyFails) return
+
                 println(
                     """
                     PASS ${testCase.screenshot.name}: ${defects.size} defects found (as expected)
@@ -152,6 +154,8 @@ class DemoApp : CliktCommand() {
         } else {
             // Check that LLM didn't raise false positives
             if (defects.isEmpty()) {
+                if (showOnlyFails) return
+
                 println(
                     """
                     PASS ${testCase.screenshot.name}: No defects found (as expected)

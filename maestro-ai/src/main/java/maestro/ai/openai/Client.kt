@@ -104,12 +104,9 @@ class OpenAI(
                 throw Exception("Failed to complete request to OpenAI: ${httpResponse.status}, $body")
             }
 
-            print(body)
-
             json.decodeFromString<ChatCompletionResponse>(body)
         } catch (e: SerializationException) {
             logger.error("Failed to parse response from OpenAI", e)
-            logger.error("Response body: ${e.message}")
             throw e
         }
         catch (e: Exception) {

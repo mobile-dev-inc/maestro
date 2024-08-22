@@ -78,29 +78,30 @@ object Prediction {
 
             // Claude doesn't have a JSON mode as of 21-08-2024
             //  https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
-            if (aiClient is Claude) {
-                append(
-                    """
-                    |
-                    |* You must provide result as a valid JSON object, matching this structure:
-                    |
-                    |  {
-                    |      "defects": [
-                    |          {
-                    |              "category": "<defect category, string>",
-                    |              "reasoning": "<reasoning, string>"
-                    |          },
-                    |          {
-                    |              "category": "<defect category, string>",
-                    |              "reasoning": "<reasoning, string>"
-                    |          }
-                    |       ]
-                    |  }
-                    |
-                    |DO NOT output any other information in the JSON object.
-                    """.trimMargin("|")
-                )
-            }
+            //  We could do "if (aiClient is Claude)", but actually, this also helps with gpt-4o generating
+            //  never-ending stream of output.
+            append(
+                """
+                |
+                |* You must provide result as a valid JSON object, matching this structure:
+                |
+                |  {
+                |      "defects": [
+                |          {
+                |              "category": "<defect category, string>",
+                |              "reasoning": "<reasoning, string>"
+                |          },
+                |          {
+                |              "category": "<defect category, string>",
+                |              "reasoning": "<reasoning, string>"
+                |          }
+                |       ]
+                |  }
+                |
+                |DO NOT output any other information in the JSON object.
+                """.trimMargin("|")
+            )
+
 
             if (previousFalsePositives.isNotEmpty()) {
                 appendLine("Additionally, the following defects are false positives:")
@@ -109,7 +110,7 @@ object Prediction {
                 }
             }
 
-            appendLine("Be brief.")
+            appendLine("There are usually only a few defects in the screenshot. Don't generate tens of them.")
         }
 
         if (printPrompt) {
