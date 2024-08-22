@@ -211,7 +211,7 @@ class AnsiResultView(
             CommandStatus.FAILED -> "❌"
             CommandStatus.RUNNING -> "⏳"
             CommandStatus.PENDING -> "\uD83D\uDD32"
-            CommandStatus.SKIPPED -> "⚪️"
+            CommandStatus.SKIPPED -> "⚠️️"
         }
     }
 
