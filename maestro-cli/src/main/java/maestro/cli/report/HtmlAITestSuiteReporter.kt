@@ -86,16 +86,19 @@ class HtmlAITestSuiteReporter {
 
                             // File chooser for different reports
                             div(classes = "group relative inline-block self-start") {
-                                button(classes = "btn") { +"→ Select different report" }
+                                button(classes = "btn") { +"→ Open other report" }
                                 div(classes = "absolute z-10 hidden min-w-32 group-hover:block") {
                                     outputs.forEachIndexed { outputIndex, outputFlow ->
                                         val selected = outputIndex == index
 
-                                        a(classes = "toggle-link") {
+                                        a(classes = buildString {
+                                          append("toggle-link")
+
+                                            if (selected) append(" toggle-link-selected")
+                                        } ) {
                                             href = "./" + outputs[outputIndex].htmlReportFilename
                                             val name = outputFlow.flowFile.nameWithoutExtension
-                                            val maybeSelected = if (selected) "(X)" else ""
-                                            +"Report ${outputIndex + 1} $name $maybeSelected"
+                                            +"(${outputIndex + 1}) $name"
                                         }
                                     }
                                 }
@@ -115,7 +118,7 @@ class HtmlAITestSuiteReporter {
                         // Container for list of screenshots
                         main(classes = "container mx-auto flex flex-col gap-4") {
                             // Overall defect count for the flow
-                            p {
+                            p(classes = "text-lg") {
                                 val word = if (summary.defectCount == 1) "defect" else "defects"
                                 +"${summary.defectCount} possible $word found"
                             }

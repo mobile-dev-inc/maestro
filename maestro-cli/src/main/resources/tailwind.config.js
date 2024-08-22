@@ -7,6 +7,7 @@ tailwind.config = {
                 "gray-medium": "#4f4b5c", // text-gray-medium
                 "gray-1": "#f8f8f8", // surface-gray-1
                 "gray-0": "#110C22", // surface-gray-0
+                "orange-2": "#ff9254", // surface-orange-2
             },
         },
     },

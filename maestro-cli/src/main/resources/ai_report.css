@@ -23,6 +23,10 @@
         @apply block border-2 border-gray-medium bg-[#ececec] px-3 py-4 text-gray-medium hover:bg-gray-medium hover:text-[#ececec];
     }
 
+    .toggle-link-selected {
+        @apply border-orange-2;
+    }
+
     .divider {
         @apply h-0.5 rounded-sm bg-gray-medium dark:bg-gray-1 my-2;
     }
