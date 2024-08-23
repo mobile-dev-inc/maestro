@@ -9,7 +9,6 @@ sealed class UiState {
 
     data class Running(
         val device: Device? = null,
-        @Deprecated("Obsolete API. See #1921") val initCommands: List<CommandState> = emptyList(),
         val onFlowStartCommands: List<CommandState> = emptyList(),
         val onFlowCompleteCommands: List<CommandState> = emptyList(),
         val commands: List<CommandState>,

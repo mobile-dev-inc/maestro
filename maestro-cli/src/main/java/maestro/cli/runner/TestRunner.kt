@@ -16,7 +16,6 @@ import maestro.cli.runner.resultview.UiState
 import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MaestroInitFlow
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
 import org.slf4j.LoggerFactory
@@ -55,7 +54,7 @@ object TestRunner {
         TestDebugReporter.saveFlow(flowFile.name, debug, debugOutputPath)
         if (debug.exception != null) PrintUtils.err("${debug.exception?.message}")
 
-        return if (result.get()?.flowSuccess == true) 0 else 1
+        return if (result.get() == true) 0 else 1
     }
 
     fun runContinuous(
@@ -69,7 +68,6 @@ object TestRunner {
         val fileWatcher = FileWatcher()
 
         var previousCommands: List<MaestroCommand>? = null
-        var previousInitFlow: MaestroInitFlow? = null
 
         var ongoingTest: Thread? = null
         do {
@@ -79,15 +77,14 @@ object TestRunner {
                     join()
                 }
 
-                val commands = YamlCommandReader.readCommands(flowFile.toPath())
+                val commands = YamlCommandReader
+                    .readCommands(flowFile.toPath())
                     .withEnv(env)
-                val initFlow = getInitFlow(commands)
 
                 // Restart the flow if anything has changed
-                if (commands != previousCommands || initFlow != previousInitFlow) {
+                if (commands != previousCommands) {
                     ongoingTest = thread {
                         previousCommands = commands
-                        previousInitFlow = initFlow
 
                         runCatching(resultView, maestro) {
                             MaestroCommandRunner.runCommands(
@@ -113,10 +110,6 @@ object TestRunner {
                 previousCommands = null
             }
         } while (true)
-    }
-
-    private fun getInitFlow(commands: List<MaestroCommand>): MaestroInitFlow? {
-        return YamlCommandReader.getConfig(commands)?.initFlow
     }
 
     private fun <T> runCatching(
