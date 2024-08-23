@@ -71,7 +71,6 @@ sealed class CommandOutput {
  */
 class Orchestra(
     private val maestro: Maestro,
-    private val stateDir: File? = null,
     private val screenshotsDir: File? = null, // TODO(bartekpacia): Orchestra shouldn't interact with files directly.
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
