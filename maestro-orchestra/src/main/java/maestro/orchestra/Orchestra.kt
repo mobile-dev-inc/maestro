@@ -42,12 +42,11 @@ import maestro.utils.MaestroTimer
 import maestro.utils.StringUtils.toRegexSafe
 import okhttp3.OkHttpClient
 import okio.Buffer
+import okio.Sink
 import okio.buffer
 import okio.sink
-import okio.Sink
 import java.io.File
 import java.lang.Long.max
-import java.nio.file.Files
 
 // TODO(bartkepacia): Use this in onCommandGeneratedOutput.
 //  Caveat:
@@ -100,27 +99,12 @@ class Orchestra(
 
     private val rawCommandToMetadata = mutableMapOf<MaestroCommand, CommandMetadata>()
 
-    /**
-     * If initState is provided, initialize app disk state with the provided OrchestraAppState and skip
-     * any initFlow execution. Otherwise, initialize app state with initFlow if defined.
-     */
-    fun runFlow(
-        commands: List<MaestroCommand>,
-        initState: OrchestraAppState? = null,
-    ): Boolean {
+    fun runFlow(commands: List<MaestroCommand>): Boolean {
         timeMsOfLastInteraction = System.currentTimeMillis()
 
         val config = YamlCommandReader.getConfig(commands)
 
         initJsEngine(config)
-
-        val state = initState ?: config?.initFlow?.let {
-            runInitFlow(it) ?: return false
-        }
-
-        if (state != null) {
-            maestro.clearAppState(state.appId)
-        }
 
         onFlowStart(commands)
 
@@ -164,32 +148,6 @@ class Orchestra(
 
             return onCompleteSuccess && flowSuccess
         }
-    }
-
-    /**
-     * Run the initFlow and return the resulting app OrchestraAppState which can be used to initialize
-     * app disk state when past into Orchestra.runFlow.
-     */
-    fun runInitFlow(
-        initFlow: MaestroInitFlow,
-    ): OrchestraAppState? {
-        val success = runFlow(
-            initFlow.commands,
-        )
-        if (!success) return null
-
-        maestro.stopApp(initFlow.appId)
-
-        val stateFile = if (stateDir == null) {
-            Files.createTempFile(null, ".state")
-        } else {
-            Files.createTempFile(stateDir.toPath(), null, ".state")
-        }
-
-        return OrchestraAppState(
-            appId = initFlow.appId,
-            file = stateFile.toFile(),
-        )
     }
 
     fun executeCommands(
@@ -434,7 +392,7 @@ class Orchestra(
             )
 
             // We do not actually know if there were any mutations, but we assume there were
-            return true
+            true
         } else {
             throw CommandSkipped
         }
@@ -1230,8 +1188,3 @@ class Orchestra(
         private const val MAX_ERASE_CHARACTERS = 50
     }
 }
-
-data class OrchestraAppState(
-    val appId: String,
-    val file: File,
-)

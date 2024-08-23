@@ -32,7 +32,6 @@ import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.CompositeCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
-import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.utils.Insight
 import okio.Buffer
@@ -57,9 +56,8 @@ object MaestroCommandRunner {
         commands: List<MaestroCommand>,
         debugOutput: FlowDebugOutput,
         aiOutput: FlowAIOutput,
-    ): Result {
+    ): Boolean {
         val config = YamlCommandReader.getConfig(commands)
-        val initFlow = config?.initFlow
         val onFlowComplete = config?.onFlowComplete
         val onFlowStart = config?.onFlowStart
 
@@ -104,11 +102,6 @@ object MaestroCommandRunner {
             view.setState(
                 UiState.Running(
                     device = device,
-                    initCommands = toCommandStates(
-                        initFlow?.commands ?: emptyList(),
-                        commandStatuses,
-                        commandMetadata
-                    ),
                     onFlowStartCommands = toCommandStates(
                         onFlowStart?.commands ?: emptyList(),
                         commandStatuses,
@@ -205,8 +198,7 @@ object MaestroCommandRunner {
         )
 
         val flowSuccess = orchestra.runFlow(commands)
-
-        return Result(flowSuccess = flowSuccess, cachedAppState = null)
+        return flowSuccess
     }
 
     private fun toCommandStates(
@@ -238,9 +230,4 @@ object MaestroCommandRunner {
                 )
             }
     }
-
-    data class Result(
-        val flowSuccess: Boolean,
-        val cachedAppState: OrchestraAppState?
-    )
 }
