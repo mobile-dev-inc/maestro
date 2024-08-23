@@ -15,22 +15,14 @@ import maestro.cli.runner.resultview.ResultView
 import maestro.cli.runner.resultview.UiState
 import maestro.cli.util.PrintUtils
 import maestro.cli.view.ErrorViewUtils
-import maestro.debuglog.DebugLogStore
-import maestro.debuglog.LogConfig
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroInitFlow
-import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.yaml.YamlCommandReader
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
-import kotlin.io.path.absolutePathString
 
 object TestRunner {
 
@@ -78,7 +70,6 @@ object TestRunner {
 
         var previousCommands: List<MaestroCommand>? = null
         var previousInitFlow: MaestroInitFlow? = null
-        var previousResult: MaestroCommandRunner.Result? = null
 
         var ongoingTest: Thread? = null
         do {
@@ -95,18 +86,10 @@ object TestRunner {
                 // Restart the flow if anything has changed
                 if (commands != previousCommands || initFlow != previousInitFlow) {
                     ongoingTest = thread {
-                        // If previous init flow was successful and there were no changes to the init flow,
-                        // then reuse cached app state (and skip the init commands)
-                        val cachedAppState: OrchestraAppState? = if (initFlow == previousInitFlow) {
-                            previousResult?.cachedAppState
-                        } else {
-                            null
-                        }
-
                         previousCommands = commands
                         previousInitFlow = initFlow
 
-                        previousResult = runCatching(resultView, maestro) {
+                        runCatching(resultView, maestro) {
                             MaestroCommandRunner.runCommands(
                                 maestro,
                                 device,

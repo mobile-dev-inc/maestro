@@ -19,7 +19,6 @@
 
 package maestro.cli.runner
 
-import io.ktor.client.utils.EmptyContent.status
 import maestro.Maestro
 import maestro.MaestroException
 import maestro.cli.device.Device
@@ -31,7 +30,6 @@ import maestro.cli.runner.resultview.UiState
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.CompositeCommand
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MaestroConfig
 import maestro.orchestra.Orchestra
 import maestro.orchestra.OrchestraAppState
 import maestro.orchestra.yaml.YamlCommandReader
@@ -222,4 +220,3 @@ object MaestroCommandRunner {
         val cachedAppState: OrchestraAppState?
     )
 }
-

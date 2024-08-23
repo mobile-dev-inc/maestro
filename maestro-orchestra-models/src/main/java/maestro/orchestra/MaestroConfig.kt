@@ -9,7 +9,7 @@ data class MaestroConfig(
     val appId: String? = null,
     val name: String? = null,
     val tags: List<String>? = emptyList(),
-    val initFlow: MaestroInitFlow? = null,
+    @Deprecated("Obsolete API. See #1921") val initFlow: MaestroInitFlow? = null,
     val ext: Map<String, Any?> = emptyMap(),
     val onFlowStart: MaestroOnFlowStart? = null,
     val onFlowComplete: MaestroOnFlowComplete? = null,
@@ -27,6 +27,7 @@ data class MaestroConfig(
 
 }
 
+@Deprecated("Obsolete API. See issue #1921")
 data class MaestroInitFlow(
     val appId: String,
     val commands: List<MaestroCommand>,

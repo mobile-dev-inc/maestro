@@ -16,7 +16,7 @@ import kotlin.io.path.isDirectory
 data class YamlConfig(
     val name: String?,
     val appId: String,
-    val initFlow: YamlInitFlowUnion?,
+    @Deprecated("Obsolete API. See #1921") val initFlow: YamlInitFlowUnion?,
     val tags: List<String>? = emptyList(),
     val env: Map<String, String> = emptyMap(),
     val onFlowStart: YamlOnFlowStart?,
@@ -84,11 +84,13 @@ data class YamlConfig(
 
     companion object {
 
+        @Deprecated("Obsolete API. See #1921")
         private fun stringInitCommands(initFlow: StringInitFlow, flowPath: Path): List<MaestroCommand> {
             val initFlowPath = getInitFlowPath(flowPath, initFlow.path)
             return YamlCommandReader.readCommands(initFlowPath)
         }
 
+        @Deprecated("Obsolete API. See #1921")
         private fun getInitFlowPath(flowPath: Path, initFlowPathString: String): Path {
             val initFlowPath = flowPath.fileSystem.getPath(initFlowPathString)
             val resolvedInitFlowPath = if (initFlowPath.isAbsolute) {

@@ -138,6 +138,7 @@ class Orchestra(
      * Run the initFlow and return the resulting app OrchestraAppState which can be used to initialize
      * app disk state when past into Orchestra.runFlow.
      */
+    @Deprecated("Obsolete API. See issue #1921")
     fun runInitFlow(
         initFlow: MaestroInitFlow,
     ): OrchestraAppState? {
@@ -356,7 +357,7 @@ class Orchestra(
             )
 
             // We do not actually know if there were any mutations, but we assume there were
-            return true
+            true
         } else {
             throw CommandSkipped
         }
@@ -1153,6 +1154,7 @@ class Orchestra(
     }
 }
 
+@Deprecated("Obsolete API. See issue #1921")
 data class OrchestraAppState(
     val appId: String,
     val file: File,

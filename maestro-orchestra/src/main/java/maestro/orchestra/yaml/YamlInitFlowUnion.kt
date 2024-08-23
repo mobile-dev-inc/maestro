@@ -28,17 +28,21 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.node.TextNode
 
+@Deprecated("Obsolete API. See #1921")
 @JsonDeserialize(using = YamlInitFlowDeserializer::class)
 sealed interface YamlInitFlowUnion
 
+@Deprecated("Obsolete API. See #1921")
 class StringInitFlow(
     val path: String
 ) : YamlInitFlowUnion
 
+@Deprecated("Obsolete API. See #1921")
 class YamlInitFlow(
     val commands: List<YamlFluentCommand>
 ) : YamlInitFlowUnion
 
+@Deprecated("Obsolete API. See #1921")
 class YamlInitFlowDeserializer : JsonDeserializer<YamlInitFlowUnion>() {
 
     override fun deserialize(parser: JsonParser, ctx: DeserializationContext): YamlInitFlowUnion {
