@@ -25,6 +25,7 @@ import maestro.Filters.asFilter
 import maestro.ai.AI
 import maestro.ai.Defect
 import maestro.ai.Prediction
+import maestro.ai.antrophic.Claude
 import maestro.ai.openai.OpenAI
 import maestro.js.GraalJsEngine
 import maestro.js.JsEngine
@@ -264,8 +265,13 @@ class Orchestra(
     }
 
     private fun initAI(): AI? {
-        val apikey = System.getenv(AI.AI_KEY_ENV_VAR)
-        return if (apikey != null) OpenAI(apiKey = apikey) else null
+        val apiKey = System.getenv(AI.AI_KEY_ENV_VAR) ?: return null
+        val modelName: String? = System.getenv(AI.AI_MODEL_ENV_VAR)
+
+        return if (modelName == null) OpenAI(apiKey = apiKey)
+        else if (modelName.startsWith("gpt-")) OpenAI(apiKey = apiKey, defaultModel = modelName)
+        else if (modelName.startsWith("claude-")) Claude(apiKey = apiKey, defaultModel = modelName)
+        else throw IllegalStateException("Unsupported AI model: $modelName")
     }
 
     /**
