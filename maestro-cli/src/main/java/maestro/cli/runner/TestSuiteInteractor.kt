@@ -30,7 +30,7 @@ import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Similar to [MaestroFlowRunner], but:
+ * Similar to [TestRunner], but:
  *  * can run many flows at once
  *  * does not support continuous mode
  */

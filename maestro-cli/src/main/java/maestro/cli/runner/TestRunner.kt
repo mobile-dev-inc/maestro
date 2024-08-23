@@ -29,9 +29,9 @@ import kotlin.concurrent.thread
 /**
  * Knows how to run a single Maestro flow (either one-shot or continuously).
  */
-object MaestroFlowRunner {
+object TestRunner {
 
-    private val logger = LoggerFactory.getLogger(MaestroFlowRunner::class.java)
+    private val logger = LoggerFactory.getLogger(TestRunner::class.java)
 
     /**
      * Runs a single flow, one-shot style.
