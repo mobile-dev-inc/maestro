@@ -15,6 +15,7 @@ import maestro.orchestra.ClearStateCommand
 import maestro.orchestra.Command
 import maestro.orchestra.Condition
 import maestro.orchestra.CopyTextFromCommand
+import maestro.orchestra.DefineVariablesCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.EraseTextCommand
 import maestro.orchestra.EvalScriptCommand
@@ -76,6 +77,7 @@ internal class YamlCommandReaderTest {
                 ApplyConfigurationCommand(MaestroConfig(
                     appId = "com.example.app"
                 )),
+                DefineVariablesCommand(env = mapOf("FILENAME" to "002_launchApp")),
                 LaunchAppCommand(
                     appId = "com.example.app"
                 ),
@@ -90,6 +92,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "003_launchApp_withClearState")),
             LaunchAppCommand(
                 appId = "com.example.app",
                 clearState = true,
@@ -133,6 +136,7 @@ internal class YamlCommandReaderTest {
                     "extraArray" to listOf("itemA")
                 )
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "008_config_unknownKeys")),
             LaunchAppCommand(
                 appId = "com.example.app",
             ),
@@ -175,6 +179,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "017_launchApp_otherPackage")),
             LaunchAppCommand(
                 appId = "com.other.app"
             ),
@@ -189,6 +194,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "018_backPress_string")),
             BackPressCommand(),
         )
     }
@@ -201,6 +207,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app",
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "019_scroll_string")),
             ScrollCommand(),
         )
     }
@@ -214,6 +221,7 @@ internal class YamlCommandReaderTest {
                 appId = "com.example.app",
                 name = "Example Flow"
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "020_config_name")),
             LaunchAppCommand(
                 appId = "com.example.app"
             ),
@@ -237,6 +245,7 @@ internal class YamlCommandReaderTest {
                     appId = "com.example.app"
                 )
             ),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "flow")),
             LaunchAppCommand(
                 appId = "com.example.app"
             )
@@ -270,6 +279,7 @@ internal class YamlCommandReaderTest {
                     )
                 )
             ),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "022_on_flow_start_complete")),
             LaunchAppCommand(
                 appId = "com.example.app"
             )
@@ -286,6 +296,7 @@ internal class YamlCommandReaderTest {
                     appId="com.example.app"
                 )
             ),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "023_labels")),
 
             // Taps
             TapOnElementCommand(
@@ -520,6 +531,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(
                 config= MaestroConfig(appId= "com.example.app")
             ),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "024_string_non_string_commands")),
             InputTextCommand(text = "correct horse battery staple"),
             InputTextCommand(text = "correct horse battery staple"),
             InputTextCommand(text = "4"),
@@ -596,6 +608,7 @@ internal class YamlCommandReaderTest {
             ApplyConfigurationCommand(MaestroConfig(
                 appId = "com.example.app"
             )),
+            DefineVariablesCommand(env = mapOf("FILENAME" to "025_killApp")),
             KillAppCommand(
                 appId = "com.example.app"
             ),

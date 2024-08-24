@@ -7,6 +7,7 @@ import maestro.MaestroException
 import maestro.Point
 import maestro.SwipeDirection
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.DefineVariablesCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
@@ -556,6 +557,11 @@ class IntegrationTest {
                         config = MaestroConfig(
                             appId = "com.example.app"
                         )
+                    )
+                ),
+                MaestroCommand(
+                    DefineVariablesCommand(
+                        env = mapOf("FILENAME" to "020_parse_config")
                     )
                 ),
                 MaestroCommand(
