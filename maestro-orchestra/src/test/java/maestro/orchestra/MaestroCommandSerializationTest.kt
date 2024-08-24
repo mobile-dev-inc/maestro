@@ -280,6 +280,30 @@ internal class MaestroCommandSerializationTest {
     }
 
     @Test
+    fun `serialize redacted InputTextCommand`() {
+        // given
+        val command = MaestroCommand(
+            InputTextCommand("secret password", redact = true)
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "inputTextCommand" : {
+                "text" : "[REDACTED]",
+                "redact" : true
+              }
+            }
+          """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+    }
+
+    @Test
     fun `serialize LaunchAppCommand`() {
         // given
         val command = MaestroCommand(
@@ -595,7 +619,10 @@ internal class MaestroCommandSerializationTest {
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(this)
 
+    private val module = KotlinModule.Builder().build()
+        .addSerializer(InputTextCommand.Serializer())
+
     private val objectMapper = ObjectMapper()
         .setSerializationInclusion(Include.NON_NULL)
-        .registerModule(KotlinModule.Builder().build())
+        .registerModule(module)
 }
