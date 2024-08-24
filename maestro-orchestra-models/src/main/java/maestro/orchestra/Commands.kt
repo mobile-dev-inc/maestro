@@ -464,13 +464,17 @@ data class InputTextCommand(
     val redacted: String get() = if (redact) "[REDACTED]" else text
 
     override fun description(): String {
-        return label ?: "Input text $text"
+        return label ?: "Input text $redacted"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
         return copy(
             text = text.evaluateScripts(jsEngine)
         )
+    }
+
+    override fun toString(): String {
+        return "InputTextCommand(text=$redacted,label=$label)"
     }
 }
 
