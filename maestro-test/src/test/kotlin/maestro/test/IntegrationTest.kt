@@ -41,8 +41,8 @@ class IntegrationTest {
 
     @AfterEach
     internal fun tearDown() {
-        File("screenshot.png").delete()
-        File("recording.mp4").delete()
+        File("041_take_screenshot_with_filename.png").delete()
+        File("099_screen_recording.mp4").delete()
     }
 
     @Test
@@ -1112,6 +1112,7 @@ class IntegrationTest {
                 Event.TakeScreenshot,
             )
         )
+        assert(File("041_take_screenshot_with_filename.png").exists())
     }
 
     @Test
@@ -2662,6 +2663,7 @@ class IntegrationTest {
                 Event.StopRecording,
             )
         )
+        assert(File("099_screen_recording.mp4").exists())
     }
 
     @Test
