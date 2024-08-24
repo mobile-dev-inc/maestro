@@ -19,6 +19,9 @@
 
 package maestro.orchestra
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import maestro.KeyCode
 import maestro.Point
 import maestro.ScrollDirection
@@ -475,6 +478,20 @@ data class InputTextCommand(
 
     override fun toString(): String {
         return "InputTextCommand(text=$redacted,label=$label)"
+    }
+
+    class Serializer : StdSerializer<InputTextCommand> {
+
+        constructor() : super(InputTextCommand::class.java)
+        constructor(item: Class<InputTextCommand>) : super(item)
+
+        override fun serialize(value: InputTextCommand, gen: JsonGenerator, provider: SerializerProvider) = with (gen) {
+            writeStartObject()
+            writeStringField("text", value.redacted)
+            if (value.label != null) writeStringField("label", value.label)
+            if (value.redact) writeBooleanField("redact", true)
+            writeEndObject()
+        }
     }
 }
 
