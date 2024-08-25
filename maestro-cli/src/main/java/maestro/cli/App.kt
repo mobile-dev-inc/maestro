@@ -147,11 +147,18 @@ fun main(args: Array<String>) {
 
     val newVersion = Updates.checkForUpdates()
     if (newVersion != null) {
+        Updates.fetchChangelogAsync()
         System.err.println()
-        System.err.println(
-            ("A new version of the Maestro CLI is available ($newVersion). Upgrade command:\n" +
-                    "curl -Ls \"https://get.maestro.mobile.dev\" | bash").box()
-        )
+        val changelog = Updates.getChangelog()
+        val anchor = newVersion.toString().replace(".", "")
+        System.err.println(listOf(
+            "A new version of the Maestro CLI is available ($newVersion).\n",
+            "See what's new:",
+            "https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#$anchor",
+            if (changelog == null) "" else "\n${changelog.joinToString("\n")}\n",
+            "Upgrade command:",
+            "curl -Ls \"https://get.maestro.mobile.dev\" | bash",
+        ).joinToString("\n").box())
     }
 
     if (commandLine.isVersionHelpRequested) {
