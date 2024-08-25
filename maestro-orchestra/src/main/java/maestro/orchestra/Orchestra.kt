@@ -188,13 +188,18 @@ class Orchestra(
                 }
                 Insights.onInsightsUpdated(callback)
                 try {
-                    executeCommand(evaluatedCommand, config)
-                    onCommandComplete(index, command)
+                    try {
+                        executeCommand(evaluatedCommand, config)
+                        onCommandComplete(index, command)
+                    } catch (e: MaestroException) {
+                        val isOptional = command.asCommand()?.optional == true
+                        if (isOptional) throw CommandSkipped
+                        else throw e
+                    }
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
                     onCommandSkipped(index, command)
                 } catch (e: Throwable) {
-
                     when (onCommandFailed(index, command, e)) {
                         ErrorResolution.FAIL -> return false
                         ErrorResolution.CONTINUE -> {
