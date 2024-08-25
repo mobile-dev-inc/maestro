@@ -36,6 +36,9 @@ sealed interface Command {
 
     fun visible(): Boolean = true
 
+    val label: String?
+    
+    val optional: Boolean
 }
 
 sealed interface CompositeCommand : Command {
@@ -52,7 +55,8 @@ data class SwipeCommand(
     val startRelative: String? = null,
     val endRelative: String? = null,
     val duration: Long = DEFAULT_DURATION_IN_MILLIS,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -99,7 +103,8 @@ data class ScrollUntilVisibleCommand(
     val visibilityPercentage: Int,
     val timeout: Long = DEFAULT_TIMEOUT_IN_MILLIS,
     val centerElement: Boolean,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     val visibilityPercentageNormalized = (visibilityPercentage / 100).toDouble()
@@ -123,7 +128,8 @@ data class ScrollUntilVisibleCommand(
 }
 
 class ScrollCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun equals(other: Any?): Boolean {
@@ -150,7 +156,8 @@ class ScrollCommand(
 }
 
 class BackPressCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun equals(other: Any?): Boolean {
@@ -177,7 +184,8 @@ class BackPressCommand(
 }
 
 class HideKeyboardCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun equals(other: Any?): Boolean {
@@ -205,7 +213,8 @@ class HideKeyboardCommand(
 
 data class CopyTextFromCommand(
     val selector: ElementSelector,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -220,7 +229,8 @@ data class CopyTextFromCommand(
 }
 
 data class PasteTextCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -239,7 +249,8 @@ data class TapOnElementCommand(
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
     val waitToSettleTimeoutMs: Int? = null,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -266,7 +277,8 @@ data class TapOnPointCommand(
     val waitUntilVisible: Boolean? = null,
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -284,7 +296,8 @@ data class TapOnPointV2Command(
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
     val waitToSettleTimeoutMs: Int? = null,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -304,7 +317,8 @@ data class AssertCommand(
     val visible: ElementSelector? = null,
     val notVisible: ElementSelector? = null,
     val timeout: Long? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -345,7 +359,8 @@ data class AssertCommand(
 data class AssertConditionCommand(
     val condition: Condition,
     private val timeout: String? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     fun timeoutMs(): Long? {
@@ -397,7 +412,8 @@ data class AssertWithAICommand(
 
 data class InputTextCommand(
     val text: String,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -418,7 +434,8 @@ data class LaunchAppCommand(
     val stopApp: Boolean? = null,
     var permissions: Map<String, String>? = null,
     val launchArguments: Map<String, Any>? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -460,7 +477,8 @@ data class LaunchAppCommand(
 
 data class ApplyConfigurationCommand(
     val config: MaestroConfig,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -480,7 +498,8 @@ data class OpenLinkCommand(
     val link: String,
     val autoVerify: Boolean? = null,
     val browser: Boolean? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -502,7 +521,8 @@ data class OpenLinkCommand(
 
 data class PressKeyCommand(
     val code: KeyCode,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -517,7 +537,8 @@ data class PressKeyCommand(
 
 data class EraseTextCommand(
     val charactersToErase: Int?,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -538,7 +559,8 @@ data class EraseTextCommand(
 
 data class TakeScreenshotCommand(
     val path: String,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -554,7 +576,8 @@ data class TakeScreenshotCommand(
 
 data class StopAppCommand(
     val appId: String,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -570,7 +593,8 @@ data class StopAppCommand(
 
 data class KillAppCommand(
     val appId: String,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -586,7 +610,8 @@ data class KillAppCommand(
 
 data class ClearStateCommand(
     val appId: String,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -601,7 +626,8 @@ data class ClearStateCommand(
 }
 
 class ClearKeychainCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -631,7 +657,8 @@ enum class InputRandomType {
 data class InputRandomCommand(
     val inputType: InputRandomType? = InputRandomType.TEXT,
     val length: Int? = 8,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     fun genRandomString(): String {
@@ -661,7 +688,8 @@ data class RunFlowCommand(
     val condition: Condition? = null,
     val sourceDescription: String? = null,
     val config: MaestroConfig?,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : CompositeCommand {
 
     override fun subCommands(): List<MaestroCommand> {
@@ -700,7 +728,8 @@ data class RunFlowCommand(
 data class SetLocationCommand(
     val latitude: String,
     val longitude: String,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -719,7 +748,8 @@ data class RepeatCommand(
     val times: String? = null,
     val condition: Condition? = null,
     val commands: List<MaestroCommand>,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : CompositeCommand {
 
     override fun subCommands(): List<MaestroCommand> {
@@ -758,7 +788,8 @@ data class RepeatCommand(
 
 data class DefineVariablesCommand(
     val env: Map<String, String>,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -782,7 +813,8 @@ data class RunScriptCommand(
     val env: Map<String, String> = emptyMap(),
     val sourceDescription: String,
     val condition: Condition?,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -808,7 +840,8 @@ data class RunScriptCommand(
 
 data class WaitForAnimationToEndCommand(
     val timeout: Long?,
-    val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -822,7 +855,8 @@ data class WaitForAnimationToEndCommand(
 
 data class EvalScriptCommand(
     val scriptString: String,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -838,7 +872,8 @@ data class EvalScriptCommand(
 data class TravelCommand(
     val points: List<GeoPoint>,
     val speedMPS: Double? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     data class GeoPoint(
@@ -883,7 +918,8 @@ data class TravelCommand(
 
 data class StartRecordingCommand(
     val path: String,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -899,7 +935,8 @@ data class StartRecordingCommand(
 
 data class AddMediaCommand(
     val mediaPaths: List<String>,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ): Command {
 
     override fun description(): String {
@@ -915,7 +952,8 @@ data class AddMediaCommand(
 
 
 data class StopRecordingCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
@@ -934,7 +972,8 @@ enum class AirplaneValue {
 
 data class SetAirplaneModeCommand(
     val value: AirplaneValue,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
     override fun description(): String {
         return label
@@ -950,7 +989,8 @@ data class SetAirplaneModeCommand(
 }
 
 data class ToggleAirplaneModeCommand(
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
