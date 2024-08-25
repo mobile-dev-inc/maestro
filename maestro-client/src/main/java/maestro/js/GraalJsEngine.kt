@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.logging.Handler
 import java.util.logging.LogRecord
+import org.graalvm.polyglot.HostAccess
 
 private val NULL_HANDLER = object : Handler() {
     override fun publish(record: LogRecord?) {}
@@ -82,6 +83,8 @@ class GraalJsEngine(
 
         val context = Context.newBuilder("js")
             .option("js.strict", "true")
+            .allowHostAccess(HostAccess.ALL)
+            .allowHostClassLookup { true }
             .logHandler(NULL_HANDLER)
             .out(outputStream)
             .build()
