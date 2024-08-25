@@ -16,7 +16,7 @@ data class YamlAssertTrue(
                 is Int, is Long, is Char, is Boolean, is Float, is Double -> condition.toString()
                 is Map<*, *> -> {
                     val evaluatedCondition = condition.getOrDefault("condition", "") as String
-                    val label = condition.getOrDefault("label", "") as String
+                    val label = condition.getOrDefault("label", null) as String?
                     return YamlAssertTrue(evaluatedCondition, label)
                 }
                 else -> throw UnsupportedOperationException("Cannot deserialize assert true with data type ${condition.javaClass}")

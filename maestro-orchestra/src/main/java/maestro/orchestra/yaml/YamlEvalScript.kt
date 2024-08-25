@@ -16,7 +16,7 @@ data class YamlEvalScript(
                 is String -> script
                 is Map<*, *> -> {
                     val evaluatedScript = script.getOrDefault("script", "") as String
-                    val label = script.getOrDefault("label", "") as String
+                    val label = script.getOrDefault("label", null) as String?
                     return YamlEvalScript(evaluatedScript, label)
                 }
                 is Int, is Long, is Char, is Boolean, is Float, is Double -> script.toString()

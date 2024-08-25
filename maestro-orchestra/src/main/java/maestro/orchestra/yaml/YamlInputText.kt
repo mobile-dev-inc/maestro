@@ -17,7 +17,7 @@ data class YamlInputText(
                 is String -> text
                 is Map<*, *> -> {
                     val input = text.getOrDefault("text", "") as String
-                    val label = text.getOrDefault("label", "") as String
+                    val label = text.getOrDefault("label", null) as String?
                     return YamlInputText(input, label)
                 }
                 is Int, is Long, is Char, is Boolean, is Float, is Double -> text.toString()
