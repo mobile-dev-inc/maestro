@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 data class YamlAssertTrue(
     val condition: String? = null,
     val label: String? = null,
+    val optional: Boolean = false,
 ){
     companion object {
 
@@ -17,7 +18,8 @@ data class YamlAssertTrue(
                 is Map<*, *> -> {
                     val evaluatedCondition = condition.getOrDefault("condition", "") as String
                     val label = condition.getOrDefault("label", null) as String?
-                    return YamlAssertTrue(evaluatedCondition, label)
+                    val optional = condition.getOrDefault("optional", false) as Boolean
+                    return YamlAssertTrue(evaluatedCondition, label, optional)
                 }
                 else -> throw UnsupportedOperationException("Cannot deserialize assert true with data type ${condition.javaClass}")
             }
@@ -27,4 +29,3 @@ data class YamlAssertTrue(
         }
     }
 }
-

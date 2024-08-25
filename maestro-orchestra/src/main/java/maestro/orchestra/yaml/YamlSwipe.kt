@@ -14,15 +14,31 @@ import maestro.directionValueOfOrNull
 interface YamlSwipe {
     val duration: Long
     val label: String?
+    val optional: Boolean
 }
 
 data class YamlSwipeDirection(
-    val direction: SwipeDirection, override val duration: Long = DEFAULT_DURATION_IN_MILLIS,
-                              override val label: String? = null
+    val direction: SwipeDirection, 
+    override val duration: Long = DEFAULT_DURATION_IN_MILLIS,
+    override val label: String? = null,
+    override val optional: Boolean,
 ) : YamlSwipe
-data class YamlCoordinateSwipe(val start: String, val end: String, override val duration: Long = DEFAULT_DURATION_IN_MILLIS, override val label: String? = null) : YamlSwipe
 
-data class YamlRelativeCoordinateSwipe(val start: String, val end: String, override val duration: Long = DEFAULT_DURATION_IN_MILLIS, override val label: String? = null) : YamlSwipe
+data class YamlCoordinateSwipe(
+    val start: String,
+    val end: String,
+    override val duration: Long = DEFAULT_DURATION_IN_MILLIS,
+    override val label: String? = null,
+    override val optional: Boolean,
+) : YamlSwipe
+
+data class YamlRelativeCoordinateSwipe(
+    val start: String,
+    val end: String,
+    override val duration: Long = DEFAULT_DURATION_IN_MILLIS,
+    override val label: String? = null,
+    override val optional: Boolean,
+) : YamlSwipe
 
 @JsonDeserialize(`as` = YamlSwipeElement::class)
 data class YamlSwipeElement(
@@ -30,7 +46,8 @@ data class YamlSwipeElement(
     val direction: SwipeDirection,
     val from: YamlElementSelectorUnion,
     override val duration: Long = DEFAULT_DURATION_IN_MILLIS,
-    override val label: String? = null
+    override val label: String? = null,
+    override val optional: Boolean,
 ) : YamlSwipe
 
 private const val DEFAULT_DURATION_IN_MILLIS = 400L

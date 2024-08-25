@@ -6,6 +6,7 @@ import java.lang.UnsupportedOperationException
 data class YamlInputText(
     val text: String,
     val label: String? = null,
+    val optional: Boolean = false,
 ) {
 
     companion object {

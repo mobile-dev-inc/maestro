@@ -6,6 +6,7 @@ import java.lang.UnsupportedOperationException
 data class YamlEvalScript(
     val script: String,
     val label: String? = null,
+    val optional: Boolean = false,
 ){
     companion object {
 
@@ -28,4 +29,3 @@ data class YamlEvalScript(
         }
     }
 }
-
