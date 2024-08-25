@@ -2712,10 +2712,16 @@ class IntegrationTest {
         // given
         val commands = readCommands("102_graaljs")
         val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
 
         // when
         Maestro(driver).use {
-            orchestra(it).runFlow(commands)
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
         }
 
         // then
@@ -2725,6 +2731,7 @@ class IntegrationTest {
                 Event.InputText("bar"),
             )
         )
+        assertThat(receivedLogs).containsExactly("0.2")
     }
 
     @Test
