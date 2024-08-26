@@ -2,3 +2,8 @@ appId: com.example.app
 ---
 - killApp
 - killApp: another.app
+- killApp:
+    appId:
+      android: android.app
+      ios: ios.app
+      web: https://localhost.com

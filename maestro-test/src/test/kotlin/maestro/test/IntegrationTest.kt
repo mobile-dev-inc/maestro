@@ -27,8 +27,9 @@ import org.junit.jupiter.api.assertThrows
 import java.awt.Color
 import java.io.File
 import java.nio.file.Paths
-import maestro.orchestra.error.SyntaxError
 import kotlin.system.measureTimeMillis
+import maestro.Platform
+import maestro.orchestra.MaestroAppId
 
 class IntegrationTest {
 
@@ -351,6 +352,8 @@ class IntegrationTest {
 
         val driver = driver {
         }
+        driver.addInstalledApp("ios.app")
+        driver.addInstalledApp("another.app")
         driver.addInstalledApp("com.example.app")
 
         // When
@@ -362,8 +365,12 @@ class IntegrationTest {
         // No test failure
         driver.assertEvents(
             listOf(
+                Event.StopApp("ios.app"),
+                Event.LaunchApp("ios.app"),
+                Event.StopApp("another.app"),
+                Event.LaunchApp("another.app"),
                 Event.StopApp("com.example.app"),
-                Event.LaunchApp("com.example.app")
+                Event.LaunchApp("com.example.app"),
             )
         )
     }
@@ -554,13 +561,13 @@ class IntegrationTest {
                 MaestroCommand(
                     ApplyConfigurationCommand(
                         config = MaestroConfig(
-                            appId = "com.example.app"
+                            appId = MaestroAppId("com.example.app")
                         )
                     )
                 ),
                 MaestroCommand(
                     LaunchAppCommand(
-                        appId = "com.example.app"
+                        appId = MaestroAppId("com.example.app")
                     )
                 )
             )
@@ -1169,6 +1176,7 @@ class IntegrationTest {
         // No test failure
         driver.assertHasEvent(Event.StopApp("com.example.app"))
         driver.assertHasEvent(Event.StopApp("another.app"))
+        driver.assertHasEvent(Event.StopApp("ios.app"))
     }
 
     @Test
@@ -1181,6 +1189,7 @@ class IntegrationTest {
 
         driver.addInstalledApp("com.example.app")
         driver.addInstalledApp("another.app")
+        driver.addInstalledApp("ios.app")
 
         // When
         Maestro(driver).use {
@@ -1191,6 +1200,7 @@ class IntegrationTest {
         // No test failure
         driver.assertHasEvent(Event.ClearState("com.example.app"))
         driver.assertHasEvent(Event.ClearState("another.app"))
+        driver.assertHasEvent(Event.ClearState("ios.app"))
     }
 
     @Test
@@ -1233,6 +1243,8 @@ class IntegrationTest {
 
         driver.addInstalledApp("com.example.app")
         driver.addInstalledApp("com.other.app")
+        driver.addInstalledApp("another.app")
+        driver.addInstalledApp("ios.app")
 
         // When
         Maestro(driver).use {
@@ -1267,6 +1279,8 @@ class IntegrationTest {
 
         driver.addInstalledApp("com.example.app")
         driver.addInstalledApp("com.other.app")
+        driver.addInstalledApp("another.app")
+        driver.addInstalledApp("ios.app")
 
         // When
         Maestro(driver).use {
@@ -3087,6 +3101,7 @@ class IntegrationTest {
         // No test failure
         driver.assertHasEvent(Event.KillApp("com.example.app"))
         driver.assertHasEvent(Event.KillApp("another.app"))
+        driver.assertHasEvent(Event.KillApp("ios.app"))
     }
 
     private fun orchestra(
