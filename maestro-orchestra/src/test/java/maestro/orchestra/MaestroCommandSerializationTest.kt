@@ -273,7 +273,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize LaunchAppCommand`() {
         // given
         val command = MaestroCommand(
-            LaunchAppCommand("com.twitter.android")
+            LaunchAppCommand(MaestroAppId("com.twitter.android"))
         )
 
         // when
@@ -285,7 +285,11 @@ internal class MaestroCommandSerializationTest {
         val expectedJson = """
             {
               "launchAppCommand" : {
-                "appId" : "com.twitter.android"
+                "appId" : {
+                  "android" : "com.twitter.android",
+                  "ios" : "com.twitter.android",
+                  "web" : "com.twitter.android"
+                }
               }
             }
           """.trimIndent()
@@ -301,7 +305,7 @@ internal class MaestroCommandSerializationTest {
         val command = MaestroCommand(
             ApplyConfigurationCommand(
                 MaestroConfig(
-                    appId = "com.twitter.android",
+                    appId = MaestroAppId("com.twitter.android"),
                     name = "Twitter",
                 )
             )
@@ -317,7 +321,11 @@ internal class MaestroCommandSerializationTest {
             {
               "applyConfigurationCommand" : {
                 "config" : {
-                  "appId" : "com.twitter.android",
+                  "appId" : {
+                    "android" : "com.twitter.android",
+                    "ios" : "com.twitter.android",
+                    "web" : "com.twitter.android"
+                  },
                   "name" : "Twitter",
                   "tags" : [ ],
                   "ext" : { }

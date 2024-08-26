@@ -22,6 +22,7 @@ import java.util.regex.Pattern
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
+import maestro.orchestra.MaestroAppId
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.orchestra.yaml.YamlFluentCommand
@@ -55,7 +56,7 @@ object DeviceService {
             val request = call.parseBody<RunCommandRequest>()
             try {
                 val commands = YamlCommandReader.MAPPER.readValue(request.yaml, YamlFluentCommand::class.java)
-                    .toCommands(Paths.get(""), "")
+                    .toCommands(Paths.get(""), MaestroAppId(""))
                 if (request.dryRun != true) {
                     executeCommands(maestro, commands)
                 }
@@ -67,7 +68,7 @@ object DeviceService {
         }
         routing.post("/api/format-flow") {
             val request = call.parseBody<FormatCommandsRequest>()
-            val commands = request.commands.map { YamlCommandReader.MAPPER.readValue(it, YamlFluentCommand::class.java).toCommands(Paths.get(""), "") }
+            val commands = request.commands.map { YamlCommandReader.MAPPER.readValue(it, YamlFluentCommand::class.java).toCommands(Paths.get(""), MaestroAppId("")) }
             val inferredAppId = commands.flatten().firstNotNullOfOrNull { it.launchAppCommand?.appId }
             val commandsString = YamlCommandReader.MAPPER.writeValueAsString(request.commands.map { YamlCommandReader.MAPPER.readTree(it) })
             val formattedFlow = FormattedFlow("appId: $inferredAppId", commandsString)

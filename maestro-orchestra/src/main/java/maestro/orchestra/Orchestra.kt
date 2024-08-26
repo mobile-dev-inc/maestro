@@ -451,22 +451,25 @@ class Orchestra(
     }
 
     private fun clearAppStateCommand(command: ClearStateCommand): Boolean {
-        maestro.clearAppState(command.appId)
+        val appId = command.appId.forPlatform(deviceInfo().platform)
+        maestro.clearAppState(appId)
         // Android's clear command also resets permissions
         // Reset all permissions to unset so both platforms behave the same
-        maestro.setPermissions(command.appId, mapOf("all" to "unset"))
+        maestro.setPermissions(appId, mapOf("all" to "unset"))
 
         return true
     }
 
     private fun stopAppCommand(command: StopAppCommand): Boolean {
-        maestro.stopApp(command.appId)
+        val appId = command.appId.forPlatform(deviceInfo().platform)
+        maestro.stopApp(appId)
 
         return true
     }
 
     private fun killAppCommand(command: KillAppCommand): Boolean {
-        maestro.killApp(command.appId)
+        val appId = command.appId.forPlatform(deviceInfo().platform)
+        maestro.killApp(appId)
 
         return true
     }
@@ -766,7 +769,8 @@ class Orchestra(
     }
 
     private fun openLinkCommand(command: OpenLinkCommand, config: MaestroConfig?): Boolean {
-        maestro.openLink(command.link, config?.appId, command.autoVerify ?: false, command.browser ?: false)
+        val appId = config?.appId?.forPlatform(deviceInfo().platform)
+        maestro.openLink(command.link, appId, command.autoVerify ?: false, command.browser ?: false)
 
         return true
     }
@@ -777,20 +781,23 @@ class Orchestra(
                 maestro.clearKeychain()
             }
             if (command.clearState == true) {
-                maestro.clearAppState(command.appId)
+                val appId = command.appId.forPlatform(deviceInfo().platform)
+                maestro.clearAppState(appId)
             }
 
             // For testing convenience, default to allow all on app launch
             val permissions = command.permissions ?: mapOf("all" to "allow")
-            maestro.setPermissions(command.appId, permissions)
+            val appId = command.appId.forPlatform(deviceInfo().platform)
+            maestro.setPermissions(appId, permissions)
 
         } catch (e: Exception) {
             throw MaestroException.UnableToClearState("Unable to clear state for app ${command.appId}")
         }
 
         try {
+            val appId = command.appId.forPlatform(deviceInfo().platform)
             maestro.launchApp(
-                appId = command.appId,
+                appId = appId,
                 launchArguments = command.launchArguments ?: emptyMap(),
                 stopIfRunning = command.stopApp ?: true
             )
@@ -842,13 +849,14 @@ class Orchestra(
     ): Boolean {
         return try {
             val result = findElement(command.selector)
+            val appId = config?.appId?.forPlatform(deviceInfo().platform)
             maestro.tap(
                 result.element,
                 result.hierarchy,
                 retryIfNoChange,
                 waitUntilVisible,
                 command.longPress ?: false,
-                config?.appId,
+                appId,
                 tapRepeat = command.repeat,
                 waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
             )

@@ -412,7 +412,7 @@ data class InputTextCommand(
 }
 
 data class LaunchAppCommand(
-    val appId: String,
+    val appId: MaestroAppId,
     val clearState: Boolean? = null,
     val clearKeychain: Boolean? = null,
     val stopApp: Boolean? = null,
@@ -553,7 +553,7 @@ data class TakeScreenshotCommand(
 }
 
 data class StopAppCommand(
-    val appId: String,
+    val appId: MaestroAppId,
     val label: String? = null
 ) : Command {
 
@@ -569,7 +569,7 @@ data class StopAppCommand(
 }
 
 data class KillAppCommand(
-    val appId: String,
+    val appId: MaestroAppId,
     val label: String? = null
 ) : Command {
 
@@ -585,7 +585,7 @@ data class KillAppCommand(
 }
 
 data class ClearStateCommand(
-    val appId: String,
+    val appId: MaestroAppId,
     val label: String? = null,
 ) : Command {
 
