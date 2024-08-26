@@ -376,6 +376,35 @@ class IntegrationTest {
     }
 
     @Test
+    fun `Case 013 - Launch app with platform`() {
+        // Given
+        val commands = readCommands("013_launch_app")
+
+        val driver = driver(platform = Platform.ANDROID) {}
+        driver.addInstalledApp("android.app")
+        driver.addInstalledApp("another.app")
+        driver.addInstalledApp("com.example.app")
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.StopApp("android.app"),
+                Event.LaunchApp("android.app"),
+                Event.StopApp("another.app"),
+                Event.LaunchApp("another.app"),
+                Event.StopApp("com.example.app"),
+                Event.LaunchApp("com.example.app"),
+            )
+        )
+    }
+
+    @Test
     fun `Case 014 - Tap on point`() {
         // Given
         val commands = readCommands("014_tap_on_point")
@@ -3132,8 +3161,8 @@ class IntegrationTest {
         onCommandFailed = onCommandFailed,
     )
 
-    private fun driver(builder: FakeLayoutElement.() -> Unit): FakeDriver {
-        val driver = FakeDriver()
+    private fun driver(platform: Platform = Platform.IOS, builder: FakeLayoutElement.() -> Unit): FakeDriver {
+        val driver = FakeDriver(platform)
         driver.setLayout(FakeLayoutElement().apply { builder() })
         driver.open()
         return driver
