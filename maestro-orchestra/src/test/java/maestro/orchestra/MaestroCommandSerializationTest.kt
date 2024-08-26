@@ -598,10 +598,7 @@ internal class MaestroCommandSerializationTest {
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(this)
 
-    private val module = KotlinModule.Builder().build()
-        .addDeserializer(MaestroAppId::class.java, MaestroAppId.Deserializer())
-
     private val objectMapper = ObjectMapper()
         .setSerializationInclusion(Include.NON_NULL)
-        .registerModule(module)
+        .registerModule(KotlinModule.Builder().build())
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import maestro.Platform
 import maestro.js.JsEngine
 import maestro.orchestra.util.Env.evaluateScripts
@@ -30,6 +31,7 @@ data class MaestroConfig(
 
 }
 
+@JsonDeserialize(using = MaestroAppId.Deserializer::class)
 data class MaestroAppId(
     val android: String?,
     val ios: String?,
