@@ -7,6 +7,7 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOr
 import com.github.michaelbull.result.onFailure
 import maestro.Maestro
+import maestro.Platform
 import maestro.cli.device.Device
 import maestro.cli.report.FlowAIOutput
 import maestro.cli.report.FlowDebugOutput
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Path
 import kotlin.concurrent.thread
+import maestro.orchestra.withPlatformInAppId
 
 /**
  * Knows how to run a single Maestro flow (either one-shot or continuously).
@@ -51,13 +53,13 @@ object TestRunner {
         )
 
         val result = runCatching(resultView, maestro) {
+            val platform = device?.platform?.name?.let { Platform.fromString(it) }
             val commands = YamlCommandReader.readCommands(flowFile.toPath())
                 .withEnv(env)
-
+                .withPlatformInAppId(platform)
             YamlCommandReader.getConfig(commands)?.name?.let {
                 aiOutput = aiOutput.copy(flowName = it)
             }
-
             MaestroCommandRunner.runCommands(
                 maestro = maestro,
                 device = device,
@@ -106,9 +108,11 @@ object TestRunner {
                     join()
                 }
 
+                val platform = device?.platform?.name?.let { Platform.fromString(it) }
                 val commands = YamlCommandReader
                     .readCommands(flowFile.toPath())
                     .withEnv(env)
+                    .withPlatformInAppId(platform)
 
                 // Restart the flow if anything has changed
                 if (commands != previousCommands) {

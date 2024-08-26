@@ -427,9 +427,9 @@ data class LaunchAppCommand(
         }
 
         var result = if (clearState != true) {
-            "Launch app \"$appId\""
+            "Launch app \"${appId.description()}\""
         } else {
-            "Launch app \"$appId\" with clear state"
+            "Launch app \"${appId.description()}\" with clear state"
         }
 
         if (clearKeychain == true) {

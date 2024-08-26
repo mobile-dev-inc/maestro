@@ -36,6 +36,7 @@ data class MaestroAppId(
     val android: String?,
     val ios: String?,
     val web: String?,
+    private val platform: Platform? = null,
 ) {
     constructor(appId: String) : this(appId, appId, appId)
 
@@ -45,13 +46,19 @@ data class MaestroAppId(
         Platform.WEB -> web ?: error("No appId specified for web.")
     }
 
-    fun evaluateScripts(jsEngine: JsEngine): MaestroAppId {
-        return copy(
-            android = android?.evaluateScripts(jsEngine),
-            ios = ios?.evaluateScripts(jsEngine),
-            web = web?.evaluateScripts(jsEngine),
-        )
-    }
+    fun evaluateScripts(jsEngine: JsEngine) = copy(
+        android = android?.evaluateScripts(jsEngine),
+        ios = ios?.evaluateScripts(jsEngine),
+        web = web?.evaluateScripts(jsEngine),
+    )
+
+    fun description() =
+        if (listOfNotNull(android, ios, web).toSet().size == 1) listOfNotNull(android, ios, web).first()
+        else if (platform != null) forPlatform(platform)
+        else listOf("android", "ios", "web")
+            .zip(listOf(android, ios, web))
+            .filter { it.second != null }
+            .joinToString(", ") { "${it.first}: ${it.second}" }
 
     class Deserializer : JsonDeserializer<MaestroAppId>() {
 
