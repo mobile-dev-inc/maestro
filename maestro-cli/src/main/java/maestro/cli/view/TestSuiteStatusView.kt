@@ -128,7 +128,14 @@ object TestSuiteStatusView {
     fun uploadUrl(
         projectId: String,
         appId: String,
-    ) = "https://copilot.mobile.dev/project/$projectId/maestro-tests/app/$appId"
+        domain: String = ""
+    ): String {
+        return if (domain.contains("localhost")) {
+            "http://localhost:3000/project/$projectId/maestro-tests/app/$appId"
+        } else {
+            "https://copilot.mobile.dev/project/$projectId/maestro-tests/app/$appId"
+        }
+    }
 
     private fun flowWord(count: Int) = if (count == 1) "Flow" else "Flows"
 
@@ -148,7 +155,7 @@ object TestSuiteStatusView {
         )
 
         data class UploadDetails(
-            val uploadId: UUID,
+            val uploadId: String,
             val appId: String,
             val domain: String,
         )
@@ -184,7 +191,7 @@ object TestSuiteStatusView {
 // Helped launcher to play around with presentation
 fun main() {
     val uploadDetails = TestSuiteStatusView.TestSuiteViewModel.UploadDetails(
-        uploadId = UUID.randomUUID(),
+        uploadId = UUID.randomUUID().toString(),
         appId = "appid",
         domain = "mobile.dev",
     )

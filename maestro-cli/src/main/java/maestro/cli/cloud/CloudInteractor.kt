@@ -135,7 +135,7 @@ class CloudInteractor(
                     println()
                     val project = requireNotNull(projectId)
                     val appId = response.appId
-                    val uploadUrl = uploadUrl(project, appId)
+                    val uploadUrl = uploadUrl(project, appId, client.domain)
                     val deviceMessage = if (response.deviceConfiguration != null) printDeviceInfo(response.deviceConfiguration) else ""
                     val appBinaryIdResponseId = if (appBinaryId != null) response.appBinaryId else null
                     return printMaestroCloudResponse(
@@ -150,6 +150,7 @@ class CloudInteractor(
                         appId,
                         appBinaryIdResponseId,
                         response.uploadId,
+                        projectId,
                     )
                 }
                 is MaestroCloudUploadResponse -> {
@@ -191,6 +192,7 @@ class CloudInteractor(
         appId: String,
         appBinaryIdResponse: String?,
         uploadId: String,
+        projectId: String? = null
     ): Int {
         if (async) {
             PrintUtils.message("✅ Upload successful!")
@@ -224,6 +226,7 @@ class CloudInteractor(
                 reportOutput = reportOutput,
                 testSuiteName = testSuiteName,
                 uploadUrl = uploadUrl,
+                projectId = projectId,
             )
         }
     }
@@ -269,6 +272,7 @@ class CloudInteractor(
         reportOutput: File?,
         testSuiteName: String?,
         uploadUrl: String,
+        projectId: String?
     ): Int {
         val startTime = System.currentTimeMillis()
 
@@ -278,7 +282,7 @@ class CloudInteractor(
         var retryCounter = 0
         do {
             val upload = try {
-                client.uploadStatus(authToken, uploadId)
+                client.uploadStatus(authToken, uploadId, projectId)
             } catch (e: ApiClient.ApiException) {
                 if (e.statusCode == 429) {
                     // back off through extending sleep duration with 25%
@@ -298,7 +302,8 @@ class CloudInteractor(
                 throw CliError("Failed to fetch the status of an upload $uploadId. Status code = ${e.statusCode}")
             }
 
-            for (uploadFlowResult in upload.flows) {
+            val flows = upload.flows
+            for (uploadFlowResult in flows) {
                 if (runningFlows.flows.none { it.name == uploadFlowResult.name }) {
                     runningFlows.flows.add(RunningFlow(name = uploadFlowResult.name))
                 }

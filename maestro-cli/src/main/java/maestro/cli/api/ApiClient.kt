@@ -7,7 +7,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
-import maestro.Platform
 import maestro.cli.CliError
 import maestro.cli.analytics.Analytics
 import maestro.cli.analytics.AnalyticsReport
@@ -48,13 +47,15 @@ class ApiClient(
         .addInterceptor(SystemInformationInterceptor())
         .build()
 
-    private val BASE_RETRY_DELAY_MS = 3000L
-
     val domain: String
         get() {
             val regex = "https?://[^.]+.([a-zA-Z0-9.-]*).*".toRegex()
             val matchResult = regex.matchEntire(baseUrl)
-            val domain = matchResult?.groups?.get(1)?.value
+            val domain = if (!matchResult?.groups?.get(1)?.value.isNullOrEmpty()) {
+                matchResult?.groups?.get(1)?.value
+            } else {
+                matchResult?.groups?.get(0)?.value
+            }
             return domain ?: "mobile.dev"
         }
 
@@ -167,10 +168,16 @@ class ApiClient(
     fun uploadStatus(
         authToken: String,
         uploadId: String,
+        projectId: String?,
     ): UploadStatus {
+        val baseUrl = if (projectId != null) {
+            "$baseUrl/upload/$uploadId"
+        } else {
+            "$baseUrl/v2/upload/$uploadId/status?includeErrors=true"
+        }
         val request = Request.Builder()
             .header("Authorization", "Bearer $authToken")
-            .url("$baseUrl/v2/upload/$uploadId/status?includeErrors=true")
+            .url(baseUrl)
             .get()
             .build()
 
@@ -459,7 +466,7 @@ class ApiClient(
     ) : Exception("Request failed. Status code: $statusCode")
 
     companion object {
-
+        private const val BASE_RETRY_DELAY_MS = 3000L
         private val JSON = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 }
@@ -503,7 +510,7 @@ data class DeviceInfo(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class UploadStatus(
-    val uploadId: UUID,
+    val uploadId: String,
     val status: Status,
     val completed: Boolean,
     val flows: List<FlowResult>,
