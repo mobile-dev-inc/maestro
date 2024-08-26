@@ -310,10 +310,24 @@ internal class MaestroCommandSerializationTest {
                 )
             )
         )
+        @Language("json")
+        val legacyJson = """
+            {
+              "applyConfigurationCommand" : {
+                "config" : {
+                  "appId" : "com.twitter.android",
+                  "name" : "Twitter",
+                  "tags" : [ ],
+                  "ext" : { }
+                }
+              }
+            }
+        """.trimIndent()
 
         // when
         val serializedCommandJson = command.toJson()
         val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+        val deserializedLegacy = objectMapper.readValue(legacyJson, MaestroCommand::class.java)
 
         // then
         @Language("json")
@@ -336,6 +350,8 @@ internal class MaestroCommandSerializationTest {
         assertThat(serializedCommandJson)
             .isEqualTo(expectedJson)
         assertThat(deserializedCommand)
+            .isEqualTo(command)
+        assertThat(deserializedLegacy)
             .isEqualTo(command)
     }
 
@@ -582,7 +598,10 @@ internal class MaestroCommandSerializationTest {
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(this)
 
+    private val module = KotlinModule.Builder().build()
+        .addDeserializer(MaestroAppId::class.java, MaestroAppId.Deserializer())
+
     private val objectMapper = ObjectMapper()
         .setSerializationInclusion(Include.NON_NULL)
-        .registerModule(KotlinModule.Builder().build())
+        .registerModule(module)
 }

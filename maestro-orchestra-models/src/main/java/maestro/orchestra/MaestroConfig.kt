@@ -1,5 +1,9 @@
 package maestro.orchestra
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
 import maestro.Platform
 import maestro.js.JsEngine
 import maestro.orchestra.util.Env.evaluateScripts
@@ -45,6 +49,23 @@ data class MaestroAppId(
             ios = ios?.evaluateScripts(jsEngine),
             web = web?.evaluateScripts(jsEngine),
         )
+    }
+
+    class Deserializer : JsonDeserializer<MaestroAppId>() {
+
+        override fun deserialize(parser: JsonParser, context: DeserializationContext): MaestroAppId {
+            val node: JsonNode = parser.codec.readTree(parser)
+            return when {
+                node.isTextual -> MaestroAppId(node.asText())
+                node.isObject -> {
+                    val android = node.get("android")?.asText()
+                    val ios = node.get("ios")?.asText()
+                    val web = node.get("web")?.asText()
+                    MaestroAppId(android, ios, web)
+                }
+                else -> throw IllegalArgumentException("Unexpected JSON format for MaestroAppId: $node")
+            }
+        }
     }
 }
 
