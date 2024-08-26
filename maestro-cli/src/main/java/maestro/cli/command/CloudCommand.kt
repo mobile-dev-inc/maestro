@@ -65,7 +65,7 @@ class CloudCommand : Callable<Int> {
     @Option(order = 0, names = ["--api-key", "--apiKey"], description = ["API key"])
     private var apiKey: String? = null
 
-    @Option(order = 1, names = ["--proj-id", "--projId"], description = ["Project Id"])
+    @Option(order = 1, names = ["--project-id", "--projectId"], description = ["Project Id"])
     private var projectId: String? = null
 
     @Option(order = 2, names = ["--api-url", "--apiUrl"], description = ["API base URL"])
