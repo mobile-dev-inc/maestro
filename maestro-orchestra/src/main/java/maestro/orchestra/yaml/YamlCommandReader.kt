@@ -50,7 +50,7 @@ object YamlCommandReader {
     fun readCommands(flowPath: Path): List<MaestroCommand> = mapParsingErrors(flowPath) {
         val (config, commands) = readConfigAndCommands(flowPath)
         val maestroCommands = commands
-            .flatMap { it.toCommands(flowPath, config.appId) }
+            .flatMap { it.toCommands(flowPath, config.appId.asAppId()) }
             .withEnv(config.env)
 
         listOfNotNull(config.toCommand(flowPath), *maestroCommands.toTypedArray())

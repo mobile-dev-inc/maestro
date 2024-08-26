@@ -82,7 +82,7 @@ data class YamlFluentCommand(
 ) {
 
     @SuppressWarnings("ComplexMethod")
-    fun toCommands(flowPath: Path, appId: String): List<MaestroCommand> {
+    fun toCommands(flowPath: Path, appId: MaestroAppId): List<MaestroCommand> {
         return when {
             launchApp != null -> listOf(launchApp(launchApp, appId))
             tapOn != null -> listOf(tapCommand(tapOn))
@@ -168,7 +168,7 @@ data class YamlFluentCommand(
             stopApp != null -> listOf(
                 MaestroCommand(
                     StopAppCommand(
-                        appId = stopApp.appId ?: appId,
+                        appId = stopApp.appId?.asAppId() ?: appId,
                         label = stopApp.label
                     )
                 )
@@ -176,15 +176,15 @@ data class YamlFluentCommand(
             killApp != null -> listOf(
                 MaestroCommand(
                     KillAppCommand(
-                        appId = killApp.appId ?: appId,
+                        appId = killApp.appId?.asAppId() ?: appId,
                         label = killApp.label
                     )
                 )
             )
             clearState != null -> listOf(
                 MaestroCommand(
-                    maestro.orchestra.ClearStateCommand(
-                        appId = clearState.appId ?: appId,
+                    ClearStateCommand(
+                        appId = clearState.appId?.asAppId() ?: appId,
                         label = clearState.label
                     )
                 )
@@ -270,7 +270,7 @@ data class YamlFluentCommand(
     }
 
     private fun runFlowCommand(
-        appId: String,
+        appId: MaestroAppId,
         flowPath: Path,
         runFlow: YamlRunFlow
     ): MaestroCommand {
@@ -329,7 +329,7 @@ data class YamlFluentCommand(
         )
     }
 
-    private fun repeatCommand(repeat: YamlRepeatCommand, flowPath: Path, appId: String) = MaestroCommand(
+    private fun repeatCommand(repeat: YamlRepeatCommand, flowPath: Path, appId: MaestroAppId) = MaestroCommand(
         RepeatCommand(
             times = repeat.times,
             condition = repeat.`while`?.toCondition(),
@@ -417,10 +417,10 @@ data class YamlFluentCommand(
         )
     }
 
-    private fun launchApp(command: YamlLaunchApp, appId: String): MaestroCommand {
+    private fun launchApp(command: YamlLaunchApp, appId: MaestroAppId): MaestroCommand {
         return MaestroCommand(
             LaunchAppCommand(
-                appId = command.appId ?: appId,
+                appId = command.appId?.asAppId() ?: appId,
                 clearState = command.clearState,
                 clearKeychain = command.clearKeychain,
                 stopApp = command.stopApp,

@@ -22,7 +22,7 @@ package maestro.orchestra.yaml
 import com.fasterxml.jackson.annotation.JsonCreator
 
 data class YamlLaunchApp(
-    val appId: String?,
+    val appId: YamlAppId?,
     val clearState: Boolean?,
     val clearKeychain: Boolean?,
     val stopApp: Boolean?,
@@ -37,12 +37,13 @@ data class YamlLaunchApp(
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun parse(appId: String): YamlLaunchApp {
             return YamlLaunchApp(
-                appId = appId,
+                appId = YamlAppId.parse(appId),
                 clearState = null,
                 clearKeychain = null,
                 stopApp = null,
                 permissions = null,
                 arguments = null,
+                label = null
             )
         }
     }

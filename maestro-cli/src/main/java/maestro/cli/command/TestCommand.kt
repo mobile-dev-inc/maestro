@@ -144,7 +144,7 @@ class TestCommand : Callable<Int> {
     private fun isWebFlow(): Boolean {
         if (!flowFile.isDirectory) {
             val config = YamlCommandReader.readConfig(flowFile.toPath())
-            return Regex("http(s?)://").containsMatchIn(config.appId)
+            return Regex("http(s?)://").containsMatchIn(config.appId.web ?: "")
         }
 
         return false
