@@ -59,6 +59,7 @@ import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
+import maestro.cli.device.PickDeviceInteractor
 
 @CommandLine.Command(
     name = "test",
@@ -187,9 +188,8 @@ class TestCommand : Callable<Int> {
                 .map { it.trim() }
                 .filter { it.isNotBlank() }
 
-            initialActiveDevices.addAll(DeviceService.listConnectedDevices().map {
-                it.instanceId
-            }.toMutableSet())
+            val connectedDevices = DeviceService.listConnectedDevices()
+            initialActiveDevices.addAll(connectedDevices.map { it.instanceId }.toSet())
             val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
             val chunkPlans = plan.flowsToRun
                 .withIndex()
@@ -205,8 +205,9 @@ class TestCommand : Callable<Int> {
                 }
 
             // Collect device configurations for missing shards, if any
-            val missing = effectiveShards - if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val allDeviceConfigs = (0 until missing).map { shardIndex ->
+            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
+            val missingDevices = effectiveShards - availableDevices
+            val missingDevicesConfigs = (0 until missingDevices).map { shardIndex ->
                 PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
                 // Collect device configurations here, one per shard
                 PickDeviceView.requestDeviceOptions()
@@ -225,29 +226,37 @@ class TestCommand : Callable<Int> {
                     deviceCreationSemaphore.acquire()
 
                     val deviceId =
-                        deviceIds.getOrNull(shardIndex)                  // 1. Reuse existing device if deviceId provided
-                            ?: initialActiveDevices.elementAtOrNull(shardIndex)     // 2. Reuse existing device if connected device found
-                            ?: run { // 3. Create a new device
-                                val cfg = allDeviceConfigs.first()
-                                allDeviceConfigs.remove(cfg)
-                                val deviceCreated = DeviceCreateUtil.getOrCreateDevice(
-                                    cfg.platform,
-                                    cfg.osVersion,
-                                    null,
-                                    null,
-                                    true,
-                                    shardIndex
-                                )
+                        // 1. Reuse existing device if deviceId provided
+                        deviceIds.getOrNull(shardIndex)
+                        // 2. Reuse existing device if connected device found
+                        ?: when {
+                            deviceIds.isNotEmpty() -> null
+                            missingDevices >= 0 -> initialActiveDevices.elementAtOrNull(shardIndex)
+                            initialActiveDevices.isNotEmpty() -> PickDeviceInteractor.pickDevice().instanceId
+                            else -> null
+                        }
+                        // 3. Create a new device
+                        ?: run {
+                            val cfg = missingDevicesConfigs.first()
+                            missingDevicesConfigs.remove(cfg)
+                            val deviceCreated = DeviceCreateUtil.getOrCreateDevice(
+                                platform = cfg.platform,
+                                osVersion = cfg.osVersion,
+                                forceCreate = true,
+                                shardIndex = shardIndex
+                            )
 
-                                DeviceService.startDevice(
-                                    deviceCreated,
-                                    driverHostPort,
-                                    initialActiveDevices + currentActiveDevices
-                                ).instanceId.also {
-                                    currentActiveDevices.add(it)
-                                    delay(2.seconds)
-                                }
+                            val device = DeviceService.startDevice(
+                                device = deviceCreated,
+                                driverHostPort = driverHostPort,
+                                connectedDevices = initialActiveDevices + currentActiveDevices
+                            )
+                            device.instanceId.also {
+                                currentActiveDevices.add(it)
+                                delay(2.seconds)
                             }
+                        }
+
                     // Release lock if device ID was obtained from the connected devices
                     deviceCreationSemaphore.release()
                     // Signal that this thread has reached the barrier
