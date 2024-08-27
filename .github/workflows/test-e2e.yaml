@@ -125,7 +125,15 @@ jobs:
             2>~/emulator_stderr.log &
 
       - name: Wait for AVD to start up
-        run: android-wait-for-emulator
+        run: |
+          android-wait-for-emulator
+
+          # This is also a prerequiste
+          while true; do
+            adb shell service list | grep 'package' && echo 'service "package" is active!' && break
+            echo 'waiting for service "package" to start'
+            sleep 1
+          done
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
