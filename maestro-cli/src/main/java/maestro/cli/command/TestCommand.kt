@@ -192,10 +192,32 @@ class TestCommand : Callable<Int> {
 
             val connectedDevices = DeviceService.listConnectedDevices()
             initialActiveDevices.addAll(connectedDevices.map { it.instanceId }.toSet())
-            val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
+            var effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
+
+            // Collect device configurations for missing shards, if any
+            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
+            val missingDevices = effectiveShards - availableDevices
+            if (missingDevices > 0) {
+                val message = """
+                    Found $availableDevices active devices.
+                    Need to create or start $missingDevices more for $effectiveShards shards. Continue? y/n
+                """.trimIndent()
+                PrintUtils.message(message)
+                val str = readlnOrNull()?.lowercase()
+                val granted = str?.isBlank() == true || str == "y" || str == "yes"
+                if (!granted) {
+                    PrintUtils.message("Continuing with only $availableDevices shards.")
+                    effectiveShards = availableDevices
+                }
+            }
+            val missingDevicesConfigs = (availableDevices until effectiveShards).mapNotNull { shardIndex ->
+                PrintUtils.message("Creating device for shard ${shardIndex + 1}:")
+                PickDeviceView.requestDeviceOptions()
+            }.toMutableList()
+
             val chunkPlans = plan.flowsToRun
                 .withIndex()
-                .groupBy { it.index % shards }
+                .groupBy { it.index % effectiveShards }
                 .map { (shardIndex, files) ->
                     ExecutionPlan(
                         files.map { it.value },
@@ -205,15 +227,6 @@ class TestCommand : Callable<Int> {
                         }
                     )
                 }
-
-            // Collect device configurations for missing shards, if any
-            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val missingDevices = effectiveShards - availableDevices
-            val missingDevicesConfigs = (0 until missingDevices).map { shardIndex ->
-                PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
-                // Collect device configurations here, one per shard
-                PickDeviceView.requestDeviceOptions()
-            }.toMutableList()
 
             val barrier = CountDownLatch(effectiveShards)
 
