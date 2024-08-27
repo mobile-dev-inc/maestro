@@ -70,7 +70,7 @@ class App {
     @Option(names = ["-v", "--version"], versionHelp = true, description = ["Display CLI version"])
     var requestedVersion: Boolean? = false
 
-    @Option(names = ["-p", "--platform"], hidden = true)
+    @Option(names = ["-p", "--platform"])
     var platform: String? = null
 
     @Option(names = ["--host"], hidden = true)
