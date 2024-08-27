@@ -351,7 +351,6 @@ class Orchestra(
 
         val defects = Prediction.findDefects(
             aiClient = ai,
-            assertion = null,
             screen = imageData.copy().readByteArray(),
             previousFalsePositives = listOf(), // TODO(bartekpacia): take it from WorkspaceConfig (or MaestroConfig?)
         )
@@ -363,7 +362,7 @@ class Orchestra(
 
             val word = if (defects.size == 1) "defect" else "defects"
             throw MaestroException.AssertionFailure(
-                "Ffound ${defects.size} possible $word. See the report after the test completes to learn more.",
+                "Found ${defects.size} possible $word. See the report after the test completes to learn more.",
                 maestro.viewHierarchy().root,
             )
         }
@@ -381,21 +380,19 @@ class Orchestra(
         val imageData = Buffer()
         maestro.takeScreenshot(imageData, compressed = false)
 
-        val defects = Prediction.findDefects(
+        val defect = Prediction.performAssertion(
             aiClient = ai,
-            assertion = command.assertion,
             screen = imageData.copy().readByteArray(),
-            previousFalsePositives = listOf(), // TODO(bartekpacia): take it from WorkspaceConfig (or MaestroConfig?)
+            assertion = command.assertion,
         )
 
-        if (defects.isNotEmpty()) {
-            onCommandGeneratedOutput(command, defects, imageData)
+        if (defect != null) {
+            onCommandGeneratedOutput(command, listOf(defect), imageData)
 
             if (command.optional) throw CommandSkipped
 
-            val word = if (defects.size == 1) "defect" else "defects"
             throw MaestroException.AssertionFailure(
-                "Visual AI found ${defects.size} possible $word. See the report to learn more.",
+                "Assertion failed. See the report to learn more.",
                 maestro.viewHierarchy().root,
             )
         }

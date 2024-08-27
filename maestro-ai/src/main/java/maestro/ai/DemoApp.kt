@@ -117,13 +117,25 @@ class DemoApp : CliktCommand() {
             val bytes = testCase.screenshot.readBytes()
 
             val job = async {
-                val defects = Prediction.findDefects(
+                val defects = if (testCase.prompt == null) Prediction.findDefects(
                     aiClient = aiClient,
                     screen = bytes,
                     previousFalsePositives = listOf(),
                     printPrompt = showPrompts,
                     printRawResponse = showRawResponse,
-                )
+                ) else {
+                    val result = Prediction.performAssertion(
+                        aiClient = aiClient,
+                        screen = bytes,
+                        assertion = testCase.prompt,
+                        printPrompt = showPrompts,
+                        printRawResponse = showRawResponse,
+                    )
+
+                    if (result == null) emptyList()
+                    else listOf(result)
+                }
+
                 verify(testCase, defects)
             }
 

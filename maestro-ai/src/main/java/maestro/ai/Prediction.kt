@@ -12,14 +12,8 @@ data class Defect(
 )
 
 @Serializable
-private data class FindDefectsResponse(
+private data class ModelResponse(
     val defects: List<Defect>,
-)
-
-@Serializable
-data class PerformAssertionResult(
-    val passed: Boolean,
-    val reasoning: String,
 )
 
 object Prediction {
@@ -29,6 +23,8 @@ object Prediction {
         "localization" to "Inconsistent use of language, for example mixed English and Portuguese",
         "layout" to "Some UI elements are overlapping or are cropped",
     )
+
+    private val allDefectCategories = defectCategories + listOf("assertion" to "The assertion is not true")
 
     suspend fun findDefects(
         aiClient: AI,
@@ -126,7 +122,7 @@ object Prediction {
             println("--- RAW RESPONSE END ---")
         }
 
-        val defects = json.decodeFromString<FindDefectsResponse>(aiResponse.response)
+        val defects = json.decodeFromString<ModelResponse>(aiResponse.response)
         return defects.defects
     }
 
@@ -136,7 +132,7 @@ object Prediction {
         assertion: String,
         printPrompt: Boolean = false,
         printRawResponse: Boolean = false,
-    ): PerformAssertionResult {
+    ): Defect? {
         val prompt = buildString {
 
             appendLine(
@@ -150,22 +146,37 @@ object Prediction {
                 """.trimMargin("|")
             )
 
+            append(
+                """
+                |
+                |RULES:
+                |* Provide response as a valid JSON, with structure described below.
+                |* If the assertion is false, the list in the JSON output MUST be empty.
+                |* If assertion is false:
+                |  * Your response MUST only include a single defect with category "assertion".
+                |  * Provide detailed reasoning to explain why you think the assertion is false.
+                """.trimMargin("|")
+            )
+
             // Claude doesn't have a JSON mode as of 21-08-2024
             //  https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
             //  We could do "if (aiClient is Claude)", but actually, this also helps with gpt-4o sometimes
-            //  generating never-ending stream of output.
+            //  generatig never-ending stream of output.
             append(
                 """
                 |
                 |* You must provide result as a valid JSON object, matching this structure:
                 |
                 |  {
-                |      "result": {
-                |          "passed": "<boolean>",
-                |          "reasoning": "<string>"
-                |      },
+                |      "defect": [
+                |          {
+                |              "category": "assertion",
+                |              "reasoning": "<reasoning, string>"
+                |          },
+                |       ]
                 |  }
                 |
+                |The "defects" array MUST contain at most a single JSON object.
                 |DO NOT output any other information in the JSON object.
                 """.trimMargin("|")
             )
@@ -184,7 +195,7 @@ object Prediction {
             identifier = "perform-assertion",
             imageDetail = "high",
             images = listOf(screen),
-            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.checkAssertion).jsonObject else null,
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.askForDefectsSchema).jsonObject else null,
         )
 
         if (printRawResponse) {
@@ -193,7 +204,7 @@ object Prediction {
             println("--- RAW RESPONSE END ---")
         }
 
-        val result = json.decodeFromString<PerformAssertionResult>(aiResponse.response)
-        return result
+        val response = json.decodeFromString<ModelResponse>(aiResponse.response)
+        return response.defects.firstOrNull()
     }
 }

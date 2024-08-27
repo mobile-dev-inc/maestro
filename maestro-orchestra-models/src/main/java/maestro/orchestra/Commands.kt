@@ -385,7 +385,7 @@ data class AssertWithAICommand(
     override fun description(): String {
         if (label != null) return label
 
-        return "Assert no defects with AI: $assertion"
+        return "Assert with AI: $assertion"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
