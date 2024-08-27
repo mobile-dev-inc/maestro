@@ -80,15 +80,17 @@ jobs:
           git clone https://github.com/bartekpacia/scripts.git $HOME/scripts
           echo "$HOME/scripts/bin" >> $GITHUB_PATH
 
+      - name: Set up android-wait-for-emulator script
+        run: |
+          curl -fsSl -O https://raw.githubusercontent.com/travis-ci/travis-cookbooks/master/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+          chmod +x ./android-wait-for-emulator
+          mv ./android-wait-for-emulator $HOME/scripts/bin
+
       - name: Set up Android Command-line Tools
         run: |
           # v8, latest working on Java 8. Source: https://stackoverflow.com/a/78890086/7009800
           install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" >> $GITHUB_PATH
-
-          curl -fsSl -O https://raw.githubusercontent.com/travis-ci/travis-cookbooks/master/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
-          chmod +x ./android-wait-for-emulator
-          echo "$PWD" >> $GITHUB_PATH
 
       - name: Set up Android SDK components
         run: |
