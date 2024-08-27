@@ -86,6 +86,12 @@ class TestCommand : Callable<Int> {
     )
     private var shards: Int = 1
 
+    @Option(
+        names = ["-b", "--broadcast"],
+        description = ["Broadcasts all the tests across all running devices"]
+    )
+    private var broadcast: Boolean = false
+
     @Option(names = ["-c", "--continuous"])
     private var continuous: Boolean = false
 
@@ -178,7 +184,6 @@ class TestCommand : Callable<Int> {
     }
 
     private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
-        val sharded = shards > 1
 
         runCatching {
             val deviceIds = (if (isWebFlow())
@@ -194,10 +199,16 @@ class TestCommand : Callable<Int> {
             initialActiveDevices.addAll(DeviceService.listConnectedDevices().map {
                 it.instanceId
             }.toMutableSet())
-            val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
-            val chunkPlans = plan.flowsToRun
+
+            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
+            val effectiveShards = if (broadcast) availableDevices else shards.coerceAtMost(plan.flowsToRun.size)
+            val sharded = effectiveShards > 1
+
+            val chunkPlans =
+                if (broadcast) (0 until availableDevices).map { ExecutionPlan(plan.flowsToRun, plan.sequence) }
+                else plan.flowsToRun
                 .withIndex()
-                .groupBy { it.index % shards }
+                .groupBy { it.index % effectiveShards }
                 .map { (shardIndex, files) ->
                     ExecutionPlan(
                         files.map { it.value },
@@ -209,12 +220,12 @@ class TestCommand : Callable<Int> {
                 }
 
             // Collect device configurations for missing shards, if any
-            val missing = effectiveShards - if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val allDeviceConfigs = (0 until missing).map { shardIndex ->
+            val missing = effectiveShards - availableDevices
+            val allDeviceConfigs = if (!broadcast) (0 until missing).map { shardIndex ->
                 PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
                 // Collect device configurations here, one per shard
                 PickDeviceView.requestDeviceOptions()
-            }.toMutableList()
+            }.toMutableList() else mutableListOf()
 
             val barrier = CountDownLatch(effectiveShards)
 
