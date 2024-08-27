@@ -42,8 +42,8 @@ abstract class AI(
         // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode
 
         val assertVisualSchema: String = run {
-            val resourceStream = this::class.java.getResourceAsStream("/assertVisualAI_schema.json")
-                ?: throw IllegalStateException("Could not find assertVisualAI_schema.json in resources")
+            val resourceStream = this::class.java.getResourceAsStream("/askForDefects_schema.json")
+                ?: throw IllegalStateException("Could not find askForDefects_schema.json in resources")
 
             resourceStream.bufferedReader().use { it.readText() }
         }

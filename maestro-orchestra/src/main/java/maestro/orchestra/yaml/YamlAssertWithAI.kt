@@ -2,9 +2,9 @@ package maestro.orchestra.yaml
 
 import com.fasterxml.jackson.annotation.JsonCreator
 
-data class YamlAssertVisualAI(
-    val assertion: String? = null,
-    val optional: Boolean = false,
+data class YamlAssertWithAI(
+    val assertion: String,
+    val optional: Boolean = true,
     val label: String? = null,
 ) {
 
@@ -12,8 +12,8 @@ data class YamlAssertVisualAI(
 
         @JvmStatic
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        fun parse(assertion: String): YamlAssertVisualAI {
-            return YamlAssertVisualAI(
+        fun parse(assertion: String): YamlAssertWithAI {
+            return YamlAssertWithAI(
                 assertion = assertion,
                 optional = true,
             )

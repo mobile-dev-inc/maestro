@@ -41,7 +41,8 @@ data class YamlFluentCommand(
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: YamlAssertTrue? = null,
-    val assertVisualAI: YamlAssertVisualAI? = null,
+    val assertNoDefectsWithAI: YamlAssertNoDefectsWithAI? = null,
+    val assertWithAI: YamlAssertWithAI? = null,
     val back: YamlActionBack? = null,
     val clearKeychain: YamlActionClearKeychain? = null,
     val hideKeyboard: YamlActionHideKeyboard? = null,
@@ -116,12 +117,20 @@ data class YamlFluentCommand(
                     )
                 )
             )
-            assertVisualAI != null -> listOf(
+            assertNoDefectsWithAI != null -> listOf(
                 MaestroCommand(
-                    AssertVisualAICommand(
-                        assertion = assertVisualAI.assertion,
-                        optional = assertVisualAI.optional,
-                        label = assertVisualAI.label,
+                    AssertNoDefectsWithAICommand(
+                        optional = assertNoDefectsWithAI.optional,
+                        label = assertNoDefectsWithAI.label,
+                    )
+                )
+            )
+            assertWithAI != null -> listOf(
+                MaestroCommand(
+                    AssertWithAICommand(
+                        assertion = assertWithAI.assertion,
+                        optional = assertWithAI.optional,
+                        label = assertWithAI.label,
                     )
                 )
             )
@@ -698,8 +707,8 @@ data class YamlFluentCommand(
                     toggleAirplaneMode = YamlToggleAirplaneMode()
                 )
 
-                "assertVisualAI" -> YamlFluentCommand(
-                    assertVisualAI = YamlAssertVisualAI()
+                "assertNoDefectsWithAI" -> YamlFluentCommand(
+                    assertNoDefectsWithAI = YamlAssertNoDefectsWithAI()
                 )
 
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")

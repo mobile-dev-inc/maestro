@@ -364,22 +364,33 @@ data class AssertConditionCommand(
     }
 }
 
-data class AssertVisualAICommand(
-    val assertion: String?,
-    val optional: Boolean = false, /// If true, the command will not fail the flow, but print a warning
+data class AssertNoDefectsWithAICommand(
+    val optional: Boolean = true,
     val label: String? = null,
 ) : Command {
     override fun description(): String {
         if (label != null) return label
 
-        return if (assertion != null) "Assert visual with AI: $assertion"
-            else "Assert visual with AI"
+        return "Assert no defects with AI"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command = this
+}
+
+data class AssertWithAICommand(
+    val assertion: String,
+    val optional: Boolean = true,
+    val label: String? = null,
+) : Command {
+    override fun description(): String {
+        if (label != null) return label
+
+        return "Assert no defects with AI: $assertion"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
-            assertion = assertion?.evaluateScripts(jsEngine),
-            // TODO: Allow for evaluating script for more properties
+            assertion = assertion.evaluateScripts(jsEngine),
         )
     }
 }

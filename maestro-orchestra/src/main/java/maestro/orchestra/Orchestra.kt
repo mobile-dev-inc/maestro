@@ -23,6 +23,7 @@ import kotlinx.coroutines.runBlocking
 import maestro.*
 import maestro.Filters.asFilter
 import maestro.ai.AI
+import maestro.ai.AI.Companion.AI_KEY_ENV_VAR
 import maestro.ai.Defect
 import maestro.ai.Prediction
 import maestro.ai.antrophic.Claude
@@ -222,7 +223,7 @@ class Orchestra(
     }
 
     private fun initAI(): AI? {
-        val apiKey = System.getenv(AI.AI_KEY_ENV_VAR) ?: return null
+        val apiKey = System.getenv(AI_KEY_ENV_VAR) ?: return null
         val modelName: String? = System.getenv(AI.AI_MODEL_ENV_VAR)
 
         return if (modelName == null) OpenAI(apiKey = apiKey)
@@ -258,7 +259,8 @@ class Orchestra(
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
-            is AssertVisualAICommand -> assertVisualAICommand(command)
+            is AssertNoDefectsWithAICommand -> assertNoDefectsWithAICommand(command)
+            is AssertWithAICommand -> assertWithAICommand(command)
             is InputTextCommand -> inputTextCommand(command)
             is InputRandomCommand -> inputTextRandomCommand(command)
             is LaunchAppCommand -> launchAppCommand(command)
@@ -337,11 +339,43 @@ class Orchestra(
         return false
     }
 
-    private fun assertVisualAICommand(command: AssertVisualAICommand): Boolean = runBlocking {
-        // TODO: make all of Orchestra suspending
+    private fun assertNoDefectsWithAICommand(command: AssertNoDefectsWithAICommand): Boolean = runBlocking {
+        // TODO(bartekpacia): make all of Orchestra suspending
 
         if (ai == null) {
-            throw MaestroException.AINotAvailable("AI is not available")
+            throw MaestroException.AINotAvailable("AI client is not available. Did you export $AI_KEY_ENV_VAR?")
+        }
+
+        val imageData = Buffer()
+        maestro.takeScreenshot(imageData, compressed = false)
+
+        val defects = Prediction.findDefects(
+            aiClient = ai,
+            assertion = null,
+            screen = imageData.copy().readByteArray(),
+            previousFalsePositives = listOf(), // TODO(bartekpacia): take it from WorkspaceConfig (or MaestroConfig?)
+        )
+
+        if (defects.isNotEmpty()) {
+            onCommandGeneratedOutput(command, defects, imageData)
+
+            if (command.optional) throw CommandSkipped
+
+            val word = if (defects.size == 1) "defect" else "defects"
+            throw MaestroException.AssertionFailure(
+                "Ffound ${defects.size} possible $word. See the report after the test completes to learn more.",
+                maestro.viewHierarchy().root,
+            )
+        }
+
+        false
+    }
+
+    private fun assertWithAICommand(command: AssertWithAICommand): Boolean = runBlocking {
+        // TODO(bartekpacia): make all of Orchestra suspending
+
+        if (ai == null) {
+            throw MaestroException.AINotAvailable("AI client is not available. Did you export $AI_KEY_ENV_VAR?")
         }
 
         val imageData = Buffer()
