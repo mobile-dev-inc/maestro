@@ -194,9 +194,6 @@ class AndroidDriver(
         launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
-        if(!open) // pick device flow, no open() invocation
-            open()
-
         if (!isPackageInstalled(appId)) {
             throw IllegalArgumentException("Package $appId is not installed")
         }

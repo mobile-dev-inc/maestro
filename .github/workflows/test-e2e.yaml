@@ -89,6 +89,7 @@ jobs:
             ./download_apps
             ./install_apps
             ./run_tests
+            ./run_start_session_test
 
       - name: Upload ~/.maestro artifacts
         uses: actions/upload-artifact@v4
