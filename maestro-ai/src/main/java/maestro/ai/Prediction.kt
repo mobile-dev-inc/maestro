@@ -3,7 +3,6 @@ package maestro.ai
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import maestro.ai.antrophic.Claude
 import maestro.ai.openai.OpenAI
 
 @Serializable
@@ -17,10 +16,16 @@ private data class FindDefectsResponse(
     val defects: List<Defect>,
 )
 
+@Serializable
+data class PerformAssertionResult(
+    val passed: Boolean,
+    val reasoning: String,
+)
+
 object Prediction {
     private val json = Json { ignoreUnknownKeys = true }
 
-    private val categories = listOf(
+    private val defectCategories = listOf(
         "localization" to "Inconsistent use of language, for example mixed English and Portuguese",
         "layout" to "Some UI elements are overlapping or are cropped",
     )
@@ -28,7 +33,6 @@ object Prediction {
     suspend fun findDefects(
         aiClient: AI,
         screen: ByteArray,
-        assertion: String?,
         previousFalsePositives: List<String>,
         printPrompt: Boolean = false,
         printRawResponse: Boolean = false,
@@ -54,7 +58,7 @@ object Prediction {
                 |
                 |RULES:
                 |* All defects you find must belong to one of the following categories:
-                |${categories.joinToString(separator = "\n") { "  * ${it.first}: ${it.second}" }}
+                |${defectCategories.joinToString(separator = "\n") { "  * ${it.first}: ${it.second}" }}
                 |* If you see defects, your response MUST only include defect name and detailed reasoning for each defect.
                 |* Provide response as a list of JSON objects, each representing <category>:<reasoning>
                 |* Do not raise false positives. Some example responses that have a high chance of being a false positive:
@@ -63,23 +67,10 @@ object Prediction {
                 """.trimMargin("|")
             )
 
-            if (assertion != null) {
-                append(
-                    """
-                    |
-                    |
-                    |Additionally, if the following assertion isn't true, consider it as a defect with category "assertion":
-                    |
-                    |  "${assertion.removeSuffix("\n")}"
-                    |
-                    |""".trimMargin("|")
-                )
-            }
-
             // Claude doesn't have a JSON mode as of 21-08-2024
             //  https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
-            //  We could do "if (aiClient is Claude)", but actually, this also helps with gpt-4o generating
-            //  never-ending stream of output.
+            //  We could do "if (aiClient is Claude)", but actually, this also helps with gpt-4o sometimes
+            //  generatig never-ending stream of output.
             append(
                 """
                 |
@@ -126,7 +117,7 @@ object Prediction {
             identifier = "find-defects",
             imageDetail = "high",
             images = listOf(screen),
-            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.assertVisualSchema).jsonObject else null,
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.askForDefectsSchema).jsonObject else null,
         )
 
         if (printRawResponse) {
@@ -137,5 +128,72 @@ object Prediction {
 
         val defects = json.decodeFromString<FindDefectsResponse>(aiResponse.response)
         return defects.defects
+    }
+
+    suspend fun performAssertion(
+        aiClient: AI,
+        screen: ByteArray,
+        assertion: String,
+        printPrompt: Boolean = false,
+        printRawResponse: Boolean = false,
+    ): PerformAssertionResult {
+        val prompt = buildString {
+
+            appendLine(
+                """
+                |You are a QA engineer performing quality assurance for a mobile application.
+                |You are given a screenshot of the application and an assertion about the UI.
+                |Your task is to identify if the following assertion is true:
+                |
+                |  "${assertion.removeSuffix("\n")}"
+                |
+                """.trimMargin("|")
+            )
+
+            // Claude doesn't have a JSON mode as of 21-08-2024
+            //  https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
+            //  We could do "if (aiClient is Claude)", but actually, this also helps with gpt-4o sometimes
+            //  generating never-ending stream of output.
+            append(
+                """
+                |
+                |* You must provide result as a valid JSON object, matching this structure:
+                |
+                |  {
+                |      "result": {
+                |          "passed": "<boolean>",
+                |          "reasoning": "<string>"
+                |      },
+                |  }
+                |
+                |DO NOT output any other information in the JSON object.
+                """.trimMargin("|")
+            )
+        }
+
+        if (printPrompt) {
+            println("--- PROMPT START ---")
+            println(prompt)
+            println("--- PROMPT END ---")
+        }
+
+        val aiResponse = aiClient.chatCompletion(
+            prompt,
+            model = aiClient.defaultModel,
+            maxTokens = 4096,
+            identifier = "perform-assertion",
+            imageDetail = "high",
+            images = listOf(screen),
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.checkAssertion).jsonObject else null,
+        )
+
+        if (printRawResponse) {
+            println("--- RAW RESPONSE START ---")
+            println(aiResponse.response)
+            println("--- RAW RESPONSE END ---")
+        }
+
+        val result = json.decodeFromString<PerformAssertionResult>(aiResponse.response)
+        return result
     }
 }

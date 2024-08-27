@@ -8,10 +8,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.float
 import com.github.ajalt.clikt.parameters.types.path
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import maestro.ai.antrophic.Claude
 import maestro.ai.openai.OpenAI
@@ -79,7 +76,8 @@ class DemoApp : CliktCommand() {
             require(parts.size == 3) { "Screenshot name is invalid: ${file.name}" }
 
             val appName = parts[0]
-            val index = parts[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid screenshot name: ${file.name}")
+            val index =
+                parts[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid screenshot name: ${file.name}")
             val status = parts[2]
 
             val promptFile = "${file.parent}/${appName}_${index}_${status}.txt"
@@ -93,7 +91,7 @@ class DemoApp : CliktCommand() {
             TestCase(
                 screenshot = file,
                 appName = appName,
-                hasDefects = status == "bad",
+                shouldPass = status == "good",
                 index = index,
                 prompt = prompt,
             )
@@ -123,11 +121,9 @@ class DemoApp : CliktCommand() {
                     aiClient = aiClient,
                     screen = bytes,
                     previousFalsePositives = listOf(),
-                    assertion = testCase.prompt,
                     printPrompt = showPrompts,
                     printRawResponse = showRawResponse,
                 )
-
                 verify(testCase, defects)
             }
 
@@ -136,8 +132,8 @@ class DemoApp : CliktCommand() {
     }
 
     private fun verify(testCase: TestCase, defects: List<Defect>) {
-        if (testCase.hasDefects) {
-            // Check LLM found defects as well (i.e. didn't commit false negative)
+        if (!testCase.shouldPass) {
+            // Check if LLM found defects (i.e. didn't commit false negative)
             if (defects.isNotEmpty()) {
                 if (showOnlyFails) return
 
@@ -177,6 +173,6 @@ data class TestCase(
     val screenshot: File,
     val appName: String,
     val prompt: String?,
-    val hasDefects: Boolean,
+    val shouldPass: Boolean,
     val index: Int,
 )

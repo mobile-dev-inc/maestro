@@ -41,7 +41,14 @@ abstract class AI(
         // * OpenAI: https://platform.openai.com/docs/guides/structured-outputs
         // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode
 
-        val assertVisualSchema: String = run {
+        val checkAssertion: String = run {
+            val resourceStream = this::class.java.getResourceAsStream("/checkAssertion_schema.json")
+                ?: throw IllegalStateException("Could not find checkAssertion_schema.json in resources")
+
+            resourceStream.bufferedReader().use { it.readText() }
+        }
+
+        val askForDefectsSchema: String = run {
             val resourceStream = this::class.java.getResourceAsStream("/askForDefects_schema.json")
                 ?: throw IllegalStateException("Could not find askForDefects_schema.json in resources")
 

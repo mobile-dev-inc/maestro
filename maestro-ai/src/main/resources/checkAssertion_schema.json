@@ -1,0 +1,25 @@
+{
+  "name": "checkAssertion",
+  "description": "Return whether the provided assertion about the mobile app's UI is true",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "required": ["defects"],
+    "additionalProperties": false,
+    "properties": {
+      "result": {
+        "type": "object",
+        "required": ["passed", "reasoning"],
+        "additionalProperties": false,
+        "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "reasoning": {
+              "type": "string"
+            }
+          }
+      }
+    }
+  }
+}

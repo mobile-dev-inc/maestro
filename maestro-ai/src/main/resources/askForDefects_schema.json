@@ -1,6 +1,6 @@
 {
   "name": "askForDefects",
-  "description": "List of possible defects found in the mobile app's UI",
+  "description": "Returns a list of possible defects found in the mobile app's UI",
   "strict": true,
   "schema": {
     "type": "object",
