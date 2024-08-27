@@ -60,6 +60,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import maestro.cli.device.PickDeviceInteractor
+import org.slf4j.LoggerFactory
 
 @CommandLine.Command(
     name = "test",
@@ -141,6 +142,7 @@ class TestCommand : Callable<Int> {
     private val usedPorts = ConcurrentHashMap<Int, Boolean>()
     private val initialActiveDevices = ConcurrentSet<String>()
     private val currentActiveDevices = ConcurrentSet<String>()
+    private val logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     private fun isWebFlow(): Boolean {
         if (!flowFile.isDirectory) {
@@ -215,6 +217,8 @@ class TestCommand : Callable<Int> {
 
             val barrier = CountDownLatch(effectiveShards)
 
+            logger.info("Running $effectiveShards shards on $availableDevices available devices and ${missingDevicesConfigs.size} created devices.")
+
             val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
                     val driverHostPort = if (!sharded) parent?.port ?: 7001 else
@@ -256,6 +260,7 @@ class TestCommand : Callable<Int> {
                                 delay(2.seconds)
                             }
                         }
+                    logger.info("Selected device $deviceId for shard ${shardIndex + 1} on port $driverHostPort")
 
                     // Release lock if device ID was obtained from the connected devices
                     deviceCreationSemaphore.release()
