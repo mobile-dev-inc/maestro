@@ -35,7 +35,6 @@ jobs:
   test-local-android:
     name: Test on Android
     runs-on: ubuntu-latest
-    if: github.repository == 'mobile-dev-inc/maestro'
     needs: build
 
     env:
@@ -173,3 +172,54 @@ jobs:
           name: maestro_screenrecord.mp4
           path: ~/maestro_screenrecord.mp4
           retention-days: 7
+
+  test-local-ios:
+    name: Test on iOS
+    runs-on: macos-latest
+    needs: build
+
+    env:
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
+
+    steps:
+      - name: Clone repository (only needed for the e2e directory)
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 8
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: maestro-cli
+
+      - name: Add Maestro CLI executable to PATH
+        run: |
+          unzip maestro.zip -d maestro_extracted
+          echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
+
+      - name: Check if Maestro CLI executable starts up
+        run: |
+          maestro --help
+          maestro --version
+
+      - name: Run simulator
+        run: xcrun simctl boot iPhone\ 15
+
+      - name: Wait for simulator to boot
+        run: xcrun simctl bootstatus iPhone\ 15
+
+      - name: Download apps
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./download_apps
+
+      - name: Install apps
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./install_apps
+
+      - name: Run tests
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./run_tests
