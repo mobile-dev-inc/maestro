@@ -21,16 +21,6 @@ fun main(args: Array<String>) = DemoApp().main(args)
 /**
  * This is a small helper program to help evaluate LLM results against a directory of screenshots and prompts.
  *
- * ### Usage examples
- *
- * ```console
- * maestro-ai-demo *.png
- * ```
- *
- * ```console
- * maestro-ai-demo foo_1_bad.png
- * ```
- *
  * ### Input format
  *
  * Screenshot name format:
