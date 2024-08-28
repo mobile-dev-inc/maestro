@@ -1,12 +1,10 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import com.vanniktech.maven.publish.SonatypeHost
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
+    id("maven-publish")
     alias(libs.plugins.kotlin.jvm)
-    `maven-publish`
-    alias(libs.plugins.vanniktech.publish)
+    alias(libs.plugins.mavenPublish)
 }
 
 dependencies {
@@ -17,18 +15,14 @@ dependencies {
     testImplementation(libs.google.truth)
 }
 
-// From https://jakewharton.com/kotlins-jdk-release-compatibility-flag
-
-val javaVersion = JavaVersion.VERSION_1_8
 java {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType<KotlinCompile>().configureEach {
+tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.add("-Xjdk-release=$javaVersion")
+        freeCompilerArgs.addAll("-Xjdk-release=1.8")
     }
 }
 

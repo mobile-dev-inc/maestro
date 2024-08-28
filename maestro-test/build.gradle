@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    id "kotlin"
+    alias(libs.plugins.kotlin.jvm)
 }
 
 java {
@@ -10,9 +11,9 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType(KotlinJvmCompile).configureEach {
+tasks.named("compileKotlin", KotlinCompilationTask) {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_1_8
+        freeCompilerArgs.addAll("-Xjdk-release=1.8")
     }
 }
 

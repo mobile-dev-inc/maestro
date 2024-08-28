@@ -34,8 +34,6 @@ import maestro.debuglog.IOSDriverLogger
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
 import org.slf4j.LoggerFactory
-import sun.misc.Signal
-import sun.misc.SignalHandler
 import util.XCRunnerCLIUtils
 import xcuitest.XCTestClient
 import xcuitest.XCTestDriverClient
@@ -44,12 +42,10 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.system.exitProcess
 
 object MaestroSessionManager {
     private const val defaultHost = "localhost"
     private const val defaultXctestHost = "[::1]"
-    private const val defaultIdbPort = 10882
     private const val defaultXcTestPort = 22087
 
     private val executor = Executors.newScheduledThreadPool(1)
@@ -74,6 +70,7 @@ object MaestroSessionManager {
         val heartbeatFuture = executor.scheduleAtFixedRate(
             {
                 try {
+                    Thread.sleep(1000) // Add a 1-second delay here for fixing race condition
                     SessionStore.heartbeat(sessionId, selectedDevice.platform)
                 } catch (e: Exception) {
                     logger.error("Failed to record heartbeat", e)
@@ -101,7 +98,6 @@ object MaestroSessionManager {
                 session.close()
             }
         })
-        Signal.handle(CustomSignalHandler.suspendSignal, CustomSignalHandler())
 
         return block(session)
     }
@@ -209,20 +205,6 @@ object MaestroSessionManager {
             }
 
             dadb.close()
-
-            true
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    private fun isIOS(host: String?, port: Int?): Boolean {
-        return try {
-            val channel = ManagedChannelBuilder.forAddress(host ?: defaultHost, port ?: defaultIdbPort)
-                .usePlaintext()
-                .build()
-
-            channel.shutdownNow()
 
             true
         } catch (_: Exception) {
@@ -351,18 +333,6 @@ object MaestroSessionManager {
 
         fun close() {
             maestro.close()
-        }
-    }
-
-    private class CustomSignalHandler() : SignalHandler {
-        override fun handle(signal: Signal) {
-            when (signal) {
-                suspendSignal -> exitProcess(0)
-            }
-        }
-
-        companion object {
-            val suspendSignal = Signal("TSTP")
         }
     }
 }
