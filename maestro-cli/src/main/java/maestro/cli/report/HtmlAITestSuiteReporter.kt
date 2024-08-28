@@ -158,10 +158,6 @@ class HtmlAITestSuiteReporter {
                 }
             }
         }
-
-//        private fun buildScreenSummary()
-
-//        private fun buildDefectCard()
     }
 
     private val FlowAIOutput.defectCount: Int
