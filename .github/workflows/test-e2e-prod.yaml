@@ -38,7 +38,7 @@ jobs:
             --apiKey ${{ secrets.E2E_MOBILE_DEV_API_KEY }} \
             --timeout 180 \
             --fail-on-cancellation \
-            --include-tags=advanced 
+            --include-tags=advanced \
             samples/sample.zip samples
 
       - name: Run Android test
