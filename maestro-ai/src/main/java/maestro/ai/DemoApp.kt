@@ -28,21 +28,22 @@ fun main(args: Array<String>) = DemoApp().main(args)
  * ```
  *
  * ```console
- * maestro-ai-demo foo_bad_1.png
+ * maestro-ai-demo foo_1_bad.png
  * ```
  *
  * ### Input format
  *
  * Screenshot name format:
- * - {app_name}_{good|bad}_{screenshot_number}.png
+ * - {app_name}_{screenshot_number}_{good|bad}.png
  *
- * A screenshot can optionally have a prompt. To associate a prompt with a screenshot, prompt text file name must have
+ * A screenshot can optionally have a prompt. In this case, the model will treat the prompt as the assertion command.
+ * To associate a prompt with a screenshot, prompt text file name must have
  * the following format:
- * - {app_name_{good|bad}_{screenshot_number}.txt
+ * - {app_name_{screenshot_number}_{good|bad}.txt
  *
  * For example:
- * - foo_bad_1.png
- * - bar_good_2.png
+ * - foo_1_bad.png
+ * - bar_2_good.png
  */
 class DemoApp : CliktCommand() {
     private val inputFiles: List<Path> by argument(help = "screenshots to use").path(mustExist = true).multiple()
