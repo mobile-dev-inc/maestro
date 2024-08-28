@@ -3,6 +3,7 @@ appId: com.google.samples.apps.nowinandroid.demo.debug
 - launchApp:
     clearState: true
 - tapOn: Headlines
+- tapOn: THIS WILL FAIL
 - tapOn: Done
 - tapOn: Bookmark
 - tapOn: Saved
