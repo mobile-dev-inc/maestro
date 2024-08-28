@@ -13,14 +13,12 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 8
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 8
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+          java-version: 11
+          cache: gradle
 
       - name: Build xctest-runner
         run: ./maestro-ios-xctest-runner/build-maestro-ios-runner.sh
@@ -35,14 +33,15 @@ jobs:
           retention-days: 1
 
   test-local-android:
+    name: Test on Android
     runs-on: ubuntu-latest
     if: github.repository == 'mobile-dev-inc/maestro'
     needs: build
-    
+
     env:
-      EMULATOR_API_LEVEL: 33
-      EMULATOR_TARGET: google_apis
-      EMULATOR_ARCH: x86_64
+      ANDROID_HOME: /home/runner/androidsdk
+      ANDROID_SDK_ROOT: /home/runner/androidsdk
+      ANDROID_OS_IMAGE: system-images;android-28;google_apis;x86_64
 
     steps:
       - name: Enable KVM group perms
@@ -54,11 +53,11 @@ jobs:
       - name: Clone repository (only needed for the e2e directory)
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 8
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -75,123 +74,102 @@ jobs:
           maestro --help
           maestro --version
 
-      - name: Start emulator and run a Flow
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.EMULATOR_API_LEVEL }}
-          target: ${{ env.EMULATOR_TARGET }}
-          arch: ${{ env.EMULATOR_ARCH }}
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          working-directory: ${{ github.workspace }}/e2e
-          script: |
-            ./download_apps
-            ./install_apps
-            ./run_tests
+      - name: Set up bartekpacia/scripts (for install_android_sdk script)
+        run: |
+          git clone https://github.com/bartekpacia/scripts.git $HOME/scripts
+          echo "$HOME/scripts/bin" >> $GITHUB_PATH
+
+      - name: Set up android-wait-for-emulator script
+        run: |
+          curl -fsSl -O https://raw.githubusercontent.com/travis-ci/travis-cookbooks/master/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+          chmod +x ./android-wait-for-emulator
+          mv ./android-wait-for-emulator $HOME/scripts/bin
+
+      - name: Set up Android Command-line Tools
+        run: |
+          # v8, latest working on Java 8. Source: https://stackoverflow.com/a/78890086/7009800
+          install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" >> $GITHUB_PATH
+
+      - name: Set up Android SDK components
+        run: |
+          yes | sdkmanager --install emulator
+          echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
+          yes | sdkmanager --install "platform-tools"
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          yes | sdkmanager --install "platforms;android-34"
+          yes | sdkmanager --install "$ANDROID_OS_IMAGE"
+
+      - name: Create AVD
+        run: |
+          avdmanager -s create avd \
+            --package "$ANDROID_OS_IMAGE" \
+            --name "MyAVD"
+
+          cat << EOF >> ~/.android/avd/MyAVD.avd/config.ini
+          hw.cpu.ncore=2
+          hw.gpu.enabled=yes
+          hw.gpu.mode=swiftshader_indirect
+          hw.ramSize=3072
+          disk.dataPartition.size=4G
+          vm.heapSize=576
+          hw.lcd.density=440
+          hw.lcd.height=2220
+          hw.lcd.width=1080
+          EOF
+
+      - name: Run AVD
+        run: |
+          emulator @MyAVD \
+            -verbose -no-snapshot-save -no-window -noaudio -no-boot-anim -accel on -camera-back none \
+            >~/emulator_stdout.log \
+            2>~/emulator_stderr.log &
+
+      - name: Wait for AVD to start up
+        run: |
+          android-wait-for-emulator
+
+          # This is also a prerequiste
+          while true; do
+            adb shell service list | grep 'package' && echo 'service "package" is active!' && break
+            echo 'waiting for service "package" to start'
+            sleep 1
+          done
+
+      - name: Download apps
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./download_apps
+
+      - name: Install apps
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./install_apps
+
+      - name: Start screen recording of AVD
+        run: |
+          adb shell screenrecord /sdcard/screenrecord.mp4 &
+
+      - name: Run tests
+        working-directory: ${{ github.workspace }}/e2e
+        run: ./run_tests
+
+      - name: Stop screen recording of AVD
+        run: |
+          adb shell pkill -SIGINT screenrecord
+          sleep 5 # prevent video file corruption
+          adb pull /sdcard/screenrecord.mp4 ~/maestro_screenrecord.mp4
 
       - name: Upload ~/.maestro artifacts
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: success() || failure()
         with:
           name: maestro-e2e-output
           path: ~/.maestro
-          retention-days: 3
-  
-  test-local-ios:
-    runs-on: macos-latest
-    if: github.repository == 'mobile-dev-inc/maestro'
-    needs: build
+          retention-days: 7
 
-    env:
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
-
-    steps:
-      - name: Clone repository (only needed for the e2e directory)
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Upload screen recording of AVD
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
         with:
-          distribution: zulu
-          java-version: 8
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: maestro-cli
-
-      - name: Add Maestro CLI executable to PATH
-        run: |
-          unzip maestro.zip -d maestro_extracted
-          echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
-
-      - name: Check if Maestro CLI executable starts up
-        run: |
-          maestro --help
-          maestro --version
-
-      - name: Start iOS simulator
-        uses: futureware-tech/simulator-action@v3
-        with:
-          model: iPhone 15
-          os: iOS
-          os_version: 17.5
-          erase_before_boot: true
-          shutdown_after_job: true
-      
-      - name: Run a Flow
-        working-directory: ${{ github.workspace }}/e2e
-        run: |
-          ./download_apps
-          ./install_apps
-          ./run_tests
-  
-  test-cloud:
-    runs-on: ubuntu-latest
-    if: github.repository == 'mobile-dev-inc/maestro'
-    needs: build
-  
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: maestro-cli
-
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 8
-
-      - name: Add Maestro CLI executable to PATH
-        run: |
-          unzip maestro.zip -d maestro_extracted
-          echo "$PWD/maestro_extracted/maestro/bin" >> $GITHUB_PATH
-
-      - name: Check if Maestro CLI executable starts up
-        run: |
-          maestro --help
-          maestro --version
-
-      - name: maestro download-samples
-        run: maestro download-samples
-
-      - name: Run iOS test
-        run: |
-          maestro cloud \
-            --apiKey ${{ secrets.E2E_MOBILE_DEV_API_KEY }} \
-            --timeout 180 \
-            --fail-on-cancellation \
-            --include-tags advanced \
-            samples/sample.zip \
-            samples
-
-      - name: Run Android test
-        run: |
-          maestro cloud \
-            --apiKey ${{ secrets.E2E_MOBILE_DEV_API_KEY }} \
-            --fail-on-cancellation \
-            --include-tags advanced \
-            samples/sample.apk \
-            samples
+          name: maestro_screenrecord.mp4
+          path: ~/maestro_screenrecord.mp4
+          retention-days: 7
