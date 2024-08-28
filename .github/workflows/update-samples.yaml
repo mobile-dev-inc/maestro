@@ -1,0 +1,31 @@
+name: Update samples
+
+on:
+  push:
+    branches: [main]
+
+
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    if: github.repository == 'mobile-dev-inc/maestro'
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 484.0.0'
+          project_id: perf-dev-289002
+    
+      - name: Upload samples to public Google Cloud Storage bucket
+        run: |
+          # for now, just download to check if gcloud cli is correctly setup
+          gsutil cp gs://mobile.dev/samples/e2e_apps/wikipedia.apk .
