@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-
 set -eu
 
 # Download apps from URLs listed in manifest.txt.

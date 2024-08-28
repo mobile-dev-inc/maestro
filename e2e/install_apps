@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
-
 set -eu
+
+# Install all apps from apps/ directory (that was previously created with
+# download_apps).
+#
+# Matches .apk files to install on Android devices and .app files to install on
+# iOS simulators.
 
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
 

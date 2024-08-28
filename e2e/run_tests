@@ -1,22 +1,21 @@
 #!/usr/bin/env sh
-
 set -eu
+
+# Runs all tests in the flows directory
+#
+#
 
 command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
 
-selected_app="${1:-}"
-
 FAILED=false
-for file in ./flows/*; do
-	filename="$(basename "$file")"
+for flow_dir in ./flows/*; do
+	echo "run tests for app $flow_dir"
 
-	if [ -z "$selected_app" ] || [ "$selected_app" = "$filename" ]; then
-		cd "$file" || exit 1
-		maestro --device emulator-5554 test . || FAILED=true
-		cd - >/dev/null || exit 1
-	fi
+	cd "$flow_dir" || exit 1
+	maestro --device emulator-5554 test --include-tags . || FAILED=true
+	cd - >/dev/null || exit 1
 done
 
 if [ "$FAILED" = true ]; then
