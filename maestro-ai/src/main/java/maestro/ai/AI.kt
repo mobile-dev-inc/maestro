@@ -40,13 +40,5 @@ abstract class AI(
         // We use JSON mode/Structured Outputs to define the schema of the response we expect from the LLM.
         // * OpenAI: https://platform.openai.com/docs/guides/structured-outputs
         // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode
-
-        val askForDefectsSchema: String = run {
-            val resourceStream = this::class.java.getResourceAsStream("/askForDefects_schema.json")
-                ?: throw IllegalStateException("Could not find askForDefects_schema.json in resources")
-
-            resourceStream.bufferedReader().use { it.readText() }
-        }
     }
-
 }

@@ -17,6 +17,13 @@ private data class ModelResponse(
 )
 
 object Prediction {
+    val askForDefectsSchema: String = run {
+        val resourceStream = this::class.java.getResourceAsStream("/askForDefects_schema.json")
+            ?: throw IllegalStateException("Could not find askForDefects_schema.json in resources")
+
+        resourceStream.bufferedReader().use { it.readText() }
+    }
+
     private val json = Json { ignoreUnknownKeys = true }
 
     private val defectCategories = listOf(
@@ -113,7 +120,7 @@ object Prediction {
             identifier = "find-defects",
             imageDetail = "high",
             images = listOf(screen),
-            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.askForDefectsSchema).jsonObject else null,
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(askForDefectsSchema).jsonObject else null,
         )
 
         if (printRawResponse) {
@@ -195,7 +202,7 @@ object Prediction {
             identifier = "perform-assertion",
             imageDetail = "high",
             images = listOf(screen),
-            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(AI.askForDefectsSchema).jsonObject else null,
+            jsonSchema = if (aiClient is OpenAI) json.parseToJsonElement(askForDefectsSchema).jsonObject else null,
         )
 
         if (printRawResponse) {
