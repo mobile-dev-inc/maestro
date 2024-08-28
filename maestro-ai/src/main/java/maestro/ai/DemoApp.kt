@@ -44,6 +44,20 @@ fun main(args: Array<String>) = DemoApp().main(args)
  * For example:
  * - foo_1_bad.png
  * - bar_2_good.png
+ *
+ * ### Output format
+ *
+ * The output for a single screenshot should indicate either PASS or FAIL, screenshot name, the result, and the defects
+ * founds (if any).
+ *
+ * For example:
+ *
+ * ```text
+ * PASS uber_2_bad.png: 1 defects found (as expected)
+ * 	* layout: The prompt for entering a verification code is visible, indicating that the 2-factor authentication process is present. The screen instructs the user to enter a verification code generated for Uber, which is a typical 2-factor authentication step.
+ * ```
+ *
+ * Some of the flags change output format.
  */
 class DemoApp : CliktCommand() {
     private val inputFiles: List<Path> by argument(help = "screenshots to use").path(mustExist = true).multiple()
