@@ -1,10 +1,18 @@
 # Maestro samples
 
-`maestro download-samples` provides a set of flows and apps so that users can quickly set up a maestro test, without having to create an app.
+This directory contains samples that are downloaded by the `maestro
+download-samples` command.
 
-download-samples downloads these files and apps from storage.googleapis.com.
+`maestro download-samples` provides a set of flows and apps so that users can
+quickly try out Maestro, without having to write any flows for their own app.
 
-# Update the samples
+`download-samples` downloads these files and apps from our publicly-available
+Google Cloud Storage bucket (hosted on `storage.googleapis.com`).
+
+### Update the samples
+
+The samples are automatically updated by the GitHub Action on every new commit
+to the `main` branch.
 
 Although the samples are checked in, updating them requires a few manual steps:
 
