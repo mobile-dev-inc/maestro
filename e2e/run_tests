@@ -13,14 +13,14 @@ FAILED=false
 for workspace_dir in ./workspaces/*; do
 	echo "run passing tests for app $workspace_dir"
 
-	maestro test --include-tags passing "$workspace_dir" || FAILED=true
+	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" || FAILED=true
 done
 
 # Run failing tests
 for workspace_dir in ./workspaces/*; do
 	echo "run failing tests for app $workspace_dir"
 
-	maestro test --include-tags failing "$workspace_dir" && FAILED=true
+	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" && FAILED=true
 done
 
 if [ "$FAILED" = true ]; then
