@@ -1,5 +1,9 @@
 package maestro.ai
 
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import java.io.Closeable
 
@@ -14,6 +18,7 @@ data class CompletionData(
 
 abstract class AI(
     val defaultModel: String,
+    protected val httpClient: HttpClient,
 ) : Closeable {
 
     /**
@@ -37,8 +42,18 @@ abstract class AI(
         const val AI_KEY_ENV_VAR = "MAESTRO_CLI_AI_KEY"
         const val AI_MODEL_ENV_VAR = "MAESTRO_CLI_AI_MODEL"
 
-        // We use JSON mode/Structured Outputs to define the schema of the response we expect from the LLM.
-        // * OpenAI: https://platform.openai.com/docs/guides/structured-outputs
-        // * Gemini: https://ai.google.dev/gemini-api/docs/json-mode
+        val defaultHttpClient = HttpClient {
+            install(ContentNegotiation) {
+                Json {
+                    ignoreUnknownKeys = true
+                }
+            }
+
+            install(HttpTimeout) {
+                connectTimeoutMillis = 10000
+                socketTimeoutMillis = 60000
+                requestTimeoutMillis = 60000
+            }
+        }
     }
 }

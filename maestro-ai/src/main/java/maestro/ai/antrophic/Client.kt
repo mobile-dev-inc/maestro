@@ -26,24 +26,12 @@ private val logger = LoggerFactory.getLogger(Claude::class.java)
 
 class Claude(
     defaultModel: String = "claude-3-5-sonnet-20240620",
+    httpClient: HttpClient = defaultHttpClient,
     private val apiKey: String,
     private val defaultTemperature: Float = 0.2f,
     private val defaultMaxTokens: Int = 1024,
     private val defaultImageDetail: String = "high",
-) : AI(defaultModel = defaultModel) {
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            Json {
-                ignoreUnknownKeys = true
-            }
-        }
-
-        install(HttpTimeout) {
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 60000
-            requestTimeoutMillis = 60000
-        }
-    }
+) : AI(defaultModel = defaultModel, httpClient = httpClient) {
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -86,7 +74,7 @@ class Claude(
         )
 
         val response = try {
-            val httpResponse = client.post(API_URL) {
+            val httpResponse = httpClient.post(API_URL) {
                 contentType(ContentType.Application.Json)
                 headers["x-api-key"] = apiKey
                 headers["anthropic-version"] = "2023-06-01"
@@ -122,5 +110,5 @@ class Claude(
         )
     }
 
-    override fun close() = client.close()
+    override fun close() = httpClient.close()
 }

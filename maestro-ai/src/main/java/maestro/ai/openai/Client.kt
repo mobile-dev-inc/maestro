@@ -1,8 +1,6 @@
 package maestro.ai.openai
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -25,24 +23,12 @@ private val logger = LoggerFactory.getLogger(OpenAI::class.java)
 
 class OpenAI(
     defaultModel: String = "gpt-4o-2024-08-06",
+    httpClient: HttpClient = defaultHttpClient,
     private val apiKey: String,
     private val defaultTemperature: Float = 0.2f,
     private val defaultMaxTokens: Int = 1024,
-    private val defaultImageDetail: String = "low",
-) : AI(defaultModel = defaultModel) {
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            Json {
-                ignoreUnknownKeys = true
-            }
-        }
-
-        install(HttpTimeout) {
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 60000
-            requestTimeoutMillis = 60000
-        }
-    }
+    private val defaultImageDetail: String = "high",
+) : AI(defaultModel = defaultModel, httpClient = httpClient) {
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -92,7 +78,7 @@ class OpenAI(
         )
 
         val chatCompletionResponse = try {
-            val httpResponse = client.post(API_URL) {
+            val httpResponse = httpClient.post(API_URL) {
                 contentType(ContentType.Application.Json)
                 headers["Authorization"] = "Bearer $apiKey"
                 setBody(json.encodeToString(chatCompletionRequest))
@@ -108,8 +94,7 @@ class OpenAI(
         } catch (e: SerializationException) {
             logger.error("Failed to parse response from OpenAI", e)
             throw e
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             logger.error("Failed to complete request to OpenAI", e)
             throw e
         }
@@ -124,5 +109,5 @@ class OpenAI(
         )
     }
 
-    override fun close() = client.close()
+    override fun close() = httpClient.close()
 }
