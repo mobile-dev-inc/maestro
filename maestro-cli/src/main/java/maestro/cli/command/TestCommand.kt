@@ -264,7 +264,7 @@ class TestCommand : Callable<Int> {
                         val maestro = session.maestro
                         val device = session.device
 
-                        if (continuous && flowFile.isDirectory || format != ReportFormat.NOOP) {
+                        if (flowFile.isDirectory || format != ReportFormat.NOOP) {
                             // Run multiple flows
                             if (continuous) {
                                 val error =
