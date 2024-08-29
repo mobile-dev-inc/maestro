@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-# Runs all tests in the flows directory.
+# Runs all tests in the workspaces directory.
 
 command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 
@@ -10,17 +10,17 @@ command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 FAILED=false
 
 # Run passing tests
-for flow_dir in ./flows/*; do
-	echo "run passing tests for app $flow_dir"
+for workspace_dir in ./workspaces/*; do
+	echo "run passing tests for app $workspace_dir"
 
-	maestro test --include-tags passing "$flow_dir" || FAILED=true
+	maestro test --include-tags passing "$workspace_dir" || FAILED=true
 done
 
 # Run failing tests
-for flow_dir in ./flows/*; do
-	echo "run failing tests for app $flow_dir"
+for workspace_dir in ./workspaces/*; do
+	echo "run failing tests for app $workspace_dir"
 
-	maestro test --include-tags failing "$flow_dir" && FAILED=true
+	maestro test --include-tags failing "$workspace_dir" && FAILED=true
 done
 
 if [ "$FAILED" = true ]; then
