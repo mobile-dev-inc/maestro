@@ -42,8 +42,6 @@ object TestDebugReporter {
 
     // AI outputs must be saved separately at the end of the flow.
     fun saveSuggestions(outputs: List<FlowAIOutput>, path: Path) {
-        println("TestDebugReporter.saveSuggestions: saving suggestions for ${outputs.size} flows to $path")
-
         // This mutates the output.
         outputs.forEach { output ->
             // Write AI screenshots. Paths need to be changed to the final ones.
@@ -73,8 +71,6 @@ object TestDebugReporter {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
         // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
         //  Be aware that this goal somewhat conflicts with including links to other flows in the HTML report.
-
-        println("TestDebugReporter.saveFlow: saving flow metadata to $path")
 
         // commands
         try {
