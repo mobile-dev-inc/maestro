@@ -12,6 +12,11 @@ FAILED=false
 # Run passing tests
 for workspace_dir in ./workspaces/*; do
 	echo "run passing tests for app $workspace_dir"
+	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
+	  # wikipedia flows have no passing/failing labels
+	  maestro test "$workspace_dir" || FAILED=true
+	  continue
+	fi
 
 	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" || FAILED=true
 done
@@ -19,7 +24,7 @@ done
 # Run failing tests
 for workspace_dir in ./workspaces/*; do
 	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
-	  # Wikipedia has no failing flows
+	  # wikipedia workspace has no failing flows
 	  continue
 	fi
 	echo "run failing tests for app $workspace_dir"
