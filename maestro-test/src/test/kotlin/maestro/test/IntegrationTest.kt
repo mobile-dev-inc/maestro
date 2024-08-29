@@ -561,7 +561,7 @@ class IntegrationTest {
                 ),
                 MaestroCommand(
                     DefineVariablesCommand(
-                        env = mapOf("FILENAME" to "020_parse_config")
+                        env = mapOf("MAESTRO_FILENAME" to "020_parse_config")
                     )
                 ),
                 MaestroCommand(

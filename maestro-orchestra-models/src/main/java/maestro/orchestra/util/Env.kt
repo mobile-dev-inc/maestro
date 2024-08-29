@@ -46,5 +46,5 @@ object Env {
     }
 
     fun Map<String, String>.withDefaultEnvVars(fileName: String? = null) =
-        fileName?.let { this + mapOf("FILENAME" to fileName) } ?: this
+        fileName?.let { this + mapOf("MAESTRO_FILENAME" to fileName) } ?: this
 }
