@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+set -eu
+
+# Updates the samples that are hosted in mobile.dev's GCS bucket.
+# The samples are for use with `maestro download-samples` command.
+
+[ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
+
+command -v curl >/dev/null 2>&1 || { echo "curl is required" && exit 1; }
+
+SAMPLES_URL="https://storage.googleapis.com/mobile.dev/samples/samples.zip"
+
+if [ ! -d apps/ ]; then
+  ./download_apps
+fi
+
+rm -rf samples/
+mkdir -p samples/
+cp -r apps/wikipedia.apk apps/Wikipedia.zip samples/
+cp -r workspaces/wikipedia/* samples/
+
+zip -r samples.zip samples/ -x "/**/.*" -x "__MACOSX"
