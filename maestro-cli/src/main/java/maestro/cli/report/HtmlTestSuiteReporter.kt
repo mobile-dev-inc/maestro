@@ -1,15 +1,19 @@
 package maestro.cli.report
 
 import maestro.cli.model.TestExecutionSummary
-import okio.Sink
 import okio.buffer
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
+import maestro.cli.runner.CommandStatus
+import maestro.orchestra.MaestroCommand
+import okio.sink
+import java.io.File
+import java.net.URLEncoder
 
-class HtmlTestSuiteReporter : TestSuiteReporter {
-  override fun report(summary: TestExecutionSummary, out: Sink) {
-    val bufferedOut = out.buffer()
-    val htmlContent = buildHtmlReport(summary)
+class HtmlTestSuiteReporter(override val fileExtension: String?) : TestSuiteReporter {
+  override fun report(summary: TestExecutionSummary, out: File) {
+    val bufferedOut = out.sink().buffer()
+    val htmlContent = buildHtmlReport(summary, out.parentFile)
     bufferedOut.writeUtf8(htmlContent)
     bufferedOut.close()
   }
@@ -26,9 +30,8 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
     return failedTest
   }
 
-  private fun buildHtmlReport(summary: TestExecutionSummary): String {
+  private fun buildHtmlReport(summary: TestExecutionSummary, reportFolder: File): String {
     val failedTest = getFailedTest(summary)
-
     return buildString {
       appendHTML().html {
         head {
@@ -109,6 +112,7 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
                           p(classes = "card-text text-danger"){
                             +flow.failure.message
                           }
+                          failureDetailsFormatted(flow.failure, flow, reportFolder)
                         }
                       }
                     }
@@ -122,4 +126,72 @@ class HtmlTestSuiteReporter : TestSuiteReporter {
       }
     }
   }
+
+    private fun DIV.failureDetailsFormatted(
+        failure: TestExecutionSummary.Failure,
+        flow: TestExecutionSummary.FlowResult,
+        reportFolder: File
+    ) {
+        br {}
+        p(classes = "card-text") {
+            table(classes = "table table-bordered") {
+                thead {
+                    tr {
+                        td { +"Command Type" }
+                        td { +"Description" }
+                        td { +"Status" }
+                        td { +"Error message" }
+                        td { +"Duration" }
+                        td { +"Stack Trace" }
+                    }
+                }
+                tbody {
+                    val sortedCommands = failure.commands?.toList()?.sortedBy { it.second.timestamp }
+
+                    sortedCommands?.forEach {
+                        val command: MaestroCommand = it.first
+                        val metadata: CommandDebugMetadata = it.second
+                        val status: CommandStatus? = metadata.status
+                        val rowClass: String = if (status == null) {
+                            ""
+                        } else {
+                            when (status) {
+                                CommandStatus.COMPLETED -> "table-success"
+                                CommandStatus.FAILED -> "table-danger"
+                                CommandStatus.PENDING -> "table-light"
+                                CommandStatus.RUNNING -> "table-info"
+                                CommandStatus.SKIPPED -> "table-secondary"
+                            }
+                        }
+                        tr(classes = "$rowClass") {
+                            td { +command.asCommand()?.javaClass?.simpleName.toString().replace(commandRegex, "") }
+                            td(classes = "strong") { +command.description() }
+                            td { +"${status?.name}" }
+                            td { +metadata.error?.message.orEmpty() }
+                            td { +"${metadata.duration ?: ""}" }
+                            td { pre { +metadata.error?.stackTraceToString().orEmpty() } }
+                        }
+                    }
+                }
+            }
+        }
+        p {
+            flow.failure?.screenshots?.forEach {
+                val sanitisedFlowName = URLEncoder.encode(flow.name.replace(" ", "_"), "utf-8")
+                val screenshotCopyFileName = "${sanitisedFlowName}_${flow.status.name}_${it.timestamp}"
+                val screenshotCopyFile = File(reportFolder, "${screenshotCopyFileName}${it.screenshot.extension}")
+                it.screenshot.copyTo(screenshotCopyFile, overwrite = true)
+
+                img {
+                    src = screenshotCopyFile.name
+                    alt = "Screenshot: ${screenshotCopyFileName}, ${flow.status.name}"
+                    style = "display: block; width: 400px; height: auto;"
+                }
+            }
+        }
+    }
+
+    companion object {
+        private val commandRegex = Regex("Command$")
+    }
 }

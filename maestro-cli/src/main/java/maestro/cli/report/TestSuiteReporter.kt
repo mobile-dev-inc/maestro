@@ -1,21 +1,23 @@
 package maestro.cli.report
 
 import maestro.cli.model.TestExecutionSummary
-import okio.Sink
+import java.io.File
 
 interface TestSuiteReporter {
+    val fileExtension: String?
 
     fun report(
         summary: TestExecutionSummary,
-        out: Sink,
+        out: File,
     )
 
     companion object {
         val NOOP: TestSuiteReporter = object : TestSuiteReporter {
-            override fun report(summary: TestExecutionSummary, out: Sink) {
+            override val fileExtension: String? = null
+
+            override fun report(summary: TestExecutionSummary, out: File) {
                 // no-op
             }
         }
     }
-
 }
