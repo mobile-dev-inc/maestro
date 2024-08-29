@@ -7,6 +7,7 @@ set -eu
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
 
 command -v curl >/dev/null 2>&1 || { echo "curl is required" && exit 1; }
+command -v gsutil >/dev/null 2>&1 || { echo "gsutil is required" && exit 1; }
 
 SAMPLES_URL="gs://mobile.dev/samples/samples.zip"
 

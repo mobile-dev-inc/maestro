@@ -48,27 +48,8 @@ on publicly available directory in Google Cloud Storage:
 
 ### Update the samples
 
-Move files To generate the zip archive:
+Run the script:
 
 ```console
-
+./update_samples
 ```
-
-Then use `gsutil` to upload the zip archive to the Google Cloud Storage bucket.
-
-```console
-gsutil cp samples.zip "gs://mobile.dev/samples/samples.zip"
-```
-
-gsutil acl ch -r -u AllUsers:R gs://mobile.dev/samples/e2e_apps
-
-Although the samples are checked in, updating them requires a few manual steps:
-
-* Change the samples in this directory and merge these changes
-* Run `maestro download-samples`
-* Copy *.yaml to the samples directory created by download-samples
-* Run `(cd samples && zip -r "$OLDPWD/samples.zip" . -x "/**/.*" -x "__MACOSX")`
-* Open https://console.cloud.google.com/storage/browser/mobile.dev/samples
-* Upload samples.zip
-* Adjust the permissions of samples.zip to "Public to Internet"
-* Run `maestro download-samples` and verify that the change was successful
