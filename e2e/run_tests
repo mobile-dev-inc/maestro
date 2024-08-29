@@ -18,6 +18,10 @@ done
 
 # Run failing tests
 for workspace_dir in ./workspaces/*; do
+	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
+	  # Wikipedia has no failing flows
+	  continue
+	fi
 	echo "run failing tests for app $workspace_dir"
 
 	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" && FAILED=true
