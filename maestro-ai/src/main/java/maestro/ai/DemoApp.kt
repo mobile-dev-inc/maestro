@@ -125,7 +125,6 @@ class DemoApp : CliktCommand() {
                 val defects = if (testCase.prompt == null) Prediction.findDefects(
                     aiClient = aiClient,
                     screen = bytes,
-                    previousFalsePositives = listOf(),
                     printPrompt = showPrompts,
                     printRawResponse = showRawResponse,
                 ) else {

@@ -36,7 +36,6 @@ object Prediction {
     suspend fun findDefects(
         aiClient: AI,
         screen: ByteArray,
-        previousFalsePositives: List<String>,
         printPrompt: Boolean = false,
         printRawResponse: Boolean = false,
     ): List<Defect> {
@@ -95,14 +94,6 @@ object Prediction {
                 |DO NOT output any other information in the JSON object.
                 """.trimMargin("|")
             )
-
-
-            if (previousFalsePositives.isNotEmpty()) {
-                appendLine("Additionally, the following defects are false positives:")
-                for (falsePositive in previousFalsePositives) {
-                    appendLine("  * $falsePositive")
-                }
-            }
 
             appendLine("There are usually only a few defects in the screenshot. Don't generate tens of them.")
         }
