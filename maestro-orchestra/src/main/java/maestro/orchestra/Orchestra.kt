@@ -391,8 +391,11 @@ class Orchestra(
             if (command.optional) throw CommandSkipped
 
             throw MaestroException.AssertionFailure(
-                "Assertion failed. See the report to learn more.",
-                maestro.viewHierarchy().root,
+                message = """
+                    |Assertion is false: ${command.assertion}
+                    |Reasoning: ${defect.reasoning}
+                    """.trimMargin(),
+                hierarchyRoot = maestro.viewHierarchy().root,
             )
         }
 
