@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -17,7 +16,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          # These credentials should only have write access to the bucket
+          credentials_json: ${{ secrets.GCP_MOBILEDEV_BUCKET_CREDENTIALS }}
 
       - name: Set up Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v2
@@ -27,5 +27,5 @@ jobs:
     
       - name: Upload samples to public Google Cloud Storage bucket
         run: |
-          # for now, just download to check if gcloud cli is correctly setup
-          gsutil cp gs://mobile.dev/samples/e2e_apps/wikipedia.apk .
+          cd e2e/
+          ./update_samples

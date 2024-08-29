@@ -16,13 +16,15 @@ fi
 
 rm -rf samples/ samples.zip
 mkdir -p samples/
-cp -r apps/wikipedia.apk apps/Wikipedia.zip samples/
+cp -r apps/wikipedia.apk apps/wikipedia.zip samples/
 cp -r workspaces/wikipedia/* samples/
+cp samples/wikipedia.apk samples/sample.apk # The name is being depended upon.
+cp samples/wikipedia.zip samples/sample.zip # The name is being depended upon.
 cd samples/
 
 zip -r -q ../samples.zip . -x "/**/.*" -x "__MACOSX"
 
 cd ..
 
-gsutil cp samples.zip "gs://mobile.dev/samples/samples.zip"
-gsutil acl ch -r -u AllUsers:R "gs://mobile.dev/samples/samples.zip"
+gsutil cp samples.zip "$SAMPLES_URL"
+gsutil acl ch -r -u AllUsers:R "$SAMPLES_URL"
