@@ -122,7 +122,7 @@ object TestRunner {
                                 view = resultView,
                                 commands = commands,
                                 debugOutput = FlowDebugOutput(),
-                                // TODO(bartekpacia): make AI outputs work in continuous mode
+                                // TODO(bartekpacia): make AI outputs work in continuous mode (see #1972)
                                 aiOutput = FlowAIOutput(
                                     flowName = "TODO",
                                     flowFile = flowFile,
