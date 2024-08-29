@@ -2,9 +2,11 @@ package xcuitest.installer
 
 import logger.Logger
 import maestro.utils.MaestroTimer
+import maestro.utils.SocketUtils
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import okio.buffer
 import okio.sink
 import okio.source
@@ -131,6 +133,7 @@ class LocalXCTestInstaller(
 
         val checkSuccessful = try {
             okHttpClient.newCall(request).execute().use {
+                logger.info("[Done] Perform XCUITest driver status check on $deviceId")
                 it.isSuccessful
             }
         } catch (ignore: IOException) {
