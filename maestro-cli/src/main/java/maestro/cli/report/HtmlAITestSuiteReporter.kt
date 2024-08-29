@@ -23,6 +23,7 @@ import java.io.File
 
 // TODO(bartekpacia): Ideally, AI output would be in the same HTML file as "normal test output". There is no inherent reason
 //  to split those 2 streams of output ("normal" and "AI") into 2 separate HTML files.
+//  See issue #1973
 class HtmlAITestSuiteReporter {
 
     private val FlowAIOutput.htmlReportFilename

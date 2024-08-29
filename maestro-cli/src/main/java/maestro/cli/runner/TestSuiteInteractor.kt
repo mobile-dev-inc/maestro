@@ -139,7 +139,9 @@ class TestSuiteInteractor(
         maestro: Maestro,
         debugOutputPath: Path
     ): Pair<TestExecutionSummary.FlowResult, FlowAIOutput> {
-        // TODO(bartekpacia): merge TestExecutionSummary with AI suggestions (i.e. consider them also part of the test output)
+        // TODO(bartekpacia): merge TestExecutionSummary with AI suggestions
+        //  (i.e. consider them also part of the test output)
+        //  See #1973
 
         var flowName: String = flowFile.nameWithoutExtension
         var flowStatus: FlowStatus
