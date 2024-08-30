@@ -18,7 +18,7 @@ commons-codec = "1.17.0"
 commons-lang3 = "3.13.0" # 3.14.0 causes weird crashes during dexing
 commons-io = "2.16.1"
 dadb = "1.2.7"
-detekt = "1.19.0"
+detekt = "1.23.6"
 googleFindbugs = "3.0.2"
 googleGson = "2.11.0"
 googleProtobuf = "3.21.9"
@@ -111,6 +111,7 @@ square-okio = { module = "com.squareup.okio:okio", version.ref = "squareOkio" }
 square-mock-server = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "squareMockWebServer" }
 wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
 [bundles]
 

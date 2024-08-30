@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -20,9 +21,10 @@ tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     }
 }
 
-detekt {
+tasks.withType<Detekt> {
+    // config = files("${rootDir}/detekt.yml")
+    // val f = file("./detekt.yml")
+    // logger.quiet("file exists: ${f.exists()}, path: ${f.absolutePath}")
+    // config.setFrom(f)
     buildUponDefaultConfig = true
-    allRules = false
-    autoCorrect = true
-    config = files("${rootDir}/detekt.yml")
 }

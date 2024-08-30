@@ -160,4 +160,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.uiautomator)
+
+    detektPlugins(libs.detekt.formatting)
 }
