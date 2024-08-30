@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -u
+set -eu
 
 # Runs all tests in the workspaces directory.
 
