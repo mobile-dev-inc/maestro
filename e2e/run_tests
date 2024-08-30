@@ -9,30 +9,34 @@ command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 
 FAILED=false
 
+_h1() {
+	printf "=>\n=> $1\n=>\n"
+}
+
+_h2() {
+	printf "==> $1\n"
+}
+
 # Run passing tests
 for workspace_dir in ./workspaces/*; do
-	echo "run passing tests for app $workspace_dir"
+	app_name="$(basename "$workspace_dir")"
+	_h1 "run tests for app $app_name"
+
+	_h2 "run passing tests"
+	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" | sed "s/^/===> $app_name: /" || { echo "==> FAIL! Expected to pass, but it failed instead" && FAILED=true; }
+
+	# edge case: the wikipedia workspace has no failing flows
 	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
-	  # wikipedia flows have no passing/failing labels
-	  maestro test --exclude-tags ios "$workspace_dir" || FAILED=true
-	  continue
+		continue
 	fi
 
-	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" || FAILED=true
-done
-
-# Run failing tests
-for workspace_dir in ./workspaces/*; do
-	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
-	  # wikipedia workspace has no failing flows
-	  continue
-	fi
-	echo "run failing tests for app $workspace_dir"
-
-	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" && FAILED=true
+	_h2 "run failing tests"
+	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" | sed "s/^/===> $app_name: /" && { echo "==> FAIL! Expected to fail, but it passed instead" && FAILED=true; }
 done
 
 if [ "$FAILED" = true ]; then
-  echo "Some tests failed"
-  exit 1
+	_h1 "FAILURE: some tests failed!"
+	exit 1
+else
+	_h1 "SUCCESS: all tests passed!"
 fi
