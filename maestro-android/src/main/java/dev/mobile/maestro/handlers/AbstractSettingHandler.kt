@@ -8,10 +8,7 @@ abstract class AbstractSettingHandler(private val context: Context, private val 
     protected fun hasPermissions(): Boolean {
         for (p in permissions) {
             if (context.checkCallingOrSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
-                val logMessage = String.format(
-                    "The permission %s is not set. Cannot change state of %s.",
-                    p, settingDescription
-                )
+                val logMessage = "The permission $p is not set. Cannot change state of $settingDescription."
                 Log.e(TAG, logMessage)
                 return false
             }

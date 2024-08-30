@@ -1,0 +1,16 @@
+complexity:
+  LongMethod:
+    active: false
+
+formatting:
+  TrailingCommaOnCallSite:
+    active: true
+
+  TrailingCommaOnDeclarationSite:
+    active: true
+
+style:
+  MaxLineLength:
+    active: false
+  MagicNumber:
+    active: false

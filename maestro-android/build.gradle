@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id "com.google.protobuf"
+    alias(libs.plugins.detekt)
 }
 
 protobuf {
@@ -159,4 +160,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.uiautomator)
+
+    detektPlugins(libs.detekt.formatting)
 }

@@ -22,7 +22,5 @@ tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
 
 detekt {
     buildUponDefaultConfig = true
-    allRules = false
     autoCorrect = true
-    config = files("${rootDir}/detekt.yml")
 }

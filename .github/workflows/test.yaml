@@ -7,6 +7,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    name: Test
 
     steps:
       - name: Clone repository
@@ -19,12 +20,17 @@ jobs:
           java-version: 11
           cache: gradle
 
-      - name: Test
+      - name: Run detekt
+        run: ./gradlew detekt --continue
+
+      - name: Run tests
+        if: success() || failure()
         run: ./gradlew test
 
 
   validate-gradle-wrapper:
     runs-on: ubuntu-latest
+    name: Validate Gradle Wrapper
 
     steps:
       - name: Clone repository

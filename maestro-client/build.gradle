@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.protobuf)
+    alias(libs.plugins.detekt)
 }
 
 protobuf {
@@ -88,6 +89,8 @@ dependencies {
     testImplementation(libs.google.truth)
     testImplementation(libs.square.mock.server)
     testImplementation(libs.junit.jupiter.params)
+
+    detektPlugins(libs.detekt.formatting)
 }
 
 java {
@@ -109,4 +112,9 @@ plugins.withId("com.vanniktech.maven.publish") {
 
 test {
     useJUnitPlatform()
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    autoCorrect = true
 }

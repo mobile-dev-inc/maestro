@@ -21,7 +21,7 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
         NoSuchMethodException::class,
         InvocationTargetException::class,
         IllegalAccessException::class,
-        NoSuchFieldException::class
+        NoSuchFieldException::class,
     )
     private fun setLocaleWith(locale: Locale) {
         var activityManagerNativeClass = Class.forName("android.app.ActivityManagerNative")
@@ -48,12 +48,12 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
                 activityManagerNativeClass,
                 amn,
                 "updateConfiguration",
-                config
+                config,
             )
         } else {
             val methodUpdateConfiguration = activityManagerNativeClass.getMethod(
                 "updateConfiguration",
-                Configuration::class.java
+                Configuration::class.java,
             )
             methodUpdateConfiguration.isAccessible = true
             methodUpdateConfiguration.invoke(amn, config)

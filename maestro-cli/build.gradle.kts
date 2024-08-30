@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.jreleaser)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.detekt)
 }
 
 group = "dev.mobile"
@@ -59,6 +60,8 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
+
+    detektPlugins(libs.detekt.formatting)
 }
 
 java {

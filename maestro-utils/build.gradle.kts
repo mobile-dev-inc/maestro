@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.detekt)
 }
 
 dependencies {
@@ -13,6 +14,8 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
+
+    detektPlugins(libs.detekt.formatting)
 }
 
 java {
