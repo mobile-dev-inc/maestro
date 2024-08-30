@@ -1,4 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -21,7 +20,7 @@ tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     }
 }
 
-tasks.withType<Detekt> {
+detekt {
     buildUponDefaultConfig = true
     autoCorrect = true
 }

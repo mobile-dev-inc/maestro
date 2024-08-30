@@ -113,3 +113,8 @@ plugins.withId("com.vanniktech.maven.publish") {
 test {
     useJUnitPlatform()
 }
+
+detekt {
+    buildUponDefaultConfig = true
+    autoCorrect = true
+}
