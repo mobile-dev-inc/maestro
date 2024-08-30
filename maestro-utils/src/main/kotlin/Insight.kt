@@ -21,11 +21,11 @@ object Insights {
 
 data class Insight(
     val message: String,
-    val level: Level
+    val level: Level,
 ) {
     enum class Level {
         WARNING,
         INFO,
-        NONE
+        NONE,
     }
 }

@@ -36,7 +36,7 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             if (approximateMatchesLc.isNotEmpty() && script.isNullOrBlank()) {
                 Log.i(
                     TAG,
-                    "The locale $locale is not known. Selecting the closest known one ${approximateMatchesLc[0]} instead"
+                    "The locale $locale is not known. Selecting the closest known one ${approximateMatchesLc[0]} instead",
                 )
                 locale = approximateMatchesLc[0]
             } else {
@@ -44,14 +44,14 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
                 if (approximateMatchesL.isEmpty()) {
                     Log.e(
                         TAG,
-                        "The locale $locale is not known. Only the following locales are available: ${LocaleUtils.availableLocaleList()}"
+                        "The locale $locale is not known. Only the following locales are available: ${LocaleUtils.availableLocaleList()}",
                     )
                 } else {
                     Log.e(
                         TAG,
                         "The locale $locale is not known. " +
                                 "The following locales are available for the $language language: $approximateMatchesL" +
-                                "The following locales are available altogether: ${LocaleUtils.availableLocaleList()}"
+                                "The following locales are available altogether: ${LocaleUtils.availableLocaleList()}",
                     )
                 }
                 resultCode = RESULT_LOCALE_NOT_VALID
