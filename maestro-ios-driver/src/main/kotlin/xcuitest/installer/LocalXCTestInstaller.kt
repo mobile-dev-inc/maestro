@@ -2,11 +2,9 @@ package xcuitest.installer
 
 import logger.Logger
 import maestro.utils.MaestroTimer
-import maestro.utils.SocketUtils
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import okio.buffer
 import okio.sink
 import okio.source

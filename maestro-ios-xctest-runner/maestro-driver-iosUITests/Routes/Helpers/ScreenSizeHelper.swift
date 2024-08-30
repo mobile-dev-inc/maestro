@@ -9,15 +9,15 @@ struct ScreenSizeHelper {
     }
     
     /// Takes device orientation into account.
-    static func actualScreenSize() -> (Float, Float) {
+    static func actualScreenSize() throws -> (Float, Float) {
         let orientation = XCUIDevice.shared.orientation
         
         let (width, height) = physicalScreenSize()
         let (actualWidth, actualHeight) = switch (orientation) {
         case .portrait, .portraitUpsideDown: (width, height)
         case .landscapeLeft, .landscapeRight: (height, width)
-        case .faceDown, .faceUp, .unknown: fatalError("Unsupported orientation: \(orientation)")
-        @unknown default: fatalError("Unsupported orientation: \(orientation)")
+        case .faceDown, .faceUp, .unknown: throw AppError(message: "Unsupported orientation: \(orientation)")
+        @unknown default: throw AppError(message: "Unsupported orientation: \(orientation)")
         }
         
         return (actualWidth, actualHeight)

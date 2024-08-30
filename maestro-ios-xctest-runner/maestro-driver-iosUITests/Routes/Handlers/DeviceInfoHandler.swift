@@ -17,7 +17,7 @@ struct DeviceInfoHandler: HTTPHandler {
             let springboardApp = XCUIApplication(bundleIdentifier: springboardBundleId)
             let screenSize = springboardApp.frame.size
 
-            let (width, height) = ScreenSizeHelper.actualScreenSize()
+            let (width, height) = try ScreenSizeHelper.actualScreenSize()
             let deviceInfo = DeviceInfoResponse(
                 widthPoints: Int(width),
                 heightPoints: Int(height),
