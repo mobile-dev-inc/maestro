@@ -23,7 +23,7 @@ for workspace_dir in ./workspaces/*; do
 	_h1 "run tests for app $app_name"
 
 	_h2 "run passing tests"
-	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" | sed "s/^/===> $app_name: /" || { echo "==> FAIL! Expected to pass, but it failed instead" && FAILED=true; }
+	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" || { echo "==> FAIL! Expected to pass, but it failed instead" && FAILED=true; }
 
 	# edge case: the wikipedia workspace has no failing flows
 	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
@@ -31,7 +31,7 @@ for workspace_dir in ./workspaces/*; do
 	fi
 
 	_h2 "run failing tests"
-	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" | sed "s/^/===> $app_name: /" && { echo "==> FAIL! Expected to fail, but it passed instead" && FAILED=true; }
+	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" && { echo "==> FAIL! Expected to fail, but it passed instead" && FAILED=true; }
 done
 
 if [ "$FAILED" = true ]; then
