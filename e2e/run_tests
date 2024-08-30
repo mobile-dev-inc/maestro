@@ -17,21 +17,53 @@ _h2() {
 	printf "==> $1\n"
 }
 
+_h3() {
+	printf "===> $1\n"
+}
+
 # Run passing tests
 for workspace_dir in ./workspaces/*; do
 	app_name="$(basename "$workspace_dir")"
 	_h1 "run tests for app $app_name"
 
-	_h2 "run passing tests"
-	maestro test --include-tags passing --exclude-tags ios "$workspace_dir" || { echo "==> FAIL! Expected to pass, but it failed instead" && FAILED=true; }
+	_h2 "[$app_name] run passing tests"
+
+	# Start the maestro command in the background and capture its output
+	2>&1 maestro test --include-tags passing --exclude-tags ios "$workspace_dir" | while IFS= read -r line; do
+	    _h3 "[$app_name] $line"
+	done &
+	# Save the PID of the background job
+	maestro_pid=$!
+
+	# Wait for the maestro command to finish and capture its exit code
+	echo "waiting!"
+	wait $maestro_pid
+	maestro_status=$?
+
+	if [ "$maestro_status" != "0" ]; then
+        _h2 "[$app_name] FAIL! Expected to pass, but it failed instead"
+		FAILED=true
+	fi
 
 	# edge case: the wikipedia workspace has no failing flows
 	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
 		continue
 	fi
 
-	_h2 "run failing tests"
-	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" && { echo "==> FAIL! Expected to fail, but it passed instead" && FAILED=true; }
+	_h2 "[$app_name] run failing tests"
+	2>&1 maestro test --include-tags failing --exclude-tags ios "$workspace_dir" | while IFS= read -r line; do
+	    _h3 "[$app_name] $line"
+	done &
+	# Save the PID of the background job
+	maestro_pid=$!
+
+	wait $maestro_pid
+	maestro_status=$?
+
+	if [ "$maestro_status" == "0" ]; then
+		_h2 "[$app_name] FAIL! Expected to fail, but it passed instead"
+		FAILED=true
+    fi
 done
 
 if [ "$FAILED" = true ]; then
