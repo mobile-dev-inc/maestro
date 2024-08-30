@@ -8,7 +8,7 @@ struct TouchRouteHandler: HTTPHandler {
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: Self.self)
     )
-    
+
     func handleRequest(_ request: FlyingFox.HTTPRequest) async throws -> FlyingFox.HTTPResponse {
         let decoder = JSONDecoder()
       
