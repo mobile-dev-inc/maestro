@@ -85,7 +85,7 @@ class App {
     var deviceId: String? = null
 
     @Option(names = ["--verbose"], description = ["Enable verbose logging"])
-    var verbose: Boolean? = false
+    var verbose: Boolean = false
 }
 
 private fun printVersion() {
