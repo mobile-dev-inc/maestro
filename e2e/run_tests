@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -eu
+set -u
 
 # Runs all tests in the workspaces directory.
 
@@ -7,7 +7,7 @@ command -v maestro >/dev/null 2>&1 || { echo "maestro is required" && exit 1; }
 
 [ "$(basename "$PWD")" = "e2e" ] || { echo "must be run from e2e directory" && exit 1; }
 
-FAILED=false
+ALL_PASS=true
 
 _h1() {
 	printf "=>\n=> $1\n=>\n"
@@ -21,52 +21,56 @@ _h3() {
 	printf "===> $1\n"
 }
 
+mkfifo pipe
+trap 'rm -f pipe' EXIT
+
 # Run passing tests
 for workspace_dir in ./workspaces/*; do
+	WORKSPACE_PASS=true
 	app_name="$(basename "$workspace_dir")"
 	_h1 "run tests for app $app_name"
 
+	###
+	### Run passing tests
+	###
 	_h2 "[$app_name] run passing tests"
 
-	# Start the maestro command in the background and capture its output
-	2>&1 maestro test --include-tags passing --exclude-tags ios "$workspace_dir" | while IFS= read -r line; do
+	while IFS= read -r line; do
 	    _h3 "[$app_name] $line"
-	done &
-	# Save the PID of the background job
-	maestro_pid=$!
+	done < pipe &
 
-	# Wait for the maestro command to finish and capture its exit code
-	echo "waiting!"
-	wait $maestro_pid
-	maestro_status=$?
+	2>&1 maestro test --include-tags passing --exclude-tags ios "$workspace_dir" > pipe || WORKSPACE_PASS=false
 
-	if [ "$maestro_status" != "0" ]; then
+	if [ "$WORKSPACE_PASS" = "false" ]; then
         _h2 "[$app_name] FAIL! Expected to pass, but it failed instead"
-		FAILED=true
+		ALL_PASS=false
 	fi
 
+
+	###
+	### Run failing tests
+	###
 	# edge case: the wikipedia workspace has no failing flows
 	if [ "$(basename "$workspace_dir")" = "wikipedia" ]; then
 		continue
 	fi
 
+	WORKSPACE_PASS=true # Reset for failing flows
 	_h2 "[$app_name] run failing tests"
-	2>&1 maestro test --include-tags failing --exclude-tags ios "$workspace_dir" | while IFS= read -r line; do
+
+	while IFS= read -r line; do
 	    _h3 "[$app_name] $line"
-	done &
-	# Save the PID of the background job
-	maestro_pid=$!
+	done < pipe &
 
-	wait $maestro_pid
-	maestro_status=$?
+	maestro test --include-tags failing --exclude-tags ios "$workspace_dir" > pipe && WORKSPACE_PASS=false
 
-	if [ "$maestro_status" == "0" ]; then
+	if [ "$WORKSPACE_PASS" = "false" ]; then
 		_h2 "[$app_name] FAIL! Expected to fail, but it passed instead"
-		FAILED=true
+		ALL_PASS=false
     fi
 done
 
-if [ "$FAILED" = true ]; then
+if [ "$ALL_PASS" = "false" ]; then
 	_h1 "FAILURE: some tests failed!"
 	exit 1
 else
