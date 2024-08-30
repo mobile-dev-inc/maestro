@@ -22,9 +22,6 @@ tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
 }
 
 tasks.withType<Detekt> {
-    // config = files("${rootDir}/detekt.yml")
-    // val f = file("./detekt.yml")
-    // logger.quiet("file exists: ${f.exists()}, path: ${f.absolutePath}")
-    // config.setFrom(f)
     buildUponDefaultConfig = true
+    autoCorrect = true
 }
