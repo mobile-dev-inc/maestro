@@ -10,7 +10,7 @@ protobuf {
     }
 
     plugins {
-        id("grpc") {
+        create("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
@@ -18,12 +18,12 @@ protobuf {
     generateProtoTasks {
         all().forEach { task ->
             task.plugins {
-                id("grpc") { option("lite") }
+                create("grpc") { option("lite") }
             }
 
             task.builtins {
-                id("java") { option("lite") }
-                id("kotlin") { option("lite") }
+                create("java") { option("lite") }
+                create("kotlin") { option("lite") }
             }
         }
     }
@@ -56,27 +56,27 @@ android {
                 "proguard-rules.pro",
             )
         }
-        
+
         named("debug") {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    
+
     signingConfigs {
         named("debug") {
             storeFile = file("../debug.keystore")
         }
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    
+
     packagingOptions {
         resources {
             excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
@@ -93,15 +93,11 @@ tasks.register<Copy>("copyMaestroAndroid") {
     into(layout.buildDirectory.file(maestroAndroidApkDest))
 
     doLast {
-        if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-            throw GradleException("This build must be run with java 8")
+        if (!layout.buildDirectory.file(maestroAndroidApkDestPath).get().asFile.exists()) {
+            throw GradleException("Error: Input source for copyMaestroAndroid doesn't exist")
         }
 
-        if (!layout.buildDirectory.file(maestroAndroidApkDestPath).get().asFile.exists())
-            throw GradleException("Error: Input source for copyMaestroAndroid doesn't exist")
-
-        File("./maestro-client/src/main/resources/maestro-android-debug.apk")
-            .renameTo(File("./maestro-client/src/main/resources/maestro-app.apk"))
+        File("./maestro-client/src/main/resources/maestro-android-debug.apk").renameTo(File("./maestro-client/src/main/resources/maestro-app.apk"))
     }
 }
 
@@ -114,15 +110,11 @@ tasks.register<Copy>("copyMaestroServer") {
     into(layout.buildDirectory.file(maestroServerApkDest))
 
     doLast {
-        if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-            throw  GradleException("This build must be run with java 8")
-        }
-        
-        if (!layout.buildDirectory.file(maestroServerApkDestPath).get().asFile.exists())
+        if (!layout.buildDirectory.file(maestroServerApkDestPath).get().asFile.exists()) {
             throw GradleException("Error: Input source for copyMaestroServer doesn't exist")
+        }
 
-        File("./maestro-client/src/main/resources/maestro-android-debug-androidTest.apk")
-            .renameTo(File("./maestro-client/src/main/resources/maestro-server.apk"))
+        File("./maestro-client/src/main/resources/maestro-android-debug-androidTest.apk").renameTo(File("./maestro-client/src/main/resources/maestro-server.apk"))
     }
 }
 
@@ -139,7 +131,7 @@ tasks.named("assembleAndroidTest") {
 }
 
 sourceSets {
-    named("generated") {
+    create("generated") {
         java {
             srcDirs(
                 "build/generated/source/proto/main/grpc",

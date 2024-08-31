@@ -14,7 +14,7 @@ protobuf {
     }
 
     plugins {
-        id("grpc") {
+        create("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
@@ -22,11 +22,11 @@ protobuf {
     generateProtoTasks {
         all().forEach { task ->
             task.plugins {
-                id("grpc")
+                create("grpc")
             }
 
             task.builtins {
-                id("kotlin")
+                create("kotlin")
             }
         }
     }
