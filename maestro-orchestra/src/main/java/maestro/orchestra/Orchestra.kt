@@ -80,6 +80,7 @@ class Orchestra(
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandFailed: (Int, MaestroCommand, Throwable) -> ErrorResolution = { _, _, e -> throw e },
+    private val onCommandWarned: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandSkipped: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandReset: (MaestroCommand) -> Unit = {},
     private val onCommandMetadataUpdate: (MaestroCommand, CommandMetadata) -> Unit = { _, _ -> },
@@ -193,9 +194,12 @@ class Orchestra(
                         onCommandComplete(index, command)
                     } catch (e: MaestroException) {
                         val isOptional = command.asCommand()?.optional == true
-                        if (isOptional) throw CommandSkipped
+                        if (isOptional) throw CommandWarned
                         else throw e
                     }
+                } catch (ignored: CommandWarned) {
+                    // Swallow exception
+                    onCommandWarned(index, command)
                 } catch (ignored: CommandSkipped) {
                     // Swallow exception
                     onCommandSkipped(index, command)
@@ -362,7 +366,7 @@ class Orchestra(
         if (defects.isNotEmpty()) {
             onCommandGeneratedOutput(command, defects, imageData)
 
-            if (command.optional) throw CommandSkipped
+            if (command.optional) throw CommandWarned
 
             val word = if (defects.size == 1) "defect" else "defects"
             throw MaestroException.AssertionFailure(
@@ -393,7 +397,7 @@ class Orchestra(
         if (defect != null) {
             onCommandGeneratedOutput(command, listOf(defect), imageData)
 
-            if (command.optional) throw CommandSkipped
+            if (command.optional) throw CommandWarned
 
             throw MaestroException.AssertionFailure(
                 message = """
@@ -1205,6 +1209,8 @@ class Orchestra(
     }
 
     private object CommandSkipped : Exception()
+
+    private object CommandWarned : Exception()
 
     data class CommandMetadata(
         val numberOfRuns: Int? = null,

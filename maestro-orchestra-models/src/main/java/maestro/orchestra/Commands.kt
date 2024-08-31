@@ -380,8 +380,8 @@ data class AssertConditionCommand(
 }
 
 data class AssertNoDefectsWithAICommand(
-    val optional: Boolean = true,
-    val label: String? = null,
+    override val optional: Boolean = true,
+    override val label: String? = null,
 ) : Command {
     override fun description(): String {
         if (label != null) return label
@@ -394,8 +394,8 @@ data class AssertNoDefectsWithAICommand(
 
 data class AssertWithAICommand(
     val assertion: String,
-    val optional: Boolean = true,
-    val label: String? = null,
+    override val optional: Boolean = true,
+    override val label: String? = null,
 ) : Command {
     override fun description(): String {
         if (label != null) return label
