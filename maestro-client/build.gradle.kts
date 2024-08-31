@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import com.vanniktech.maven.publish.SonatypeHost
+import com.google.protobuf.gradle.*
 
 plugins {
     id("maven-publish")
@@ -11,46 +13,51 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${libs.versions.googleProtobuf.get()}"
     }
+    
     plugins {
-        grpc {
+        id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
+    
     generateProtoTasks {
-        all().each { task ->
+        all().forEach { task ->
             task.plugins {
-                grpc {}
+                id("grpc")
             }
+            
             task.builtins {
-                kotlin {}
+                id("kotlin")
             }
         }
     }
 }
 
-compileKotlin {
-    dependsOn generateProto
+tasks.named("compileKotlin") {
+    dependsOn("generateProto")
 }
 
 kotlin.sourceSets.all {
-    // Prevent build warnings for grpc's generated opt-in code
+    // Prevent build warnings for grpc"s generated opt-in code
     languageSettings.optIn("kotlin.RequiresOptIn")
 }
 
 sourceSets {
     main {
         java {
-            srcDirs += 'build/generated/source/proto/main/grpc'
-            srcDirs += 'build/generated/source/proto/main/java'
-            srcDirs += 'build/generated/source/proto/main/kotlin'
+            srcDirs(
+                "build/generated/source/proto/main/grpc",
+                "build/generated/source/proto/main/java",
+                "build/generated/source/proto/main/kotlin"
+            )
         }
     }
 }
 
 dependencies {
-    protobuf project(':maestro-proto')
-    implementation project(':maestro-utils')
-    implementation project(':maestro-ios-driver')
+    protobuf(project(":maestro-proto"))
+    implementation(project(":maestro-utils"))
+    implementation(project(":maestro-ios-driver"))
 
     api(libs.graaljs)
     api(libs.grpc.kotlin.stub)
@@ -73,13 +80,13 @@ dependencies {
     api(libs.apk.parser)
 
 
-    implementation project(':maestro-ios')
+    implementation(project(":maestro-ios"))
     implementation(libs.google.findbugs)
     implementation(libs.axml)
     implementation(libs.selenium)
     api(libs.slf4j)
     api(libs.logback) {
-        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude(group = "org.slf4j", module = "slf4j-api")
     }
 
 
@@ -95,18 +102,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.named("compileKotlin", KotlinCompilationTask) {
+tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjdk-release=1.8")
     }
 }
 
-plugins.withId("com.vanniktech.maven.publish") {
-    mavenPublish {
-        sonatypeHost = "S01"
-    }
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
 }
 
-test {
+tasks.named<Test>("test") {
     useJUnitPlatform()
 }
