@@ -432,7 +432,7 @@ class Orchestra(
                 }
             } catch (ignored: MaestroException.ElementNotFound) {
             }
-            maestro.swipeFromCenter(direction, durationMs = command.scrollDuration)
+            maestro.swipeFromCenter(direction, durationMs = command.scrollDuration.toLong())
         } while (System.currentTimeMillis() < endTime)
 
         throw MaestroException.ElementNotFound(
