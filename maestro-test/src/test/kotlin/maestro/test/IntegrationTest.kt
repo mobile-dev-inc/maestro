@@ -1717,8 +1717,10 @@ class IntegrationTest {
                 Event.InputText("Sub"),
                 Event.InputText("Main"),
                 Event.InputText("Sub"),
+                Event.InputText("064_js_files"),
                 Event.InputText("Hello, Input Parameter!"),
                 Event.InputText("Hello, Evaluated Parameter!"),
+                Event.InputText("064_js_files"),
             )
         )
     }
