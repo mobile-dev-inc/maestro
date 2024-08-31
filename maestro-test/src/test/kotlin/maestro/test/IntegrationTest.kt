@@ -45,6 +45,7 @@ class IntegrationTest {
     internal fun tearDown() {
         File("041_take_screenshot_with_filename.png").delete()
         File("099_screen_recording.mp4").delete()
+        File("028_env.mp4").delete()
     }
 
     @Test
@@ -780,8 +781,10 @@ class IntegrationTest {
                 Event.InputText("\${PASSWORD} is testPassword"),
                 Event.OpenLink("https://example.com/secretUrl"),
                 Event.SetLocation(latitude = 37.82778, longitude = -122.48167),
+                Event.StartRecording,
             )
         )
+        assert(File("028_env.mp4").exists())
     }
 
     @Test
