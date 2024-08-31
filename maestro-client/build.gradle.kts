@@ -1,6 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import com.vanniktech.maven.publish.SonatypeHost
-import com.google.protobuf.gradle.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     id("maven-publish")
@@ -13,19 +12,19 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${libs.versions.googleProtobuf.get()}"
     }
-    
+
     plugins {
         id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
-    
+
     generateProtoTasks {
         all().forEach { task ->
             task.plugins {
                 id("grpc")
             }
-            
+
             task.builtins {
                 id("kotlin")
             }
@@ -112,6 +111,6 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.S01)
 }
 
-tasks.named<Test>("test") {
+tasks.named < Test > ("test") {
     useJUnitPlatform()
 }
