@@ -1,7 +1,6 @@
 package maestro.orchestra.workspace
 
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MaestroConfig
 import maestro.orchestra.WorkspaceConfig
 import maestro.orchestra.error.ValidationError
 import maestro.orchestra.workspace.ExecutionOrderPlanner.getFlowsToRunInSequence
@@ -10,59 +9,64 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.streams.toList
+import maestro.utils.isRegularFile
 
 object WorkspaceExecutionPlanner {
 
     fun plan(
-        input: Path,
+        input: Set<Path>,
         includeTags: List<String>,
         excludeTags: List<String>,
     ): ExecutionPlan {
-        if (input.notExists()) {
+        if (input.any { it.notExists() }) {
             throw ValidationError("""
-                Flow path does not exist: ${input.absolutePathString()}
+                Flow path does not exist: ${input.find { it.notExists() }?.absolutePathString()}
             """.trimIndent())
         }
 
-        if (input.isRegularFile()) {
-            validateFlowFile(input)
+        if (input.isRegularFile) {
+            validateFlowFile(input.first())
             return ExecutionPlan(
-                flowsToRun = listOf(input),
+                flowsToRun = input.toList(),
             )
         }
 
         // retrieve all Flow files
 
-        val unfilteredFlowFiles = Files.walk(input).filter { isFlowFile(it) }.toList()
-        if (unfilteredFlowFiles.isEmpty()) {
+        val (files, directories) = input.partition { it.isRegularFile() }
+
+        val flowFiles = files.filter { isFlowFile(it) }
+        val flowFilesInDirs: List<Path> = directories.flatMap { dir -> Files
+            .walk(dir)
+            .filter { isFlowFile(it) }
+            .toList()
+        }
+        if (flowFilesInDirs.isEmpty() && flowFiles.isEmpty()) {
             throw ValidationError("""
-                Flow directory does not contain any Flow files: ${input.absolutePathString()}
+                Flow directories do not contain any Flow files: ${directories.joinToString(", ") { it.absolutePathString() }}
             """.trimIndent())
         }
 
         // Filter flows based on flows config
 
-        val workspaceConfig = findConfigFile(input)
+        val workspaceConfig = directories.firstNotNullOfOrNull { findConfigFile(it) }
             ?.let { YamlCommandReader.readWorkspaceConfig(it) }
             ?: WorkspaceConfig()
 
         val globs = workspaceConfig.flows ?: listOf("*")
 
-        val matchers = globs
-            .map {
-                input.fileSystem.getPathMatcher("glob:${input.pathString}/$it")
-            }
+        val matchers = globs.flatMap { glob ->
+            directories.map { it.fileSystem.getPathMatcher("glob:${it.pathString}/$glob") }
+        }
 
-        val unsortedFlowFiles = unfilteredFlowFiles
-            .filter { path ->
-                matchers.any { matcher -> matcher.matches(path) }
-            }
-            .toList()
+        val unsortedFlowFiles = flowFiles + flowFilesInDirs.filter { path ->
+            matchers.any { matcher -> matcher.matches(path) }
+        }.toList()
 
         if (unsortedFlowFiles.isEmpty()) {
             if ("*" == globs.singleOrNull()) {
                 throw ValidationError("""
-                    Top-level directory does not contain any Flows: ${input.absolutePathString()}
+                    Top-level directories do not contain any Flows: ${directories.joinToString(", ") { it.absolutePathString() }}
                     To configure Maestro to run Flows in subdirectories, check out the following resources:
                       * https://maestro.mobile.dev/cli/test-suites-and-reports#inclusion-patterns
                       * https://blog.mobile.dev/maestro-best-practices-structuring-your-test-suite-54ec390c5c82

@@ -59,6 +59,7 @@ import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
+import maestro.utils.isSingleFile
 
 @CommandLine.Command(
     name = "test",
@@ -77,8 +78,8 @@ class TestCommand : Callable<Int> {
     @CommandLine.ParentCommand
     private val parent: App? = null
 
-    @CommandLine.Parameters
-    private lateinit var flowFile: File
+    @CommandLine.Parameters(description = ["One or more flow files or folders containing flow files"])
+    private lateinit var flowFiles: Set<File>
 
     @Option(
         names = ["-s", "--shards"],
@@ -142,8 +143,8 @@ class TestCommand : Callable<Int> {
     private val currentActiveDevices = ConcurrentSet<String>()
 
     private fun isWebFlow(): Boolean {
-        if (!flowFile.isDirectory) {
-            val config = YamlCommandReader.readConfig(flowFile.toPath())
+        if (flowFiles.isSingleFile) {
+            val config = YamlCommandReader.readConfig(flowFiles.first().toPath())
             return Regex("http(s?)://").containsMatchIn(config.appId)
         }
 
@@ -157,7 +158,7 @@ class TestCommand : Callable<Int> {
 
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
-                flowFile.toPath().toAbsolutePath(),
+                flowFiles.map { it.toPath().toAbsolutePath() }.toSet(),
                 includeTags,
                 excludeTags
             )
@@ -264,12 +265,12 @@ class TestCommand : Callable<Int> {
                         val maestro = session.maestro
                         val device = session.device
 
-                        if (flowFile.isDirectory || format != ReportFormat.NOOP) {
+                        if (flowFiles.isSingleFile.not() || format != ReportFormat.NOOP) {
                             // Run multiple flows
                             if (continuous) {
                                 val error =
                                     if (format != ReportFormat.NOOP) "Format can not be different from NOOP in continuous mode. Passed format is $format."
-                                    else "Continuous mode is not supported for directories. $flowFile is a directory"
+                                    else "Continuous mode is only supported in case of a single flow file. ${flowFiles.joinToString(", ") { it.absolutePath } } has more that a single flow file."
                                 throw CommandLine.ParameterException(commandSpec.commandLine(), error)
                             }
 
@@ -296,7 +297,7 @@ class TestCommand : Callable<Int> {
                                 if (!flattenDebugOutput) {
                                     TestDebugReporter.deleteOldFiles()
                                 }
-                                TestRunner.runContinuous(maestro, device, flowFile, env)
+                                TestRunner.runContinuous(maestro, device, flowFiles.first(), env)
 
                             } else {
                                 val resultView =
@@ -305,7 +306,7 @@ class TestCommand : Callable<Int> {
                                 val resultSingle = TestRunner.runSingle(
                                     maestro,
                                     device,
-                                    flowFile,
+                                    flowFiles.first(),
                                     env,
                                     resultView,
                                     debugOutputPath
