@@ -65,6 +65,7 @@ import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.withContext
 
 @CommandLine.Command(
     name = "test",
