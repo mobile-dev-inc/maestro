@@ -37,7 +37,7 @@ tasks.named("compileKotlin") {
 }
 
 kotlin.sourceSets.all {
-    // Prevent build warnings for grpc"s generated opt-in code
+    // Prevent build warnings for grpc's generated opt-in code
     languageSettings.optIn("kotlin.RequiresOptIn")
 }
 
@@ -78,7 +78,6 @@ dependencies {
     api(libs.jackson.dataformat.xml)
     api(libs.apk.parser)
 
-
     implementation(project(":maestro-ios"))
     implementation(libs.google.findbugs)
     implementation(libs.axml)
@@ -87,7 +86,6 @@ dependencies {
     api(libs.logback) {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
-
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -111,6 +109,6 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.S01)
 }
 
-tasks.named < Test > ("test") {
+tasks.named<Test>("test") {
     useJUnitPlatform()
 }
