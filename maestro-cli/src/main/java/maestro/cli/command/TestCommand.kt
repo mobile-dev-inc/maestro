@@ -87,10 +87,10 @@ class TestCommand : Callable<Int> {
     private var shards: Int = 1
 
     @Option(
-        names = ["-b", "--broadcast"],
-        description = ["Broadcasts all the tests across all running devices"]
+        names = ["-r", "--replicate"],
+        description = ["Replicates all the tests across all running devices"]
     )
-    private var broadcast: Boolean = false
+    private var replicate: Boolean = false
 
     @Option(names = ["-c", "--continuous"])
     private var continuous: Boolean = false
@@ -201,11 +201,11 @@ class TestCommand : Callable<Int> {
             }.toMutableSet())
 
             val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val effectiveShards = if (broadcast) availableDevices else shards.coerceAtMost(plan.flowsToRun.size)
+            val effectiveShards = if (replicate) availableDevices else shards.coerceAtMost(plan.flowsToRun.size)
             val sharded = effectiveShards > 1
 
             val chunkPlans =
-                if (broadcast) (0 until availableDevices).map { ExecutionPlan(plan.flowsToRun, plan.sequence) }
+                if (replicate) (0 until availableDevices).map { ExecutionPlan(plan.flowsToRun, plan.sequence) }
                 else plan.flowsToRun
                 .withIndex()
                 .groupBy { it.index % effectiveShards }
@@ -221,7 +221,7 @@ class TestCommand : Callable<Int> {
 
             // Collect device configurations for missing shards, if any
             val missing = effectiveShards - availableDevices
-            val allDeviceConfigs = if (!broadcast) (0 until missing).map { shardIndex ->
+            val allDeviceConfigs = if (!replicate) (0 until missing).map { shardIndex ->
                 PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
                 // Collect device configurations here, one per shard
                 PickDeviceView.requestDeviceOptions()
