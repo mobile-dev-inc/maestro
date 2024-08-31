@@ -555,15 +555,15 @@ class IntegrationTest {
         assertThat(commands).isEqualTo(
             listOf(
                 MaestroCommand(
+                    DefineVariablesCommand(
+                        env = mapOf("MAESTRO_FILENAME" to "020_parse_config")
+                    )
+                ),
+                MaestroCommand(
                     ApplyConfigurationCommand(
                         config = MaestroConfig(
                             appId = "com.example.app"
                         )
-                    )
-                ),
-                MaestroCommand(
-                    DefineVariablesCommand(
-                        env = mapOf("MAESTRO_FILENAME" to "020_parse_config")
                     )
                 ),
                 MaestroCommand(

@@ -116,7 +116,7 @@ object YamlCommandReader {
         val commands = parser.readValueAs<List<YamlFluentCommand>>(
             object : TypeReference<List<YamlFluentCommand>>() {}
         )
-        return config.copy(env = config.env.withDefaultEnvVars(flowPath.nameWithoutExtension)) to commands
+        return config.copy(env = config.env) to commands
     }
 
     private fun <T> mapParsingErrors(path: Path, block: () -> T): T {
