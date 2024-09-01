@@ -2585,15 +2585,17 @@ class IntegrationTest {
         }
 
         // Then
-        driver.assertHasEvent(Event.LaunchApp(
-            appId = "com.example.app",
-            launchArguments = mapOf(
-                "argumentA" to true,
-                "argumentB" to 4,
-                "argumentC" to 4.0,
-                "argumentD" to "Hello String Value true"
+        driver.assertHasEvent(
+            Event.LaunchApp(
+                appId = "com.example.app",
+                launchArguments = mapOf(
+                    "argumentA" to true,
+                    "argumentB" to 4,
+                    "argumentC" to 4.0,
+                    "argumentD" to "Hello String Value true"
+                )
             )
-        ))
+        )
     }
 
     @Test
@@ -2979,7 +2981,7 @@ class IntegrationTest {
     fun `Case 110 - addMedia command emits add media event with correct path`() {
         // given
         val commands = readCommands("110_add_media_device")
-        val driver  = driver {}
+        val driver = driver {}
 
         // when
         Maestro(driver).use {
@@ -2994,7 +2996,7 @@ class IntegrationTest {
     fun `Case 111 - addMedia command allows adding multiple media`() {
         // given
         val commands = readCommands("111_add_multiple_media")
-        val driver = driver {  }
+        val driver = driver { }
 
         // when
         Maestro(driver).use {
@@ -3109,7 +3111,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 115 - airplane mode`()  {
+    fun `Case 115 - airplane mode`() {
         val commands = readCommands("115_airplane_mode")
         val driver = driver { }
 
@@ -3117,7 +3119,7 @@ class IntegrationTest {
             orchestra(it).runFlow(commands)
         }
     }
-    
+
     @Test
     fun `Case 116 - Kill app`() {
         // Given
@@ -3135,6 +3137,38 @@ class IntegrationTest {
         // No test failure
         driver.assertHasEvent(Event.KillApp("com.example.app"))
         driver.assertHasEvent(Event.KillApp("another.app"))
+    }
+
+    @Test
+    fun `Case 117 - Scroll until view is visible - with speed evaluate`() {
+        // Given
+        val commands = readCommands("117_scroll_until_visible_speed")
+        val expectedDuration = "601"
+        val info = driver { }.deviceInfo()
+
+        val elementBounds = Bounds(0, 0 + info.heightGrid, 100, 100 + info.heightGrid)
+        val driver = driver {
+            element {
+                id = "maestro"
+                bounds = elementBounds
+            }
+        }
+
+        // When
+        var scrollDuration = "0"
+        Maestro(driver).use {
+            orchestra(it, onCommandMetadataUpdate = { _, metaData ->
+                scrollDuration = metaData.evaluatedCommand?.scrollUntilVisible?.scrollDuration.toString()
+            }).runFlow(commands)
+        }
+
+        // Then
+        assertThat(scrollDuration).isEqualTo(expectedDuration)
+        driver.assertEvents(
+            listOf(
+                Event.SwipeElementWithDirection(Point(270, 480), SwipeDirection.UP, expectedDuration.toLong()),
+            )
+        )
     }
 
     private fun orchestra(
