@@ -526,7 +526,7 @@ class AndroidDriver(
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
             val appName = ApkFile(apkFile).apkMeta.name
             apkFile.delete()
-            appName
+            appName ?: error("App has no label on main activity.")
         }
         if (appNameResult.isSuccess) {
             val appName = appNameResult.getOrThrow()
