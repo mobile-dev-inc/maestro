@@ -1,9 +1,7 @@
 appId: com.example.example
 tags:
     - android
-    - failing
+    - passing
 ---
 - launchApp:
     clearState: true
-- tapOn:
-    id: non-existent-id-to-fail-this-test
