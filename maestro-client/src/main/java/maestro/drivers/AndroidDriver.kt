@@ -531,37 +531,37 @@ class AndroidDriver(
     }
 
     private fun autoVerifyApp(appId: String?) {
-        if (appId != null) {
-            autoVerifyWithAppName(appId)
-        }
-        autoVerifyChromeAgreement()
-    }
-
-    private fun autoVerifyWithAppName(appId: String) {
         val appNameResult = runCatching {
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
             val appName = ApkFile(apkFile).apkMeta.name
             apkFile.delete()
-            appName ?: error("App has no label on main activity.")
+            appName ?: appId // The app chooser shows the appId if no application label attribute is set
         }
-        if (appNameResult.isSuccess) {
-            val appName = appNameResult.getOrThrow()
-            waitUntilScreenIsStatic(3000)
-            val appNameElement = filterByText(appName)
-            if (appNameElement != null) {
-                tap(appNameElement.bounds.center())
-                filterById("android:id/button_once")?.let {
-                    tap(it.bounds.center())
-                }
-            } else {
-                val openWithAppElement = filterByText(".*$appName.*")
-                if (openWithAppElement != null) {
-                    filterById("android:id/button_once")?.let {
-                        tap(it.bounds.center())
-                    }
-                }
-            }
+        if (appNameResult.isFailure) {
+            LOGGER.info("Aborting autoVerify. Could not get app name from APK metadata for $appId", appNameResult.exceptionOrNull())
+            return
         }
+
+        fun selectChooserOptionOnce(wordElement: UiElement) {
+            tap(wordElement.bounds.center())
+            filterById("android:id/button_once")?.let { tap(it.bounds.center()) }
+        }
+
+        waitUntilScreenIsStatic(3000)
+
+        val appName = appNameResult.getOrThrow()
+        filterByText(".*$appName.*")?.let {
+            selectChooserOptionOnce(it)
+            return
+        }
+
+        val appNameWord = appName.split(" ").first()
+        filterByText(".*$appNameWord.*")?.let {
+            selectChooserOptionOnce(it)
+            return
+        }
+
+        LOGGER.info("Aborting autoVerify. Could not find app name element for $appName")
     }
 
     private fun autoVerifyChromeAgreement() {
