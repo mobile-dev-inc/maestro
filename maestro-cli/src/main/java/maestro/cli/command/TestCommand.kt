@@ -81,9 +81,9 @@ class TestCommand : Callable<Int> {
     private lateinit var flowFile: File
 
     @Option(
-      names = ["--config", "--workspace-config"],
-      description = ["Optional YAML configuration file for Flows. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."])
-    private var workspaceConfigFile: File? = null
+      names = ["--config"],
+      description = ["Optional YAML configuration file for the workspace. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."])
+    private var configFile: File? = null
 
     @Option(
         names = ["-s", "--shards"],
@@ -169,7 +169,7 @@ class TestCommand : Callable<Int> {
                 flowFile.toPath().toAbsolutePath(),
                 includeTags,
                 excludeTags,
-                configFile,
+                configFile?.toPath()?.toAbsolutePath(),
             )
         } catch (e: ValidationError) {
             throw CliError(e.message)

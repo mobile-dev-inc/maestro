@@ -18,7 +18,7 @@ object WorkspaceExecutionPlanner {
         input: Path,
         includeTags: List<String>,
         excludeTags: List<String>,
-        config: File?,
+        config: Path?,
     ): ExecutionPlan {
         if (input.notExists()) {
             throw ValidationError("""
@@ -43,8 +43,8 @@ object WorkspaceExecutionPlanner {
         }
 
         // Filter flows based on flows config
-        val workspaceConfig = if(config?.exists() == true) {
-            YamlCommandReader.readWorkspaceConfig(config.toPath().toAbsolutePath())
+        val workspaceConfig = if (config != null) {
+            YamlCommandReader.readWorkspaceConfig(config.absolute())
         } else {
             findConfigFile(input)
                 ?.let { YamlCommandReader.readWorkspaceConfig(it) }
