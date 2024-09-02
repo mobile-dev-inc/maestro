@@ -516,7 +516,7 @@ class AndroidDriver(
     }
 
     private fun autoVerifyLinkFromSettings(appId: String, link: String) {
-        val apiLevel = dadb.shell("getprop ro.build.version.sdk").output.trim().toInt()
+        val apiLevel = getDeviceApiLevel()
         if (apiLevel <= 30) return
         val domain = runCatching { URI.create(link).toURL().host }.getOrNull() ?: return
         val packageOption = "--package $appId"
