@@ -46,6 +46,7 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -503,14 +504,29 @@ class AndroidDriver(
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
-        if (browser) {
-            openBrowser(link)
-        } else {
-            dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
-        }
+        if (autoVerify && !browser && appId != null) autoVerifyLinkFromSettings(appId, link)
+
+        if (browser) openBrowser(link)
+        else dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
 
         if (autoVerify) {
             autoVerifyApp(appId)
+        }
+    }
+
+    private fun autoVerifyLinkFromSettings(appId: String, link: String) {
+        val apiLevel = dadb.shell("getprop ro.build.version.sdk").output.trim().toInt()
+        if (apiLevel <= 30) return
+        val domain = runCatching { URI.create(link).toURL().host }.getOrNull() ?: return
+        val packageOption = "--package $appId"
+        val allowed = dadb.shell("pm set-app-links-allowed --user 0 $packageOption true")
+        if (allowed.exitCode > 0) {
+            LOGGER.debug("set-app-links-allowed failed for appId: $appId reason: ${allowed.errorOutput}")
+            return
+        }
+        val selected = dadb.shell("pm set-app-links-user-selection --user 0 $packageOption true $domain")
+        if (selected.exitCode > 0) {
+            LOGGER.debug("set-app-links-user-selection failed for appId: $appId domain: $domain reason: ${selected.errorOutput}")
         }
     }
 
