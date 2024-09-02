@@ -99,7 +99,7 @@ data class SwipeCommand(
 data class ScrollUntilVisibleCommand(
     val selector: ElementSelector,
     val direction: ScrollDirection,
-    val scrollDuration: Long,
+    val scrollDuration: String = DEFAULT_SCROLL_DURATION,
     val visibilityPercentage: Int,
     val timeout: Long = DEFAULT_TIMEOUT_IN_MILLIS,
     val centerElement: Boolean,
@@ -109,6 +109,10 @@ data class ScrollUntilVisibleCommand(
 
     val visibilityPercentageNormalized = (visibilityPercentage / 100).toDouble()
 
+    private fun String.speedToDuration(): String {
+        return ((1000 * (100 - this.toLong()).toDouble() / 100).toLong() + 1).toString()
+    }
+
     override fun description(): String {
         return label ?: "Scrolling $direction until ${selector.description()} is visible."
     }
@@ -116,12 +120,13 @@ data class ScrollUntilVisibleCommand(
     override fun evaluateScripts(jsEngine: JsEngine): ScrollUntilVisibleCommand {
         return copy(
             selector = selector.evaluateScripts(jsEngine),
+            scrollDuration = scrollDuration.evaluateScripts(jsEngine).speedToDuration()
         )
     }
 
     companion object {
         const val DEFAULT_TIMEOUT_IN_MILLIS = 20 * 1000L
-        const val DEFAULT_SCROLL_DURATION = 40
+        const val DEFAULT_SCROLL_DURATION = "40"
         const val DEFAULT_ELEMENT_VISIBILITY_PERCENTAGE = 100
         const val DEFAULT_CENTER_ELEMENT = false
     }

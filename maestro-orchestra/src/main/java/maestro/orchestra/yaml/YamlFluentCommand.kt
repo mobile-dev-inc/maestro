@@ -625,7 +625,7 @@ data class YamlFluentCommand(
                 selector = toElementSelector(yaml.element),
                 direction = yaml.direction,
                 timeout = timeout,
-                scrollDuration = yaml.speedToDuration(),
+                scrollDuration = yaml.speed,
                 visibilityPercentage = visibility,
                 centerElement = yaml.centerElement,
                 label = yaml.label,
