@@ -80,7 +80,9 @@ class TestCommand : Callable<Int> {
     @CommandLine.Parameters
     private lateinit var flowFile: File
 
-    @Option(names = ["--config"], description = ["Optional .yaml configuration file for Flows. If not provided, Maestro will look for a config.yaml file in the root directory."])
+    @Option(
+      names = ["--config", "--workspace-config"],
+      description = ["Optional YAML configuration file for Flows. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."])
     private var workspaceConfigFile: File? = null
 
     @Option(
