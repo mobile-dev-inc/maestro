@@ -261,7 +261,7 @@ internal class WorkspaceExecutionPlannerTest {
             input = path("/workspaces/014_config_not_null"),
             includeTags = listOf(),
             excludeTags = listOf(),
-            config = path("/workspaces/014_config_not_null/config/another_config.yml").toFile(),
+            config = path("/workspaces/014_config_not_null/config/another_config.yaml"),
         )
 
         // Then
