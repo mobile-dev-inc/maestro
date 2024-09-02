@@ -1,0 +1,6 @@
+appId: com.example.example
+tags:
+    - regression
+---
+- launchApp:
+    clearState: true
