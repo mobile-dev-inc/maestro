@@ -1,8 +1,0 @@
-flows:
-  - "execute_in_order/**"
-executionOrder:
-  continueOnFailure: true
-  flowsOrder:
-    - bravo_test
-    - alpha_test
-    - charlie_test

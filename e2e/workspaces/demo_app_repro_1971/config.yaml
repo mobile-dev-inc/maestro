@@ -1,0 +1,10 @@
+flows:
+  - "features/**"
+includeTags:
+  - regression
+executionOrder:
+    continueOnFailure: true
+    flowsOrder:
+        - test1
+        - test2
+        - test3
