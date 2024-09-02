@@ -215,7 +215,7 @@ class CloudCommand : Callable<Int> {
                     input = flowsFile.toPath().toAbsolutePath(),
                     includeTags = includeTags,
                     excludeTags = excludeTags,
-                    config = configFile,
+                    config = configFile?.toPath()?.toAbsolutePath(),
                 )
         } catch (e: Exception) {
             throw CliError("Upload aborted. Received error when evaluating workspace: ${e.message}")
