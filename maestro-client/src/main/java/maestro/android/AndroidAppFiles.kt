@@ -40,7 +40,13 @@ object AndroidAppFiles {
     fun getApkFile(dadb: Dadb, appId: String): File {
         val apkPath = dadb.shell("pm path $appId").output.removePrefix("package:").trim()
         val dst = File.createTempFile("tmp", ".apk")
-        dadb.pull(dst, apkPath)
+        try {
+            dadb.pull(dst, apkPath)
+        } catch (e: IOException) {
+            val newApkPath = "/sdcard/$appId.apk"
+            dadb.shell("cp $apkPath $newApkPath")
+            dadb.pull(dst, newApkPath)
+        }
         return dst
     }
 
