@@ -41,6 +41,8 @@ data class YamlFluentCommand(
     val assertVisible: YamlElementSelectorUnion? = null,
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: YamlAssertTrue? = null,
+    val assertNoDefectsWithAI: YamlAssertNoDefectsWithAI? = null,
+    val assertWithAI: YamlAssertWithAI? = null,
     val back: YamlActionBack? = null,
     val clearKeychain: YamlActionClearKeychain? = null,
     val hideKeyboard: YamlActionHideKeyboard? = null,
@@ -113,6 +115,23 @@ data class YamlFluentCommand(
                             scriptCondition = assertTrue.condition,
                         ),
                         label = assertTrue.label
+                    )
+                )
+            )
+            assertNoDefectsWithAI != null -> listOf(
+                MaestroCommand(
+                    AssertNoDefectsWithAICommand(
+                        optional = assertNoDefectsWithAI.optional,
+                        label = assertNoDefectsWithAI.label,
+                    )
+                )
+            )
+            assertWithAI != null -> listOf(
+                MaestroCommand(
+                    AssertWithAICommand(
+                        assertion = assertWithAI.assertion,
+                        optional = assertWithAI.optional,
+                        label = assertWithAI.label,
                     )
                 )
             )
@@ -309,8 +328,8 @@ data class YamlFluentCommand(
                         val longitude = spitPoint[1].toDoubleOrNull() ?: throw SyntaxError("Invalid travel point longitude: $point")
 
                         TravelCommand.GeoPoint(
-                            latitude = latitude,
-                            longitude = longitude,
+                            latitude = latitude.toString(),
+                            longitude = longitude.toString(),
                         )
                     },
                 speedMPS = command.speed,
@@ -595,7 +614,7 @@ data class YamlFluentCommand(
                 selector = toElementSelector(yaml.element),
                 direction = yaml.direction,
                 timeout = timeout,
-                scrollDuration = yaml.speedToDuration(),
+                scrollDuration = yaml.speed,
                 visibilityPercentage = visibility,
                 centerElement = yaml.centerElement,
                 label = yaml.label
@@ -695,6 +714,10 @@ data class YamlFluentCommand(
 
                 "toggleAirplaneMode" -> YamlFluentCommand(
                     toggleAirplaneMode = YamlToggleAirplaneMode()
+                )
+
+                "assertNoDefectsWithAI" -> YamlFluentCommand(
+                    assertNoDefectsWithAI = YamlAssertNoDefectsWithAI()
                 )
 
                 "installApp" -> YamlFluentCommand(

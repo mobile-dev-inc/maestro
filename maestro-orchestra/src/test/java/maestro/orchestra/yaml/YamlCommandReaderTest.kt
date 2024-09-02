@@ -119,13 +119,6 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun initFlow(
-        @YamlFile("007_initFlow.yaml") e: SyntaxError,
-    ) {
-        assertThat(e.message).containsMatch("initFlow command used at.*is deprecated")
-    }
-
-    @Test
     fun config_unknownKeys(
         @YamlFile("008_config_unknownKeys.yaml") commands: List<Command>,
     ) {
@@ -158,41 +151,6 @@ internal class YamlCommandReaderTest {
         @YamlFile("010_invalidCommand_string.yaml") e: SyntaxError,
     ) {
         assertThat(e.message).contains("Invalid command: \"invalid\"")
-    }
-
-    @Test
-    fun initFlow_file(
-        @YamlFile("011_initFlow_file.yaml") e: SyntaxError,
-    ) {
-        assertThat(e.message).containsMatch("initFlow command used at.*is deprecated")
-    }
-
-    @Test
-    fun initFlow_emptyString(
-        @YamlFile("012_initFlow_emptyString.yaml") commands: List<Command>,
-    ) {
-        assertThat(commands).containsExactly(
-            ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
-            )),
-            LaunchAppCommand(
-                appId = "com.example.app",
-            ),
-        )
-    }
-
-    @Test
-    fun initFlow_invalidFile(
-        @YamlFile("013_initFlow_invalidFile.yaml") e: SyntaxError,
-    ) {
-        assertThat(e.message).containsMatch("initFlow command used at.*is deprecated")
-    }
-
-    @Test
-    fun initFlow_recursive(
-        @YamlFile("014_initFlow_recursive.yaml") e: SyntaxError,
-    ) {
-        assertThat(e.message).containsMatch("initFlow command used at.*is deprecated")
     }
 
     @Test
@@ -475,14 +433,14 @@ internal class YamlCommandReaderTest {
                 selector = ElementSelector(textRegex = "Footer"),
                 direction = ScrollDirection.DOWN,
                 timeout = 20000,
-                scrollDuration = 601,
+                scrollDuration = "40",
                 visibilityPercentage = 100,
                 label = "Scroll to the bottom",
                 centerElement = false
             ),
             SetLocationCommand(
-                latitude = 12.5266,
-                longitude = 78.2150,
+                latitude = "12.5266",
+                longitude = "78.2150",
                 label = "Set Location to Test Laboratory"
             ),
             StartRecordingCommand(
@@ -502,10 +460,10 @@ internal class YamlCommandReaderTest {
             ),
             TravelCommand(
                 points = listOf(
-                    TravelCommand.GeoPoint(0.0,0.0),
-                    TravelCommand.GeoPoint(0.1,0.0),
-                    TravelCommand.GeoPoint(0.1,0.1),
-                    TravelCommand.GeoPoint(0.0,0.1),
+                    TravelCommand.GeoPoint("0.0","0.0"),
+                    TravelCommand.GeoPoint("0.1","0.0"),
+                    TravelCommand.GeoPoint("0.1","0.1"),
+                    TravelCommand.GeoPoint("0.0","0.1"),
                 ),
                 speedMPS = 2000.0,
                 label = "Run around the north pole"
@@ -646,4 +604,11 @@ internal class YamlCommandReaderTest {
 
     private fun commands(vararg commands: Command): List<MaestroCommand> =
         commands.map(::MaestroCommand).toList()
+
+    @Test
+    fun setLocationSyntaxError(
+        @YamlFile("026_setLocation_syntaxError.yaml") e: SyntaxError,
+    ) {
+        assertThat(e.message).contains("Cannot deserialize value of type")
+    }
 }

@@ -1,25 +1,26 @@
+import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 plugins {
-    id 'maven-publish'
-    id "kotlin"
-    id 'application'
-    id "com.vanniktech.maven.publish"
+    id("maven-publish")
+    id("application")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.mavenPublish)
 }
 
 application {
-    applicationName = 'maestro-studio'
-    mainClass = 'maestro.studio.ServerKt'
+    applicationName = "maestro-studio"
+    mainClass = "maestro.studio.ServerKt"
 }
 
-plugins.withId("com.vanniktech.maven.publish") {
-    mavenPublish {
-        sonatypeHost = "S01"
-    }
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
 }
 
 def copyWebFiles = tasks.register("copyWebFiles", Copy.class) {
-    dependsOn(':maestro-studio:web:build')
-    from(new File(project(':maestro-studio:web').projectDir, 'build'))
-    into(new File(projectDir, 'src/main/resources/web'))
+    dependsOn(":maestro-studio:web:build")
+    from(new File(project(":maestro-studio:web").projectDir, "build"))
+    into(new File(projectDir, "src/main/resources/web"))
 }
 
 tasks.compileJava {
@@ -35,11 +36,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+tasks.named("compileKotlin", KotlinCompilationTask) {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjdk-release=1.8")
+    }
+}
+
 dependencies {
     implementation(project(":maestro-orchestra"))
     implementation(project(":maestro-client"))
     implementation(project(":maestro-utils"))
-    implementation platform("org.http4k:http4k-bom:4.34.2.0")
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.cors)

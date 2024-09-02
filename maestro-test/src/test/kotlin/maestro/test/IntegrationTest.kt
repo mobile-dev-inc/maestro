@@ -604,57 +604,6 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 023 - runFlow with initFlow`() {
-        assertThrows<SyntaxError> {
-            val commands = readCommands("024_init_flow_init_state")
-            val initFlow = YamlCommandReader.getConfig(commands)!!.initFlow!!
-
-            val driver = driver {
-                element {
-                    text = "Hello"
-                    bounds = Bounds(0, 0, 100, 100)
-                }
-            }
-            driver.addInstalledApp("com.example.app")
-
-            val otherDriver = driver {
-                element {
-                    text = "Hello"
-                    bounds = Bounds(0, 0, 100, 100)
-                }
-            }
-            otherDriver.addInstalledApp("com.example.app")
-            val state = Maestro(driver).use {
-                orchestra(it).runInitFlow(initFlow)
-            }!!
-            Maestro(otherDriver).use {
-                orchestra(it).runFlow(commands, state)
-            }
-        }
-    }
-
-    @Test
-    fun `Case 024 - runFlow with initState`() {
-        assertThrows<SyntaxError> {
-            // Given
-            val commands = readCommands("023_init_flow")
-
-            val driver = driver {
-                element {
-                    text = "Hello"
-                    bounds = Bounds(0, 0, 100, 100)
-                }
-            }
-            driver.addInstalledApp("com.example.app")
-
-            // When
-            Maestro(driver).use {
-                orchestra(it).runFlow(commands)
-            }
-        }
-    }
-
-    @Test
     fun `Case 025 - Tap on element relative position using shortcut`() {
         // Given
         val commands = readCommands("025_element_relative_position_shortcut")
@@ -794,6 +743,8 @@ class IntegrationTest {
                     "NON_EXISTENT_TEXT" to "nonExistentText",
                     "NON_EXISTENT_ID" to "nonExistentId",
                     "URL" to "secretUrl",
+                    "LAT" to "37.82778",
+                    "LNG" to "-122.48167",
                 )
             )
 
@@ -821,7 +772,8 @@ class IntegrationTest {
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
                 Event.InputText("\${PASSWORD} is testPassword"),
-                Event.OpenLink("https://example.com/secretUrl")
+                Event.OpenLink("https://example.com/secretUrl"),
+                Event.SetLocation(latitude = 37.82778, longitude = -122.48167),
             )
         )
     }
@@ -2585,15 +2537,17 @@ class IntegrationTest {
         }
 
         // Then
-        driver.assertHasEvent(Event.LaunchApp(
-            appId = "com.example.app",
-            launchArguments = mapOf(
-                "argumentA" to true,
-                "argumentB" to 4,
-                "argumentC" to 4.0,
-                "argumentD" to "Hello String Value true"
+        driver.assertHasEvent(
+            Event.LaunchApp(
+                appId = "com.example.app",
+                launchArguments = mapOf(
+                    "argumentA" to true,
+                    "argumentB" to 4,
+                    "argumentC" to 4.0,
+                    "argumentD" to "Hello String Value true"
+                )
             )
-        ))
+        )
     }
 
     @Test
@@ -2979,7 +2933,7 @@ class IntegrationTest {
     fun `Case 110 - addMedia command emits add media event with correct path`() {
         // given
         val commands = readCommands("110_add_media_device")
-        val driver  = driver {}
+        val driver = driver {}
 
         // when
         Maestro(driver).use {
@@ -2994,7 +2948,7 @@ class IntegrationTest {
     fun `Case 111 - addMedia command allows adding multiple media`() {
         // given
         val commands = readCommands("111_add_multiple_media")
-        val driver = driver {  }
+        val driver = driver { }
 
         // when
         Maestro(driver).use {
@@ -3056,7 +3010,7 @@ class IntegrationTest {
 
         // Then
         // No test failure
-        assertThat(elapsedTime).isAtMost(1000)
+        assertThat(elapsedTime).isAtMost(1000L)
         driver.assertEventCount(Event.Tap(Point(50, 50)), expectedCount = 1)
     }
 
@@ -3109,7 +3063,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 115 - airplane mode`()  {
+    fun `Case 115 - airplane mode`() {
         val commands = readCommands("115_airplane_mode")
         val driver = driver { }
 
@@ -3117,7 +3071,7 @@ class IntegrationTest {
             orchestra(it).runFlow(commands)
         }
     }
-    
+
     @Test
     fun `Case 116 - Kill app`() {
         // Given
@@ -3153,6 +3107,37 @@ class IntegrationTest {
         // Then
         // No test failure
         driver.assertHasEvent(Event.InstallApp)
+
+    @Test
+    fun `Case 118 - Scroll until view is visible - with speed evaluate`() {
+        // Given
+        val commands = readCommands("117_scroll_until_visible_speed")
+        val expectedDuration = "601"
+        val info = driver { }.deviceInfo()
+
+        val elementBounds = Bounds(0, 0 + info.heightGrid, 100, 100 + info.heightGrid)
+        val driver = driver {
+            element {
+                id = "maestro"
+                bounds = elementBounds
+            }
+        }
+
+        // When
+        var scrollDuration = "0"
+        Maestro(driver).use {
+            orchestra(it, onCommandMetadataUpdate = { _, metaData ->
+                scrollDuration = metaData.evaluatedCommand?.scrollUntilVisible?.scrollDuration.toString()
+            }).runFlow(commands)
+        }
+
+        // Then
+        assertThat(scrollDuration).isEqualTo(expectedDuration)
+        driver.assertEvents(
+            listOf(
+                Event.SwipeElementWithDirection(Point(270, 480), SwipeDirection.UP, expectedDuration.toLong()),
+            )
+        )
     }
 
     private fun orchestra(
