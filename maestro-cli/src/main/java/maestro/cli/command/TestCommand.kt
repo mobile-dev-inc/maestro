@@ -151,15 +151,21 @@ class TestCommand : Callable<Int> {
     }
 
     override fun call(): Int {
+        TestDebugReporter.install(
+            debugOutputPathAsString = debugOutput,
+            flattenDebugOutput = flattenDebugOutput,
+            printToConsole = parent?.verbose == true,
+        )
+
         if (parent?.platform != null) {
             throw CliError("--platform option was deprecated. You can remove it to run your test.")
         }
 
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
-                flowFile.toPath().toAbsolutePath(),
-                includeTags,
-                excludeTags
+                input = flowFile.toPath().toAbsolutePath(),
+                includeTags = includeTags,
+                excludeTags = excludeTags,
             )
         } catch (e: ValidationError) {
             throw CliError(e.message)
@@ -167,11 +173,6 @@ class TestCommand : Callable<Int> {
 
         env = env.withInjectedShellEnvVars()
 
-        TestDebugReporter.install(
-            debugOutputPathAsString = debugOutput,
-            flattenDebugOutput = flattenDebugOutput,
-            printToConsole = parent?.verbose == true,
-        )
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
 
         return handleSessions(debugOutputPath, executionPlan)
@@ -179,6 +180,7 @@ class TestCommand : Callable<Int> {
 
     private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
         val sharded = shards > 1
+        val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
             val deviceIds = (if (isWebFlow())
@@ -195,23 +197,32 @@ class TestCommand : Callable<Int> {
                 it.instanceId
             }.toMutableSet())
 
-            if (shards > 1 && plan.sequence?.flows?.isNotEmpty() == true) {
+            if (sharded && plan.sequence.flows.isNotEmpty()) {
                 error("Cannot run sharded tests with sequential execution")
             }
 
-            val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
-            val chunkPlans = plan.flowsToRun
-                .withIndex()
-                .groupBy { it.index % shards }
-                .map { (shardIndex, files) ->
-                    ExecutionPlan(
-                        files.map { it.value },
-                        plan.sequence.also {
-                            if (it?.flows?.isNotEmpty() == true && sharded)
-                                error("Cannot run sharded tests with sequential execution.")
-                        }
-                    )
-                }
+            if (sharded) {
+                PrintUtils.info("Requested to run ${plan.flowsToRun.size} flows in $shards shard(s)")
+            }
+
+            val effectiveShards = if (onlySequenceFlows) 1 else shards.coerceAtMost(plan.flowsToRun.size)
+            val chunkPlans: List<ExecutionPlan> = if (onlySequenceFlows) {
+                // Handle an edge case
+                // We only want to run sequential flows in this case.
+                listOf(plan)
+            } else {
+                plan.flowsToRun
+                    .withIndex()
+                    .groupBy { it.index % shards }
+                    .map { (shardIndex, files) ->
+                        ExecutionPlan(
+                            flowsToRun = files.map { it.value },
+                            sequence = plan.sequence,
+                        )
+                    }
+            }
+
+            PrintUtils.info("Will run ${if (onlySequenceFlows) plan.sequence.flows.size else plan.flowsToRun.size} flows in $effectiveShards shard(s)")
 
             // Collect device configurations for missing shards, if any
             val missing = effectiveShards - if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size

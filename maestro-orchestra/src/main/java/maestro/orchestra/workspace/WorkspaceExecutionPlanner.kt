@@ -39,6 +39,7 @@ object WorkspaceExecutionPlanner {
             validateFlowFile(input)
             return ExecutionPlan(
                 flowsToRun = listOf(input),
+                sequence = FlowSequence(emptyList()),
             )
         }
 
@@ -177,6 +178,6 @@ object WorkspaceExecutionPlanner {
 
     data class ExecutionPlan(
         val flowsToRun: List<Path>,
-        val sequence: FlowSequence? = null,
+        val sequence: FlowSequence,
     )
 }
