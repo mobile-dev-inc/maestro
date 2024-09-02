@@ -565,9 +565,23 @@ class AndroidDriver(
     }
 
     private fun autoVerifyChromeAgreement() {
-        filterById("com.android.chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
+        val chrome = "com.android.chrome"
+        if (!isPackageInstalled(chrome)) return
+        Thread.sleep(100) // Lets enough time for the transition to Chrome to start
+        waitUntilScreenIsStatic(3000)
+        // Welcome to Chrome screen "Accept & continue"
+        filterById("$chrome:id/send_report_checkbox")?.let { tap(it.bounds.center()) }
+        filterById("$chrome:id/negative_button")?.let { tap(it.bounds.center()) }
+        filterById("$chrome:id/terms_accept")?.let { tap(it.bounds.center()) }
         waitForAppToSettle(null, null)
-        filterById("com.android.chrome:id/negative_button")?.let { tap(it.bounds.center()) }
+        // Welcome to Chrome screen "Add account to device"
+        filterById("$chrome:id/signin_fre_dismiss_button")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null, null)
+        // Turn on Sync screen
+        filterById("$chrome:id/negative_button")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null, null)
+        // Chrome Notifications screen
+        filterById("$chrome:id/negative_button")?.let { tap(it.bounds.center()) }
     }
 
     private fun filterByText(textRegex: String): UiElement? {
