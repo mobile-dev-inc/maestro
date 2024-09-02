@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 11
+          java-version: 21
           cache: gradle
 
       - name: Build xctest-runner
@@ -173,4 +173,3 @@ jobs:
           name: maestro_screenrecord.mp4
           path: ~/maestro_screenrecord.mp4
           retention-days: 7
-
