@@ -95,7 +95,7 @@ data class SwipeCommand(
 data class ScrollUntilVisibleCommand(
     val selector: ElementSelector,
     val direction: ScrollDirection,
-    val scrollDuration: Long,
+    val scrollDuration: String = DEFAULT_SCROLL_DURATION,
     val visibilityPercentage: Int,
     val timeout: Long = DEFAULT_TIMEOUT_IN_MILLIS,
     val centerElement: Boolean,
@@ -104,6 +104,10 @@ data class ScrollUntilVisibleCommand(
 
     val visibilityPercentageNormalized = (visibilityPercentage / 100).toDouble()
 
+    private fun String.speedToDuration(): String {
+        return ((1000 * (100 - this.toLong()).toDouble() / 100).toLong() + 1).toString()
+    }
+
     override fun description(): String {
         return label ?: "Scrolling $direction until ${selector.description()} is visible."
     }
@@ -111,12 +115,13 @@ data class ScrollUntilVisibleCommand(
     override fun evaluateScripts(jsEngine: JsEngine): ScrollUntilVisibleCommand {
         return copy(
             selector = selector.evaluateScripts(jsEngine),
+            scrollDuration = scrollDuration.evaluateScripts(jsEngine).speedToDuration()
         )
     }
 
     companion object {
         const val DEFAULT_TIMEOUT_IN_MILLIS = 20 * 1000L
-        const val DEFAULT_SCROLL_DURATION = 40
+        const val DEFAULT_SCROLL_DURATION = "40"
         const val DEFAULT_ELEMENT_VISIBILITY_PERCENTAGE = 100
         const val DEFAULT_CENTER_ELEMENT = false
     }
@@ -698,8 +703,8 @@ data class RunFlowCommand(
 }
 
 data class SetLocationCommand(
-    val latitude: Double,
-    val longitude: Double,
+    val latitude: String,
+    val longitude: String,
     val label: String? = null
 ) : Command {
 
@@ -708,7 +713,10 @@ data class SetLocationCommand(
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): SetLocationCommand {
-        return this
+        return copy(
+            latitude = latitude.evaluateScripts(jsEngine),
+            longitude = longitude.evaluateScripts(jsEngine),
+        )
     }
 }
 
@@ -839,17 +847,23 @@ data class TravelCommand(
 ) : Command {
 
     data class GeoPoint(
-        val latitude: Double,
-        val longitude: Double,
+        val latitude: String,
+        val longitude: String,
     ) {
 
         fun getDistanceInMeters(another: GeoPoint): Double {
             val earthRadius = 6371 // in kilometers
-            val dLat = Math.toRadians(another.latitude - latitude)
-            val dLon = Math.toRadians(another.longitude - longitude)
+            val oLat = Math.toRadians(latitude.toDouble())
+            val oLon = Math.toRadians(longitude.toDouble())
+
+            val aLat = Math.toRadians(another.latitude.toDouble())
+            val aLon = Math.toRadians(another.longitude.toDouble())
+
+            val dLat = Math.toRadians(aLat - oLat)
+            val dLon = Math.toRadians(aLon - oLon)
 
             val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(another.latitude)) *
+                Math.cos(Math.toRadians(oLat)) * Math.cos(Math.toRadians(aLat)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2)
 
             val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
@@ -865,7 +879,9 @@ data class TravelCommand(
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
-        return this
+        return copy(
+            points = points.map { it.copy(latitude = it.latitude.evaluateScripts(jsEngine), longitude = it.longitude.evaluateScripts(jsEngine)) }
+        )
     }
 
 }
