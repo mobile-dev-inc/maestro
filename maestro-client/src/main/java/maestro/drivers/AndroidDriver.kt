@@ -510,7 +510,8 @@ class AndroidDriver(
         else dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
 
         if (autoVerify) {
-            autoVerifyApp(appId)
+            if (appId != null && !browser) autoVerifyWithChooser(appId)
+            autoVerifyChromeOnboarding()
         }
     }
 
@@ -530,7 +531,7 @@ class AndroidDriver(
         }
     }
 
-    private fun autoVerifyApp(appId: String?) {
+    private fun autoVerifyWithChooser(appId: String) {
         val appNameResult = runCatching {
             val apkFile = AndroidAppFiles.getApkFile(dadb, appId)
             val appName = ApkFile(apkFile).apkMeta.name
@@ -564,7 +565,7 @@ class AndroidDriver(
         LOGGER.info("Aborting autoVerify. Could not find app name element for $appName")
     }
 
-    private fun autoVerifyChromeAgreement() {
+    private fun autoVerifyChromeOnboarding() {
         val chrome = "com.android.chrome"
         if (!isPackageInstalled(chrome)) return
         Thread.sleep(100) // Lets enough time for the transition to Chrome to start
