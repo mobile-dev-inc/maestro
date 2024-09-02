@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import com.vanniktech.maven.publish.SonatypeHost
 
@@ -36,12 +38,18 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
-tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(8)
+}
+
+tasks.withType<KotlinCompilationTask<KotlinJvmCompilerOptions>>().configureEach {
     compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
         freeCompilerArgs.addAll("-Xjdk-release=1.8")
     }
 }
