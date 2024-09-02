@@ -19,6 +19,7 @@
 
 package maestro.orchestra
 
+import maestro.Platform
 import maestro.js.JsEngine
 
 /**
@@ -162,5 +163,19 @@ data class MaestroCommand(
 
     fun description(): String {
         return asCommand()?.description() ?: "No op"
+    }
+}
+
+fun List<MaestroCommand>.withPlatformInAppId(platform: Platform?) = if (platform == null) this else map {
+    when (val c = it.asCommand()) {
+        is LaunchAppCommand -> MaestroCommand(c.copy(appId = c.appId.copy(platform = platform)))
+        is KillAppCommand -> MaestroCommand(c.copy(appId = c.appId.copy(platform = platform)))
+        is StopAppCommand -> MaestroCommand(c.copy(appId = c.appId.copy(platform = platform)))
+        is ClearStateCommand -> MaestroCommand(c.copy(appId = c.appId.copy(platform = platform)))
+        is RunFlowCommand ->
+            MaestroCommand(c.copy(config = c.config?.copy(appId = c.config.appId?.copy(platform = platform))))
+        is ApplyConfigurationCommand ->
+            MaestroCommand(c.copy(config = c.config.copy(appId = c.config.appId?.copy(platform = platform))))
+        else -> it
     }
 }

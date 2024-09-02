@@ -2,3 +2,7 @@ appId: com.example.app
 ---
 - clearState
 - clearState: another.app
+- clearState:
+    appId:
+      android: android.app
+      ios: ios.app

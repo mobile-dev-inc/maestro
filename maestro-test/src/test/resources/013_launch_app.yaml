@@ -1,3 +1,9 @@
 appId: com.example.app
 ---
+- launchApp:
+    appId:
+      android: android.app
+      ios: ios.app
+      web: https://localhost.com
+- launchApp: another.app
 - launchApp

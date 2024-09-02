@@ -56,8 +56,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.FileSystems
 import java.nio.file.Paths
+import maestro.orchestra.MaestroAppId
 
-@Suppress("JUnitMalformedDeclaration")
 @ExtendWith(YamlCommandsExtension::class, YamlExceptionExtension::class)
 internal class YamlCommandReaderTest {
 
@@ -74,10 +74,10 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
                 ApplyConfigurationCommand(MaestroConfig(
-                    appId = "com.example.app"
+                    appId = MaestroAppId("com.example.app")
                 )),
                 LaunchAppCommand(
-                    appId = "com.example.app"
+                    appId = MaestroAppId("com.example.app")
                 ),
         )
     }
@@ -88,10 +88,10 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
             )),
             LaunchAppCommand(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
                 clearState = true,
             ),
         )
@@ -124,7 +124,7 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
                 ext = mapOf(
                     "extra" to true,
                     "extraMap" to mapOf(
@@ -134,7 +134,7 @@ internal class YamlCommandReaderTest {
                 )
             )),
             LaunchAppCommand(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
             ),
         )
     }
@@ -173,10 +173,10 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
             )),
             LaunchAppCommand(
-                appId = "com.other.app"
+                appId = MaestroAppId("com.other.app")
             ),
         )
     }
@@ -187,7 +187,7 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
             )),
             BackPressCommand(),
         )
@@ -199,7 +199,7 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
             )),
             ScrollCommand(),
         )
@@ -211,11 +211,11 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
                 name = "Example Flow"
             )),
             LaunchAppCommand(
-                appId = "com.example.app"
+                appId = MaestroAppId("com.example.app")
             ),
         )
     }
@@ -234,11 +234,11 @@ internal class YamlCommandReaderTest {
         assertThat(commands).isEqualTo(commands(
             ApplyConfigurationCommand(
                 config = MaestroConfig(
-                    appId = "com.example.app"
+                    appId = MaestroAppId("com.example.app")
                 )
             ),
             LaunchAppCommand(
-                appId = "com.example.app"
+                appId = MaestroAppId("com.example.app")
             )
         ))
     }
@@ -257,7 +257,7 @@ internal class YamlCommandReaderTest {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(
                 config = MaestroConfig(
-                    appId = "com.example.app",
+                    appId = MaestroAppId("com.example.app"),
                     onFlowStart = MaestroOnFlowStart(
                         commands = commands(
                             BackPressCommand()
@@ -271,7 +271,7 @@ internal class YamlCommandReaderTest {
                 )
             ),
             LaunchAppCommand(
-                appId = "com.example.app"
+                appId = MaestroAppId("com.example.app")
             )
         )
     }
@@ -282,8 +282,8 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(
-                config=MaestroConfig(
-                    appId="com.example.app"
+                config = MaestroConfig(
+                    appId = MaestroAppId("com.example.app")
                 )
             ),
 
@@ -374,7 +374,7 @@ internal class YamlCommandReaderTest {
                 label = "Clear the keychain"
             ),
             ClearStateCommand(
-                appId = "com.example.app",
+                appId = MaestroAppId("com.example.app"),
                 label = "Wipe the app state"
             ),
             CopyTextFromCommand(
@@ -398,7 +398,7 @@ internal class YamlCommandReaderTest {
                 label = "Hide the keyboard"
             ),
             LaunchAppCommand(
-                appId = "com.some.other",
+                appId = MaestroAppId("com.some.other"),
                 clearState = true,
                 label = "Launch some other app"
             ),
@@ -448,7 +448,7 @@ internal class YamlCommandReaderTest {
                 label = "Start recording a video"
             ),
             StopAppCommand(
-                appId = "com.some.other",
+                appId = MaestroAppId("com.some.other"),
                 label = "Stop that other app from running"
             ),
             StopRecordingCommand(
@@ -515,10 +515,10 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
-    fun commands_with_string_non_string(@YamlFile("024_string_non_string_commands.yaml") commands: List<Command>,) {
+    fun commands_with_string_non_string(@YamlFile("024_string_non_string_commands.yaml") commands: List<Command>) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(
-                config= MaestroConfig(appId= "com.example.app")
+                config = MaestroConfig(appId = MaestroAppId("com.example.app"))
             ),
             InputTextCommand(text = "correct horse battery staple"),
             InputTextCommand(text = "correct horse battery staple"),
@@ -594,10 +594,10 @@ internal class YamlCommandReaderTest {
     ) {
         assertThat(commands).containsExactly(
             ApplyConfigurationCommand(MaestroConfig(
-                appId = "com.example.app"
+                appId = MaestroAppId("com.example.app")
             )),
             KillAppCommand(
-                appId = "com.example.app"
+                appId = MaestroAppId("com.example.app")
             ),
         )
     }

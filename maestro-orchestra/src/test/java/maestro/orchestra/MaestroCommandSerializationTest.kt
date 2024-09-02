@@ -273,7 +273,7 @@ internal class MaestroCommandSerializationTest {
     fun `serialize LaunchAppCommand`() {
         // given
         val command = MaestroCommand(
-            LaunchAppCommand("com.twitter.android")
+            LaunchAppCommand(MaestroAppId("com.twitter.android"))
         )
 
         // when
@@ -285,7 +285,11 @@ internal class MaestroCommandSerializationTest {
         val expectedJson = """
             {
               "launchAppCommand" : {
-                "appId" : "com.twitter.android"
+                "appId" : {
+                  "android" : "com.twitter.android",
+                  "ios" : "com.twitter.android",
+                  "web" : "com.twitter.android"
+                }
               }
             }
           """.trimIndent()
@@ -301,19 +305,13 @@ internal class MaestroCommandSerializationTest {
         val command = MaestroCommand(
             ApplyConfigurationCommand(
                 MaestroConfig(
-                    appId = "com.twitter.android",
+                    appId = MaestroAppId("com.twitter.android"),
                     name = "Twitter",
                 )
             )
         )
-
-        // when
-        val serializedCommandJson = command.toJson()
-        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
-
-        // then
         @Language("json")
-        val expectedJson = """
+        val legacyJson = """
             {
               "applyConfigurationCommand" : {
                 "config" : {
@@ -324,10 +322,36 @@ internal class MaestroCommandSerializationTest {
                 }
               }
             }
+        """.trimIndent()
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+        val deserializedLegacy = objectMapper.readValue(legacyJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "applyConfigurationCommand" : {
+                "config" : {
+                  "appId" : {
+                    "android" : "com.twitter.android",
+                    "ios" : "com.twitter.android",
+                    "web" : "com.twitter.android"
+                  },
+                  "name" : "Twitter",
+                  "tags" : [ ],
+                  "ext" : { }
+                }
+              }
+            }
           """.trimIndent()
         assertThat(serializedCommandJson)
             .isEqualTo(expectedJson)
         assertThat(deserializedCommand)
+            .isEqualTo(command)
+        assertThat(deserializedLegacy)
             .isEqualTo(command)
     }
 

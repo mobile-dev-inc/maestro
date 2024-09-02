@@ -10,7 +10,7 @@ import java.nio.file.Path
 
 data class YamlConfig(
     val name: String?,
-    val appId: String,
+    val appId: YamlAppId,
     val tags: List<String>? = emptyList(),
     val env: Map<String, String> = emptyMap(),
     val onFlowStart: YamlOnFlowStart?,
@@ -26,7 +26,7 @@ data class YamlConfig(
 
     fun toCommand(flowPath: Path): MaestroCommand {
         val config = MaestroConfig(
-            appId = appId,
+            appId = appId.asAppId(),
             name = name,
             tags = tags,
             ext = ext.toMap(),
@@ -39,12 +39,12 @@ data class YamlConfig(
     private fun onFlowComplete(flowPath: Path): MaestroOnFlowComplete? {
         if (onFlowComplete == null) return null
 
-        return MaestroOnFlowComplete(onFlowComplete.commands.flatMap { it.toCommands(flowPath, appId) })
+        return MaestroOnFlowComplete(onFlowComplete.commands.flatMap { it.toCommands(flowPath, appId.asAppId()) })
     }
 
     private fun onFlowStart(flowPath: Path): MaestroOnFlowStart? {
         if (onFlowStart == null) return null
 
-        return MaestroOnFlowStart(onFlowStart.commands.flatMap { it.toCommands(flowPath, appId) })
+        return MaestroOnFlowStart(onFlowStart.commands.flatMap { it.toCommands(flowPath, appId.asAppId()) })
     }
 }
