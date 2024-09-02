@@ -194,6 +194,11 @@ class TestCommand : Callable<Int> {
             initialActiveDevices.addAll(DeviceService.listConnectedDevices().map {
                 it.instanceId
             }.toMutableSet())
+
+            if (shards > 1 && plan.sequence?.flows?.isNotEmpty() == true) {
+                error("Cannot run sharded tests with sequential execution")
+            }
+
             val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
             val chunkPlans = plan.flowsToRun
                 .withIndex()
