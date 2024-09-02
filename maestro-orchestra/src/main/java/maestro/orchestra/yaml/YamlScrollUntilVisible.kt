@@ -14,8 +14,4 @@ data class YamlScrollUntilVisible(
     val centerElement: Boolean = ScrollUntilVisibleCommand.DEFAULT_CENTER_ELEMENT,
     val label: String? = null,
     val optional: Boolean = false,
-) {
-    fun speedToDuration(): Long {
-        return (1000 * (100 - speed).toDouble() / 100).toLong() + 1
-    }
-}
+)
