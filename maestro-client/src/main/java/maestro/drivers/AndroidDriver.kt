@@ -603,13 +603,12 @@ class AndroidDriver(
             installedPackages.contains("com.android.chrome") -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" com.android.chrome")
             }
-
             installedPackages.contains("org.mozilla.firefox") -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\" org.mozilla.firefox")
             }
-
             else -> {
                 dadb.shell("am start -a android.intent.action.VIEW -d \"$link\"")
+                autoVerifyWithChooser("org.chromium.webview_shell")
             }
         }
     }
