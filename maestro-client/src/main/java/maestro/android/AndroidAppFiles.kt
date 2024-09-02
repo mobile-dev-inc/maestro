@@ -38,9 +38,7 @@ object AndroidAppFiles {
     }
 
     fun getApkFile(dadb: Dadb, appId: String): File {
-        val apkPath = dadb.shell("pm list packages -f --user 0 | grep $appId | head -1")
-            .output.substringAfterLast("package:").substringBefore("=$appId")
-        apkPath.substringBefore("=$appId")
+        val apkPath = dadb.shell("pm path $appId").output.removePrefix("package:").trim()
         val dst = File.createTempFile("tmp", ".apk")
         dadb.pull(dst, apkPath)
         return dst
