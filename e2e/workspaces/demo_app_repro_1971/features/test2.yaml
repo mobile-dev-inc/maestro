@@ -4,3 +4,4 @@ tags:
 ---
 - launchApp:
     clearState: true
+- tapOn: Form Test
