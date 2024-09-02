@@ -81,7 +81,7 @@ class TestCommand : Callable<Int> {
     private lateinit var flowFile: File
 
     @Option(names = ["--config"], description = ["Optional .yaml configuration file for Flows. If not provided, Maestro will look for a config.yaml file in the root directory."])
-    private var configFile: File? = null
+    private var workspaceConfigFile: File? = null
 
     @Option(
         names = ["-s", "--shards"],
