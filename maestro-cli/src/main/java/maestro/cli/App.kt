@@ -36,6 +36,7 @@ import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import picocli.AutoComplete.GenerateCompletion
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -56,11 +57,11 @@ import kotlin.system.exitProcess
         LogoutCommand::class,
         BugReportCommand::class,
         StudioCommand::class,
-        StartDeviceCommand::class
+        StartDeviceCommand::class,
+        GenerateCompletion::class,
     ]
 )
 class App {
-
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
@@ -84,6 +85,9 @@ class App {
         description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "],
     )
     var deviceId: String? = null
+
+    @Option(names = ["--verbose"], description = ["Enable verbose logging"])
+    var verbose: Boolean = false
 }
 
 private fun printVersion() {
@@ -132,6 +136,9 @@ fun main(args: Array<String>) {
 
             1
         }
+
+    val generateCompletionCommand = commandLine.subcommands["generate-completion"]
+    generateCompletionCommand?.commandSpec?.usageMessage()?.hidden(true)
 
     val exitCode = commandLine
         .execute(*args)

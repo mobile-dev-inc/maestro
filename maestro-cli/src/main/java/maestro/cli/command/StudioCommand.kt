@@ -47,7 +47,7 @@ class StudioCommand : Callable<Int> {
 
     override fun call(): Int {
 
-        TestDebugReporter.install(debugOutputPathAsString = debugOutput)
+        TestDebugReporter.install(debugOutputPathAsString = debugOutput, printToConsole = parent?.verbose == true)
 
         MaestroSessionManager.newSession(
             host = parent?.host,

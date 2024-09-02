@@ -163,7 +163,11 @@ class TestCommand : Callable<Int> {
 
         env = env.withInjectedShellEnvVars()
 
-        TestDebugReporter.install(debugOutputPathAsString = debugOutput, flattenDebugOutput = flattenDebugOutput)
+        TestDebugReporter.install(
+            debugOutputPathAsString = debugOutput,
+            flattenDebugOutput = flattenDebugOutput,
+            printToConsole = parent?.verbose == true,
+        )
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
 
         return handleSessions(debugOutputPath, executionPlan)
@@ -263,12 +267,11 @@ class TestCommand : Callable<Int> {
 
                         if (flowFile.isDirectory || format != ReportFormat.NOOP) {
                             // Run multiple flows
-
                             if (continuous) {
-                                throw CommandLine.ParameterException(
-                                    commandSpec.commandLine(),
-                                    "Continuous mode is not supported for directories. $flowFile is a directory",
-                                )
+                                val error =
+                                    if (format != ReportFormat.NOOP) "Format can not be different from NOOP in continuous mode. Passed format is $format."
+                                    else "Continuous mode is not supported for directories. $flowFile is a directory"
+                                throw CommandLine.ParameterException(commandSpec.commandLine(), error)
                             }
 
                             val suiteResult = TestSuiteInteractor(
@@ -298,7 +301,7 @@ class TestCommand : Callable<Int> {
 
                             } else {
                                 val resultView =
-                                    if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
+                                    if (DisableAnsiMixin.ansiEnabled && parent?.verbose == false) AnsiResultView()
                                     else PlainTextResultView()
                                 val resultSingle = TestRunner.runSingle(
                                     maestro,

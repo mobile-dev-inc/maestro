@@ -7,6 +7,7 @@ import maestro.MaestroException
 import maestro.Point
 import maestro.SwipeDirection
 import maestro.orchestra.ApplyConfigurationCommand
+import maestro.orchestra.DefineVariablesCommand
 import maestro.orchestra.LaunchAppCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
@@ -29,6 +30,7 @@ import java.io.File
 import java.nio.file.Paths
 import maestro.orchestra.error.SyntaxError
 import kotlin.system.measureTimeMillis
+import maestro.orchestra.util.Env.withDefaultEnvVars
 
 class IntegrationTest {
 
@@ -41,8 +43,9 @@ class IntegrationTest {
 
     @AfterEach
     internal fun tearDown() {
-        File("screenshot.png").delete()
-        File("recording.mp4").delete()
+        File("041_take_screenshot_with_filename.png").delete()
+        File("099_screen_recording.mp4").delete()
+        File("028_env.mp4").delete()
     }
 
     @Test
@@ -552,6 +555,11 @@ class IntegrationTest {
         assertThat(commands).isEqualTo(
             listOf(
                 MaestroCommand(
+                    DefineVariablesCommand(
+                        env = mapOf("MAESTRO_FILENAME" to "020_parse_config")
+                    )
+                ),
+                MaestroCommand(
                     ApplyConfigurationCommand(
                         config = MaestroConfig(
                             appId = "com.example.app"
@@ -733,18 +741,19 @@ class IntegrationTest {
     @Test
     fun `Case 028 - Env`() {
         // Given
-        val commands = readCommands("028_env")
-            .withEnv(
-                mapOf(
-                    "APP_ID" to "com.example.app",
-                    "BUTTON_ID" to "button_id",
-                    "BUTTON_TEXT" to "button_text",
-                    "PASSWORD" to "testPassword",
-                    "NON_EXISTENT_TEXT" to "nonExistentText",
-                    "NON_EXISTENT_ID" to "nonExistentId",
-                    "URL" to "secretUrl",
-                )
+        val commands = readCommands("028_env") {
+            mapOf(
+                "APP_ID" to "com.example.app",
+                "BUTTON_ID" to "button_id",
+                "BUTTON_TEXT" to "button_text",
+                "PASSWORD" to "testPassword",
+                "NON_EXISTENT_TEXT" to "nonExistentText",
+                "NON_EXISTENT_ID" to "nonExistentId",
+                "URL" to "secretUrl",
+                "LAT" to "37.82778",
+                "LNG" to "-122.48167",
             )
+        }
 
         val driver = driver {
 
@@ -770,9 +779,12 @@ class IntegrationTest {
                 Event.Tap(Point(50, 50)),
                 Event.Tap(Point(50, 50)),
                 Event.InputText("\${PASSWORD} is testPassword"),
-                Event.OpenLink("https://example.com/secretUrl")
+                Event.OpenLink("https://example.com/secretUrl"),
+                Event.SetLocation(latitude = 37.82778, longitude = -122.48167),
+                Event.StartRecording,
             )
         )
+        assert(File("028_env.mp4").exists())
     }
 
     @Test
@@ -1109,6 +1121,7 @@ class IntegrationTest {
                 Event.TakeScreenshot,
             )
         )
+        assert(File("041_take_screenshot_with_filename.png").exists())
     }
 
     @Test
@@ -1319,12 +1332,11 @@ class IntegrationTest {
     @Test
     fun `Case 049 - Run flow conditionally`() {
         // Given
-        val commands = readCommands("049_run_flow_conditionally")
-            .withEnv(
-                mapOf(
-                    "NOT_CLICKED" to "Not Clicked"
-                )
+        val commands = readCommands("049_run_flow_conditionally") {
+            mapOf(
+                "NOT_CLICKED" to "Not Clicked"
             )
+        }
 
         val driver = driver {
             val indicator = element {
@@ -1543,12 +1555,11 @@ class IntegrationTest {
     @Test
     fun `Case 057 - Pass inner env variables to runFlow`() {
         // Given
-        val commands = readCommands("057_runFlow_env")
-            .withEnv(
-                mapOf(
-                    "OUTER_ENV" to "Outer Parameter"
-                )
+        val commands = readCommands("057_runFlow_env") {
+            mapOf(
+                "OUTER_ENV" to "Outer Parameter"
             )
+        }
 
         val driver = driver {
         }
@@ -1602,12 +1613,11 @@ class IntegrationTest {
     @Test
     fun `Case 060 - Pass env param to an env param`() {
         // given
-        val commands = readCommands("060_pass_env_to_env")
-            .withEnv(
-                mapOf(
-                    "PARAM" to "Value"
-                )
+        val commands = readCommands("060_pass_env_to_env") {
+            mapOf(
+                "PARAM" to "Value"
             )
+        }
         val driver = driver { }
 
         // when
@@ -1707,8 +1717,10 @@ class IntegrationTest {
                 Event.InputText("Sub"),
                 Event.InputText("Main"),
                 Event.InputText("Sub"),
+                Event.InputText("064_js_files"),
                 Event.InputText("Hello, Input Parameter!"),
                 Event.InputText("Hello, Evaluated Parameter!"),
+                Event.InputText("064_js_files"),
             )
         )
     }
@@ -2033,12 +2045,11 @@ class IntegrationTest {
     @Test
     fun `Case 077 - Env special characters`() {
         // Given
-        val commands = readCommands("077_env_special_characters")
-            .withEnv(
-                mapOf(
-                    "OUTER" to "!@#\$&*()_+{}|:\"<>?[]\\\\;',./"
-                )
+        val commands = readCommands("077_env_special_characters") {
+            mapOf(
+                "OUTER" to "!@#\$&*()_+{}|:\"<>?[]\\\\;',./"
             )
+        }
 
         val driver = driver {
             // No elements
@@ -2534,15 +2545,17 @@ class IntegrationTest {
         }
 
         // Then
-        driver.assertHasEvent(Event.LaunchApp(
-            appId = "com.example.app",
-            launchArguments = mapOf(
-                "argumentA" to true,
-                "argumentB" to 4,
-                "argumentC" to 4.0,
-                "argumentD" to "Hello String Value true"
+        driver.assertHasEvent(
+            Event.LaunchApp(
+                appId = "com.example.app",
+                launchArguments = mapOf(
+                    "argumentA" to true,
+                    "argumentB" to 4,
+                    "argumentC" to 4.0,
+                    "argumentD" to "Hello String Value true"
+                )
             )
-        ))
+        )
     }
 
     @Test
@@ -2659,6 +2672,7 @@ class IntegrationTest {
                 Event.StopRecording,
             )
         )
+        assert(File("099_screen_recording.mp4").exists())
     }
 
     @Test
@@ -2928,7 +2942,7 @@ class IntegrationTest {
     fun `Case 110 - addMedia command emits add media event with correct path`() {
         // given
         val commands = readCommands("110_add_media_device")
-        val driver  = driver {}
+        val driver = driver {}
 
         // when
         Maestro(driver).use {
@@ -2943,7 +2957,7 @@ class IntegrationTest {
     fun `Case 111 - addMedia command allows adding multiple media`() {
         // given
         val commands = readCommands("111_add_multiple_media")
-        val driver = driver {  }
+        val driver = driver { }
 
         // when
         Maestro(driver).use {
@@ -3058,7 +3072,7 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 115 - airplane mode`()  {
+    fun `Case 115 - airplane mode`() {
         val commands = readCommands("115_airplane_mode")
         val driver = driver { }
 
@@ -3066,7 +3080,7 @@ class IntegrationTest {
             orchestra(it).runFlow(commands)
         }
     }
-    
+
     @Test
     fun `Case 116 - Kill app`() {
         // Given
@@ -3084,6 +3098,38 @@ class IntegrationTest {
         // No test failure
         driver.assertHasEvent(Event.KillApp("com.example.app"))
         driver.assertHasEvent(Event.KillApp("another.app"))
+    }
+
+    @Test
+    fun `Case 117 - Scroll until view is visible - with speed evaluate`() {
+        // Given
+        val commands = readCommands("117_scroll_until_visible_speed")
+        val expectedDuration = "601"
+        val info = driver { }.deviceInfo()
+
+        val elementBounds = Bounds(0, 0 + info.heightGrid, 100, 100 + info.heightGrid)
+        val driver = driver {
+            element {
+                id = "maestro"
+                bounds = elementBounds
+            }
+        }
+
+        // When
+        var scrollDuration = "0"
+        Maestro(driver).use {
+            orchestra(it, onCommandMetadataUpdate = { _, metaData ->
+                scrollDuration = metaData.evaluatedCommand?.scrollUntilVisible?.scrollDuration.toString()
+            }).runFlow(commands)
+        }
+
+        // Then
+        assertThat(scrollDuration).isEqualTo(expectedDuration)
+        driver.assertEvents(
+            listOf(
+                Event.SwipeElementWithDirection(Point(270, 480), SwipeDirection.UP, expectedDuration.toLong()),
+            )
+        )
     }
 
     private fun orchestra(
@@ -3121,10 +3167,11 @@ class IntegrationTest {
         return driver
     }
 
-    private fun readCommands(caseName: String): List<MaestroCommand> {
+    private fun readCommands(caseName: String, withEnv: () -> Map<String, String> = { emptyMap() }): List<MaestroCommand> {
         val resource = javaClass.classLoader.getResource("$caseName.yaml")
             ?: throw IllegalArgumentException("File $caseName.yaml not found")
         return YamlCommandReader.readCommands(Paths.get(resource.toURI()))
+            .withEnv(withEnv().withDefaultEnvVars(caseName))
     }
 
 }

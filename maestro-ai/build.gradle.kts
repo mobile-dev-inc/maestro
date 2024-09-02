@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
@@ -11,6 +12,10 @@ plugins {
 application {
     applicationName = "maestro-ai-demo"
     mainClass.set("maestro.ai.DemoAppKt")
+}
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
 }
 
 tasks.named<Jar>("jar") {
