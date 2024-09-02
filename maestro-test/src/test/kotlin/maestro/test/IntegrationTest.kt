@@ -3107,6 +3107,7 @@ class IntegrationTest {
         // Then
         // No test failure
         driver.assertHasEvent(Event.InstallApp)
+    }
 
     @Test
     fun `Case 118 - Scroll until view is visible - with speed evaluate`() {
