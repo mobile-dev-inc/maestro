@@ -164,10 +164,6 @@ class TestCommand : Callable<Int> {
     }
 
     override fun call(): Int {
-        if (parent?.platform != null) {
-            throw CliError("--platform option was deprecated. You can remove it to run your test.")
-        }
-
         if (shardSplit != null && shardAll != null) {
             throw CliError("Options --shard-split and --shard-all are mutually exclusive.")
         }
@@ -176,7 +172,6 @@ class TestCommand : Callable<Int> {
             PrintUtils.warn("--shards option is deprecated and will be removed in the next Maestro version. Use --shard-split or --shard-all instead.")
             shardSplit = legacyShardCount
         }
-
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
                 flowFile.toPath().toAbsolutePath(),
@@ -292,7 +287,8 @@ class TestCommand : Callable<Int> {
                         host = parent?.host,
                         port = parent?.port,
                         driverHostPort = driverHostPort,
-                        deviceId = deviceId
+                        deviceId = deviceId,
+                        platform = parent?.platform,
                     ) { session ->
                         val maestro = session.maestro
                         val device = session.device
