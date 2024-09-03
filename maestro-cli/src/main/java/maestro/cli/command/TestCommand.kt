@@ -205,7 +205,7 @@ class TestCommand : Callable<Int> {
             val sharded = effectiveShards > 1
 
             val chunkPlans =
-                if (replicate) (0 until availableDevices).map { ExecutionPlan(plan.flowsToRun, plan.sequence) }
+                if (replicate) (0 until availableDevices).map { plan.copy() }
                 else plan.flowsToRun
                 .withIndex()
                 .groupBy { it.index % effectiveShards }
