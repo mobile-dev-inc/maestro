@@ -139,7 +139,7 @@ data class YamlFluentCommand(
                     addMediaCommand = addMediaCommand(addMedia, flowPath)
                 )
             )
-            inputText != null -> listOf(MaestroCommand(InputTextCommand(text = inputText.text, label = inputText.label)))
+            inputText != null -> listOf(MaestroCommand(InputTextCommand(text = inputText.text, label = inputText.label, redact = inputText.redact)))
             inputRandomText != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT, length = inputRandomText.length, label = inputRandomText.label)))
             inputRandomNumber != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.NUMBER, length = inputRandomNumber.length, label = inputRandomNumber.label)))
             inputRandomEmail != null -> listOf(MaestroCommand(InputRandomCommand(inputType = InputRandomType.TEXT_EMAIL_ADDRESS, label = inputRandomEmail.label)))

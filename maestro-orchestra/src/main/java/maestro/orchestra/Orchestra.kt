@@ -813,11 +813,11 @@ class Orchestra(
                 .canEncode(command.text)
 
             if (!isAscii) {
-                throw UnicodeNotSupportedError(command.text)
+                throw UnicodeNotSupportedError(command.redacted)
             }
         }
 
-        maestro.inputText(command.text)
+        maestro.inputText(command.text, command.redacted)
 
         return true
     }

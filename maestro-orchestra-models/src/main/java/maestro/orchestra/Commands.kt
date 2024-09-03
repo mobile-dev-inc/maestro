@@ -19,6 +19,11 @@
 
 package maestro.orchestra
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import maestro.KeyCode
 import maestro.Point
 import maestro.ScrollDirection
@@ -400,19 +405,38 @@ data class AssertWithAICommand(
     }
 }
 
+@JsonSerialize(using = InputTextCommand.Serializer::class)
 data class InputTextCommand(
     val text: String,
     val label: String? = null,
+    val redact: Boolean = false,
 ) : Command {
 
+    val redacted: String get() = if (redact) "[REDACTED]" else text
+
     override fun description(): String {
-        return label ?: "Input text $text"
+        return label ?: "Input text $redacted"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
         return copy(
             text = text.evaluateScripts(jsEngine)
         )
+    }
+
+    override fun toString(): String {
+        return "InputTextCommand(text=$redacted,label=$label)"
+    }
+
+    class Serializer : JsonSerializer<InputTextCommand>() {
+
+        override fun serialize(value: InputTextCommand, gen: JsonGenerator, provider: SerializerProvider) = with (gen) {
+            writeStartObject()
+            writeStringField("text", value.redacted)
+            if (value.label != null) writeStringField("label", value.label)
+            if (value.redact) writeBooleanField("redact", true)
+            writeEndObject()
+        }
     }
 }
 
