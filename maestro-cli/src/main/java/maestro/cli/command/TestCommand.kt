@@ -62,7 +62,8 @@ import kotlin.time.Duration.Companion.seconds
 import maestro.orchestra.util.Env.withDefaultEnvVars
 
 @CommandLine.Command(
-    name = "test", description = ["Test a Flow or set of Flows on a local iOS Simulator or Android Emulator"]
+    name = "test",
+    description = ["Test a Flow or set of Flows on a local iOS Simulator or Android Emulator"],
 )
 class TestCommand : Callable<Int> {
 
@@ -87,13 +88,13 @@ class TestCommand : Callable<Int> {
 
     @Option(
         names = ["--shard-split"],
-        description = ["Splits the tests across N connected devices"],
+        description = ["Run the tests across N connected devices, splitting the tests evenly across them"],
     )
     private var shardSplit: Int? = null
 
     @Option(
         names = ["--shard-all"],
-        description = ["Replicates all the tests across N connected devices"],
+        description = ["Run all the tests across N connected devices"],
     )
     private var shardAll: Int? = null
 
@@ -119,7 +120,8 @@ class TestCommand : Callable<Int> {
     private var output: File? = null
 
     @Option(
-        names = ["--debug-output"], description = ["Configures the debug output in this path, instead of default"]
+        names = ["--debug-output"],
+        description = ["Configures the debug output in this path, instead of default"],
     )
     private var debugOutput: String? = null
 
@@ -186,7 +188,9 @@ class TestCommand : Callable<Int> {
             throw CliError(e.message)
         }
 
-        env = env.withInjectedShellEnvVars().withDefaultEnvVars(flowFile)
+        env = env
+            .withInjectedShellEnvVars()
+            .withDefaultEnvVars(flowFile)
 
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
 
