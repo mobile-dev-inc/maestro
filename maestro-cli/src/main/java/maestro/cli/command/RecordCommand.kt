@@ -35,6 +35,7 @@ import picocli.CommandLine
 import picocli.CommandLine.Option
 import java.io.File
 import java.util.concurrent.Callable
+import maestro.cli.device.Platform
 
 @CommandLine.Command(
     name = "record",
@@ -79,14 +80,9 @@ class RecordCommand : Callable<Int> {
             )
         }
 
-        if (parent?.platform != null) {
-            throw CliError("--platform option was deprecated. You can remove it to run your test.")
-        }
-
         if (configFile != null && configFile?.exists()?.not() == true) {
             throw CliError("The config file ${configFile?.absolutePath} does not exist.")
         }
-
         TestDebugReporter.install(debugOutputPathAsString = debugOutput, printToConsole = parent?.verbose == true)
         val path = TestDebugReporter.getDebugOutputPath()
 
@@ -94,7 +90,8 @@ class RecordCommand : Callable<Int> {
             host = parent?.host,
             port = parent?.port,
             driverHostPort = parent?.port,
-            deviceId = parent?.deviceId
+            deviceId = parent?.deviceId,
+            platform = parent?.platform,
         ) { session ->
             val maestro = session.maestro
             val device = session.device

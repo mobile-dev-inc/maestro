@@ -1,18 +1,25 @@
 package maestro.orchestra.workspace
 
 import maestro.orchestra.MaestroCommand
-import maestro.orchestra.MaestroConfig
 import maestro.orchestra.WorkspaceConfig
 import maestro.orchestra.error.ValidationError
 import maestro.orchestra.workspace.ExecutionOrderPlanner.getFlowsToRunInSequence
 import maestro.orchestra.yaml.YamlCommandReader
 import java.io.File
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.notExists
+import kotlin.io.path.pathString
 import kotlin.streams.toList
 
 object WorkspaceExecutionPlanner {
+
+    private val logger = LoggerFactory.getLogger(WorkspaceExecutionPlanner::class.java)
 
     fun plan(
         input: Path,
@@ -20,16 +27,21 @@ object WorkspaceExecutionPlanner {
         excludeTags: List<String>,
         config: Path?,
     ): ExecutionPlan {
+        logger.info("start planning execution")
+
         if (input.notExists()) {
-            throw ValidationError("""
+            throw ValidationError(
+                """
                 Flow path does not exist: ${input.absolutePathString()}
-            """.trimIndent())
+                """.trimIndent()
+            )
         }
 
         if (input.isRegularFile()) {
             validateFlowFile(input)
             return ExecutionPlan(
                 flowsToRun = listOf(input),
+                sequence = FlowSequence(emptyList()),
             )
         }
 
@@ -37,9 +49,11 @@ object WorkspaceExecutionPlanner {
 
         val unfilteredFlowFiles = Files.walk(input).filter { isFlowFile(it) }.toList()
         if (unfilteredFlowFiles.isEmpty()) {
-            throw ValidationError("""
+            throw ValidationError(
+                """
                 Flow directory does not contain any Flow files: ${input.absolutePathString()}
-            """.trimIndent())
+                """.trimIndent()
+            )
         }
 
         // Filter flows based on flows config
@@ -59,19 +73,19 @@ object WorkspaceExecutionPlanner {
             }
 
         val unsortedFlowFiles = unfilteredFlowFiles
-            .filter { path ->
-                matchers.any { matcher -> matcher.matches(path) }
-            }
+            .filter { path -> matchers.any { matcher -> matcher.matches(path) } }
             .toList()
 
         if (unsortedFlowFiles.isEmpty()) {
             if ("*" == globs.singleOrNull()) {
-                throw ValidationError("""
+                throw ValidationError(
+                    """
                     Top-level directory does not contain any Flows: ${input.absolutePathString()}
                     To configure Maestro to run Flows in subdirectories, check out the following resources:
                       * https://maestro.mobile.dev/cli/test-suites-and-reports#inclusion-patterns
                       * https://blog.mobile.dev/maestro-best-practices-structuring-your-test-suite-54ec390c5c82
-                """.trimIndent())
+                """.trimIndent()
+                )
             } else {
                 throw ValidationError("Flow inclusion pattern(s) did not match any Flow files:\n${toYamlListString(globs)}")
             }
@@ -91,11 +105,17 @@ object WorkspaceExecutionPlanner {
             val tags = config?.tags ?: emptyList()
 
             (allIncludeTags.isEmpty() || tags.any(allIncludeTags::contains))
-                && (allExcludeTags.isEmpty() || !tags.any(allExcludeTags::contains))
+                    && (allExcludeTags.isEmpty() || !tags.any(allExcludeTags::contains))
         }
 
         if (allFlows.isEmpty()) {
-            throw ValidationError("Include / Exclude tags did not match any Flows:\n\nInclude Tags:\n${toYamlListString(allIncludeTags)}\n\nExclude Tags:\n${toYamlListString(allExcludeTags)}")
+            throw ValidationError(
+                "Include / Exclude tags did not match any Flows:\n\nInclude Tags:\n${
+                    toYamlListString(
+                        allIncludeTags
+                    )
+                }\n\nExclude Tags:\n${toYamlListString(allExcludeTags)}"
+            )
         }
 
         // Handle sequential execution
@@ -117,18 +137,24 @@ object WorkspaceExecutionPlanner {
 
         // validation of media files for add media command
         allFlows.forEach {
-            val commands = YamlCommandReader.readCommands(it).mapNotNull { maestroCommand ->  maestroCommand.addMediaCommand }
+            val commands = YamlCommandReader
+                .readCommands(it)
+                .mapNotNull { maestroCommand -> maestroCommand.addMediaCommand }
             val mediaPaths = commands.flatMap { addMediaCommand -> addMediaCommand.mediaPaths }
             YamlCommandsPathValidator.validatePathsExistInWorkspace(input, it, mediaPaths)
         }
 
-        return ExecutionPlan(
+        val executionPlan = ExecutionPlan(
             flowsToRun = normalFlows,
             FlowSequence(
                 flowsToRunInSequence,
                 workspaceConfig.executionOrder?.continueOnFailure
             )
         )
+
+        logger.info("Created execution plan: $executionPlan")
+
+        return executionPlan
     }
 
     private fun validateFlowFile(topLevelFlowPath: Path): List<MaestroCommand> {
@@ -157,6 +183,6 @@ object WorkspaceExecutionPlanner {
 
     data class ExecutionPlan(
         val flowsToRun: List<Path>,
-        val sequence: FlowSequence? = null,
+        val sequence: FlowSequence,
     )
 }
