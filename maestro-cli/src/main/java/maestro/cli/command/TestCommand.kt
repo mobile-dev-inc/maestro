@@ -194,7 +194,11 @@ class TestCommand : Callable<Int> {
     }
 
     private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
-        val shards = shardSplit ?: shardAll ?: 1
+        val requestedShards = shardSplit ?: shardAll ?: 1
+        if (requestedShards > 1 && plan.sequence.flows.isNotEmpty()) {
+            error("Cannot run sharded tests with sequential execution")
+        }
+
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
@@ -213,15 +217,10 @@ class TestCommand : Callable<Int> {
             }.toMutableSet())
 
             val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val effectiveShards = if (onlySequenceFlows) 1 else shards.coerceAtMost(plan.flowsToRun.size)
-            val sharded = effectiveShards > 1
+            val effectiveShards = if (onlySequenceFlows) 1 else requestedShards.coerceAtMost(plan.flowsToRun.size)
 
-            if (shards > plan.flowsToRun.size) {
-                PrintUtils.warn("Requested $shards shards, but it cannot be higher than the number of flows (${plan.flowsToRun.size}). Will use $effectiveShards shards instead.")
-            }
-
-            if (sharded && plan.sequence.flows.isNotEmpty()) {
-                error("Cannot run sharded tests with sequential execution")
+            if (requestedShards > plan.flowsToRun.size) {
+                PrintUtils.warn("Requested $requestedShards shards, but it cannot be higher than the number of flows (${plan.flowsToRun.size}). Will use $effectiveShards shards instead.")
             }
 
             val chunkPlans: List<ExecutionPlan> = if (onlySequenceFlows) {
@@ -255,7 +254,7 @@ class TestCommand : Callable<Int> {
                         "Will split $flowCount flows across $effectiveShards shards (${prefix}$flowsPerShard flows per shard)"
                     }
 
-                    else -> "Will run $flowCount in a single shard"
+                    else -> "Will run $flowCount flows in a single shard"
                 }
 
                 appendLine(message)
@@ -278,9 +277,13 @@ class TestCommand : Callable<Int> {
 
             val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
-                    val driverHostPort = if (!sharded) parent?.port ?: 7001 else (7001..7128).shuffled().find { port ->
-                        usedPorts.putIfAbsent(port, true) == null
-                    } ?: error("No available ports found")
+                    val driverHostPort = if (effectiveShards == 1) {
+                        parent?.port ?: 7001
+                    } else {
+                        (7001..7128).shuffled().find { port ->
+                            usedPorts.putIfAbsent(port, true) == null
+                        } ?: error("No available ports found")
+                    }
 
                     // Acquire lock to execute device creation block
                     deviceCreationSemaphore.acquire()
@@ -380,7 +383,7 @@ class TestCommand : Callable<Int> {
 
             suites.mergeSummaries()?.saveReport()
 
-            if (sharded) printShardsMessage(passed, total, suites)
+            if (effectiveShards > 1) printShardsMessage(passed, total, suites)
             if (passed == total) 0 else 1
         }.onFailure {
             PrintUtils.message("❌ Error: ${it.message}")
