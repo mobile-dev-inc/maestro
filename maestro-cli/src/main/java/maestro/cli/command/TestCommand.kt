@@ -60,6 +60,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import maestro.utils.isSingleFile
+import maestro.orchestra.util.Env.withDefaultEnvVars
 
 @CommandLine.Command(
     name = "test",
@@ -152,10 +153,6 @@ class TestCommand : Callable<Int> {
     }
 
     override fun call(): Int {
-        if (parent?.platform != null) {
-            throw CliError("--platform option was deprecated. You can remove it to run your test.")
-        }
-
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
                 flowFiles.map { it.toPath().toAbsolutePath() }.toSet(),
@@ -166,9 +163,15 @@ class TestCommand : Callable<Int> {
             throw CliError(e.message)
         }
 
-        env = env.withInjectedShellEnvVars()
+        env = env
+            .withInjectedShellEnvVars()
+            .withDefaultEnvVars(flowFile)
 
-        TestDebugReporter.install(debugOutputPathAsString = debugOutput, flattenDebugOutput = flattenDebugOutput)
+        TestDebugReporter.install(
+            debugOutputPathAsString = debugOutput,
+            flattenDebugOutput = flattenDebugOutput,
+            printToConsole = parent?.verbose == true,
+        )
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
 
         return handleSessions(debugOutputPath, executionPlan)
@@ -260,7 +263,8 @@ class TestCommand : Callable<Int> {
                         host = parent?.host,
                         port = parent?.port,
                         driverHostPort = driverHostPort,
-                        deviceId = deviceId
+                        deviceId = deviceId,
+                        platform = parent?.platform,
                     ) { session ->
                         val maestro = session.maestro
                         val device = session.device
@@ -301,7 +305,7 @@ class TestCommand : Callable<Int> {
 
                             } else {
                                 val resultView =
-                                    if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
+                                    if (DisableAnsiMixin.ansiEnabled && parent?.verbose == false) AnsiResultView()
                                     else PlainTextResultView()
                                 val resultSingle = TestRunner.runSingle(
                                     maestro,

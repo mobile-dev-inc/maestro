@@ -15,6 +15,7 @@ import maestro.orchestra.ClearStateCommand
 import maestro.orchestra.Command
 import maestro.orchestra.Condition
 import maestro.orchestra.CopyTextFromCommand
+import maestro.orchestra.DefineVariablesCommand
 import maestro.orchestra.ElementSelector
 import maestro.orchestra.EraseTextCommand
 import maestro.orchestra.EvalScriptCommand
@@ -433,7 +434,7 @@ internal class YamlCommandReaderTest {
                 selector = ElementSelector(textRegex = "Footer"),
                 direction = ScrollDirection.DOWN,
                 timeout = 20000,
-                scrollDuration = 601,
+                scrollDuration = "40",
                 visibilityPercentage = 100,
                 label = "Scroll to the bottom",
                 centerElement = false
