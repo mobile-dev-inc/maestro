@@ -42,6 +42,7 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.util.Properties
 import kotlin.system.exitProcess
+import maestro.cli.util.ChangeLogUtils
 
 @Command(
     name = "maestro",
@@ -155,7 +156,7 @@ fun main(args: Array<String>) {
             "A new version of the Maestro CLI is available ($newVersion).\n",
             "See what's new:",
             "https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#$anchor",
-            if (changelog == null) "" else "\n${changelog.joinToString("\n")}\n",
+            ChangeLogUtils.print(changelog),
             "Upgrade command:",
             "curl -Ls \"https://get.maestro.mobile.dev\" | bash",
         ).joinToString("\n").box())

@@ -7,8 +7,8 @@ import maestro.cli.util.EnvUtils.CLI_VERSION
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import maestro.cli.util.ChangeLogUtils
+import maestro.cli.util.ChangeLog
 
 object Updates {
     private val DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory()
@@ -65,22 +65,13 @@ object Updates {
         }
     }
 
-    private fun fetchChangelog(): List<String>? {
+    private fun fetchChangelog(): ChangeLog {
         if (CLI_VERSION == null) {
             return null
         }
-        val request = Request.Builder()
-            .url("https://raw.githubusercontent.com/mobile-dev-inc/maestro/main/CHANGELOG.md")
-            .build()
-        val content = OkHttpClient().newCall(request).execute().body?.string()
-        val body = content?.split("\n## ")?.map { it.lines() }
         val version = fetchUpdates()?.toString() ?: return null
-        return body
-            ?.first { it.first().startsWith(version) }
-            ?.drop(1)
-            ?.map { it.trim().replace("**", "") }
-            ?.map { it.replace("\\[(.*?)]\\(.*?\\)".toRegex(), "$1") }
-            ?.filter { it.isNotEmpty() && it.startsWith("- ") }
+        val content = ChangeLogUtils.fetchContent()
+        return ChangeLogUtils.formatBody(content, version)
     }
 
     @Synchronized
