@@ -88,8 +88,9 @@ class TestCommand : Callable<Int> {
     private lateinit var flowFile: File
 
     @Option(
-      names = ["--config"],
-      description = ["Optional YAML configuration file for the workspace. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."])
+        names = ["--config"],
+        description = ["Optional YAML configuration file for the workspace. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."]
+    )
     private var configFile: File? = null
 
     @Option(
@@ -235,8 +236,8 @@ class TestCommand : Callable<Int> {
             }
 
             val warning = "Requested $requestedShards shards, " +
-                "but it cannot be higher than the number of flows (${plan.flowsToRun.size}). " +
-                "Will use $effectiveShards shards instead."
+                    "but it cannot be higher than the number of flows (${plan.flowsToRun.size}). " +
+                    "Will use $effectiveShards shards instead."
             if (shardAll == null && requestedShards > plan.flowsToRun.size) PrintUtils.warn(warning)
 
             val chunkPlans = makeChunkPlans(plan, effectiveShards, onlySequenceFlows)
@@ -259,6 +260,7 @@ class TestCommand : Callable<Int> {
                     val prefix = if (isApprox) "approx. " else ""
                     "Will split $flowCount flows across $effectiveShards shards (${prefix}$flowsPerShard flows per shard)"
                 }
+
                 else -> null
             }
             message?.let { PrintUtils.info(it) }
@@ -267,14 +269,14 @@ class TestCommand : Callable<Int> {
             val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
                     runShardSuite(
-                        effectiveShards,
-                        deviceIds,
-                        shardIndex,
-                        missingDevices,
-                        missingDevicesConfigs,
-                        barrier,
-                        chunkPlans,
-                        debugOutputPath
+                        effectiveShards = effectiveShards,
+                        deviceIds = deviceIds,
+                        shardIndex = shardIndex,
+                        missingDevices = missingDevices,
+                        missingDevicesConfigs = missingDevicesConfigs,
+                        barrier = barrier,
+                        chunkPlans = chunkPlans,
+                        debugOutputPath = debugOutputPath,
                     )
                 }
             }.awaitAll()
@@ -417,8 +419,8 @@ class TestCommand : Callable<Int> {
         driverHostPort: Int
     ): String =
         useDevicesPassedAsOptions(deviceIds, shardIndex)
-        ?: useConnectedDevices(deviceIds, missingDevices, shardIndex)
-        ?: createNewDevice(missingDevicesConfigs, shardIndex, driverHostPort)
+            ?: useConnectedDevices(deviceIds, missingDevices, shardIndex)
+            ?: createNewDevice(missingDevicesConfigs, shardIndex, driverHostPort)
 
     private fun useDevicesPassedAsOptions(deviceIds: List<String>, shardIndex: Int) =
         deviceIds.getOrNull(shardIndex)
@@ -514,9 +516,9 @@ class TestCommand : Callable<Int> {
 
     private fun printShardsMessage(passedTests: Int, totalTests: Int, shardResults: List<TestExecutionSummary>) {
         val lines = listOf("Passed: $passedTests/$totalTests") +
-            shardResults.mapIndexed { _, result ->
-                "[ ${result.suites.first().deviceName} ] - ${result.passedCount ?: 0}/${result.totalTests ?: 0}"
-            }
+                shardResults.mapIndexed { _, result ->
+                    "[ ${result.suites.first().deviceName} ] - ${result.passedCount ?: 0}/${result.totalTests ?: 0}"
+                }
         PrintUtils.message(lines.joinToString("\n").box())
     }
 
