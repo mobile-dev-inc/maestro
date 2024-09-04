@@ -93,6 +93,7 @@ object TestDebugReporter {
             val status = when (it.status) {
                 CommandStatus.COMPLETED -> "✅"
                 CommandStatus.FAILED -> "❌"
+                CommandStatus.WARNED -> "⚠️"
                 else -> "﹖"
             }
             val filename = "screenshot-$status-${it.timestamp}-(${flowName}).png"
@@ -134,11 +135,15 @@ object TestDebugReporter {
         logger.info("---------------------")
     }
 
-    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false) {
+    /**
+     * Calls to this method should be done as soon as possible, to make all
+     * loggers use our custom configuration rather than the defaults.
+     */
+    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false, printToConsole: Boolean) {
         this.debugOutputPathAsString = debugOutputPathAsString
         this.flattenDebugOutput = flattenDebugOutput
         val path = getDebugOutputPath()
-        LogConfig.configure(path.absolutePathString() + "/maestro.log")
+        LogConfig.configure(logFileName = path.absolutePathString() + "/maestro.log", printToConsole = printToConsole)
         logSystemInfo()
         DebugLogStore.logSystemInfo()
     }
@@ -163,7 +168,6 @@ object TestDebugReporter {
         val foldername = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
         return Paths.get(debugRootPath, *preamble, foldername)
     }
-
 }
 
 private data class CommandDebugWrapper(
