@@ -100,9 +100,9 @@ class TestCommand : Callable<Int> {
 
     @Option(
         names = ["--shard-all"],
-        description = ["Run all the tests across N connected devices"],
+        description = ["Run all the tests across all the connected devices"],
     )
-    private var shardAll: Int? = null
+    private var shardAll: Boolean = false
 
     @Option(names = ["-c", "--continuous"])
     private var continuous: Boolean = false
@@ -173,7 +173,7 @@ class TestCommand : Callable<Int> {
             printToConsole = parent?.verbose == true,
         )
 
-        if (shardSplit != null && shardAll != null) {
+        if (shardSplit != null && shardAll) {
             throw CliError("Options --shard-split and --shard-all are mutually exclusive.")
         }
 
@@ -204,42 +204,51 @@ class TestCommand : Callable<Int> {
     }
 
     private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
-        val requestedShards = shardSplit ?: shardAll ?: 1
+        val deviceIds = getPassedOptionsDeviceIds().ifEmpty {
+            DeviceService.listConnectedDevices().map { it.instanceId }
+        }
+
+        val deviceCount = deviceIds.size
+        val flowsToRun = plan.flowsToRun.size
+        val requestedShards = if (shardAll) deviceCount else shardSplit ?:  1
+
         if (requestedShards > 1 && plan.sequence.flows.isNotEmpty()) {
             error("Cannot run sharded tests with sequential execution")
         }
+
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
-            val deviceIds = getPassedOptionsDeviceIds().ifEmpty {
-                DeviceService.listConnectedDevices().map { it.instanceId }
-            }
             val effectiveShards = when {
                 onlySequenceFlows -> 1
-                shardAll == null -> requestedShards
-                    .coerceAtMost(plan.flowsToRun.size)
-                shardSplit == null -> requestedShards
-                    .coerceAtMost(deviceIds.size)
+                shardAll -> requestedShards
+                    .coerceAtMost(deviceCount)
+                shardSplit != null -> requestedShards
+                    .coerceAtMost(flowsToRun)
+                    .coerceAtMost(deviceCount)
                 else -> 1
             }
 
-            val warning = "Requested $requestedShards shards, " +
-                    "but it cannot be higher than the number of flows (${plan.flowsToRun.size}). " +
-                    "Will use $effectiveShards shards instead."
-            if (shardAll == null && requestedShards > plan.flowsToRun.size) PrintUtils.warn(warning)
+            val notEnoughFlows = requestedShards > flowsToRun
+            val notEnoughDevices = requestedShards > deviceCount
+            val reason =
+                if (notEnoughFlows) "but it cannot be higher than the number of flows ($flowsToRun)"
+                else if (notEnoughDevices) "but it cannot be higher than the number of connected or specified devices ($deviceCount)"
+                else ""
+            val warning = "Requested $requestedShards shards, $reason. Will use $effectiveShards shards instead."
+            if (notEnoughFlows || notEnoughDevices) PrintUtils.warn(warning)
 
             val chunkPlans = makeChunkPlans(plan, effectiveShards, onlySequenceFlows)
 
-            val flowCount = if (onlySequenceFlows) plan.sequence.flows.size else plan.flowsToRun.size
+            val flowCount = if (onlySequenceFlows) plan.sequence.flows.size else flowsToRun
             val message = when {
-                shardAll != null -> "Will run $effectiveShards shards, with all $flowCount flows in each shard"
+                shardAll -> "Will run $effectiveShards shards, with all $flowCount flows in each shard"
                 shardSplit != null -> {
                     val flowsPerShard = (flowCount.toFloat() / effectiveShards).roundToInt()
                     val isApprox = flowCount % effectiveShards != 0
                     val prefix = if (isApprox) "approx. " else ""
                     "Will split $flowCount flows across $effectiveShards shards (${prefix}$flowsPerShard flows per shard)"
                 }
-
                 else -> null
             }
             message?.let { PrintUtils.info(it) }
@@ -294,7 +303,7 @@ class TestCommand : Callable<Int> {
             val maestro = session.maestro
             val device = session.device
 
-            val isReplicatingSingleFile = shardAll != null && effectiveShards > 1 && flowFiles.isSingleFile
+            val isReplicatingSingleFile = shardAll && effectiveShards > 1 && flowFiles.isSingleFile
             val isMultipleFiles = flowFiles.isSingleFile.not()
             val isAskingForReport = format != ReportFormat.NOOP
             if (isMultipleFiles || isAskingForReport || isReplicatingSingleFile) {
@@ -386,7 +395,7 @@ class TestCommand : Callable<Int> {
         onlySequenceFlows: Boolean,
     ) = when {
         onlySequenceFlows -> listOf(plan) // We only want to run sequential flows in this case.
-        shardAll != null -> (0 until effectiveShards).reversed().map { plan.copy() }
+        shardAll -> (0 until effectiveShards).reversed().map { plan.copy() }
         else -> plan.flowsToRun
             .withIndex()
             .groupBy { it.index % effectiveShards }
