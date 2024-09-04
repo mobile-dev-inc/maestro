@@ -86,7 +86,7 @@ class TestCommand : Callable<Int> {
     private val parent: App? = null
 
     @CommandLine.Parameters(description = ["One or more flow files or folders containing flow files"])
-    private lateinit var flowFiles: Set<File>
+    private var flowFiles: Set<File> = emptySet()
 
     @Option(
         names = ["--config"],
