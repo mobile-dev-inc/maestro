@@ -42,9 +42,11 @@ class TestSuiteInteractor(
     private val maestro: Maestro,
     private val device: Device? = null,
     private val reporter: TestSuiteReporter,
+    private val shardIndex: Int? = null,
 ) {
 
     private val logger = LoggerFactory.getLogger(TestSuiteInteractor::class.java)
+    private val shardPrefix = shardIndex?.let { "[shard ${it + 1}] " }.orEmpty()
 
     fun runTestSuite(
         executionPlan: WorkspaceExecutionPlanner.ExecutionPlan,
@@ -53,13 +55,12 @@ class TestSuiteInteractor(
         debugOutputPath: Path
     ): TestExecutionSummary {
         if (executionPlan.flowsToRun.isEmpty() && executionPlan.sequence.flows.isEmpty()) {
-            throw CliError("No flows returned from the tag filter used")
+            throw CliError("${shardPrefix}No flows returned from the tag filter used")
         }
 
         val flowResults = mutableListOf<TestExecutionSummary.FlowResult>()
 
-        PrintUtils.message("Waiting for flows to complete...")
-        println()
+        PrintUtils.message("${shardPrefix}Waiting for flows to complete...")
 
         var passed = true
         val aiOutputs = mutableListOf<FlowAIOutput>()
@@ -78,7 +79,7 @@ class TestSuiteInteractor(
             if (result.status == FlowStatus.ERROR) {
                 passed = false
                 if (executionPlan.sequence.continueOnFailure != true) {
-                    PrintUtils.message("Flow ${result.name} failed and continueOnFailure is set to false, aborting running sequential Flows")
+                    PrintUtils.message("${shardPrefix}Flow ${result.name} failed and continueOnFailure is set to false, aborting running sequential Flows")
                     println()
                     break
                 }
@@ -103,6 +104,7 @@ class TestSuiteInteractor(
             TestSuiteViewModel(
                 status = if (passed) FlowStatus.SUCCESS else FlowStatus.ERROR,
                 duration = suiteDuration,
+                shardIndex = shardIndex,
                 flows = flowResults
                     .map {
                         TestSuiteViewModel.FlowResult(
@@ -173,21 +175,21 @@ class TestSuiteInteractor(
                 val orchestra = Orchestra(
                     maestro = maestro,
                     onCommandStart = { _, command ->
-                        logger.info("${command.description()} RUNNING")
+                        logger.info("${shardPrefix}${command.description()} RUNNING")
                         debugOutput.commands[command] = CommandDebugMetadata(
                             timestamp = System.currentTimeMillis(),
                             status = CommandStatus.RUNNING
                         )
                     },
                     onCommandComplete = { _, command ->
-                        logger.info("${command.description()} COMPLETED")
+                        logger.info("${shardPrefix}${command.description()} COMPLETED")
                         debugOutput.commands[command]?.let {
                             it.status = CommandStatus.COMPLETED
                             it.calculateDuration()
                         }
                     },
                     onCommandFailed = { _, command, e ->
-                        logger.info("${command.description()} FAILED")
+                        logger.info("${shardPrefix}${command.description()} FAILED")
                         if (e is MaestroException) debugOutput.exception = e
                         debugOutput.commands[command]?.let {
                             it.status = CommandStatus.FAILED
@@ -199,25 +201,25 @@ class TestSuiteInteractor(
                         Orchestra.ErrorResolution.FAIL
                     },
                     onCommandSkipped = { _, command ->
-                        logger.info("${command.description()} SKIPPED")
+                        logger.info("${shardPrefix}${command.description()} SKIPPED")
                         debugOutput.commands[command]?.let {
                             it.status = CommandStatus.SKIPPED
                         }
                     },
                     onCommandWarned = { _, command ->
-                        logger.info("${command.description()} WARNED")
+                        logger.info("${shardPrefix}${command.description()} WARNED")
                         debugOutput.commands[command]?.apply {
                             status = CommandStatus.WARNED
                         }
                     },
                     onCommandReset = { command ->
-                        logger.info("${command.description()} PENDING")
+                        logger.info("${shardPrefix}${command.description()} PENDING")
                         debugOutput.commands[command]?.let {
                             it.status = CommandStatus.PENDING
                         }
                     },
                     onCommandGeneratedOutput = { command, defects, screenshot ->
-                        logger.info("${command.description()} generated output")
+                        logger.info("${shardPrefix}${command.description()} generated output")
                         val screenshotPath = ScreenshotUtils.writeAIscreenshot(screenshot)
                         aiOutput.screenOutputs.add(
                             SingleScreenFlowAIOutput(
@@ -231,7 +233,7 @@ class TestSuiteInteractor(
                 val flowSuccess = orchestra.runFlow(commands)
                 flowStatus = if (flowSuccess) FlowStatus.SUCCESS else FlowStatus.ERROR
             } catch (e: Exception) {
-                logger.error("Failed to complete flow", e)
+                logger.error("${shardPrefix}Failed to complete flow", e)
                 flowStatus = FlowStatus.ERROR
                 errorMessage = ErrorViewUtils.exceptionToMessage(e)
             }
@@ -241,6 +243,7 @@ class TestSuiteInteractor(
         TestDebugReporter.saveFlow(
             flowName = flowName,
             debugOutput = debugOutput,
+            shardIndex = shardIndex,
             path = debugOutputPath,
         )
         // FIXME(bartekpacia): Save AI output as well
@@ -250,6 +253,7 @@ class TestSuiteInteractor(
                 name = flowName,
                 status = flowStatus,
                 duration = flowDuration,
+                shardIndex = shardIndex,
                 error = debugOutput.exception?.message,
             )
         )
@@ -261,7 +265,7 @@ class TestSuiteInteractor(
                 status = flowStatus,
                 failure = if (flowStatus == FlowStatus.ERROR) {
                     TestExecutionSummary.Failure(
-                        message = errorMessage ?: debugOutput.exception?.message ?: "Unknown error",
+                        message = shardPrefix + (errorMessage ?: debugOutput.exception?.message ?: "Unknown error"),
                     )
                 } else null,
                 duration = flowDuration,

@@ -314,7 +314,7 @@ class TestCommand : Callable<Int> {
         deviceCreationSemaphore.acquire()
 
         val deviceId = assignDeviceToShard(deviceIds, shardIndex, missingDevices, missingDevicesConfigs, driverHostPort)
-        logger.info("Selected device $deviceId for shard ${shardIndex + 1} on port $driverHostPort")
+        logger.info("[shard ${shardIndex + 1}] Selected device $deviceId using port $driverHostPort")
 
         // Release lock if device ID was obtained from the connected devices
         deviceCreationSemaphore.release()
@@ -333,7 +333,7 @@ class TestCommand : Callable<Int> {
             val maestro = session.maestro
             val device = session.device
 
-            val isReplicatingSingleTest = shardAll != null && effectiveShards > 1
+            val isReplicatingSingleTest = shardAll != null && effectiveShards > 1 && flowFiles.isSingleFile
             val isMultipleFiles = flowFiles.isSingleFile.not()
             val isAskingForReport = format != ReportFormat.NOOP
             if (isMultipleFiles || isAskingForReport || isReplicatingSingleTest) {
@@ -404,6 +404,7 @@ class TestCommand : Callable<Int> {
         val suiteResult = TestSuiteInteractor(
             maestro = maestro,
             device = device,
+            shardIndex = shardIndex,
             reporter = ReporterFactory.buildReporter(format, testSuiteName),
         ).runTestSuite(
             executionPlan = chunkPlans[shardIndex],
@@ -472,7 +473,7 @@ class TestCommand : Callable<Int> {
         onlySequenceFlows: Boolean,
     ) = when {
         onlySequenceFlows -> listOf(plan) // We only want to run sequential flows in this case.
-        shardAll != null -> (0 until effectiveShards).map { plan.copy() }
+        shardAll != null -> (0 until effectiveShards).reversed().map { plan.copy() }
         else -> plan.flowsToRun
             .withIndex()
             .groupBy { it.index % effectiveShards }
