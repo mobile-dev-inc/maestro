@@ -333,10 +333,10 @@ class TestCommand : Callable<Int> {
             val maestro = session.maestro
             val device = session.device
 
-            val isReplicatingSingleTest = shardAll != null && effectiveShards > 1 && flowFiles.isSingleFile
+            val isReplicatingSingleFile = shardAll != null && effectiveShards > 1 && flowFiles.isSingleFile
             val isMultipleFiles = flowFiles.isSingleFile.not()
             val isAskingForReport = format != ReportFormat.NOOP
-            if (isMultipleFiles || isAskingForReport || isReplicatingSingleTest) {
+            if (isMultipleFiles || isAskingForReport || isReplicatingSingleFile) {
                 if (continuous) {
                     throw CommandLine.ParameterException(
                         commandSpec.commandLine(),
