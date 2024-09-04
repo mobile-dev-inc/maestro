@@ -28,11 +28,15 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
+import maestro.orchestra.util.Env.withDefaultEnvVars
+import maestro.orchestra.util.Env.withInjectedShellEnvVars
 
 /**
  * Similar to [TestRunner], but:
  *  * can run many flows at once
  *  * does not support continuous mode
+ *
+ *  Does not care about sharding. It only has to know the index of the shard it's running it, for logging purposes.
  */
 class TestSuiteInteractor(
     private val maestro: Maestro,
@@ -63,7 +67,11 @@ class TestSuiteInteractor(
         // first run sequence of flows if present
         val flowSequence = executionPlan.sequence
         for (flow in flowSequence?.flows ?: emptyList()) {
-            val (result, aiOutput) = runFlow(flow.toFile(), env, maestro, debugOutputPath)
+            val flowFile = flow.toFile()
+            val updatedEnv = env
+                .withInjectedShellEnvVars()
+                .withDefaultEnvVars(flowFile)
+            val (result, aiOutput) = runFlow(flowFile, updatedEnv, maestro, debugOutputPath)
             flowResults.add(result)
             aiOutputs.add(aiOutput)
 
@@ -227,6 +235,12 @@ class TestSuiteInteractor(
                         logger.info("${command.description()} SKIPPED")
                         debugOutput.commands[command]?.let {
                             it.status = CommandStatus.SKIPPED
+                        }
+                    },
+                    onCommandWarned = { _, command ->
+                        logger.info("${command.description()} WARNED")
+                        debugOutput.commands[command]?.apply {
+                            status = CommandStatus.WARNED
                         }
                     },
                     onCommandReset = { command ->

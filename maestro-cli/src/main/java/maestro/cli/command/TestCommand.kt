@@ -64,9 +64,7 @@ import maestro.orchestra.util.Env.withDefaultEnvVars
 
 @CommandLine.Command(
     name = "test",
-    description = [
-        "Test a Flow or set of Flows on a local iOS Simulator or Android Emulator"
-    ]
+    description = ["Test a Flow or set of Flows on a local iOS Simulator or Android Emulator"],
 )
 class TestCommand : Callable<Int> {
 
@@ -83,10 +81,28 @@ class TestCommand : Callable<Int> {
     private lateinit var flowFiles: Set<File>
 
     @Option(
+      names = ["--config"],
+      description = ["Optional YAML configuration file for the workspace. If not provided, Maestro will look for a config.yaml file in the workspace's root directory."])
+    private var configFile: File? = null
+
+    @Option(
         names = ["-s", "--shards"],
-        description = ["Number of parallel shards to distribute tests across"]
+        description = ["Number of parallel shards to distribute tests across"],
     )
-    private var shards: Int = 1
+    @Deprecated("Use --shard-split or --shard-all instead")
+    private var legacyShardCount: Int? = null
+
+    @Option(
+        names = ["--shard-split"],
+        description = ["Run the tests across N connected devices, splitting the tests evenly across them"],
+    )
+    private var shardSplit: Int? = null
+
+    @Option(
+        names = ["--shard-all"],
+        description = ["Run all the tests across N connected devices"],
+    )
+    private var shardAll: Int? = null
 
     @Option(names = ["-c", "--continuous"])
     private var continuous: Boolean = false
@@ -111,7 +127,7 @@ class TestCommand : Callable<Int> {
 
     @Option(
         names = ["--debug-output"],
-        description = ["Configures the debug output in this path, instead of default"]
+        description = ["Configures the debug output in this path, instead of default"],
     )
     private var debugOutput: String? = null
 
@@ -153,32 +169,48 @@ class TestCommand : Callable<Int> {
     }
 
     override fun call(): Int {
-        val executionPlan = try {
-            WorkspaceExecutionPlanner.plan(
-                flowFiles.map { it.toPath().toAbsolutePath() }.toSet(),
-                includeTags,
-                excludeTags
-            )
-        } catch (e: ValidationError) {
-            throw CliError(e.message)
-        }
-
-        env = env
-            .withInjectedShellEnvVars()
-            .withDefaultEnvVars(flowFile)
-
         TestDebugReporter.install(
             debugOutputPathAsString = debugOutput,
             flattenDebugOutput = flattenDebugOutput,
             printToConsole = parent?.verbose == true,
         )
+
+        if (shardSplit != null && shardAll != null) {
+            throw CliError("Options --shard-split and --shard-all are mutually exclusive.")
+        }
+
+        if (legacyShardCount != null) {
+            PrintUtils.warn("--shards option is deprecated and will be removed in the next Maestro version. Use --shard-split or --shard-all instead.")
+            shardSplit = legacyShardCount
+        }
+
+        if (configFile != null && configFile?.exists()?.not() == true) {
+            throw CliError("The config file ${configFile?.absolutePath} does not exist.")
+        }
+
+        val executionPlan = try {
+            WorkspaceExecutionPlanner.plan(
+                input = flowFiles.map { it.toPath().toAbsolutePath() }.toSet(),
+                includeTags = includeTags,
+                excludeTags = excludeTags,
+                config = configFile?.toPath()?.toAbsolutePath(),
+            )
+        } catch (e: ValidationError) {
+            throw CliError(e.message)
+        }
+
         val debugOutputPath = TestDebugReporter.getDebugOutputPath()
 
         return handleSessions(debugOutputPath, executionPlan)
     }
 
     private fun handleSessions(debugOutputPath: Path, plan: ExecutionPlan): Int = runBlocking(Dispatchers.IO) {
-        val sharded = shards > 1
+        val requestedShards = shardSplit ?: shardAll ?: 1
+        if (requestedShards > 1 && plan.sequence.flows.isNotEmpty()) {
+            error("Cannot run sharded tests with sequential execution")
+        }
+
+        val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
             val deviceIds = (if (isWebFlow())
@@ -194,36 +226,75 @@ class TestCommand : Callable<Int> {
             initialActiveDevices.addAll(DeviceService.listConnectedDevices().map {
                 it.instanceId
             }.toMutableSet())
-            val effectiveShards = shards.coerceAtMost(plan.flowsToRun.size)
-            val chunkPlans = plan.flowsToRun
-                .withIndex()
-                .groupBy { it.index % shards }
-                .map { (shardIndex, files) ->
-                    ExecutionPlan(
-                        files.map { it.value },
-                        plan.sequence.also {
-                            if (it?.flows?.isNotEmpty() == true && sharded)
-                                error("Cannot run sharded tests with sequential execution.")
-                        }
-                    )
+
+            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
+            val effectiveShards = if (onlySequenceFlows) 1 else requestedShards.coerceAtMost(plan.flowsToRun.size)
+
+            if (requestedShards > plan.flowsToRun.size) {
+                PrintUtils.warn("Requested $requestedShards shards, but it cannot be higher than the number of flows (${plan.flowsToRun.size}). Will use $effectiveShards shards instead.")
+            }
+
+            val chunkPlans: List<ExecutionPlan> = if (onlySequenceFlows) {
+                // Handle an edge case
+                // We only want to run sequential flows in this case.
+                listOf(plan)
+            } else if (shardAll != null) {
+                (0 until effectiveShards).map { plan.copy() }
+            } else {
+                plan.flowsToRun
+                    .withIndex()
+                    .groupBy { it.index % effectiveShards }
+                    .map { (shardIndex, files) ->
+                        ExecutionPlan(
+                            flowsToRun = files.map { it.value },
+                            sequence = plan.sequence,
+                        )
+                    }
+            }
+
+            PrintUtils.info(buildString {
+                val flowCount = if (onlySequenceFlows) plan.sequence.flows.size else plan.flowsToRun.size
+
+                val message = when {
+                    shardAll != null -> "Will run $effectiveShards shards, with all $flowCount flows in each shard"
+
+                    shardSplit != null -> {
+                        val flowsPerShard = flowCount / effectiveShards
+                        val isApprox = flowCount % effectiveShards != 0
+                        val prefix = if (isApprox) "approx. " else ""
+                        "Will split $flowCount flows across $effectiveShards shards (${prefix}$flowsPerShard flows per shard)"
+                    }
+
+                    else -> "Will run $flowCount flows in a single shard"
                 }
 
+                appendLine(message)
+            })
+
             // Collect device configurations for missing shards, if any
-            val missing = effectiveShards - if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            val allDeviceConfigs = (0 until missing).map { shardIndex ->
+            val missing = effectiveShards - availableDevices
+
+            if (missing > 0) {
+                PrintUtils.warn("$availableDevices device(s) connected, which is not enough to run $effectiveShards shards. Missing $missing device(s).")
+            }
+
+            val allDeviceConfigs = if (shardAll == null) (0 until missing).map { shardIndex ->
                 PrintUtils.message("------------------ Shard ${shardIndex + 1} ------------------")
                 // Collect device configurations here, one per shard
                 PickDeviceView.requestDeviceOptions()
-            }.toMutableList()
+            }.toMutableList() else mutableListOf()
 
             val barrier = CountDownLatch(effectiveShards)
 
             val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
-                    val driverHostPort = if (!sharded) parent?.port ?: 7001 else
+                    val driverHostPort = if (effectiveShards == 1) {
+                        parent?.port ?: 7001
+                    } else {
                         (7001..7128).shuffled().find { port ->
                             usedPorts.putIfAbsent(port, true) == null
                         } ?: error("No available ports found")
+                    }
 
                     // Acquire lock to execute device creation block
                     deviceCreationSemaphore.acquire()
@@ -235,18 +306,11 @@ class TestCommand : Callable<Int> {
                                 val cfg = allDeviceConfigs.first()
                                 allDeviceConfigs.remove(cfg)
                                 val deviceCreated = DeviceCreateUtil.getOrCreateDevice(
-                                    cfg.platform,
-                                    cfg.osVersion,
-                                    null,
-                                    null,
-                                    true,
-                                    shardIndex
+                                    cfg.platform, cfg.osVersion, null, null, true, shardIndex
                                 )
 
                                 DeviceService.startDevice(
-                                    deviceCreated,
-                                    driverHostPort,
-                                    initialActiveDevices + currentActiveDevices
+                                    deviceCreated, driverHostPort, initialActiveDevices + currentActiveDevices
                                 ).instanceId.also {
                                     currentActiveDevices.add(it)
                                     delay(2.seconds)
@@ -296,12 +360,16 @@ class TestCommand : Callable<Int> {
                             return@newSession Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
                         } else {
                             // Run a single flow
+                            val flowFile = flowFiles.first()
+                            env = env
+                                .withInjectedShellEnvVars()
+                                .withDefaultEnvVars(flowFile)
 
                             if (continuous) {
                                 if (!flattenDebugOutput) {
                                     TestDebugReporter.deleteOldFiles()
                                 }
-                                TestRunner.runContinuous(maestro, device, flowFiles.first(), env)
+                                TestRunner.runContinuous(maestro, device, flowFile, env)
 
                             } else {
                                 val resultView =
@@ -310,7 +378,7 @@ class TestCommand : Callable<Int> {
                                 val resultSingle = TestRunner.runSingle(
                                     maestro,
                                     device,
-                                    flowFiles.first(),
+                                    flowFile,
                                     env,
                                     resultView,
                                     debugOutputPath
@@ -335,7 +403,7 @@ class TestCommand : Callable<Int> {
 
             suites.mergeSummaries()?.saveReport()
 
-            if (sharded) printShardsMessage(passed, total, suites)
+            if (effectiveShards > 1) printShardsMessage(passed, total, suites)
             if (passed == total) 0 else 1
         }.onFailure {
             PrintUtils.message("❌ Error: ${it.message}")
@@ -353,10 +421,9 @@ class TestCommand : Callable<Int> {
 
     private fun printShardsMessage(passedTests: Int, totalTests: Int, shardResults: List<TestExecutionSummary>) {
         val box = buildString {
-            val lines = listOf("Passed: $passedTests/$totalTests") +
-                    shardResults.mapIndexed { index, result ->
-                        "[ ${result.suites.first().deviceName} ] - ${result.passedCount ?: 0}/${result.totalTests ?: 0}"
-                    }
+            val lines = listOf("Passed: $passedTests/$totalTests") + shardResults.mapIndexed { index, result ->
+                "[ ${result.suites.first().deviceName} ] - ${result.passedCount ?: 0}/${result.totalTests ?: 0}"
+            }
 
             val lineWidth = lines.maxOf(String::length)
             append("┌${"─".repeat(lineWidth)}┐\n")
@@ -370,8 +437,7 @@ class TestCommand : Callable<Int> {
         val reporter = ReporterFactory.buildReporter(format, testSuiteName)
 
         format.fileExtension?.let { extension ->
-            (output ?: File("report$extension"))
-                .sink()
+            (output ?: File("report$extension")).sink()
         }?.also { sink ->
             reporter.report(
                 this,
@@ -381,11 +447,9 @@ class TestCommand : Callable<Int> {
     }
 
     private fun List<TestExecutionSummary>.mergeSummaries(): TestExecutionSummary? = reduceOrNull { acc, summary ->
-        TestExecutionSummary(
-            passed = acc.passed && summary.passed,
+        TestExecutionSummary(passed = acc.passed && summary.passed,
             suites = acc.suites + summary.suites,
             passedCount = sumOf { it.passedCount ?: 0 },
-            totalTests = sumOf { it.totalTests ?: 0 }
-        )
+            totalTests = sumOf { it.totalTests ?: 0 })
     }
 }

@@ -5,6 +5,7 @@ import maestro.orchestra.WorkspaceConfig
 import maestro.orchestra.error.ValidationError
 import maestro.orchestra.workspace.ExecutionOrderPlanner.getFlowsToRunInSequence
 import maestro.orchestra.yaml.YamlCommandReader
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -13,10 +14,13 @@ import maestro.utils.isRegularFile
 
 object WorkspaceExecutionPlanner {
 
+    private val logger = LoggerFactory.getLogger(WorkspaceExecutionPlanner::class.java)
+
     fun plan(
         input: Set<Path>,
         includeTags: List<String>,
         excludeTags: List<String>,
+        config: Path?,
     ): ExecutionPlan {
         if (input.any { it.notExists() }) {
             throw ValidationError("""
@@ -28,6 +32,7 @@ object WorkspaceExecutionPlanner {
             validateFlowFile(input.first())
             return ExecutionPlan(
                 flowsToRun = input.toList(),
+                sequence = FlowSequence(emptyList()),
             )
         }
 
@@ -49,9 +54,11 @@ object WorkspaceExecutionPlanner {
 
         // Filter flows based on flows config
 
-        val workspaceConfig = directories.firstNotNullOfOrNull { findConfigFile(it) }
-            ?.let { YamlCommandReader.readWorkspaceConfig(it) }
-            ?: WorkspaceConfig()
+        val workspaceConfig =
+            if (config != null) YamlCommandReader.readWorkspaceConfig(config.absolute())
+            else directories.firstNotNullOfOrNull { findConfigFile(it) }
+                ?.let { YamlCommandReader.readWorkspaceConfig(it) }
+                ?: WorkspaceConfig()
 
         val globs = workspaceConfig.flows ?: listOf("*")
 
@@ -65,14 +72,19 @@ object WorkspaceExecutionPlanner {
 
         if (unsortedFlowFiles.isEmpty()) {
             if ("*" == globs.singleOrNull()) {
-                throw ValidationError("""
+                val message = """
                     Top-level directories do not contain any Flows: ${directories.joinToString(", ") { it.absolutePathString() }}
                     To configure Maestro to run Flows in subdirectories, check out the following resources:
                       * https://maestro.mobile.dev/cli/test-suites-and-reports#inclusion-patterns
                       * https://blog.mobile.dev/maestro-best-practices-structuring-your-test-suite-54ec390c5c82
-                """.trimIndent())
+                """.trimIndent()
+                throw ValidationError(message)
             } else {
-                throw ValidationError("Flow inclusion pattern(s) did not match any Flow files:\n${toYamlListString(globs)}")
+                val message = """
+                    |Flow inclusion pattern(s) did not match any Flow files:
+                    |${toYamlListString(globs)}
+                    """.trimMargin()
+                throw ValidationError(message)
             }
         }
 
@@ -94,7 +106,16 @@ object WorkspaceExecutionPlanner {
         }
 
         if (allFlows.isEmpty()) {
-            throw ValidationError("Include / Exclude tags did not match any Flows:\n\nInclude Tags:\n${toYamlListString(allIncludeTags)}\n\nExclude Tags:\n${toYamlListString(allExcludeTags)}")
+            val message = """
+                |Include / Exclude tags did not match any Flows:
+                |
+                |Include Tags:
+                |${toYamlListString(allIncludeTags)}
+                |
+                |Exclude Tags:
+                |${toYamlListString(allExcludeTags)}
+                """.trimMargin()
+            throw ValidationError(message)
         }
 
         // Handle sequential execution
@@ -116,18 +137,24 @@ object WorkspaceExecutionPlanner {
 
         // validation of media files for add media command
         allFlows.forEach {
-            val commands = YamlCommandReader.readCommands(it).mapNotNull { maestroCommand ->  maestroCommand.addMediaCommand }
+            val commands = YamlCommandReader
+                .readCommands(it)
+                .mapNotNull { maestroCommand -> maestroCommand.addMediaCommand }
             val mediaPaths = commands.flatMap { addMediaCommand -> addMediaCommand.mediaPaths }
             YamlCommandsPathValidator.validatePathsExistInWorkspace(input, it, mediaPaths)
         }
 
-        return ExecutionPlan(
+        val executionPlan = ExecutionPlan(
             flowsToRun = normalFlows,
             FlowSequence(
                 flowsToRunInSequence,
                 workspaceConfig.executionOrder?.continueOnFailure
             )
         )
+
+        logger.info("Created execution plan: $executionPlan")
+
+        return executionPlan
     }
 
     private fun validateFlowFile(topLevelFlowPath: Path): List<MaestroCommand> {
@@ -156,6 +183,6 @@ object WorkspaceExecutionPlanner {
 
     data class ExecutionPlan(
         val flowsToRun: List<Path>,
-        val sequence: FlowSequence? = null,
+        val sequence: FlowSequence,
     )
 }

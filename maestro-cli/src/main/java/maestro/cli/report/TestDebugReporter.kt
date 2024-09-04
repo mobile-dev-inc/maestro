@@ -93,6 +93,7 @@ object TestDebugReporter {
             val status = when (it.status) {
                 CommandStatus.COMPLETED -> "✅"
                 CommandStatus.FAILED -> "❌"
+                CommandStatus.WARNED -> "⚠️"
                 else -> "﹖"
             }
             val filename = "screenshot-$status-${it.timestamp}-(${flowName}).png"
@@ -134,6 +135,10 @@ object TestDebugReporter {
         logger.info("---------------------")
     }
 
+    /**
+     * Calls to this method should be done as soon as possible, to make all
+     * loggers use our custom configuration rather than the defaults.
+     */
     fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false, printToConsole: Boolean) {
         this.debugOutputPathAsString = debugOutputPathAsString
         this.flattenDebugOutput = flattenDebugOutput
