@@ -228,12 +228,16 @@ class TestCommand : Callable<Int> {
             initialActiveDevices.addAll(activeDevices)
 
             val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            var effectiveShards = if (onlySequenceFlows) 1 else requestedShards.coerceAtMost(plan.flowsToRun.size)
+            var effectiveShards = when {
+                onlySequenceFlows -> 1
+                shardAll == null -> requestedShards.coerceAtMost(plan.flowsToRun.size)
+                else -> requestedShards
+            }
 
             val warning = "Requested $requestedShards shards, " +
                 "but it cannot be higher than the number of flows (${plan.flowsToRun.size}). " +
                 "Will use $effectiveShards shards instead."
-            if (requestedShards > plan.flowsToRun.size) PrintUtils.warn(warning)
+            if (shardAll == null && requestedShards > plan.flowsToRun.size) PrintUtils.warn(warning)
 
             val chunkPlans = makeChunkPlans(plan, effectiveShards, onlySequenceFlows)
 
@@ -328,7 +332,10 @@ class TestCommand : Callable<Int> {
             val maestro = session.maestro
             val device = session.device
 
-            if (flowFile.isDirectory || format != ReportFormat.NOOP) {
+            val isReplicatingSingleTest = shardAll != null && effectiveShards > 1
+            val isRunningFromFolder = flowFile.isDirectory
+            val isAskingForReport = format != ReportFormat.NOOP
+            if (isRunningFromFolder || isAskingForReport || isReplicatingSingleTest) {
                 if (continuous) {
                     throw CommandLine.ParameterException(
                         commandSpec.commandLine(),
