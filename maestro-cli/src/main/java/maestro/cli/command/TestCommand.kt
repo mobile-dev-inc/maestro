@@ -19,24 +19,17 @@
 
 package maestro.cli.command
 
-import io.ktor.util.collections.ConcurrentSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Semaphore
 import maestro.Maestro
 import maestro.cli.App
 import maestro.cli.CliError
 import maestro.cli.DisableAnsiMixin
 import maestro.cli.ShowHelpMixin
 import maestro.cli.device.Device
-import maestro.cli.device.DeviceCreateUtil
 import maestro.cli.device.DeviceService
-import maestro.cli.device.PickDeviceInteractor
-import maestro.cli.device.PickDeviceView
-import maestro.cli.model.DeviceStartOptions
 import maestro.cli.model.TestExecutionSummary
 import maestro.cli.report.ReportFormat
 import maestro.cli.report.ReporterFactory
@@ -61,11 +54,9 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
 import kotlin.io.path.absolutePathString
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.withContext
 import maestro.utils.isSingleFile
 import maestro.orchestra.util.Env.withDefaultEnvVars
@@ -163,10 +154,7 @@ class TestCommand : Callable<Int> {
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
 
-    private val deviceCreationSemaphore = Semaphore(1)
     private val usedPorts = ConcurrentHashMap<Int, Boolean>()
-    private val initialActiveDevices = ConcurrentSet<String>()
-    private val currentActiveDevices = ConcurrentSet<String>()
     private val logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     private fun isWebFlow(): Boolean {
@@ -220,20 +208,19 @@ class TestCommand : Callable<Int> {
         if (requestedShards > 1 && plan.sequence.flows.isNotEmpty()) {
             error("Cannot run sharded tests with sequential execution")
         }
-
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
-            val deviceIds = getPassedOptionsDeviceIds()
-
-            val activeDevices = DeviceService.listConnectedDevices().map { it.instanceId }
-            initialActiveDevices.addAll(activeDevices)
-
-            val availableDevices = if (deviceIds.isNotEmpty()) deviceIds.size else initialActiveDevices.size
-            var effectiveShards = when {
+            val deviceIds = getPassedOptionsDeviceIds().ifEmpty {
+                DeviceService.listConnectedDevices().map { it.instanceId }
+            }
+            val effectiveShards = when {
                 onlySequenceFlows -> 1
-                shardAll == null -> requestedShards.coerceAtMost(plan.flowsToRun.size)
-                else -> requestedShards
+                shardAll == null -> requestedShards
+                    .coerceAtMost(plan.flowsToRun.size)
+                shardSplit == null -> requestedShards
+                    .coerceAtMost(deviceIds.size)
+                else -> 1
             }
 
             val warning = "Requested $requestedShards shards, " +
@@ -242,15 +229,6 @@ class TestCommand : Callable<Int> {
             if (shardAll == null && requestedShards > plan.flowsToRun.size) PrintUtils.warn(warning)
 
             val chunkPlans = makeChunkPlans(plan, effectiveShards, onlySequenceFlows)
-
-            val missingDevicesConfigs = mutableListOf<DeviceStartOptions>()
-            if (!promptForDeviceCreation(availableDevices, effectiveShards)) {
-                PrintUtils.message("Continuing with only $availableDevices shards.")
-                effectiveShards = availableDevices
-            } else {
-                missingDevicesConfigs.addAll(createMissingDevices(availableDevices, effectiveShards))
-            }
-            val missingDevices = (effectiveShards - availableDevices).coerceAtLeast(0)
 
             val flowCount = if (onlySequenceFlows) plan.sequence.flows.size else plan.flowsToRun.size
             val message = when {
@@ -266,16 +244,12 @@ class TestCommand : Callable<Int> {
             }
             message?.let { PrintUtils.info(it) }
 
-            val barrier = CountDownLatch(effectiveShards)
             val results = (0 until effectiveShards).map { shardIndex ->
                 async(Dispatchers.IO) {
                     runShardSuite(
                         effectiveShards = effectiveShards,
                         deviceIds = deviceIds,
                         shardIndex = shardIndex,
-                        missingDevices = missingDevices,
-                        missingDevicesConfigs = missingDevicesConfigs,
-                        barrier = barrier,
                         chunkPlans = chunkPlans,
                         debugOutputPath = debugOutputPath,
                     )
@@ -302,26 +276,13 @@ class TestCommand : Callable<Int> {
         effectiveShards: Int,
         deviceIds: List<String>,
         shardIndex: Int,
-        missingDevices: Int,
-        missingDevicesConfigs: MutableList<DeviceStartOptions>,
-        barrier: CountDownLatch,
         chunkPlans: List<ExecutionPlan>,
         debugOutputPath: Path
     ): Triple<Int?, Int?, TestExecutionSummary?> = withContext(Dispatchers.IO) {
         val driverHostPort = selectPort(effectiveShards)
+        val deviceId = deviceIds[shardIndex]
 
-        // Acquire lock to execute device creation block
-        deviceCreationSemaphore.acquire()
-
-        val deviceId = assignDeviceToShard(deviceIds, shardIndex, missingDevices, missingDevicesConfigs, driverHostPort)
         logger.info("[shard ${shardIndex + 1}] Selected device $deviceId using port $driverHostPort")
-
-        // Release lock if device ID was obtained from the connected devices
-        deviceCreationSemaphore.release()
-        // Signal that this thread has reached the barrier
-        barrier.countDown()
-        // Wait for all threads/shards to complete device creation before proceeding
-        barrier.await()
 
         return@withContext MaestroSessionManager.newSession(
             host = parent?.host,
@@ -404,7 +365,7 @@ class TestCommand : Callable<Int> {
         val suiteResult = TestSuiteInteractor(
             maestro = maestro,
             device = device,
-            shardIndex = shardIndex,
+            shardIndex = if (chunkPlans.size == 1) null else shardIndex,
             reporter = ReporterFactory.buildReporter(format, testSuiteName),
         ).runTestSuite(
             executionPlan = chunkPlans[shardIndex],
@@ -417,54 +378,6 @@ class TestCommand : Callable<Int> {
             TestDebugReporter.deleteOldFiles()
         }
         return Triple(suiteResult.passedCount, suiteResult.totalTests, suiteResult)
-    }
-
-    private suspend fun assignDeviceToShard(
-        deviceIds: List<String>,
-        shardIndex: Int,
-        missingDevices: Int,
-        missingDevicesConfigs: MutableList<DeviceStartOptions>,
-        driverHostPort: Int
-    ): String =
-        useDevicesPassedAsOptions(deviceIds, shardIndex)
-            ?: useConnectedDevices(deviceIds, missingDevices, shardIndex)
-            ?: createNewDevice(missingDevicesConfigs, shardIndex, driverHostPort)
-
-    private fun useDevicesPassedAsOptions(deviceIds: List<String>, shardIndex: Int) =
-        deviceIds.getOrNull(shardIndex)
-
-    private fun useConnectedDevices(
-        deviceIds: List<String>,
-        missingDevices: Int,
-        shardIndex: Int
-    ) = when {
-        deviceIds.isNotEmpty() -> null
-        missingDevices >= 0 -> initialActiveDevices.elementAtOrNull(shardIndex)
-        shardAll == null && initialActiveDevices.isNotEmpty() -> PickDeviceInteractor.pickDevice().instanceId
-        else -> null
-    }
-
-    private suspend fun createNewDevice(
-        missingDevicesConfigs: MutableList<DeviceStartOptions>,
-        shardIndex: Int,
-        driverHostPort: Int
-    ): String {
-        val cfg = missingDevicesConfigs.first()
-        missingDevicesConfigs.remove(cfg)
-        val deviceCreated = DeviceCreateUtil.getOrCreateDevice(
-            platform = cfg.platform,
-            osVersion = cfg.osVersion,
-            forceCreate = true,
-            shardIndex = shardIndex
-        )
-        val device = DeviceService.startDevice(
-            device = deviceCreated,
-            driverHostPort = driverHostPort,
-            connectedDevices = initialActiveDevices + currentActiveDevices
-        )
-        currentActiveDevices.add(device.instanceId)
-        delay(2.seconds)
-        return device.instanceId
     }
 
     private fun makeChunkPlans(
@@ -481,26 +394,6 @@ class TestCommand : Callable<Int> {
                 val flowsToRun = files.map { it.value }
                 ExecutionPlan(flowsToRun, plan.sequence)
             }
-    }
-
-    private fun createMissingDevices(
-        availableDevices: Int,
-        effectiveShards: Int
-    ) = (availableDevices until effectiveShards).map { shardIndex ->
-        PrintUtils.message("Creating device for shard ${shardIndex + 1}:")
-        PickDeviceView.requestDeviceOptions()
-    }
-
-    private fun promptForDeviceCreation(availableDevices: Int, effectiveShards: Int): Boolean {
-        val missingDevices = effectiveShards - availableDevices
-        if (missingDevices <= 0) return true
-        val message = """
-            Found $availableDevices active devices.
-            Need to create or start $missingDevices more for $effectiveShards shards. Continue? y/n
-        """.trimIndent()
-        PrintUtils.message(message)
-        val str = readlnOrNull()?.lowercase()
-        return str?.isBlank() == true || str == "y" || str == "yes"
     }
 
     private fun getPassedOptionsDeviceIds(): List<String> {
