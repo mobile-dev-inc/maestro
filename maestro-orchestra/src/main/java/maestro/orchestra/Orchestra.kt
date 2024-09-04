@@ -847,18 +847,18 @@ class Orchestra(
         command: TapOnElementCommand,
         retryIfNoChange: Boolean,
         waitUntilVisible: Boolean,
-        config: MaestroConfig?
+        config: MaestroConfig?,
     ): Boolean {
         val result = findElement(command.selector, optional = command.optional)
         maestro.tap(
-            result.element,
-            result.hierarchy,
-            retryIfNoChange,
-            waitUntilVisible,
-            command.longPress ?: false,
-            config?.appId,
+            element = result.element,
+            initialHierarchy = result.hierarchy,
+            retryIfNoChange = retryIfNoChange,
+            waitUntilVisible = waitUntilVisible,
+            longPress = command.longPress ?: false,
+            appId = config?.appId,
             tapRepeat = command.repeat,
-            waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+            waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
         )
 
         return true
@@ -866,14 +866,14 @@ class Orchestra(
 
     private fun tapOnPoint(
         command: TapOnPointCommand,
-        retryIfNoChange: Boolean
+        retryIfNoChange: Boolean,
     ): Boolean {
         maestro.tap(
-            command.x,
-            command.y,
-            retryIfNoChange,
-            command.longPress ?: false,
-            tapRepeat = command.repeat
+            x = command.x,
+            y = command.y,
+            retryIfNoChange = retryIfNoChange,
+            longPress = command.longPress ?: false,
+            tapRepeat = command.repeat,
         )
 
         return true
