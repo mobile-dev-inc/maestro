@@ -6,6 +6,12 @@ tags:
 ---
 - launchApp:
     clearState: true
+- assertVisible:
+    id: ${ "com.example.example:id/toolbar_title" }
+    optional: true
+- assertNotVisible:
+    text: Flutter Demo Home Page
+    optional: true
 - assertTrue:
     condition: ${ false }
     label: Warn
@@ -36,4 +42,4 @@ tags:
     element:
       id: non-existent-id
       optional: true
-    # optional: true
+    optional: true

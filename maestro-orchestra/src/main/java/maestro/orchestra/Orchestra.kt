@@ -334,15 +334,11 @@ class Orchestra(
 
     private fun assertConditionCommand(command: AssertConditionCommand): Boolean {
         val timeout = (command.timeoutMs() ?: lookupTimeoutMs)
-        if (!evaluateCondition(command.condition, timeoutMs = timeout)) {
-            if (!isOptional(command.condition)) {
-                throw MaestroException.AssertionFailure(
-                    message = "Assertion is false: ${command.condition.description()}",
-                    hierarchyRoot = maestro.viewHierarchy().root,
-                )
-            } else {
-                throw CommandSkipped
-            }
+        if (!evaluateCondition(command.condition, timeoutMs = timeout, commandOptional = command.optional)) {
+            throw MaestroException.AssertionFailure(
+                message = "Assertion is false: ${command.condition.description()}",
+                hierarchyRoot = maestro.viewHierarchy().root,
+            )
         }
 
         return false
@@ -411,11 +407,6 @@ class Orchestra(
         false
     }
 
-    private fun isOptional(condition: Condition): Boolean {
-        return condition.visible?.optional == true
-                || condition.notVisible?.optional == true
-    }
-
     private fun evalScriptCommand(command: EvalScriptCommand): Boolean {
         command.scriptString.evaluateScripts(jsEngine)
 
@@ -424,7 +415,7 @@ class Orchestra(
     }
 
     private fun runScriptCommand(command: RunScriptCommand): Boolean {
-        return if (evaluateCondition(command.condition)) {
+        return if (evaluateCondition(command.condition, commandOptional = command.optional)) {
             jsEngine.evaluateScript(
                 script = command.script,
                 env = command.env,
@@ -496,7 +487,7 @@ class Orchestra(
 
         do {
             try {
-                val element = findElement(command.selector, 500).element
+                val element = findElement(command.selector, command.optional, 500).element
                 val visibility = element.getVisiblePercentage(deviceInfo.widthGrid, deviceInfo.heightGrid)
 
                 if (command.centerElement && visibility > 0.1 && retryCenterCount <= maxRetryCenterCount) {
@@ -542,7 +533,7 @@ class Orchestra(
         val checkCondition: () -> Boolean = {
             command.condition
                 ?.evaluateScripts(jsEngine)
-                ?.let { evaluateCondition(it) } != false
+                ?.let { evaluateCondition(it, commandOptional = command.optional) } != false
         }
 
         while (checkCondition() && counter < maxRuns) {
@@ -587,7 +578,7 @@ class Orchestra(
     }
 
     private fun runFlowCommand(command: RunFlowCommand, config: MaestroConfig?): Boolean {
-        return if (evaluateCondition(command.condition)) {
+        return if (evaluateCondition(command.condition, command.optional)) {
             runSubFlow(command.commands, config, command.config)
         } else {
             throw CommandSkipped
@@ -596,6 +587,7 @@ class Orchestra(
 
     private fun evaluateCondition(
         condition: Condition?,
+        commandOptional: Boolean,
         timeoutMs: Long? = null,
     ): Boolean {
         if (condition == null) {
@@ -610,7 +602,11 @@ class Orchestra(
 
         condition.visible?.let {
             try {
-                findElement(it, timeoutMs = adjustedToLatestInteraction(timeoutMs ?: optionalLookupTimeoutMs))
+                findElement(
+                    selector = it,
+                    timeoutMs = adjustedToLatestInteraction(timeoutMs ?: optionalLookupTimeoutMs),
+                    optional = commandOptional,
+                )
             } catch (ignored: MaestroException.ElementNotFound) {
                 return false
             }
@@ -619,7 +615,11 @@ class Orchestra(
         condition.notVisible?.let {
             val result = MaestroTimer.withTimeout(adjustedToLatestInteraction(timeoutMs ?: optionalLookupTimeoutMs)) {
                 try {
-                    findElement(it, timeoutMs = 500L)
+                    findElement(
+                        selector = it,
+                        timeoutMs = 500L,
+                        optional = commandOptional,
+                    )
 
                     // If we got to that point, the element is still visible.
                     // Returning null to keep waiting.
@@ -850,7 +850,7 @@ class Orchestra(
         config: MaestroConfig?
     ): Boolean {
         return try {
-            val result = findElement(command.selector)
+            val result = findElement(command.selector, optional = command.optional)
             maestro.tap(
                 result.element,
                 result.hierarchy,
@@ -864,11 +864,7 @@ class Orchestra(
 
             true
         } catch (e: MaestroException.ElementNotFound) {
-            if (!command.selector.optional) {
-                throw e
-            } else {
-                false
-            }
+            throw e
         }
     }
 
@@ -931,16 +927,15 @@ class Orchestra(
 
     private fun findElement(
         selector: ElementSelector,
-        timeoutMs: Long? = null
+        optional: Boolean,
+        timeoutMs: Long? = null,
     ): FindElementResult {
-        val timeout = timeoutMs
-            ?: adjustedToLatestInteraction(
-                if (selector.optional) {
-                    optionalLookupTimeoutMs
-                } else {
-                    lookupTimeoutMs
-                }
+        val timeout =
+            timeoutMs ?: adjustedToLatestInteraction(
+                if (optional) optionalLookupTimeoutMs
+                else lookupTimeoutMs,
             )
+
         val (description, filterFunc) = buildFilter(
             selector,
             deviceInfo(),
@@ -1055,7 +1050,7 @@ class Orchestra(
         selector.containsChild
             ?.let {
                 descriptions += "Contains child: ${it.description()}"
-                filters += Filters.containsChild(findElement(it).element).asFilter()
+                filters += Filters.containsChild(findElement(it, optional = false).element).asFilter()
             }
 
         selector.containsDescendants
@@ -1148,7 +1143,7 @@ class Orchestra(
         val end = command.endPoint
         when {
             elementSelector != null && direction != null -> {
-                val uiElement = findElement(elementSelector)
+                val uiElement = findElement(elementSelector, optional = command.optional)
                 maestro.swipe(direction, uiElement.element, command.duration)
             }
 
@@ -1170,11 +1165,11 @@ class Orchestra(
 
     private fun adjustedToLatestInteraction(timeMs: Long) = max(
         0,
-        timeMs - (System.currentTimeMillis() - timeMsOfLastInteraction)
+        timeMs - (System.currentTimeMillis() - timeMsOfLastInteraction),
     )
 
     private fun copyTextFromCommand(command: CopyTextFromCommand): Boolean {
-        val result = findElement(command.selector)
+        val result = findElement(command.selector, optional = command.optional)
         copiedText = resolveText(result.element.treeNode.attributes)
             ?: throw MaestroException.UnableToCopyTextFromElement("Element does not contain text to copy: ${result.element}")
 
