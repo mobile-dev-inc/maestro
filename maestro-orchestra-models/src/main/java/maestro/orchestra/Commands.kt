@@ -1009,7 +1009,8 @@ data class ToggleAirplaneModeCommand(
 
 data class InstallAppCommand(
     val path: String? = null,
-    val label: String? = null,
+    override val label: String? = null,
+    override val optional: Boolean = false,
 ): Command {
     override fun description(): String {
         return label ?: "Installing $path"
