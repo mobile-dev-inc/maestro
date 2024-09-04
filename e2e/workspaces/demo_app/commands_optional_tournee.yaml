@@ -7,7 +7,7 @@ tags:
 - launchApp:
     clearState: true
 - assertVisible:
-    id: ${ "com.example.example:id/toolbar_title" }
+    id: non-existent-id
     optional: true
 - assertNotVisible:
     text: Flutter Demo Home Page
