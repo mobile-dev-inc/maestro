@@ -849,23 +849,19 @@ class Orchestra(
         waitUntilVisible: Boolean,
         config: MaestroConfig?
     ): Boolean {
-        return try {
-            val result = findElement(command.selector, optional = command.optional)
-            maestro.tap(
-                result.element,
-                result.hierarchy,
-                retryIfNoChange,
-                waitUntilVisible,
-                command.longPress ?: false,
-                config?.appId,
-                tapRepeat = command.repeat,
-                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
-            )
+        val result = findElement(command.selector, optional = command.optional)
+        maestro.tap(
+            result.element,
+            result.hierarchy,
+            retryIfNoChange,
+            waitUntilVisible,
+            command.longPress ?: false,
+            config?.appId,
+            tapRepeat = command.repeat,
+            waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+        )
 
-            true
-        } catch (e: MaestroException.ElementNotFound) {
-            throw e
-        }
+        return true
     }
 
     private fun tapOnPoint(
