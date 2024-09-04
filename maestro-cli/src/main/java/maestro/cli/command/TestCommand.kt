@@ -67,6 +67,7 @@ import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.withContext
+import maestro.utils.isSingleFile
 import maestro.orchestra.util.Env.withDefaultEnvVars
 
 @CommandLine.Command(
@@ -84,8 +85,8 @@ class TestCommand : Callable<Int> {
     @CommandLine.ParentCommand
     private val parent: App? = null
 
-    @CommandLine.Parameters
-    private lateinit var flowFile: File
+    @CommandLine.Parameters(description = ["One or more flow files or folders containing flow files"])
+    private lateinit var flowFiles: Set<File>
 
     @Option(
         names = ["--config"],
@@ -169,8 +170,8 @@ class TestCommand : Callable<Int> {
     private val logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     private fun isWebFlow(): Boolean {
-        if (!flowFile.isDirectory) {
-            val config = YamlCommandReader.readConfig(flowFile.toPath())
+        if (flowFiles.isSingleFile) {
+            val config = YamlCommandReader.readConfig(flowFiles.first().toPath())
             return Regex("http(s?)://").containsMatchIn(config.appId)
         }
 
@@ -200,7 +201,7 @@ class TestCommand : Callable<Int> {
 
         val executionPlan = try {
             WorkspaceExecutionPlanner.plan(
-                input = flowFile.toPath().toAbsolutePath(),
+                input = flowFiles.map { it.toPath().toAbsolutePath() }.toSet(),
                 includeTags = includeTags,
                 excludeTags = excludeTags,
                 config = configFile?.toPath()?.toAbsolutePath(),
@@ -307,10 +308,7 @@ class TestCommand : Callable<Int> {
         chunkPlans: List<ExecutionPlan>,
         debugOutputPath: Path
     ): Triple<Int?, Int?, TestExecutionSummary?> = withContext(Dispatchers.IO) {
-        val driverHostPort = if (effectiveShards == 1) parent?.port ?: 7001 else
-            (7001..7128).shuffled().find { port ->
-                usedPorts.putIfAbsent(port, true) == null
-            } ?: error("No available ports found")
+        val driverHostPort = selectPort(effectiveShards)
 
         // Acquire lock to execute device creation block
         deviceCreationSemaphore.acquire()
@@ -329,39 +327,48 @@ class TestCommand : Callable<Int> {
             host = parent?.host,
             port = parent?.port,
             driverHostPort = driverHostPort,
-            deviceId = deviceId
+            deviceId = deviceId,
+            platform = parent?.platform,
         ) { session ->
             val maestro = session.maestro
             val device = session.device
 
             val isReplicatingSingleTest = shardAll != null && effectiveShards > 1
-            val isRunningFromFolder = flowFile.isDirectory
+            val isMultipleFiles = flowFiles.isSingleFile.not()
             val isAskingForReport = format != ReportFormat.NOOP
-            if (isRunningFromFolder || isAskingForReport || isReplicatingSingleTest) {
+            if (isMultipleFiles || isAskingForReport || isReplicatingSingleTest) {
                 if (continuous) {
                     throw CommandLine.ParameterException(
                         commandSpec.commandLine(),
-                        "Continuous mode is not supported for directories. $flowFile is a directory",
+                        "Continuous mode is not supported when running multiple flows. (${flowFiles.joinToString(", ")})",
                     )
                 }
                 runMultipleFlows(maestro, device, chunkPlans, shardIndex, debugOutputPath)
             } else {
+                val flowFile = flowFiles.first()
                 if (continuous) {
                     if (!flattenDebugOutput) {
                         TestDebugReporter.deleteOldFiles()
                     }
                     TestRunner.runContinuous(maestro, device, flowFile, env)
                 } else {
-                    runSingleFlow(maestro, device, debugOutputPath)
+                    runSingleFlow(maestro, device, flowFile, debugOutputPath)
                 }
             }
         }
     }
 
+    private fun selectPort(effectiveShards: Int): Int =
+        if (effectiveShards == 1) parent?.port ?: 7001
+        else (7001..7128).shuffled().find { port ->
+            usedPorts.putIfAbsent(port, true) == null
+        } ?: error("No available ports found")
+
     private fun runSingleFlow(
         maestro: Maestro,
         device: Device?,
-        debugOutputPath: Path
+        flowFile: File,
+        debugOutputPath: Path,
     ): Triple<Int, Int, Nothing?> {
         val resultView =
             if (DisableAnsiMixin.ansiEnabled) AnsiResultView()

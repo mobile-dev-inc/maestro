@@ -21,13 +21,15 @@ import maestro.orchestra.Orchestra
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.workspace.WorkspaceExecutionPlanner
 import maestro.orchestra.yaml.YamlCommandReader
-import okio.Buffer
 import okio.Sink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Path
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
+import maestro.cli.util.ScreenshotUtils
+import maestro.orchestra.util.Env.withDefaultEnvVars
+import maestro.orchestra.util.Env.withInjectedShellEnvVars
 
 /**
  * Similar to [TestRunner], but:
@@ -50,7 +52,7 @@ class TestSuiteInteractor(
         env: Map<String, String>,
         debugOutputPath: Path
     ): TestExecutionSummary {
-        if (executionPlan.flowsToRun.isEmpty() && executionPlan.sequence?.flows?.isEmpty() == true) {
+        if (executionPlan.flowsToRun.isEmpty() && executionPlan.sequence.flows.isEmpty()) {
             throw CliError("No flows returned from the tag filter used")
         }
 
@@ -64,14 +66,18 @@ class TestSuiteInteractor(
 
         // first run sequence of flows if present
         val flowSequence = executionPlan.sequence
-        for (flow in flowSequence?.flows ?: emptyList()) {
-            val (result, aiOutput) = runFlow(flow.toFile(), env, maestro, debugOutputPath)
+        for (flow in flowSequence.flows) {
+            val flowFile = flow.toFile()
+            val updatedEnv = env
+                .withInjectedShellEnvVars()
+                .withDefaultEnvVars(flowFile)
+            val (result, aiOutput) = runFlow(flowFile, updatedEnv, maestro, debugOutputPath)
             flowResults.add(result)
             aiOutputs.add(aiOutput)
 
             if (result.status == FlowStatus.ERROR) {
                 passed = false
-                if (executionPlan.sequence?.continueOnFailure != true) {
+                if (executionPlan.sequence.continueOnFailure != true) {
                     PrintUtils.message("Flow ${result.name} failed and continueOnFailure is set to false, aborting running sequential Flows")
                     println()
                     break
@@ -156,39 +162,6 @@ class TestSuiteInteractor(
             flowFile = flowFile,
         )
 
-        fun takeDebugScreenshot(status: CommandStatus): File? {
-            val containsFailed = debugOutput.screenshots.any { it.status == CommandStatus.FAILED }
-
-            // Avoids duplicate failed images from parent commands
-            if (containsFailed && status == CommandStatus.FAILED) {
-                return null
-            }
-
-            val result = kotlin.runCatching {
-                val out = File.createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
-                    .also { it.deleteOnExit() } // save to another dir before exiting
-                maestro.takeScreenshot(out, false)
-                debugOutput.screenshots.add(
-                    FlowDebugOutput.Screenshot(
-                        screenshot = out,
-                        timestamp = System.currentTimeMillis(),
-                        status = status
-                    )
-                )
-                out
-            }
-
-            return result.getOrNull()
-        }
-
-        fun writeAIscreenshot(buffer: Buffer): File {
-            val out = File
-                .createTempFile("ai-screenshot-${System.currentTimeMillis()}", ".png")
-                .also { it.deleteOnExit() }
-            out.outputStream().use { it.write(buffer.readByteArray()) }
-            return out
-        }
-
         val flowTimeMillis = measureTimeMillis {
             try {
                 val commands = YamlCommandReader
@@ -222,7 +195,7 @@ class TestSuiteInteractor(
                             it.error = e
                         }
 
-                        takeDebugScreenshot(CommandStatus.FAILED)
+                        ScreenshotUtils.takeDebugScreenshot(maestro, debugOutput, CommandStatus.FAILED)
                         Orchestra.ErrorResolution.FAIL
                     },
                     onCommandSkipped = { _, command ->
@@ -245,7 +218,7 @@ class TestSuiteInteractor(
                     },
                     onCommandGeneratedOutput = { command, defects, screenshot ->
                         logger.info("${command.description()} generated output")
-                        val screenshotPath = writeAIscreenshot(screenshot)
+                        val screenshotPath = ScreenshotUtils.writeAIscreenshot(screenshot)
                         aiOutput.screenOutputs.add(
                             SingleScreenFlowAIOutput(
                                 screenshotPath = screenshotPath,
