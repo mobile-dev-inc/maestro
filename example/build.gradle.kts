@@ -10,6 +10,11 @@ application {
     mainClass.set("MainKt")
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjdk-release=1.8")
@@ -21,4 +26,3 @@ dependencies {
     implementation("dev.mobile:maestro-orchestra:1.38.1")
     implementation("dev.mobile:maestro-ios:1.38.1")
 }
-
