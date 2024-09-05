@@ -1,6 +1,7 @@
 package maestro.utils
 
 import com.google.common.truth.Truth.assertThat
+import maestro.utils.StringUtils.evalTruthness
 import maestro.utils.StringUtils.toRegexSafe
 import org.junit.jupiter.api.Test
 
@@ -18,4 +19,18 @@ internal class StringUtilsTest {
         assertThat(regex.matches(input)).isTrue()
     }
 
+    @Test
+    fun `eval truthness`() {
+        val nullString = null as? String
+
+        listOf(nullString, "", "  ", "0", "NO", "no", "N", "n", "FALSE", "false").forEach {
+            assertThat(it.evalTruthness()).isFalse()
+        }
+
+        listOf("1", "TRUE", "true", "YES", "yes", "Y", "y").forEach {
+            assertThat(it.evalTruthness()).isTrue()
+        }
+
+        assertThat("anything".evalTruthness()).isTrue()
+    }
 }

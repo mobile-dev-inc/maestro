@@ -12,4 +12,5 @@ object StringUtils {
         }
     }
 
+    fun String?.evalTruthness() = this?.let { it.trim().lowercase() !in listOf("", "0", "false", "n", "no") } ?: false
 }
