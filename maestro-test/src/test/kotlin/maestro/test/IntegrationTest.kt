@@ -30,6 +30,8 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 import maestro.orchestra.util.Env.withDefaultEnvVars
+import kotlin.reflect.KClass
+import org.graalvm.polyglot.PolyglotException
 
 class IntegrationTest {
 
@@ -2744,7 +2746,58 @@ class IntegrationTest {
                 Event.InputText("bar"),
             )
         )
-        assertThat(receivedLogs).containsExactly("0.2")
+        assertThat(receivedLogs).containsExactly("Hello from GraalJS")
+    }
+
+    @Test
+    fun `Case 102 - GraalJs dangerous config fails by default`() {
+        // given
+
+        val commands = readCommands("102_graaljs_dangerous")
+        val driver = driver { }
+        val thrownErrors = mutableListOf<KClass<out Throwable>>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandFailed = { _, _, e ->
+                    thrownErrors += e::class
+                    Orchestra.ErrorResolution.CONTINUE
+                },
+            ).runFlow(commands)
+        }
+
+        // then
+        assertThat(thrownErrors).containsExactly(PolyglotException::class)
+    }
+
+    @Test
+    fun `Case 102 - GraalJs dangerous config fails with maestro env`() {
+        // given
+
+        val commands = readCommands("102_graaljs_dangerous_env").withEnv(
+            mapOf(
+                "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS" to "1",
+                "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP" to "y",
+            )
+        )
+        val driver = driver { }
+        val thrownErrors = mutableListOf<KClass<out Throwable>>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandFailed = { _, _, e ->
+                    thrownErrors += e::class
+                    Orchestra.ErrorResolution.CONTINUE
+                },
+            ).runFlow(commands)
+        }
+
+        // then
+        assertThat(thrownErrors).containsExactly(PolyglotException::class)
     }
 
     @Test
