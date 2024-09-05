@@ -10,7 +10,7 @@ object ChangeLogUtils {
 
     fun formatBody(content: String?, version: String): ChangeLog = content
         ?.split("\n## ")?.map { it.lines() }
-        ?.first { it.first().startsWith(version) }
+        ?.firstOrNull { it.firstOrNull()?.startsWith(version) == true }
         ?.drop(1)
         ?.map { it.trim().replace("**", "") }
         ?.map { it.replace("\\[(.*?)]\\(.*?\\)".toRegex(), "$1") }
@@ -31,6 +31,8 @@ object ChangeLogUtils {
 fun main() {
     val changelogFile = File(System.getProperty("user.dir"), "CHANGELOG.md")
     val content = changelogFile.readText()
-    val changelog = ChangeLogUtils.formatBody(content, "Unreleased")
+    val unreleased = ChangeLogUtils.formatBody(content, "Unreleased")
+    val current = ChangeLogUtils.formatBody(content, CLI_VERSION.toString())
+    val changelog = unreleased ?: current
     println(ChangeLogUtils.print(changelog))
 }
