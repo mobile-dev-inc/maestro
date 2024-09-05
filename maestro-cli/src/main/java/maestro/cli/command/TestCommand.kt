@@ -208,18 +208,36 @@ class TestCommand : Callable<Int> {
         if (requestedShards > 1 && plan.sequence.flows.isNotEmpty()) {
             error("Cannot run sharded tests with sequential execution")
         }
+
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
         runCatching {
-            val deviceIds = getPassedOptionsDeviceIds().ifEmpty {
-                DeviceService.listConnectedDevices().map { it.instanceId }
+            val availableDevices = DeviceService.listConnectedDevices().map { it.instanceId }.toSet()
+            val deviceIds = getPassedOptionsDeviceIds()
+                .filter { device ->
+                    if (device !in availableDevices) {
+                        throw CliError("Device $device was requested, but it is not connected.")
+                    } else {
+                        true
+                    }
+                }
+                .ifEmpty { availableDevices }
+                .toList()
+
+            val missingDevices = requestedShards - deviceIds.size
+            if (missingDevices > 0) {
+                PrintUtils.warn("Want to use ${deviceIds.size} devices, which is not enough to run $requestedShards shards. Missing $missingDevices device(s).")
+                throw CliError("Not enough devices connected ($missingDevices) to run the requested number of shards ($requestedShards).")
             }
+
             val effectiveShards = when {
+
                 onlySequenceFlows -> 1
-                shardAll == null -> requestedShards
-                    .coerceAtMost(plan.flowsToRun.size)
-                shardSplit == null -> requestedShards
-                    .coerceAtMost(deviceIds.size)
+
+                shardAll == null -> requestedShards.coerceAtMost(plan.flowsToRun.size)
+
+                shardSplit == null -> requestedShards.coerceAtMost(deviceIds.size)
+
                 else -> 1
             }
 
@@ -277,7 +295,7 @@ class TestCommand : Callable<Int> {
         deviceIds: List<String>,
         shardIndex: Int,
         chunkPlans: List<ExecutionPlan>,
-        debugOutputPath: Path
+        debugOutputPath: Path,
     ): Triple<Int?, Int?, TestExecutionSummary?> = withContext(Dispatchers.IO) {
         val driverHostPort = selectPort(effectiveShards)
         val deviceId = deviceIds[shardIndex]
@@ -334,23 +352,28 @@ class TestCommand : Callable<Int> {
         val resultView =
             if (DisableAnsiMixin.ansiEnabled) AnsiResultView()
             else PlainTextResultView()
+
         env = env
             .withInjectedShellEnvVars()
             .withDefaultEnvVars(flowFile)
+
         val resultSingle = TestRunner.runSingle(
-            maestro,
-            device,
-            flowFile,
-            env,
-            resultView,
-            debugOutputPath
+            maestro = maestro,
+            device = device,
+            flowFile = flowFile,
+            env = env,
+            resultView = resultView,
+            debugOutputPath = debugOutputPath,
         )
+
         if (resultSingle == 1) {
             printExitDebugMessage()
         }
+
         if (!flattenDebugOutput) {
             TestDebugReporter.deleteOldFiles()
         }
+
         val result = if (resultSingle == 0) 1 else 0
         return Triple(result, 1, null)
     }
