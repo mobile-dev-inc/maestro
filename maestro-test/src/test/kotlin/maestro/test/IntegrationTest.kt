@@ -32,6 +32,7 @@ import kotlin.system.measureTimeMillis
 import maestro.orchestra.util.Env.withDefaultEnvVars
 import kotlin.reflect.KClass
 import org.graalvm.polyglot.PolyglotException
+import org.junit.jupiter.api.Disabled
 
 class IntegrationTest {
 
@@ -2798,6 +2799,27 @@ class IntegrationTest {
 
         // then
         assertThat(thrownErrors).containsExactly(PolyglotException::class)
+    }
+
+    @Test @Disabled("Need to find a way to mock System.env. Remove this and use the 'integration_102_graaljs_access_enabled' run config.")
+    fun `Case 102 - GraalJs dangerous config enabled`() {
+        // given
+        val commands = readCommands("102_graaljs_dangerous")
+        val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // then
+        assertThat(receivedLogs).containsExactly("0.2")
     }
 
     @Test
