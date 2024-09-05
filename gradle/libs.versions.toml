@@ -7,7 +7,7 @@
 # https://blog.gradle.org/best-practices-naming-version-catalog-entries
 
 [versions]
-androidPlugin = "7.4.2"
+androidPlugin = "8.2.2"
 androidxEspresso = "3.6.1"
 androidxTestJunit = "1.2.1"
 androidxUiautomator = "2.3.0"
@@ -112,6 +112,10 @@ square-mock-server = { module = "com.squareup.okhttp3:mockwebserver", version.re
 wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
+# Dependencies of the included build-logic
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.19.0" }
+
 [bundles]
 
 [plugins]
@@ -121,6 +125,9 @@ protobuf = { id = "com.google.protobuf", version.ref = "googleProtobufPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.19.0" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.19.0" } # TODO: Delete from here
 jreleaser = { id = "org.jreleaser", version = "1.13.1" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
+
+# Plugins defined by this project
+maestro-jvm-library = { id = "maestro.jvm.library", version = "unspecified" }
