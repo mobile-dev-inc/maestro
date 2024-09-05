@@ -3,6 +3,7 @@ package maestro.cli.util
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import maestro.cli.util.EnvUtils.CLI_VERSION
 
 typealias ChangeLog = List<String>?
 
@@ -34,5 +35,8 @@ fun main() {
     val unreleased = ChangeLogUtils.formatBody(content, "Unreleased")
     val current = ChangeLogUtils.formatBody(content, CLI_VERSION.toString())
     val changelog = unreleased ?: current
+    println("## ${unreleased?.let { "Unreleased" } ?: CLI_VERSION.toString()}")
+    println("-".repeat(100))
     println(ChangeLogUtils.print(changelog))
+    println("-".repeat(100))
 }
