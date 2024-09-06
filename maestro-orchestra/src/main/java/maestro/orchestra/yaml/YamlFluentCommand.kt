@@ -597,7 +597,6 @@ data class YamlFluentCommand(
             selected = selector.selected,
             checked = selector.checked,
             focused = selector.focused,
-            optional = selector.optional ?: false,
             childOf = selector.childOf?.let { toElementSelector(it) }
         )
     }
@@ -623,17 +622,12 @@ data class YamlFluentCommand(
     }
 
     private fun scrollUntilVisibleCommand(yaml: YamlScrollUntilVisible): MaestroCommand {
-        val timeout =
-            if (yaml.timeout < 0) {
-                ScrollUntilVisibleCommand.DEFAULT_TIMEOUT_IN_MILLIS
-            } else yaml.timeout
-
         val visibility = if (yaml.visibilityPercentage < 0) 0 else if (yaml.visibilityPercentage > 100) 100 else yaml.visibilityPercentage
         return MaestroCommand(
             ScrollUntilVisibleCommand(
                 selector = toElementSelector(yaml.element),
                 direction = yaml.direction,
-                timeout = timeout,
+                timeout = yaml.timeout,
                 scrollDuration = yaml.speed,
                 visibilityPercentage = visibility,
                 centerElement = yaml.centerElement,

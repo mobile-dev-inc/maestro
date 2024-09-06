@@ -3118,10 +3118,11 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 118 - Scroll until view is visible - with speed evaluate`() {
+    fun `Case 118 - Scroll until view is visible - with speed and timeout evaluate`() {
         // Given
         val commands = readCommands("117_scroll_until_visible_speed")
         val expectedDuration = "601"
+        val expectedTimeout = "20000"
         val info = driver { }.deviceInfo()
 
         val elementBounds = Bounds(0, 0 + info.heightGrid, 100, 100 + info.heightGrid)
@@ -3134,14 +3135,17 @@ class IntegrationTest {
 
         // When
         var scrollDuration = "0"
+        var timeout = "0"
         Maestro(driver).use {
             orchestra(it, onCommandMetadataUpdate = { _, metaData ->
                 scrollDuration = metaData.evaluatedCommand?.scrollUntilVisible?.scrollDuration.toString()
+                timeout = metaData.evaluatedCommand?.scrollUntilVisible?.timeout.toString()
             }).runFlow(commands)
         }
 
         // Then
         assertThat(scrollDuration).isEqualTo(expectedDuration)
+        assertThat(timeout).isEqualTo(expectedTimeout)
         driver.assertEvents(
             listOf(
                 Event.SwipeElementWithDirection(Point(270, 480), SwipeDirection.UP, expectedDuration.toLong()),
