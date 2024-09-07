@@ -1,6 +1,8 @@
 package maestro.test
 
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.mockkObject
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.MaestroException
@@ -31,6 +33,8 @@ import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 import maestro.orchestra.util.Env.withDefaultEnvVars
 import kotlin.reflect.KClass
+import maestro.js.GraalJsEngine
+import maestro.utils.Env
 import org.graalvm.polyglot.PolyglotException
 import org.junit.jupiter.api.Disabled
 
@@ -2751,9 +2755,9 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 102 - GraalJs dangerous config fails by default`() {
+    fun `Case 102 - GraalJs dangerous config should fail by default`() {
         // given
-
+        mockEnv()
         val commands = readCommands("102_graaljs_dangerous")
         val driver = driver { }
         val thrownErrors = mutableListOf<KClass<out Throwable>>()
@@ -2774,13 +2778,13 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 102 - GraalJs dangerous config fails with maestro env`() {
+    fun `Case 102 - GraalJs dangerous config fails when set from maestro`() {
         // given
-
+        mockEnv()
         val commands = readCommands("102_graaljs_dangerous_env").withEnv(
             mapOf(
-                "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS" to "1",
-                "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP" to "y",
+                GraalJsEngine.HOST_ACCESS_ENV to "1",
+                GraalJsEngine.CLASS_LOOKUP_ENV to "y",
             )
         )
         val driver = driver { }
@@ -2801,9 +2805,10 @@ class IntegrationTest {
         assertThat(thrownErrors).containsExactly(PolyglotException::class)
     }
 
-    @Test @Disabled("Need to find a way to mock System.env. Remove this and use the 'integration_102_graaljs_access_enabled' run config.")
-    fun `Case 102 - GraalJs dangerous config enabled`() {
+    @Test
+    fun `Case 102 - GraalJs dangerous config should work when enabled in system env`() {
         // given
+        mockEnv(GraalJsEngine.ALL_ACCESS_ENV to "1")
         val commands = readCommands("102_graaljs_dangerous")
         val driver = driver { }
         val receivedLogs = mutableListOf<String>()
@@ -3256,4 +3261,11 @@ class IntegrationTest {
             .withEnv(withEnv().withDefaultEnvVars(flowPath.toFile()))
     }
 
+    private fun mockEnv(vararg env: Pair<String, String?>) {
+        mockkObject(Env)
+        env.forEach {
+            every { Env.getSystemEnv(it.first) } returns it.second
+        }
+        every { Env.getSystemEnv() } returns env.toMap()
+    }
 }
