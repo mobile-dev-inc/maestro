@@ -1,0 +1,7 @@
+appId: com.example.app
+---
+# Note: The ?? operator is an example of an ES2020 feature and is not supported by RhinoJS
+- inputText: ${null ?? 'foo'}
+- runFlow: 102_graaljs_subflow.yaml
+- runScript:
+    file: 102_graaljs_script.js

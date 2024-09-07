@@ -2755,6 +2755,34 @@ class IntegrationTest {
     }
 
     @Test
+    fun `Case 102 - GraalJs config from env`() {
+        // given
+        mockEnv("MAESTRO_USE_GRAALJS" to "true")
+        val commands = readCommands("102_graaljs_env")
+        val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.InputText("foo"),
+                Event.InputText("bar"),
+            )
+        )
+        assertThat(receivedLogs).containsExactly("Hello from GraalJS")
+    }
+
+    @Test
     fun `Case 102 - GraalJs dangerous config should fail by default`() {
         // given
         mockEnv()
