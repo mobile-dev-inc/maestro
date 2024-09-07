@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.logging.Handler
 import java.util.logging.LogRecord
+import maestro.utils.Env
 import maestro.utils.StringUtils.evalTruthness
 import org.graalvm.polyglot.HostAccess
 
@@ -73,15 +74,9 @@ class GraalJsEngine(
     }
 
     private fun Context.Builder.setAccessConfigFromEnv(): Context.Builder {
-        val graalEnvPrefix = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW"
-
-        val allAccessEnv = "${graalEnvPrefix}_ALL_ACCESS"
-        val hostAccessEnv = "${graalEnvPrefix}_HOST_ACCESS"
-        val classLookupEnv = "${graalEnvPrefix}_CLASS_LOOKUP"
-
-        val allowAllAccess = System.getenv(allAccessEnv).evalTruthness()
-        val allowHostAccess = System.getenv(hostAccessEnv).evalTruthness()
-        val allowClassLookup = System.getenv(classLookupEnv).evalTruthness()
+        val allowAllAccess = Env.getSystemEnv(ALL_ACCESS_ENV).evalTruthness()
+        val allowHostAccess = Env.getSystemEnv(HOST_ACCESS_ENV).evalTruthness()
+        val allowClassLookup = Env.getSystemEnv(CLASS_LOOKUP_ENV).evalTruthness()
 
         return this
             .allowAllAccess(allowAllAccess)
@@ -137,5 +132,11 @@ class GraalJsEngine(
         )
 
         return context
+    }
+
+    companion object {
+        const val ALL_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_ALL_ACCESS"
+        const val HOST_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS"
+        const val CLASS_LOOKUP_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP"
     }
 }
