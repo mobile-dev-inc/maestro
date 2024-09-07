@@ -14,6 +14,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_1
 import android.view.KeyEvent.KEYCODE_4
 import android.view.KeyEvent.KEYCODE_5
@@ -37,7 +38,16 @@ import android.view.KeyEvent.KEYCODE_SEMICOLON
 import android.view.KeyEvent.KEYCODE_SLASH
 import android.view.KeyEvent.KEYCODE_SPACE
 import android.view.KeyEvent.KEYCODE_STAR
+import android.view.KeyEvent.META_ALT_ON
+import android.view.KeyEvent.META_CAPS_LOCK_ON
+import android.view.KeyEvent.META_CTRL_ON
+import android.view.KeyEvent.META_FUNCTION_ON
+import android.view.KeyEvent.META_META_ON
+import android.view.KeyEvent.META_NUM_LOCK_ON
+import android.view.KeyEvent.META_SCROLL_LOCK_ON
 import android.view.KeyEvent.META_SHIFT_LEFT_ON
+import android.view.KeyEvent.META_SHIFT_ON
+import android.view.KeyEvent.META_SYM_ON
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -290,11 +300,7 @@ class Service(
     ) {
         try {
             Log.d("Maestro", "Inputting text")
-            request.text.forEach {
-                setText(it.toString())
-                Thread.sleep(75)
-            }
-
+            setText(request.text)
             responseObserver.onNext(inputTextResponse { })
             responseObserver.onCompleted()
         } catch (e: Throwable) {
@@ -403,62 +409,86 @@ class Service(
         }
     }
 
-    private fun setText(text: String) {
-        for (element in text) {
-            Log.d("Maestro", element.code.toString())
-            when (element.code) {
-                in 48..57 -> {
-                    /** 0~9 **/
-                    uiDevice.pressKeyCode(element.code - 41)
-                }
-                in 65..90 -> {
-                    /** A~Z **/
-                    uiDevice.pressKeyCode(element.code - 36, 1)
-                }
-                in 97..122 -> {
-                    /** a~z **/
-                    uiDevice.pressKeyCode(element.code - 68)
-                }
-                ';'.code -> uiDevice.pressKeyCode(KEYCODE_SEMICOLON)
-                '='.code -> uiDevice.pressKeyCode(KEYCODE_EQUALS)
-                ','.code -> uiDevice.pressKeyCode(KEYCODE_COMMA)
-                '-'.code -> uiDevice.pressKeyCode(KEYCODE_MINUS)
-                '.'.code -> uiDevice.pressKeyCode(KEYCODE_PERIOD)
-                '/'.code -> uiDevice.pressKeyCode(KEYCODE_SLASH)
-                '`'.code -> uiDevice.pressKeyCode(KEYCODE_GRAVE)
-                '\''.code -> uiDevice.pressKeyCode(KEYCODE_APOSTROPHE)
-                '['.code -> uiDevice.pressKeyCode(KEYCODE_LEFT_BRACKET)
-                ']'.code -> uiDevice.pressKeyCode(KEYCODE_RIGHT_BRACKET)
-                '\\'.code -> uiDevice.pressKeyCode(KEYCODE_BACKSLASH)
-                ' '.code -> uiDevice.pressKeyCode(KEYCODE_SPACE)
-                '@'.code -> uiDevice.pressKeyCode(KEYCODE_AT)
-                '#'.code -> uiDevice.pressKeyCode(KEYCODE_POUND)
-                '*'.code -> uiDevice.pressKeyCode(KEYCODE_STAR)
-                '('.code -> uiDevice.pressKeyCode(KEYCODE_NUMPAD_LEFT_PAREN)
-                ')'.code -> uiDevice.pressKeyCode(KEYCODE_NUMPAD_RIGHT_PAREN)
-                '+'.code -> uiDevice.pressKeyCode(KEYCODE_NUMPAD_ADD)
-                '!'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_1)
-                '$'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_4)
-                '%'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_5)
-                '^'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_6)
-                '&'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_7)
-                '"'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_APOSTROPHE)
-                '{'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_LEFT_BRACKET)
-                '}'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_RIGHT_BRACKET)
-                ':'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_SEMICOLON)
-                '|'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_BACKSLASH)
-                '<'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_COMMA)
-                '>'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_PERIOD)
-                '?'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_SLASH)
-                '~'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_GRAVE)
-                '_'.code -> keyPressShiftedToEvents(uiDevice, KEYCODE_MINUS)
-            }
+    private fun setText(text: String) = text
+        .map { it.toKeyCodeAndMeta() }
+        .filterNotNull()
+        .fold(emptyList<Pair<List<Int>, Int>>()) { acc, elem ->
+            if (acc.isEmpty() || acc.last().second != elem.second) acc + listOf(listOf(elem.first) to elem.second)
+            else acc.dropLast(1) + listOf(acc.last().let { (it.first + listOf(elem.first)) to it.second })
+        }.forEach {
+            val codes = it.first.map(KeyEvent::keyCodeToString).joinToString(",") { it.replace("KEYCODE_", "") }
+            val meta = it.second.metaStateToString()
+            Log.d("Maestro", "pressKeyCodes(codes='$codes', meta='$meta')")
+            uiDevice.pressKeyCodes(it.first.toIntArray(), it.second ?: 0)
         }
+
+    private fun Int.metaStateToString() = with (KeyEvent.normalizeMetaState(this)) {
+        val metas = listOf(
+            META_SHIFT_ON to "SHIFT",
+            META_ALT_ON to "ALT",
+            META_CTRL_ON to "CTRL",
+            META_CAPS_LOCK_ON to "CAPS_LOCK",
+            META_NUM_LOCK_ON to "NUM_LOCK",
+            META_SCROLL_LOCK_ON to "SCROLL_LOCK",
+            META_FUNCTION_ON to "FUNCTION",
+            META_SYM_ON to "SYM",
+            META_META_ON to "META",
+        )
+        if (KeyEvent.metaStateHasNoModifiers(this)) "<no modifier>"
+        else metas.filter { (this and it.first) != 0 }.joinToString(",") { it.second }.let { "($it)" }
     }
 
-    private fun keyPressShiftedToEvents(uiDevice: UiDevice, keyCode: Int) {
-        uiDevice.pressKeyCode(keyCode, META_SHIFT_LEFT_ON)
+    private fun Char.toKeyCodeAndMeta(): Pair<Int, Int>? = when (code) {
+        in 48..57 -> {
+            /** 0~9 **/
+            (code - 41).keyCode()
+        }
+        in 65..90 -> {
+            /** A~Z **/
+            (code - 36).keyCodeShifted()
+        }
+        in 97..122 -> {
+            /** a~z **/
+            (code - 68).keyCode()
+        }
+        ';'.code -> KEYCODE_SEMICOLON.keyCode()
+        '='.code -> KEYCODE_EQUALS.keyCode()
+        ','.code -> KEYCODE_COMMA.keyCode()
+        '-'.code -> KEYCODE_MINUS.keyCode()
+        '.'.code -> KEYCODE_PERIOD.keyCode()
+        '/'.code -> KEYCODE_SLASH.keyCode()
+        '`'.code -> KEYCODE_GRAVE.keyCode()
+        '\''.code -> KEYCODE_APOSTROPHE.keyCode()
+        '['.code -> KEYCODE_LEFT_BRACKET.keyCode()
+        ']'.code -> KEYCODE_RIGHT_BRACKET.keyCode()
+        '\\'.code -> KEYCODE_BACKSLASH.keyCode()
+        ' '.code -> KEYCODE_SPACE.keyCode()
+        '@'.code -> KEYCODE_AT.keyCode()
+        '#'.code -> KEYCODE_POUND.keyCode()
+        '*'.code -> KEYCODE_STAR.keyCode()
+        '('.code -> KEYCODE_NUMPAD_LEFT_PAREN.keyCode()
+        ')'.code -> KEYCODE_NUMPAD_RIGHT_PAREN.keyCode()
+        '+'.code -> KEYCODE_NUMPAD_ADD.keyCode()
+        '!'.code -> KEYCODE_1.keyCodeShifted()
+        '$'.code -> KEYCODE_4.keyCodeShifted()
+        '%'.code -> KEYCODE_5.keyCodeShifted()
+        '^'.code -> KEYCODE_6.keyCodeShifted()
+        '&'.code -> KEYCODE_7.keyCodeShifted()
+        '"'.code -> KEYCODE_APOSTROPHE.keyCodeShifted()
+        '{'.code -> KEYCODE_LEFT_BRACKET.keyCodeShifted()
+        '}'.code -> KEYCODE_RIGHT_BRACKET.keyCodeShifted()
+        ':'.code -> KEYCODE_SEMICOLON.keyCodeShifted()
+        '|'.code -> KEYCODE_BACKSLASH.keyCodeShifted()
+        '<'.code -> KEYCODE_COMMA.keyCodeShifted()
+        '>'.code -> KEYCODE_PERIOD.keyCodeShifted()
+        '?'.code -> KEYCODE_SLASH.keyCodeShifted()
+        '~'.code -> KEYCODE_GRAVE.keyCodeShifted()
+        '_'.code -> KEYCODE_MINUS.keyCodeShifted()
+        else -> null
     }
+
+    private fun Int.keyCodeShifted(): Pair<Int, Int> = this to META_SHIFT_LEFT_ON
+    private fun Int.keyCode(): Pair<Int, Int> = this to 0
 
     internal fun Throwable.internalError() = Status.INTERNAL.withDescription(message).asException()
 
