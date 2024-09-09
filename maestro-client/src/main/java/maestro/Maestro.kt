@@ -46,17 +46,11 @@ class Maestro(
     val deviceName: String
         get() = driver.name()
 
-    private var _cachedDeviceInfo: DeviceInfo? = null
-    fun cachedDeviceInfo(): DeviceInfo {
-        var deviceInfo: DeviceInfo? = _cachedDeviceInfo
-        if (deviceInfo == null) {
-            LOGGER.info("Getting device info")
-            deviceInfo = driver.deviceInfo()
-            _cachedDeviceInfo = deviceInfo
-            LOGGER.info("Got device info: $deviceInfo")
-        }
-
-        return deviceInfo
+    val cachedDeviceInfo by lazy {
+        LOGGER.info("Getting device info")
+        val deviceInfo = driver.deviceInfo()
+        LOGGER.info("Got device info: $deviceInfo")
+        deviceInfo
     }
 
     @Deprecated("This function should be removed and its usages refactored. See issue #2031")

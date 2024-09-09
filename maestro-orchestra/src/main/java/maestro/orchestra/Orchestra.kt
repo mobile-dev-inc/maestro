@@ -223,7 +223,7 @@ class Orchestra(
         }
         val shouldUseGraalJs =
             config?.ext?.get("jsEngine") == "graaljs" || System.getenv("MAESTRO_USE_GRAALJS") == "true"
-        val platform = maestro.cachedDeviceInfo().platform.toString().lowercase()
+        val platform = maestro.cachedDeviceInfo.platform.toString().lowercase()
         jsEngine = if (shouldUseGraalJs) {
             httpClient?.let { GraalJsEngine(it, platform) } ?: GraalJsEngine(platform = platform)
         } else {
@@ -590,7 +590,7 @@ class Orchestra(
         }
 
         condition.platform?.let {
-            if (it != maestro.cachedDeviceInfo().platform) {
+            if (it != maestro.cachedDeviceInfo.platform) {
                 return false
             }
         }
