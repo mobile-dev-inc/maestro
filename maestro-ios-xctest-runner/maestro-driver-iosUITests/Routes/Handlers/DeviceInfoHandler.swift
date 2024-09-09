@@ -13,11 +13,9 @@ struct DeviceInfoHandler: HTTPHandler {
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         do {
-            let springboardBundleId = "com.apple.springboard"
-            let springboardApp = XCUIApplication(bundleIdentifier: springboardBundleId)
-            let screenSize = springboardApp.frame.size
+            let (width, height, orientation) = try ScreenSizeHelper.actualScreenSize()
+            logger.info("Device orientation is \(String(orientation.rawValue))")
 
-            let (width, height) = try ScreenSizeHelper.actualScreenSize()
             let deviceInfo = DeviceInfoResponse(
                 widthPoints: Int(width),
                 heightPoints: Int(height),
@@ -30,13 +28,5 @@ struct DeviceInfoHandler: HTTPHandler {
         } catch let error {
             return AppError(message: "Getting device info call failed. Error \(error.localizedDescription)").httpResponse
         }
-    }
-
-    private func handleError(message: String) -> Data {
-        logger.error("Failed - \(message)")
-        let jsonString = """
-         { "errorMessage" : \(message) }
-        """
-        return Data(jsonString.utf8)
     }
 }
