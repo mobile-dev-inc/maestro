@@ -474,7 +474,7 @@ class Orchestra(
     private fun scrollUntilVisible(command: ScrollUntilVisibleCommand): Boolean {
         val endTime = System.currentTimeMillis() + command.timeout.toLong()
         val direction = command.direction.toSwipeDirection()
-        val deviceInfo = maestro.cachedDeviceInfo()
+        val deviceInfo = maestro.deviceInfo()
 
         var retryCenterCount = 0
         val maxRetryCenterCount =

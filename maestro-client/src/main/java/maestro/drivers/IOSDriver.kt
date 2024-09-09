@@ -196,20 +196,6 @@ class IOSDriver(
         return runDeviceCall { iosDevice.isKeyboardVisible() }
     }
 
-    private fun validatePoints(start: Point, end: Point, widthPoints: Int, heightPoints: Int): Pair<Point, Point> {
-        val validatedStart = Point(
-            x = start.x.coerceIn(0, widthPoints),
-            y = start.y.coerceIn(0, heightPoints),
-        )
-
-        val validatedEnd = Point(
-            x = end.x.coerceIn(0, widthPoints),
-            y = end.y.coerceIn(0, heightPoints),
-        )
-
-        return Pair(validatedStart, validatedEnd)
-    }
-
     override fun swipe(
         start: Point,
         end: Point,
