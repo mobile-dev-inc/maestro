@@ -202,7 +202,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: maestro-cli
+          name: maestro-cli-jdk11-run_id${{ github.run_id }}
 
       - name: Add Maestro CLI executable to PATH
         run: |
@@ -230,4 +230,24 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
+        timeout-minutes: 30
         run: ./run_tests
+
+      - name: Upload ~/.maestro artifacts
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: maestro-e2e-output
+          path: ~/.maestro
+          retention-days: 7
+          include-hidden-files: true
+
+      - name: Upload xc test runner logs
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: xctest_runner_logs
+          path: ~/Library/Logs/maestro/xctest_runner_logs
+          retention-days: 7
+          include-hidden-files: true
+
