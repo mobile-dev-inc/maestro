@@ -18,3 +18,7 @@ appId: com.example.app
     id: .*${NON_EXISTENT_ID}.*
 - inputText: \${PASSWORD} is ${PASSWORD}
 - openLink: https://example.com/${URL}
+- setLocation:
+    latitude: ${LAT}
+    longitude: ${LNG}
+- startRecording: ${MAESTRO_FILENAME}

@@ -36,11 +36,13 @@ import maestro.cli.update.Updates
 import maestro.cli.util.ErrorReporter
 import maestro.cli.view.box
 import maestro.debuglog.DebugLogStore
+import picocli.AutoComplete.GenerateCompletion
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.util.Properties
 import kotlin.system.exitProcess
+import maestro.cli.util.ChangeLogUtils
 
 @Command(
     name = "maestro",
@@ -56,11 +58,11 @@ import kotlin.system.exitProcess
         LogoutCommand::class,
         BugReportCommand::class,
         StudioCommand::class,
-        StartDeviceCommand::class
+        StartDeviceCommand::class,
+        GenerateCompletion::class,
     ]
 )
 class App {
-
     @CommandLine.Mixin
     var disableANSIMixin: DisableAnsiMixin? = null
 
@@ -70,7 +72,7 @@ class App {
     @Option(names = ["-v", "--version"], versionHelp = true, description = ["Display CLI version"])
     var requestedVersion: Boolean? = false
 
-    @Option(names = ["-p", "--platform"], hidden = true)
+    @Option(names = ["-p", "--platform"], description = ["(Optional) Select a platform to run on"])
     var platform: String? = null
 
     @Option(names = ["--host"], hidden = true)
@@ -84,6 +86,9 @@ class App {
         description = ["(Optional) Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "],
     )
     var deviceId: String? = null
+
+    @Option(names = ["--verbose"], description = ["Enable verbose logging"])
+    var verbose: Boolean = false
 }
 
 private fun printVersion() {
@@ -133,6 +138,9 @@ fun main(args: Array<String>) {
             1
         }
 
+    val generateCompletionCommand = commandLine.subcommands["generate-completion"]
+    generateCompletionCommand?.commandSpec?.usageMessage()?.hidden(true)
+
     val exitCode = commandLine
         .execute(*args)
 
@@ -140,11 +148,18 @@ fun main(args: Array<String>) {
 
     val newVersion = Updates.checkForUpdates()
     if (newVersion != null) {
+        Updates.fetchChangelogAsync()
         System.err.println()
-        System.err.println(
-            ("A new version of the Maestro CLI is available ($newVersion). Upgrade command:\n" +
-                    "curl -Ls \"https://get.maestro.mobile.dev\" | bash").box()
-        )
+        val changelog = Updates.getChangelog()
+        val anchor = newVersion.toString().replace(".", "")
+        System.err.println(listOf(
+            "A new version of the Maestro CLI is available ($newVersion).\n",
+            "See what's new:",
+            "https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md#$anchor",
+            ChangeLogUtils.print(changelog),
+            "Upgrade command:",
+            "curl -Ls \"https://get.maestro.mobile.dev\" | bash",
+        ).joinToString("\n").box())
     }
 
     if (commandLine.isVersionHelpRequested) {

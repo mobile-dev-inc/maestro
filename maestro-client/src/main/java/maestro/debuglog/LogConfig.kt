@@ -6,21 +6,21 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.FileAppender
 import ch.qos.logback.core.status.NopStatusListener
-import maestro.Driver
 import org.slf4j.LoggerFactory
-import java.util.Properties
 
 object LogConfig {
     private const val LOG_PATTERN = "[%-5level] %logger{36} - %msg%n"
 
-    fun configure(logFileName: String) {
+    fun configure(logFileName: String, printToConsole: Boolean) {
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
         loggerContext.statusManager.add(NopStatusListener())
         loggerContext.reset()
 
         val encoder = createEncoder(loggerContext)
-//        createAndAddConsoleAppender(loggerContext, encoder) // un-comment to enable console logs
         createAndAddFileAppender(loggerContext, encoder, logFileName)
+        if (printToConsole) {
+            createAndAddConsoleAppender(loggerContext, encoder)
+        }
 
         loggerContext.getLogger("ROOT").level = Level.INFO
     }

@@ -46,17 +46,15 @@ class StudioCommand : Callable<Int> {
     private var noWindow: Boolean? = null
 
     override fun call(): Int {
-        if (parent?.platform != null) {
-            throw CliError("--platform option was deprecated. You can remove it to run your test.")
-        }
 
-        TestDebugReporter.install(debugOutputPathAsString = debugOutput)
+        TestDebugReporter.install(debugOutputPathAsString = debugOutput, printToConsole = parent?.verbose == true)
 
         MaestroSessionManager.newSession(
             host = parent?.host,
             port = parent?.port,
             driverHostPort = parent?.port,
             deviceId = parent?.deviceId,
+            platform = parent?.platform,
             isStudio = true
         ) { session ->
             val port = getFreePort()

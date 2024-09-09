@@ -1,0 +1,17 @@
+appId: com.example.example
+tags:
+    - android
+    - passing
+---
+- launchApp:
+    clearState: true
+- tapOn: Form Test
+- tapOn: Email
+- inputText: correct@mobile.dev
+- tapOn: Password
+- inputText: maestro
+- tapOn:
+    text: Login
+    index: 1
+- assertVisible:
+    text: Credentials are correct

@@ -67,16 +67,19 @@ object TestDebugReporter {
     /**
      * Save debug information about a single flow, after it has finished.
      */
-    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, path: Path) {
+    fun saveFlow(flowName: String, debugOutput: FlowDebugOutput, path: Path, shardIndex: Int? = null) {
         // TODO(bartekpacia): Potentially accept a single "FlowPersistentOutput" object
         // TODO(bartekpacia: Build output incrementally, instead of single-shot on flow completion
         //  Be aware that this goal somewhat conflicts with including links to other flows in the HTML report.
+
+        val shardPrefix = shardIndex?.let { "shard-${it + 1}-" }.orEmpty()
+        val shardLogPrefix = shardIndex?.let { "[shard ${it + 1}] " }.orEmpty()
 
         // commands
         try {
             val commandMetadata = debugOutput.commands
             if (commandMetadata.isNotEmpty()) {
-                val commandsFilename = "commands-(${flowName.replace("/", "_")}).json"
+                val commandsFilename = "commands-$shardPrefix(${flowName.replace("/", "_")}).json"
                 val file = File(path.absolutePathString(), commandsFilename)
                 commandMetadata.map {
                     CommandDebugWrapper(it.key, it.value)
@@ -85,7 +88,7 @@ object TestDebugReporter {
                 }
             }
         } catch (e: JsonMappingException) {
-            logger.error("Unable to parse commands", e)
+            logger.error("${shardLogPrefix}Unable to parse commands", e)
         }
 
         // screenshots
@@ -93,9 +96,10 @@ object TestDebugReporter {
             val status = when (it.status) {
                 CommandStatus.COMPLETED -> "✅"
                 CommandStatus.FAILED -> "❌"
+                CommandStatus.WARNED -> "⚠️"
                 else -> "﹖"
             }
-            val filename = "screenshot-$status-${it.timestamp}-(${flowName}).png"
+            val filename = "screenshot-$shardPrefix$status-${it.timestamp}-(${flowName}).png"
             val file = File(path.absolutePathString(), filename)
 
             it.screenshot.copyTo(file)
@@ -134,11 +138,15 @@ object TestDebugReporter {
         logger.info("---------------------")
     }
 
-    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false) {
+    /**
+     * Calls to this method should be done as soon as possible, to make all
+     * loggers use our custom configuration rather than the defaults.
+     */
+    fun install(debugOutputPathAsString: String?, flattenDebugOutput: Boolean = false, printToConsole: Boolean) {
         this.debugOutputPathAsString = debugOutputPathAsString
         this.flattenDebugOutput = flattenDebugOutput
         val path = getDebugOutputPath()
-        LogConfig.configure(path.absolutePathString() + "/maestro.log")
+        LogConfig.configure(logFileName = path.absolutePathString() + "/maestro.log", printToConsole = printToConsole)
         logSystemInfo()
         DebugLogStore.logSystemInfo()
     }
@@ -163,7 +171,6 @@ object TestDebugReporter {
         val foldername = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss").format(LocalDateTime.now())
         return Paths.get(debugRootPath, *preamble, foldername)
     }
-
 }
 
 private data class CommandDebugWrapper(
