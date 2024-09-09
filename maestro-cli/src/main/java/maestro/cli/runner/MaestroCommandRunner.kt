@@ -86,6 +86,7 @@ object MaestroCommandRunner {
         }
 
         refreshUi()
+        maestro.clearCachedDeviceInfo()
 
         val orchestra = Orchestra(
             maestro = maestro,
