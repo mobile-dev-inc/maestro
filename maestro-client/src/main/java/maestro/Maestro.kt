@@ -62,11 +62,6 @@ class Maestro(
     @Deprecated("This function should be removed and its usages refactored. See issue #2031")
     fun deviceInfo() = driver.deviceInfo()
 
-    fun clearCachedDeviceInfo() {
-        LOGGER.info("Clearing cached device info")
-        _cachedDeviceInfo = null
-    }
-
     private var screenRecordingInProgress = false
 
     fun launchApp(
