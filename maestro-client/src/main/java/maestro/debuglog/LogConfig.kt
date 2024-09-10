@@ -9,7 +9,7 @@ import ch.qos.logback.core.status.NopStatusListener
 import org.slf4j.LoggerFactory
 
 object LogConfig {
-    private const val LOG_PATTERN = "[%-5level] %logger{36} - %msg%n"
+    private const val LOG_PATTERN = "%d{HH:mm:ss.SSS} [%-5level] %logger: %msg%n"
 
     fun configure(logFileName: String, printToConsole: Boolean) {
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
@@ -35,7 +35,7 @@ object LogConfig {
 
     private fun createAndAddConsoleAppender(
         loggerContext: LoggerContext,
-        encoder: PatternLayoutEncoder
+        encoder: PatternLayoutEncoder,
     ) {
         val consoleAppender = ch.qos.logback.core.ConsoleAppender<ILoggingEvent>().apply {
             context = loggerContext
@@ -49,12 +49,12 @@ object LogConfig {
     private fun createAndAddFileAppender(
         loggerContext: LoggerContext,
         encoder: PatternLayoutEncoder,
-        logFileName: String
+        logFileName: String,
     ) {
         val fileAppender = FileAppender<ILoggingEvent>().apply {
             context = loggerContext
             setEncoder(encoder)
-            this.file = logFileName
+            file = logFileName
             start()
         }
 
