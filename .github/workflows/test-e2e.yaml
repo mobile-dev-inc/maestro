@@ -192,6 +192,7 @@ jobs:
 
     env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
+      MAESTRO_CLI_LOG_PATTERN_CONSOLE: '%d{HH:mm:ss.SSS} [%5level] %logger.%method: %msg%n'
 
     steps:
       - name: Clone repository (only needed for the e2e directory)
