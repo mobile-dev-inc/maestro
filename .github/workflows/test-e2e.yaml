@@ -153,6 +153,7 @@ jobs:
       - name: Start screen recording of AVD
         run: |
           adb shell screenrecord /sdcard/screenrecord.mp4 &
+          echo $! > ~/screenrecord.pid
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
@@ -162,7 +163,7 @@ jobs:
       - name: Stop screen recording of AVD
         if: success() || failure()
         run: |
-          adb shell pkill -SIGINT screenrecord || echo "exited with code $?" && exit 0
+          kill -SIGINT "$(cat ~/screenrecord.pid)"
           sleep 5 # prevent video file corruption
           adb pull /sdcard/screenrecord.mp4 ~/screenrecord.mp4
 
