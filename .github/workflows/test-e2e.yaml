@@ -160,6 +160,7 @@ jobs:
         run: ./run_tests
 
       - name: Stop screen recording of AVD
+        if: success() || failure()
         run: |
           adb shell pkill -SIGINT screenrecord || echo "exited with code $?" && exit 0
           sleep 5 # prevent video file corruption
@@ -241,6 +242,7 @@ jobs:
         run: ./run_tests
 
       - name: Stop screen recording
+        if: success() || failure()
         run: kill -SIGINT "$(cat ~/screenrecord.pid)"
 
       - name: Upload ~/.maestro artifacts
