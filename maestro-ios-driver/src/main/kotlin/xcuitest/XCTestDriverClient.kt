@@ -41,14 +41,12 @@ class XCTestDriverClient(
         httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
-    fun restartXCTestRunnerService() {
-        logger.trace("[Start] Uninstalling xctest ui runner app")
+    fun restartXCTestRunner() {
+        logger.trace("Restarting XCTest Runner (uninstalling, installing and starting)")
         installer.uninstall()
-        logger.trace("[Done] Uninstalling xctest ui runner app")
-        logger.trace("[Start] Installing xctest ui runner app")
-        client = installer.start()
-            ?: throw XCTestDriverUnreachable("Failed to reach XCUITest Server in restart")
-        logger.trace("[Done] Installing xctest ui runner app")
+
+        logger.trace("XCTest Runner uninstalled, will install and start it")
+        client = installer.start() ?: throw XCTestDriverUnreachable("Failed to start XCTest Driver")
     }
 
     private val okHttpClient = OkHttpClient.Builder()

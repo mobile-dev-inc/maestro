@@ -23,7 +23,8 @@ class XCTestIOSDevice(
     private val logger = LoggerFactory.getLogger(XCTestIOSDevice::class.java)
 
     override fun open() {
-        client.restartXCTestRunnerService()
+        logger.trace("Opening a connection")
+        client.restartXCTestRunner()
     }
 
     override fun deviceInfo(): DeviceInfo {
