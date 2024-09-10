@@ -148,7 +148,7 @@ jobs:
 
       - name: Install apps
         working-directory: ${{ github.workspace }}/e2e
-        run: ./install_apps
+        run: ./install_apps android
 
       - name: Start screen recording of AVD
         run: |
@@ -230,7 +230,7 @@ jobs:
 
       - name: Install apps
         working-directory: ${{ github.workspace }}/e2e
-        run: ./install_apps
+        run: ./install_apps ios
 
       - name: Start screen recording
         run: |
