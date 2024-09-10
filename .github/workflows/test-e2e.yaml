@@ -163,7 +163,7 @@ jobs:
       - name: Stop screen recording of AVD
         if: success() || failure()
         run: |
-          kill -SIGINT "$(cat ~/screenrecord.pid)"
+          kill -SIGINT "$(cat ~/screenrecord.pid)" || echo "failed to kill screenrecord: code $?" && exit 0
           sleep 5 # prevent video file corruption
           adb pull /sdcard/screenrecord.mp4 ~/screenrecord.mp4
 
