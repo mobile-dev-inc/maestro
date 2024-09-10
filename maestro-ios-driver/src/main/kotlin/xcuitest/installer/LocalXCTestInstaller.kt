@@ -103,7 +103,11 @@ class LocalXCTestInstaller(
     }
 
     private fun ensureOpen(): Boolean {
-        return MaestroTimer.retryUntilTrue(10_000, 200) { isChannelAlive() }
+        val timeout = 60_000L
+        logger.info("ensureOpen(): Will spend $timeout ms waiting for the channel to become alive")
+        val result = MaestroTimer.retryUntilTrue(timeout, 200) { isChannelAlive() }
+        logger.info("ensureOpen() finished, is channel alive?: $result")
+        return result
     }
 
     private fun xcTestDriverStatusCheck(): Boolean {
