@@ -19,9 +19,12 @@
 
 package maestro.cli.command
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import maestro.Maestro
 import maestro.cli.App
@@ -58,6 +61,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlinx.coroutines.withContext
+import maestro.MaestroDriverStartupException.IOSDriverTimeoutException
 import maestro.utils.isSingleFile
 import maestro.orchestra.util.Env.withDefaultEnvVars
 
@@ -211,7 +215,8 @@ class TestCommand : Callable<Int> {
 
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
-        runCatching {
+        kotlin.runCatching {  }
+        // runCatching {
             val availableDevices = DeviceService.listConnectedDevices().map { it.instanceId }.toSet()
             val deviceIds = getPassedOptionsDeviceIds()
                 .filter { device ->
@@ -263,7 +268,7 @@ class TestCommand : Callable<Int> {
             message?.let { PrintUtils.info(it) }
 
             val results = (0 until effectiveShards).map { shardIndex ->
-                async(Dispatchers.IO) {
+                async(Dispatchers.IO + CoroutineName("shard-$shardIndex")) {
                     runShardSuite(
                         effectiveShards = effectiveShards,
                         deviceIds = deviceIds,
@@ -280,14 +285,23 @@ class TestCommand : Callable<Int> {
 
             suites.mergeSummaries()?.saveReport()
 
+        coroutineScope {  }
+
             if (effectiveShards > 1) printShardsMessage(passed, total, suites)
             if (passed == total) 0 else 1
-        }.onFailure {
-            PrintUtils.message("❌ Error: ${it.message}")
-            it.printStackTrace()
-
-            exitProcess(1)
-        }.getOrDefault(0)
+        //}.onFailure {
+        //    if (it is CancellationException) {
+        //        it.cause?.let { PrintUtils.message("❌ Error: ${it.message}\n") }
+        //        it.cause?.printStackTrace()
+//
+        //        println("Original\n\n")
+        //    }
+//
+        //    PrintUtils.message("❌ Error: ${it.message}\n")
+        //    it.printStackTrace()
+//
+        //    exitProcess(1)
+       // }.getOrDefault(0)
     }
 
     private suspend fun runShardSuite(
@@ -296,13 +310,14 @@ class TestCommand : Callable<Int> {
         shardIndex: Int,
         chunkPlans: List<ExecutionPlan>,
         debugOutputPath: Path,
-    ): Triple<Int?, Int?, TestExecutionSummary?> = withContext(Dispatchers.IO) {
+    ): Triple<Int?, Int?, TestExecutionSummary?> {
         val driverHostPort = selectPort(effectiveShards)
         val deviceId = deviceIds[shardIndex]
 
+        throw IOSDriverTimeoutException("Dummy! Maestro iOS driver did not start up in time")
         logger.info("[shard ${shardIndex + 1}] Selected device $deviceId using port $driverHostPort")
 
-        return@withContext MaestroSessionManager.newSession(
+        return MaestroSessionManager.newSession(
             host = parent?.host,
             port = parent?.port,
             driverHostPort = driverHostPort,

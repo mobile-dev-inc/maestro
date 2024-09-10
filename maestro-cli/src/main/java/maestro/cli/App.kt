@@ -124,12 +124,12 @@ fun main(args: Array<String>) {
                 ex.stackTraceToString()
             }
 
-            println()
-
             // make errors red
             cmd.colorScheme = CommandLine.Help.ColorScheme.Builder()
                 .errors(CommandLine.Help.Ansi.Style.fg_red)
                 .build()
+
+            cmd.err.println("❌ Error")
 
             cmd.err.println(
                 cmd.colorScheme.errorText(message)
