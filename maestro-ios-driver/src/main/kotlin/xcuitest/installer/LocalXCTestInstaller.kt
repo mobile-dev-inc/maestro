@@ -1,6 +1,5 @@
 package xcuitest.installer
 
-import logger.Logger
 import maestro.utils.MaestroTimer
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -10,6 +9,7 @@ import okio.sink
 import okio.source
 import org.apache.commons.io.FileUtils
 import org.rauschig.jarchivelib.ArchiverFactory
+import org.slf4j.LoggerFactory
 import util.XCRunnerCLIUtils
 import xcuitest.XCTestClient
 import java.io.File
@@ -17,12 +17,13 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class LocalXCTestInstaller(
-    private val logger: Logger,
     private val deviceId: String,
     private val host: String = "[::1]",
     private val enableXCTestOutputFileLogging: Boolean,
     defaultPort: Int,
 ) : XCTestInstaller {
+
+    private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
 
     /**
      * If true, allow for using a xctest runner started from Xcode.

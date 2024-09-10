@@ -27,7 +27,7 @@ object LogConfig {
             createAndAddConsoleAppender(loggerContext)
         }
 
-        loggerContext.getLogger("ROOT").level = Level.INFO
+        loggerContext.getLogger("ROOT").level = Level.ALL
     }
 
     private fun createAndAddConsoleAppender(loggerContext: LoggerContext) {
