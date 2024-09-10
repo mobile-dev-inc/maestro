@@ -40,9 +40,9 @@ jobs:
 
   test-local-android:
     name: Test on Android
-    timeout-minutes: 30
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 60
 
     env:
       ANDROID_HOME: /home/runner/androidsdk
@@ -156,6 +156,7 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
+        timeout-minutes: 30
         run: ./run_tests
 
       - name: Stop screen recording of AVD
@@ -185,6 +186,7 @@ jobs:
     name: Test on iOS
     runs-on: macos-latest
     needs: build
+    timeout-minutes: 60
 
     env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
