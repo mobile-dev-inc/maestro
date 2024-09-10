@@ -157,7 +157,7 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
-        timeout-minutes: 30
+        timeout-minutes: 10
         run: ./run_tests android
 
       - name: Stop screen recording of AVD
@@ -239,7 +239,7 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
-        timeout-minutes: 30
+        timeout-minutes: 10
         run: ./run_tests ios
 
       - name: Stop screen recording
@@ -271,4 +271,3 @@ jobs:
           name: maestro-screenrecord-ios.mp4
           path: ~/screenrecord.mp4
           retention-days: 7
-
