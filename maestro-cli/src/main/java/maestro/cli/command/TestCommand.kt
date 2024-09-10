@@ -119,7 +119,7 @@ class TestCommand : Callable<Int> {
     @Option(
         names = ["--test-suite-name"],
         description = ["Test suite name"],
-)
+    )
     private var testSuiteName: String? = null
 
     @Option(names = ["--output"])

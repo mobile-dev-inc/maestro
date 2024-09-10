@@ -67,6 +67,7 @@ class LocalXCTestInstaller(
 
         killXCTestRunnerProcess()
 
+        logger.trace("Uninstalling XCTest Runner from device $deviceId")
         XCRunnerCLIUtils.uninstall(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
         return true
     }

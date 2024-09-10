@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 object LogConfig {
     // See https://logback.qos.ch/manual/layouts.html#method
 
-    private const val DEFAULT_FILE_LOG_PATTERN = "%d{HH:mm:ss.SSS} [%5level] %logger::%method %line: %msg%n"
+    private const val DEFAULT_FILE_LOG_PATTERN = "%d{HH:mm:ss.SSS} [%5level] %logger.%method: %msg%n"
     private const val DEFAULT_CONSOLE_LOG_PATTERN = "%highlight([%5level]) %msg%n"
 
     private val FILE_LOG_PATTERN: String = System.getenv("MAESTRO_CLI_LOG_PATTERN_FILE") ?: DEFAULT_FILE_LOG_PATTERN
