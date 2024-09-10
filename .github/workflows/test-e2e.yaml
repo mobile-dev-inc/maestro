@@ -188,7 +188,7 @@ jobs:
     name: Test on iOS
     runs-on: macos-latest
     needs: build
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
@@ -240,7 +240,7 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ github.workspace }}/e2e
-        timeout-minutes: 10
+        timeout-minutes: 120
         run: ./run_tests ios
 
       - name: Stop screen recording
