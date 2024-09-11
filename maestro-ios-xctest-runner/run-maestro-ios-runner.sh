@@ -8,7 +8,7 @@ fi
 
 DEVICE="${1:-}"
 if [ -z "$DEVICE" ]; then
-	DEVICE="iPhone 15 Pro"
+	DEVICE="iPhone 15"
 	echo "No device passed, will default to $DEVICE"
 fi
 
@@ -25,5 +25,5 @@ fi
 
 xcodebuild test-without-building \
 	-xctestrun "$xctestrun_file" \
-	-destination "platform=iOS Simulator,name=iPhone 15 Pro" `#-destination "generic/platform=iOS Simulator"` \
+	-destination "platform=iOS Simulator,name=$DEVICE"
 	-destination-timeout 1
