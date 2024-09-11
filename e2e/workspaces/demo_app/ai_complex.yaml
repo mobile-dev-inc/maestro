@@ -1,0 +1,12 @@
+appId: com.example.example
+name: Defects Test
+tags:
+    - failing
+    - ai
+---
+- launchApp:
+    clearState: true
+- tapOn: Defects Test
+- assertNoDefectsWithAI:
+    optional: true
+- assertWithAI: A picture of a cute bunny is visible
