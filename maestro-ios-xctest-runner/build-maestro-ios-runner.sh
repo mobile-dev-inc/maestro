@@ -22,11 +22,11 @@ xcodebuild \
 	build-for-testing
 
 ## Remove intermediates, output and copy runner in maestro-ios-driver
-cp \
+cp -r \
 	./build/Products/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app \
 	./maestro-ios-driver/src/main/resources/maestro-driver-iosUITests-Runner.app
 
-cp \
+cp -r \
 	./build/Products/Debug-iphonesimulator/maestro-driver-ios.app \
 	./maestro-ios-driver/src/main/resources/maestro-driver-ios.app
 
