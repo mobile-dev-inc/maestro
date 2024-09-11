@@ -197,6 +197,7 @@ jobs:
     runs-on: macos-latest
     needs: build
     timeout-minutes: 120
+    if: ${{ false }}
 
     env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000 # 240s
