@@ -6,9 +6,8 @@ if [ "$(basename "$PWD")" != "maestro" ]; then
 	exit 1
 fi
 
-## Build the UI test
+rm -rf ./build/Products
 
-rm -rf ./build/Products || exit 1
 xcodebuild \
 	ARCHS="x86_64 arm64" \
 	ONLY_ACTIVE_ARCH=NO \
