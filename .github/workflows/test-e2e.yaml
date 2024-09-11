@@ -32,10 +32,18 @@ jobs:
       - name: Build Maestro CLI
         run: ./gradlew :maestro-cli:distZip
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload zipped Maestro CLI artifact
+        uses: actions/upload-artifact@v4
         with:
           name: maestro-cli-jdk${{ matrix.java-version }}-run_id${{ github.run_id }}
           path: maestro-cli/build/distributions/maestro.zip
+          retention-days: 1
+
+      - name: Upload build/Products to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build__Products-jdk${{ matrix.java-version }}
+          path: build/Products
           retention-days: 1
 
   test-android:
@@ -289,10 +297,16 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      - name: Download artifacts
+      - name: Download Maestro artifact
         uses: actions/download-artifact@v4
         with:
           name: maestro-cli-jdk11-run_id${{ github.run_id }}
+
+      - name: Download build/Products artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build__Products-jdk11
+          path: build/Products
 
       - name: Add Maestro CLI executable to PATH
         run: |
