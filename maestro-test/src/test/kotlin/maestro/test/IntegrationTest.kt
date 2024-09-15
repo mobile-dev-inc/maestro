@@ -2490,7 +2490,7 @@ class IntegrationTest {
         // When
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2641,7 +2641,7 @@ class IntegrationTest {
         // When
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2737,7 +2737,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2765,7 +2765,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2793,7 +2793,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandFailed = { _, _, e ->
                     thrownErrors += e::class
                     Orchestra.ErrorResolution.CONTINUE
@@ -2821,7 +2821,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandFailed = { _, _, e ->
                     thrownErrors += e::class
                     Orchestra.ErrorResolution.CONTINUE
@@ -2844,7 +2844,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2866,7 +2866,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2925,7 +2925,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2951,7 +2951,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2979,7 +2979,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -3009,7 +3009,7 @@ class IntegrationTest {
         assertThrows<MaestroException.AssertionFailure> {
             val result = Maestro(driver).use {
                 orchestra(
-                    it,
+                    maestro = it,
                     onCommandMetadataUpdate = { _, metadata ->
                         receivedLogs += metadata.logMessages
                     }
@@ -3036,7 +3036,7 @@ class IntegrationTest {
         assertThrows<MaestroException.AssertionFailure> {
             val result = Maestro(driver).use {
                 orchestra(
-                    it,
+                    maestro = it,
                     onCommandMetadataUpdate = { _, metadata ->
                         receivedLogs += metadata.logMessages
                     }
