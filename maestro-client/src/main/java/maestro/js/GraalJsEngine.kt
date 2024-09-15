@@ -74,14 +74,12 @@ class GraalJsEngine(
     }
 
     private fun Context.Builder.setAccessConfigFromEnv(): Context.Builder {
-        val allowAllAccess = Env.getSystemEnv(ALL_ACCESS_ENV).evalTruthness()
         val allowHostAccess = Env.getSystemEnv(HOST_ACCESS_ENV).evalTruthness()
         val allowClassLookup = Env.getSystemEnv(CLASS_LOOKUP_ENV).evalTruthness()
 
         return this
-            .allowAllAccess(allowAllAccess)
-            .allowHostClassLookup { allowAllAccess || allowClassLookup }
-            .allowHostAccess(if (allowAllAccess || allowHostAccess) HostAccess.ALL else HostAccess.EXPLICIT)
+            .allowHostClassLookup { allowClassLookup }
+            .allowHostAccess(if (allowHostAccess) HostAccess.ALL else HostAccess.EXPLICIT)
     }
 
     private fun createContext(): Context {
@@ -135,7 +133,6 @@ class GraalJsEngine(
     }
 
     companion object {
-        const val ALL_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_ALL_ACCESS"
         const val HOST_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS"
         const val CLASS_LOOKUP_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP"
     }

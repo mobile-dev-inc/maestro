@@ -1,7 +1,8 @@
 appId: com.example.app
 jsEngine: graaljs
 env:
-  MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_ALL_ACCESS: true
+  MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS: true
+  MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP: true
 ---
 - runScript:
     file: 102_graaljs_script_dangerous.js
