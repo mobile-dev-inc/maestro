@@ -2757,7 +2757,7 @@ class IntegrationTest {
     @Test
     fun `Case 102 - GraalJs config from env`() {
         // given
-        mockEnv("MAESTRO_USE_GRAALJS" to "")
+        mockEnv(GraalJsEngine.USE_GRAALJS_ENV to "")
         val commands = readCommands("102_graaljs_env")
         val driver = driver { }
         val receivedLogs = mutableListOf<String>()

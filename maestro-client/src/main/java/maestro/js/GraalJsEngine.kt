@@ -134,5 +134,6 @@ class GraalJsEngine(
     companion object {
         const val HOST_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS"
         const val CLASS_LOOKUP_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP"
+        const val USE_GRAALJS_ENV = "MAESTRO_USE_GRAALJS"
     }
 }
