@@ -2757,7 +2757,7 @@ class IntegrationTest {
     @Test
     fun `Case 102 - GraalJs config from env`() {
         // given
-        mockEnv("MAESTRO_USE_GRAALJS" to "true")
+        mockEnv("MAESTRO_USE_GRAALJS" to "")
         val commands = readCommands("102_graaljs_env")
         val driver = driver { }
         val receivedLogs = mutableListOf<String>()
@@ -2836,7 +2836,7 @@ class IntegrationTest {
     @Test
     fun `Case 102 - GraalJs dangerous config should work when enabled in system env`() {
         // given
-        mockEnv(GraalJsEngine.HOST_ACCESS_ENV to "1", GraalJsEngine.CLASS_LOOKUP_ENV to "1")
+        mockEnv(GraalJsEngine.HOST_ACCESS_ENV to "1", GraalJsEngine.CLASS_LOOKUP_ENV to "")
         val commands = readCommands("102_graaljs_dangerous")
         val driver = driver { }
         val receivedLogs = mutableListOf<String>()

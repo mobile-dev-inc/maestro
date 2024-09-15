@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit
 import java.util.logging.Handler
 import java.util.logging.LogRecord
 import maestro.utils.Env
-import maestro.utils.StringUtils.evalTruthness
 import org.graalvm.polyglot.HostAccess
 
 private val NULL_HANDLER = object : Handler() {
@@ -74,8 +73,8 @@ class GraalJsEngine(
     }
 
     private fun Context.Builder.setAccessConfigFromEnv(): Context.Builder {
-        val allowHostAccess = Env.getSystemEnv(HOST_ACCESS_ENV).evalTruthness()
-        val allowClassLookup = Env.getSystemEnv(CLASS_LOOKUP_ENV).evalTruthness()
+        val allowHostAccess = Env.getSystemEnv(HOST_ACCESS_ENV) != null
+        val allowClassLookup = Env.getSystemEnv(CLASS_LOOKUP_ENV) != null
 
         return this
             .allowHostClassLookup { allowClassLookup }
