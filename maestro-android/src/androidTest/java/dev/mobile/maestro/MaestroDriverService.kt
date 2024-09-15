@@ -409,6 +409,9 @@ class Service(
         }
     }
 
+    // Convert all input chars to their corresponding keyCode and metaState
+    // Bunch up all consecutive input keyCode that have the same metaState
+    // Call UiDevice#pressKeyCodes with the bunched up keyCodes
     private fun setText(text: String) = text
         .map { it.toKeyCodeAndMeta() }
         .filterNotNull()
