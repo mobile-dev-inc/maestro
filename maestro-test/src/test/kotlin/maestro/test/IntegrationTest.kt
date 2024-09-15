@@ -2808,7 +2808,9 @@ class IntegrationTest {
     @Test
     fun `Case 102 - GraalJs dangerous config fails when set from maestro`() {
         // given
+        // an empty system env
         mockEnv()
+        // and dangerous config set from within maestro (both command line args and flow files)
         val commands = readCommands("102_graaljs_dangerous_env").withEnv(
             mapOf(
                 GraalJsEngine.HOST_ACCESS_ENV to "1",
@@ -2830,6 +2832,7 @@ class IntegrationTest {
         }
 
         // then
+        // the dangerous vars set from within maestro are not taken into account
         assertThat(thrownErrors).containsExactly(PolyglotException::class)
     }
 
