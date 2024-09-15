@@ -59,6 +59,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.absolutePathString
 import kotlin.math.roundToInt
+import maestro.cli.device.Platform
 
 @CommandLine.Command(
     name = "test",
@@ -210,16 +211,22 @@ class TestCommand : Callable<Int> {
 
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
-        val availableDevices = DeviceService.listConnectedDevices().map { it.instanceId }.toSet()
+        val connectedDevices = DeviceService.listConnectedDevices()
+        val availableDevicesIds = connectedDevices.map { it.instanceId }.toSet()
+
         val deviceIds = getPassedOptionsDeviceIds()
             .filter { device ->
-                if (device !in availableDevices) {
+                if (device !in availableDevicesIds) {
                     throw CliError("Device $device was requested, but it is not connected.")
                 } else {
                     true
                 }
             }
-            .ifEmpty { availableDevices }
+            .ifEmpty {
+                connectedDevices
+                    .filter { it.platform == Platform.fromString(parent?.platform) }
+                    .map { it.instanceId }.toSet()
+            }
             .toList()
 
         val missingDevices = requestedShards - deviceIds.size
@@ -282,7 +289,7 @@ class TestCommand : Callable<Int> {
         if (passed == total) 0 else 1
     }
 
-    private suspend fun runShardSuite(
+    private fun runShardSuite(
         effectiveShards: Int,
         deviceIds: List<String>,
         shardIndex: Int,
