@@ -1,0 +1,32 @@
+appId: com.example.example
+tags:
+    - passing
+---
+- launchApp:
+    appId: com.android.chrome
+    clearState: true
+    optional: true
+
+- launchApp:
+    clearState: true
+
+- openLink: 'https://maestro.mobile.dev'
+- assertVisible:
+    id: 'signin_fre_dismiss_button|send_report_checkbox|terms_accept'
+
+- openLink:
+    link: 'https://maestro.mobile.dev'
+    browser: true
+- assertVisible:
+    id: 'signin_fre_dismiss_button|send_report_checkbox|terms_accept'
+
+- openLink:
+    link: 'https://maestro.mobile.dev'
+    browser: true
+    autoVerify: true
+- assertVisible: 'Maestro Documentation'
+
+- openLink:
+    link: 'https://maestro.mobile.dev'
+    autoVerify: true
+- assertVisible: 'Flutter Demo Home Page'
