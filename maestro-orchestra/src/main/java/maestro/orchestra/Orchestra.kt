@@ -173,6 +173,7 @@ class Orchestra(
                         command,
                         metadata.copy(logMessages = metadata.logMessages + msg)
                     )
+                    jsLogger.info(msg)
                 }
 
                 val evaluatedCommand = command.evaluateScripts(jsEngine)
@@ -1386,5 +1387,6 @@ class Orchestra(
         private const val MAX_ERASE_CHARACTERS = 50
         private const val MAX_RETRIES_ALLOWED = 3
         private val logger = LoggerFactory.getLogger(Orchestra::class.java)
+        private val jsLogger = LoggerFactory.getLogger("maestro.js.JsEngine.console.log")
     }
 }
