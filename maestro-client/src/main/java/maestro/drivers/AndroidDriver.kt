@@ -231,6 +231,7 @@ class AndroidDriver(
         }
 
         shell("pm clear $appId")
+        shell("pm reset-app-links --user 0 $appId")
     }
 
     override fun clearKeychain() {
