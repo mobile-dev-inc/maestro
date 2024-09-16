@@ -20,8 +20,16 @@
 package maestro.cli.runner.resultview
 
 import io.ktor.util.encodeBase64
+import maestro.cli.device.Device
+import maestro.cli.device.Platform
 import maestro.cli.runner.CommandState
 import maestro.cli.runner.CommandStatus
+import maestro.orchestra.AssertWithAICommand
+import maestro.orchestra.ElementSelector
+import maestro.orchestra.LaunchAppCommand
+import maestro.orchestra.MaestroCommand
+import maestro.orchestra.TapOnElementCommand
+import maestro.orchestra.TapOnPointV2Command
 import maestro.utils.Insight
 import maestro.utils.chunkStringByWordCount
 import org.fusesource.jansi.Ansi
@@ -72,7 +80,7 @@ class AnsiResultView(
             renderCommands(state.onFlowStartCommands)
         }
         render(" ║\n")
-        render(" ║  > Flow\n")
+        render(" ║  > Flow: ${state.flowName}\n")
         render(" ║\n")
         renderCommands(state.commands)
         render(" ║\n")
@@ -96,20 +104,18 @@ class AnsiResultView(
         commands: List<CommandState>,
         indent: Int = 0,
     ) {
-        val statusColumnWidth = 3
         commands
             .filter { it.command.asCommand()?.visible() ?: true }
-            .forEach {
-                renderCommand(it, indent, statusColumnWidth)
-            }
+            .forEach { renderCommand(it, indent) }
     }
 
-    private fun Ansi.renderCommand(commandState: CommandState, indent: Int, statusColumnWidth: Int) {
+    private fun Ansi.renderCommand(commandState: CommandState, indent: Int) {
         val statusSymbol = status(commandState.status)
+
         fgDefault()
         renderLineStart(indent)
         render(statusSymbol)
-        render(String(CharArray(statusColumnWidth - statusSymbol.length) { ' ' }))
+        render(" ".repeat(2))
         render(
             commandState.command.description()
                 .replace("(?<!\\\\)\\\$\\{.*}".toRegex()) { match ->
@@ -136,12 +142,13 @@ class AnsiResultView(
             printInsight(indent, commandState.insight)
         }
 
-        val subCommandsHasNotPending =
-            (commandState.subCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
-        val onStartHasNotPending =
-            (commandState.subOnStartCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
-        val onCompleteHasNotPending =
-            (commandState.subOnCompleteCommands?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+
+        val subCommandsHasNotPending = (commandState.subCommands
+            ?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+        val onStartHasNotPending = (commandState.subOnStartCommands
+            ?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
+        val onCompleteHasNotPending = (commandState.subOnCompleteCommands
+            ?.any { subCommand -> subCommand.status != CommandStatus.PENDING } ?: false)
         val expandSubCommands = commandState.status in setOf(CommandStatus.RUNNING, CommandStatus.FAILED) &&
                 (subCommandsHasNotPending || onStartHasNotPending || onCompleteHasNotPending)
 
@@ -180,16 +187,23 @@ class AnsiResultView(
     }
 
     private fun Ansi.printInsight(indent: Int, insight: Insight) {
+        val color = when (insight.level) {
+            Insight.Level.WARNING -> "yellow"
+            Insight.Level.INFO -> "cyan"
+            else -> "default"
+        }
         val level = insight.level.toString().lowercase().replaceFirstChar(Char::uppercase)
         renderLineStart(indent + 1)
         render("   ")   // Space that a status symbol would normally occupy
-        render("@|yellow $level:|@\n")
+        render("@|$color $level:|@\n")
 
-        insight.message.chunkStringByWordCount(12).forEach { chunkedMessage ->
-            renderLineStart(indent + 2)
-            render("   ")   // Space that a status symbol would normally occupy
-            render(chunkedMessage)
-            render("\n")
+        insight.message.split("\n").forEach { paragraph ->
+            paragraph.chunkStringByWordCount(12).forEach { chunkedMessage ->
+                renderLineStart(indent + 2)
+                render("   ")   // Space that a status symbol would normally occupy
+                render(chunkedMessage)
+                render("\n")
+            }
         }
     }
 
@@ -197,17 +211,6 @@ class AnsiResultView(
         render(" ║    ")
         repeat(indent) {
             render("  ")
-        }
-    }
-
-    private fun status(status: CommandStatus): String {
-        return when (status) {
-            CommandStatus.COMPLETED -> "✅"
-            CommandStatus.FAILED -> "❌"
-            CommandStatus.RUNNING -> "⏳"
-            CommandStatus.PENDING -> "\uD83D\uDD32 " // 🔲
-            CommandStatus.WARNED -> "⚠️"
-            CommandStatus.SKIPPED -> "⚪️"
         }
     }
 
@@ -246,4 +249,96 @@ class AnsiResultView(
     }
 
     data class Frame(val timestamp: Long, val content: String)
+}
+
+internal fun status(status: CommandStatus): String {
+    return when (status) {
+        CommandStatus.COMPLETED -> "✅ "
+        CommandStatus.FAILED -> "❌ "
+        CommandStatus.RUNNING -> "⏳ "
+        CommandStatus.PENDING -> "\uD83D\uDD32 " // 🔲
+        CommandStatus.WARNED -> "⚠️ "
+        CommandStatus.SKIPPED -> "⚪️ "
+    }
+}
+
+// Helper launcher to play around with presentation
+fun main() {
+    val view = AnsiResultView("> Press [ENTER] to restart the Flow\n")
+
+    view.setState(
+        UiState.Running(
+            flowName = "Flow for playing around",
+            device = Device.Connected("device", "description", Platform.ANDROID),
+            onFlowStartCommands = listOf(),
+            onFlowCompleteCommands = listOf(),
+            commands = listOf(
+                CommandState(
+                    command = MaestroCommand(launchAppCommand = LaunchAppCommand("com.example.example")),
+                    status = CommandStatus.COMPLETED,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                ),
+                CommandState(
+                    command = MaestroCommand(
+                        assertWithAICommand = AssertWithAICommand(
+                            assertion = "There are no bananas visible",
+                            optional = true
+                        ),
+                    ),
+                    status = CommandStatus.WARNED,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                    insight = Insight(
+                        message = """
+                        |Assertion is false: There are no bananas visible
+                        |Reasoning: The screen shows a login screen and no images of bananas are present.
+                        """.trimMargin(),
+                        level = Insight.Level.WARNING,
+                    ),
+                ),
+                CommandState(
+                    command = MaestroCommand(
+                        tapOnElement = TapOnElementCommand(
+                            selector = ElementSelector("id", "login")
+                        ),
+                    ),
+                    status = CommandStatus.SKIPPED,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                ),
+                CommandState(
+                    command = MaestroCommand(
+                        tapOnElement = TapOnElementCommand(
+                            selector = ElementSelector("id", "login"),
+                            label = "Use JS value: \${output.some_var}",
+                        ),
+                    ),
+                    status = CommandStatus.RUNNING,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                ),
+                CommandState(
+                    command = MaestroCommand(tapOnPointV2Command = TapOnPointV2Command(point = "50%, 25%")),
+                    status = CommandStatus.PENDING,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                ),
+                CommandState(
+                    command = MaestroCommand(tapOnPointV2Command = TapOnPointV2Command(point = "50%, 25%")),
+                    status = CommandStatus.FAILED,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                    insight = Insight("This is insight message", Insight.Level.NONE),
+                ),
+                CommandState(
+                    command = MaestroCommand(tapOnPointV2Command = TapOnPointV2Command(point = "50%, 25%")),
+                    status = CommandStatus.FAILED,
+                    subOnStartCommands = listOf(),
+                    subOnCompleteCommands = listOf(),
+                    insight = Insight("This is an error message", Insight.Level.INFO),
+                ),
+            )
+        )
+    )
 }
