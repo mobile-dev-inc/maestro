@@ -11,7 +11,7 @@ final class EventRecord: NSObject {
         case multiFinger = "Multi-Finger Touch Action"
     }
 
-    init(orientation: UIInterfaceOrientation, style: Style = .singeFinger) {
+    init(orientation: DeviceOrientation, style: Style = .singeFinger) {
         eventRecord = objc_lookUpClass("XCSynthesizedEventRecord")?.alloc()
             .perform(
                 NSSelectorFromString("initWithName:interfaceOrientation:"),
