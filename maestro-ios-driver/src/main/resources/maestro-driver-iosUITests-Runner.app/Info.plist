@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>22A380021</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>maestro-driver-iosUITests-Runner</string>
+	<key>CFBundleIdentifier</key>
+	<string>dev.mobile.maestro-driver-iosUITests.xctrunner</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>maestro-driver-iosUITests-Runner</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneSimulator</string>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string>22A317</string>
+	<key>DTPlatformName</key>
+	<string>iphonesimulator</string>
+	<key>DTPlatformVersion</key>
+	<string>18.0</string>
+	<key>DTSDKBuild</key>
+	<string>22A317</string>
+	<key>DTSDKName</key>
+	<string>iphonesimulator18.0.internal</string>
+	<key>DTXcode</key>
+	<string>1600</string>
+	<key>DTXcodeBuild</key>
+	<string>16A231a</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>MinimumOSVersion</key>
+	<string>13.0</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSLocationDefaultAccuracyReduced</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSSensorKitPrivacyPolicyURL</key>
+	<string>https:\/\/www.apple.com/legal/privacy/en-ww/</string>
+	<key>NSSensorKitUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSSensorKitUsageDetail</key>
+	<dict>
+		<key>SRSensorUsageAmbientLightSensor</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageAmbientLightSensor</string>
+		</dict>
+		<key>SRSensorUsageDeviceUsage</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageDeviceUsage</string>
+		</dict>
+		<key>SRSensorUsageECG</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageECG</string>
+		</dict>
+		<key>SRSensorUsageElevation</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageElevation</string>
+		</dict>
+		<key>SRSensorUsageFacialMetrics</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageFacialMetrics</string>
+		</dict>
+		<key>SRSensorUsageFallStatistics</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageFallStatistics</string>
+		</dict>
+		<key>SRSensorUsageHeartRate</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageHeartRate</string>
+		</dict>
+		<key>SRSensorUsageKeyboardMetrics</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageKeyboardMetrics</string>
+		</dict>
+		<key>SRSensorUsageMessageUsage</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageMessageUsage</string>
+		</dict>
+		<key>SRSensorUsageMotion</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageMotion</string>
+			<key>Required</key>
+			<true/>
+		</dict>
+		<key>SRSensorUsageMotionAlarms</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageMotionAlarms</string>
+		</dict>
+		<key>SRSensorUsageOdometer</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageOdometer</string>
+		</dict>
+		<key>SRSensorUsageOnWristDetailedState</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorIdentifierOnWristDetailedState</string>
+		</dict>
+		<key>SRSensorUsagePedometer</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsagePedometer</string>
+		</dict>
+		<key>SRSensorUsagePhoneUsage</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsagePhoneUsage</string>
+		</dict>
+		<key>SRSensorUsageSpeechMetrics</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageSpeechMetrics</string>
+		</dict>
+		<key>SRSensorUsageStrideCalibration</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageStrideCalibration</string>
+		</dict>
+		<key>SRSensorUsageVisits</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageVisits</string>
+		</dict>
+		<key>SRSensorUsageWristDetection</key>
+		<dict>
+			<key>Description</key>
+			<string>DESCRIPTION_SRSensorUsageWristDetection</string>
+		</dict>
+	</dict>
+	<key>NSSiriUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>NSVideoSubscriberAccountUsageDescription</key>
+	<string>Access is necessary for automated testing.</string>
+	<key>SBIsLaunchableDuringSetup</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>continuous</string>
+	</array>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>
