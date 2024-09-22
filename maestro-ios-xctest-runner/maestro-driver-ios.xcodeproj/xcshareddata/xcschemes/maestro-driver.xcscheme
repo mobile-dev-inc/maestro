@@ -35,8 +35,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "52049BF2293503A200807AA3"
-               BuildableName = "maestro-driver-iosUITests.xctest"
-               BlueprintName = "maestro-driver-iosUITests"
+               BuildableName = "maestro-driverUITests.xctest"
+               BlueprintName = "maestro-driverUITests"
                ReferencedContainer = "container:maestro-driver-ios.xcodeproj">
             </BuildableReference>
          </TestableReference>

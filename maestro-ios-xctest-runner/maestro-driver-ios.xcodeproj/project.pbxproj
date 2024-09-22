@@ -77,7 +77,7 @@
 		32ECCB27298044C200A1A0A0 /* TouchRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchRouteHandler.swift; sourceTree = "<group>"; };
 		44F995242C9D6F8800D15B50 /* maestro-driver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "maestro-driver.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52047F772A7A638E00BF982D /* StatusHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHandler.swift; sourceTree = "<group>"; };
-		52049BF3293503A200807AA3 /* maestro-driver-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maestro-driver-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		52049BF3293503A200807AA3 /* maestro-driverUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maestro-driverUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52049BF7293503A200807AA3 /* maestro_driver_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maestro_driver_iosUITests.swift; sourceTree = "<group>"; };
 		522785802A54410D008DBC0A /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		52E35D422A654F67001D97A8 /* RunningApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningApp.swift; sourceTree = "<group>"; };
@@ -158,7 +158,7 @@
 		52049BD42935039F00807AA3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				52049BF3293503A200807AA3 /* maestro-driver-iosUITests.xctest */,
+				52049BF3293503A200807AA3 /* maestro-driverUITests.xctest */,
 				44F995242C9D6F8800D15B50 /* maestro-driver.app */,
 			);
 			name = Products;
@@ -299,9 +299,9 @@
 			productReference = 44F995242C9D6F8800D15B50 /* maestro-driver.app */;
 			productType = "com.apple.product-type.application";
 		};
-		52049BF2293503A200807AA3 /* maestro-driver-iosUITests */ = {
+		52049BF2293503A200807AA3 /* maestro-driverUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 52049C03293503A200807AA3 /* Build configuration list for PBXNativeTarget "maestro-driver-iosUITests" */;
+			buildConfigurationList = 52049C03293503A200807AA3 /* Build configuration list for PBXNativeTarget "maestro-driverUITests" */;
 			buildPhases = (
 				52049BEF293503A200807AA3 /* Sources */,
 				52049BF0293503A200807AA3 /* Frameworks */,
@@ -312,12 +312,12 @@
 			dependencies = (
 				44F995332C9D6FB500D15B50 /* PBXTargetDependency */,
 			);
-			name = "maestro-driver-iosUITests";
+			name = "maestro-driverUITests";
 			packageProductDependencies = (
 				5279BFD52935ECE20056C609 /* FlyingFox */,
 			);
 			productName = "maestro-driver-iosUITests";
-			productReference = 52049BF3293503A200807AA3 /* maestro-driver-iosUITests.xctest */;
+			productReference = 52049BF3293503A200807AA3 /* maestro-driverUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -357,7 +357,7 @@
 			projectRoot = "";
 			targets = (
 				44F995232C9D6F8800D15B50 /* maestro-driver */,
-				52049BF2293503A200807AA3 /* maestro-driver-iosUITests */,
+				52049BF2293503A200807AA3 /* maestro-driverUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -716,7 +716,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		52049C03293503A200807AA3 /* Build configuration list for PBXNativeTarget "maestro-driver-iosUITests" */ = {
+		52049C03293503A200807AA3 /* Build configuration list for PBXNativeTarget "maestro-driverUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				52049C04293503A200807AA3 /* Debug */,
