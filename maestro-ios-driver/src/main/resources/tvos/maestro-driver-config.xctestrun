@@ -195,7 +195,7 @@
 					<key>BundleIdentifiersForCrashReportEmphasis</key>
 					<array>
 						<string>dev.mobile.maestro-driver</string>
-						<string>dev.mobile.maestro-driver-iosUITests</string>
+						<string>dev.mobile.maestro-driverUITests</string>
 					</array>
 					<key>ClangProfileDataDirectoryPath</key>
 					<string>__DERIVEDDATA__/Build/Intermediates.noindex/CodeCoverage/ProfileData</string>
@@ -235,7 +235,7 @@
 					<key>TestBundlePath</key>
 					<string>__TESTHOST__/PlugIns/maestro-driverUITests.xctest</string>
 					<key>TestHostBundleIdentifier</key>
-					<string>dev.mobile.maestro-driver-iosUITests.xctrunner</string>
+					<string>dev.mobile.maestro-driverUITests.xctrunner</string>
 					<key>TestHostPath</key>
 					<string>__TESTROOT__/Debug-appletvsimulator/maestro-driverUITests-Runner.app</string>
 					<key>TestLanguage</key>
