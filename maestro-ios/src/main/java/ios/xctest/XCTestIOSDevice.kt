@@ -1,6 +1,5 @@
 package ios.xctest
 
-import com.github.michaelbull.result.Result
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
 import ios.IOSDeviceErrors

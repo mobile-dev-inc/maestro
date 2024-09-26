@@ -1,12 +1,18 @@
 package xcuitest.installer
 
+import com.github.michaelbull.retry.policy.binaryExponentialBackoff
+import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.retryIf
 import maestro.utils.MaestroTimer
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
+import com.github.michaelbull.retry.retry
 import okio.sink
 import okio.source
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import org.rauschig.jarchivelib.ArchiverFactory
 import org.slf4j.LoggerFactory
@@ -33,6 +39,9 @@ class LocalXCTestInstaller(
      */
     private val useXcodeTestRunner = !System.getenv("USE_XCODE_TEST_RUNNER").isNullOrEmpty()
     private val tempDir = "${System.getenv("TMPDIR")}/$deviceId"
+    private val retryException = retryIf<Throwable> {
+        reason is RetryDriverInstallationAction
+    }
 
     private var xcTestProcess: Process? = null
 
@@ -90,23 +99,28 @@ class LocalXCTestInstaller(
 
         uninstall()
 
-        repeat(3) { i ->
-            logger.info("[Start] Install XCUITest runner on $deviceId")
-            startXCTestRunner()
-            logger.info("[Done] Install XCUITest runner on $deviceId")
+        val result = runBlocking {
+            retry(limitAttempts(5) +  retryException + binaryExponentialBackoff(base = 50L, max = 5000L)) {
+                logger.info("[Start] Install XCUITest runner on $deviceId")
+                startXCTestRunner()
+                logger.info("[Done] Install XCUITest runner on $deviceId")
 
-            logger.info("[Start] Ensure XCUITest runner is running on $deviceId")
-            if (ensureOpen()) {
-                logger.info("[Done] Ensure XCUITest runner is running on $deviceId")
-                return XCTestClient(host, defaultPort)
-            } else {
-                uninstall()
-                logger.info("[Failed] Ensure XCUITest runner is running on $deviceId")
-                logger.info("[Retry] Retrying setup() ${i}th time")
+                val isDriverAlive = isChannelAlive()
+
+                if (!isDriverAlive) {
+                    FileUtils.cleanDirectory(File(tempDir))
+                    uninstall()
+                    logger.info("Retrying installation of driver")
+                    throw RetryDriverInstallationAction("iOS driver not ready")
+                }
+
+                return@retry XCTestClient(host, defaultPort)
             }
         }
-        return null
+
+        return result
     }
+
 
     override fun isChannelAlive(): Boolean {
         val appAlive = XCRunnerCLIUtils.isAppAlive(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
@@ -133,19 +147,22 @@ class LocalXCTestInstaller(
                 .port(defaultPort)
         }
 
-        val url = xctestAPIBuilder("status")
-            .build()
-
-        val request = Request.Builder()
+        val url by lazy {
+            xctestAPIBuilder("status")
+                .build()
+        }
+        val request by lazy { Request.Builder()
             .get()
             .url(url)
             .build()
+        }
 
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(40, TimeUnit.SECONDS)
-            .readTimeout(100, TimeUnit.SECONDS)
-            .build()
-
+        val okHttpClient by lazy {
+            OkHttpClient.Builder()
+                .connectTimeout(40, TimeUnit.SECONDS)
+                .readTimeout(100, TimeUnit.SECONDS)
+                .build()
+        }
         val checkSuccessful = try {
             okHttpClient.newCall(request).execute().use {
                 logger.info("[Done] Perform XCUITest driver status check on $deviceId")
@@ -231,4 +248,6 @@ class LocalXCTestInstaller(
         private const val UI_TEST_HOST_PATH = "/maestro-driver-ios.zip"
         private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
     }
+
+    class RetryDriverInstallationAction(message: String, cause: Throwable? = null): Exception(message, cause)
 }

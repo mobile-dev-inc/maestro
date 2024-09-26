@@ -13,6 +13,9 @@ mavenPublishing {
 
 dependencies {
     implementation(project(":maestro-utils"))
+    implementation(libs.kotlinx.coroutines.core.jvm)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.commons.io)
 
     api(libs.square.okhttp)
     api(libs.square.okhttp.logs)
@@ -25,7 +28,6 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
-    implementation(libs.commons.io)
 }
 
 java {
