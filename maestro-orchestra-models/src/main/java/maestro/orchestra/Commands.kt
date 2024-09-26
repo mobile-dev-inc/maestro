@@ -37,7 +37,7 @@ sealed interface Command {
     fun visible(): Boolean = true
 
     val label: String?
-    
+
     val optional: Boolean
 }
 
@@ -857,6 +857,21 @@ data class WaitForAnimationToEndCommand(
 
     override fun description(): String {
         return label ?: "Wait for animation to end"
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return this
+    }
+}
+
+data class SleepCommand(
+    val time: Long?,
+    override val label: String? = null,
+    override val optional: Boolean = false,
+) : Command {
+
+    override fun description(): String {
+        return label ?: "Sleep for $time ms"
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {

@@ -295,6 +295,7 @@ class Orchestra(
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             is SetAirplaneModeCommand -> setAirplaneMode(command)
             is ToggleAirplaneModeCommand -> toggleAirplaneMode()
+            is SleepCommand -> sleepCommand(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -432,6 +433,11 @@ class Orchestra(
     private fun waitForAnimationToEndCommand(command: WaitForAnimationToEndCommand): Boolean {
         maestro.waitForAnimationToEnd(command.timeout)
 
+        return true
+    }
+
+    private fun sleepCommand(command: SleepCommand): Boolean {
+        maestro.sleep(command.time)
         return true
     }
 
