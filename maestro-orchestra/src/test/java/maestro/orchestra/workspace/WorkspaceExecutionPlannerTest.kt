@@ -258,7 +258,6 @@ internal class WorkspaceExecutionPlannerTest {
         assertThat(plan.flowsToRun).containsExactly(
             path("/workspaces/010_global_include_tags/flowA.yaml"),
             path("/workspaces/010_global_include_tags/flowA_subflow.yaml"),
-            path("/workspaces/010_global_include_tags/flowB.yaml"),
         )
     }
 
