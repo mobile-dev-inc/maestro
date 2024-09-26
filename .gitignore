@@ -1,4 +1,5 @@
 .DS_Store
+.idea/
 
 # Ignore Gradle project-specific cache directory
 .gradle
