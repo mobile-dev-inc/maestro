@@ -2,6 +2,14 @@
 
 Maestro is the easiest way to automate UI testing for your mobile app.
 
+> [!NOTE]
+>
+> **Full documentation for Maestro can be found at [maestro.mobile.dev](https://maestro.mobile.dev)**
+>
+> Since this is forked REPO, to install this maestro, please use
+>
+> `curl -Ls "https://raw.githubusercontent.com/rasyid7/maestro/main/scripts/install.sh" | bash`
+
 <img src="https://user-images.githubusercontent.com/847683/187275009-ddbdf963-ce1d-4e07-ac08-b10f145e8894.gif" />
 
 ## Why Maestro?
