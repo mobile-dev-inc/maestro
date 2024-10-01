@@ -118,9 +118,7 @@ class IOSDriver(
                 iosDevice.pressKey(name)
             }
 
-            buttonNameMap[code]?.let { name ->
-                iosDevice.pressButton(name)
-            }
+            iosDevice.pressButton(code.description)
         }
     }
 

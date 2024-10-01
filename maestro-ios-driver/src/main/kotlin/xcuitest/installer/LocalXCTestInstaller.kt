@@ -10,6 +10,7 @@ import okio.source
 import org.apache.commons.io.FileUtils
 import org.rauschig.jarchivelib.ArchiverFactory
 import org.slf4j.LoggerFactory
+import util.LocalSimulatorUtils
 import util.XCRunnerCLIUtils
 import xcuitest.XCTestClient
 import java.io.File
@@ -159,16 +160,32 @@ class LocalXCTestInstaller(
         return checkSuccessful
     }
 
+    private fun isTV(deviceId: String): Boolean {
+        val list = LocalSimulatorUtils.list()
+        for (entry in list.devices.entries) {
+            for (device in entry.value) {
+                if (device.udid != deviceId) continue
+                if (device.deviceTypeIdentifier == null) continue
+                logger.trace("Device is an AppleTV")
+                return device.deviceTypeIdentifier.contains("Apple-TV")
+            }
+        }
+
+        return false
+    }
+
     private fun startXCTestRunner() {
         val processOutput = ProcessBuilder(listOf("xcrun", "simctl", "spawn", deviceId, "launchctl", "list"))
             .start()
             .inputStream.source().buffer().readUtf8()
             .trim()
 
+        val isTV = isTV(deviceId)
+
         logger.info("[Start] Writing xctest run file")
         val tempDir = File(tempDir).apply { mkdir() }
-        val xctestRunFile = File("$tempDir/maestro-driver-ios-config.xctestrun")
-        writeFileToDestination(XCTEST_RUN_PATH, xctestRunFile)
+        val xctestRunFile = File("${tempDir}/maestro-driver-config.xctestrun")
+        writeFileToDestination(XCTEST_RUN_PATH, xctestRunFile, isTV)
         logger.info("[Done] Writing xctest run file")
 
         if (processOutput.contains(UI_TEST_RUNNER_APP_BUNDLE_ID)) {
@@ -177,13 +194,13 @@ class LocalXCTestInstaller(
         } else {
             logger.info("Not able to find ui test runner app running, going to install now")
 
-            logger.info("[Start] Writing maestro-driver-iosUITests-Runner app")
-            extractZipToApp("maestro-driver-iosUITests-Runner", UI_TEST_RUNNER_PATH)
-            logger.info("[Done] Writing maestro-driver-iosUITests-Runner app")
+            logger.info("[Start] Writing maestro-driverUITests-Runner app")
+            extractZipToApp("maestro-driverUITests-Runner", UI_TEST_RUNNER_PATH, isTV)
+            logger.info("[Done] Writing maestro-driverUITests-Runner app")
 
-            logger.info("[Start] Writing maestro-driver-ios app")
-            extractZipToApp("maestro-driver-ios", UI_TEST_HOST_PATH)
-            logger.info("[Done] Writing maestro-driver-ios app")
+            logger.info("[Start] Writing maestro-driver app")
+            extractZipToApp("maestro-driver", UI_TEST_HOST_PATH, isTV)
+            logger.info("[Done] Writing maestro-driver app")
         }
 
         logger.info("[Start] Running XcUITest with `xcodebuild test-without-building`")
@@ -207,18 +224,25 @@ class LocalXCTestInstaller(
         logger.info("[Done] Cleaning up the ui test runner files")
     }
 
-    private fun extractZipToApp(appFileName: String, srcAppPath: String) {
-        val appFile = File("$tempDir/Debug-iphonesimulator").apply { mkdir() }
+    private fun extractZipToApp(appFileName: String, srcAppPath: String, isTV: Boolean) {
+        val appFile = when(isTV) {
+            true -> File("$tempDir/Debug-appletvsimulator").apply { mkdir() }
+            false -> File("$tempDir/Debug-iphonesimulator").apply { mkdir() }
+        }
         val appZip = File("$tempDir/$appFileName.zip")
 
-        writeFileToDestination(srcAppPath, appZip)
+        writeFileToDestination(srcAppPath, appZip, isTV)
         ArchiverFactory.createArchiver(appZip).apply {
             extract(appZip, appFile)
         }
     }
 
-    private fun writeFileToDestination(srcPath: String, destFile: File) {
-        LocalXCTestInstaller::class.java.getResourceAsStream(srcPath)?.let {
+    private fun writeFileToDestination(srcPath: String, destFile: File, isTV: Boolean) {
+        val prefix = when (isTV) {
+            true -> "/tvos/"
+            false -> "/ios/"
+        }
+        LocalXCTestInstaller::class.java.getResourceAsStream(prefix + srcPath)?.let {
             val bufferedSink = destFile.sink().buffer()
             bufferedSink.writeAll(it.source())
             bufferedSink.flush()
@@ -226,9 +250,9 @@ class LocalXCTestInstaller(
     }
 
     companion object {
-        private const val UI_TEST_RUNNER_PATH = "/maestro-driver-iosUITests-Runner.zip"
-        private const val XCTEST_RUN_PATH = "/maestro-driver-ios-config.xctestrun"
-        private const val UI_TEST_HOST_PATH = "/maestro-driver-ios.zip"
-        private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
+        private const val UI_TEST_RUNNER_PATH = "maestro-driverUITests-Runner.zip"
+        private const val XCTEST_RUN_PATH = "maestro-driver-config.xctestrun"
+        private const val UI_TEST_HOST_PATH = "maestro-driver.zip"
+        private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driverUITests.xctrunner"
     }
 }

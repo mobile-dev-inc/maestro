@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":maestro-utils"))
 
     api(libs.square.okhttp)
+    api(libs.google.gson)
     api(libs.square.okhttp.logs)
     api(libs.jackson.module.kotlin)
     api(libs.jarchivelib)
