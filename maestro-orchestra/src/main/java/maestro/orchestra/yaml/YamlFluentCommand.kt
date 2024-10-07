@@ -91,7 +91,7 @@ data class YamlFluentCommand(
                 MaestroCommand(
                     AssertConditionCommand(
                         condition = Condition(
-                            visible = toElementSelector(assertVisible),
+                            visible = toElementSelector(assertVisible, (assertVisible as? YamlElementSelector)?.optional),
                         ),
                         label = (assertVisible as? YamlElementSelector)?.label,
                         optional = (assertVisible as? YamlElementSelector)?.optional ?: false,
@@ -102,7 +102,7 @@ data class YamlFluentCommand(
                 MaestroCommand(
                     AssertConditionCommand(
                         condition = Condition(
-                            notVisible = toElementSelector(assertNotVisible),
+                            notVisible = toElementSelector(assertNotVisible, if (assertNotVisible is YamlElementSelector) assertNotVisible.optional else null),
                         ),
                         label = (assertNotVisible as? YamlElementSelector)?.label,
                         optional = (assertNotVisible as? YamlElementSelector)?.optional ?: false,
@@ -417,8 +417,8 @@ data class YamlFluentCommand(
         }
 
         val condition = Condition(
-            visible = command.visible?.let { toElementSelector(it) },
-            notVisible = command.notVisible?.let { toElementSelector(it) },
+            visible = command.visible?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            notVisible = command.notVisible?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
         )
 
         return MaestroCommand(
@@ -484,7 +484,7 @@ data class YamlFluentCommand(
         } else {
             MaestroCommand(
                 command = TapOnElementCommand(
-                    selector = toElementSelector(tapOn),
+                    selector = toElementSelector(tapOn, optional),
                     retryIfNoChange = retryIfNoChange,
                     waitUntilVisible = waitUntilVisible,
                     longPress = longPress,
@@ -539,7 +539,7 @@ data class YamlFluentCommand(
         return MaestroCommand(
             swipeCommand = SwipeCommand(
                 direction = swipeElement.direction,
-                elementSelector = toElementSelector(swipeElement.from),
+                elementSelector = toElementSelector(swipeElement.from, swipeElement.optional),
                 duration = swipeElement.duration,
                 label = swipeElement.label,
                 optional = swipeElement.optional,
@@ -547,19 +547,19 @@ data class YamlFluentCommand(
         )
     }
 
-    private fun toElementSelector(selectorUnion: YamlElementSelectorUnion): ElementSelector {
+    private fun toElementSelector(selectorUnion: YamlElementSelectorUnion, optional: Boolean?): ElementSelector {
         return if (selectorUnion is StringElementSelector) {
             ElementSelector(
                 textRegex = selectorUnion.value,
             )
         } else if (selectorUnion is YamlElementSelector) {
-            toElementSelector(selectorUnion)
+            toElementSelector(selectorUnion, optional)
         } else {
             throw IllegalStateException("Unknown selector type: $selectorUnion")
         }
     }
 
-    private fun toElementSelector(selector: YamlElementSelector): ElementSelector {
+    private fun toElementSelector(selector: YamlElementSelector, optional: Boolean? = false): ElementSelector {
         val size = if (selector.width != null || selector.height != null) {
             ElementSelector.SizeSelector(
                 width = selector.width,
@@ -574,12 +574,12 @@ data class YamlFluentCommand(
             textRegex = selector.text,
             idRegex = selector.id,
             size = size,
-            below = selector.below?.let { toElementSelector(it) },
-            above = selector.above?.let { toElementSelector(it) },
-            leftOf = selector.leftOf?.let { toElementSelector(it) },
-            rightOf = selector.rightOf?.let { toElementSelector(it) },
-            containsChild = selector.containsChild?.let { toElementSelector(it) },
-            containsDescendants = selector.containsDescendants?.map { toElementSelector(it) },
+            below = selector.below?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            above = selector.above?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            leftOf = selector.leftOf?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            rightOf = selector.rightOf?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            containsChild = selector.containsChild?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            containsDescendants = selector.containsDescendants?.map { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
             traits = selector.traits
                 ?.split(" ")
                 ?.map { ElementTrait.valueOf(it.replace('-', '_').uppercase()) },
@@ -587,8 +587,9 @@ data class YamlFluentCommand(
             enabled = selector.enabled,
             selected = selector.selected,
             checked = selector.checked,
+            optional = optional ?: false,
             focused = selector.focused,
-            childOf = selector.childOf?.let { toElementSelector(it) }
+            childOf = selector.childOf?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) }
         )
     }
 
@@ -598,13 +599,13 @@ data class YamlFluentCommand(
         return if (copyText is StringElementSelector) {
             MaestroCommand(
                 CopyTextFromCommand(
-                    selector = toElementSelector(copyText)
+                    selector = toElementSelector(copyText, null)
                 )
             )
         } else {
             MaestroCommand(
                 CopyTextFromCommand(
-                    selector = toElementSelector(copyText),
+                    selector = toElementSelector(copyText, (copyText as? YamlElementSelector)?.optional),
                     label = (copyText as? YamlElementSelector)?.label,
                     optional = (copyText as? YamlElementSelector)?.optional ?: false
                 )
@@ -616,7 +617,7 @@ data class YamlFluentCommand(
         val visibility = if (yaml.visibilityPercentage < 0) 0 else if (yaml.visibilityPercentage > 100) 100 else yaml.visibilityPercentage
         return MaestroCommand(
             ScrollUntilVisibleCommand(
-                selector = toElementSelector(yaml.element),
+                selector = toElementSelector(yaml.element, if (yaml.element is YamlElementSelector) yaml.element.optional else null),
                 direction = yaml.direction,
                 timeout = yaml.timeout,
                 scrollDuration = yaml.speed,
@@ -631,8 +632,8 @@ data class YamlFluentCommand(
     private fun YamlCondition.toCondition(): Condition {
         return Condition(
             platform = platform,
-            visible = visible?.let { toElementSelector(it) },
-            notVisible = notVisible?.let { toElementSelector(it) },
+            visible = visible?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
+            notVisible = notVisible?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) },
             scriptCondition = `true`?.trim(),
             label = label
         )
