@@ -34,6 +34,7 @@ data class ElementSelector(
     val containsDescendants: List<ElementSelector>? = null,
     val traits: List<ElementTrait>? = null,
     val index: String? = null,
+    val optional: Boolean = false,
     val enabled: Boolean? = null,
     val selected: Boolean? = null,
     val checked: Boolean? = null,

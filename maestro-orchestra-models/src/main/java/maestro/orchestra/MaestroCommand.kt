@@ -111,6 +111,18 @@ data class MaestroCommand(
         toggleAirplaneModeCommand = command as? ToggleAirplaneModeCommand,
     )
 
+    fun elementSelector(): ElementSelector? {
+        return when {
+            tapOnElement?.selector != null -> tapOnElement.selector
+            swipeCommand?.elementSelector != null -> swipeCommand.elementSelector
+            copyTextCommand?.selector != null -> copyTextCommand.selector
+            assertConditionCommand?.condition?.visible != null -> assertConditionCommand.condition.visible
+            assertConditionCommand?.condition?.notVisible != null -> assertConditionCommand.condition.notVisible
+            scrollUntilVisible?.selector != null -> scrollUntilVisible.selector
+            else -> null
+        }
+    }
+
     fun asCommand(): Command? = when {
         tapOnElement != null -> tapOnElement
         tapOnPoint != null -> tapOnPoint
