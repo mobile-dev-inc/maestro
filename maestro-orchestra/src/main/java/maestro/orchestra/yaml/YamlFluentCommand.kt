@@ -539,7 +539,7 @@ data class YamlFluentCommand(
         return MaestroCommand(
             swipeCommand = SwipeCommand(
                 direction = swipeElement.direction,
-                elementSelector = toElementSelector(swipeElement.from, swipeElement.optional),
+                elementSelector = toElementSelector(swipeElement.from, if (swipeElement.from is YamlElementSelector) swipeElement.from.optional else null),
                 duration = swipeElement.duration,
                 label = swipeElement.label,
                 optional = swipeElement.optional,
@@ -587,7 +587,7 @@ data class YamlFluentCommand(
             enabled = selector.enabled,
             selected = selector.selected,
             checked = selector.checked,
-            optional = optional ?: false,
+            optional = selector.optional ?: false,
             focused = selector.focused,
             childOf = selector.childOf?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) }
         )
