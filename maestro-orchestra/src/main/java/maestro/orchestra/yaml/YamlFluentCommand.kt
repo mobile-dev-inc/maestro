@@ -551,6 +551,7 @@ data class YamlFluentCommand(
         return if (selectorUnion is StringElementSelector) {
             ElementSelector(
                 textRegex = selectorUnion.value,
+                optional = optional ?: false
             )
         } else if (selectorUnion is YamlElementSelector) {
             toElementSelector(selectorUnion, optional)
@@ -587,7 +588,7 @@ data class YamlFluentCommand(
             enabled = selector.enabled,
             selected = selector.selected,
             checked = selector.checked,
-            optional = selector.optional ?: false,
+            optional = selector.optional ?: optional ?: false,
             focused = selector.focused,
             childOf = selector.childOf?.let { toElementSelector(it, if (it is YamlElementSelector) it.optional else null) }
         )
