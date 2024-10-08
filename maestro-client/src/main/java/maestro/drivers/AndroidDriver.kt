@@ -231,6 +231,7 @@ class AndroidDriver(
         }
 
         shell("pm clear $appId")
+        shell("pm reset-app-links --user 0 $appId")
     }
 
     override fun clearKeychain() {
@@ -577,6 +578,14 @@ class AndroidDriver(
         waitForAppToSettle(null, null)
         // Welcome to Chrome screen "Add account to device"
         filterById("$chrome:id/signin_fre_dismiss_button")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null, null)
+        // Ad privacy feature
+        filterById("$chrome:id/more_button")?.let { tap(it.bounds.center()) }
+        filterById("$chrome:id/no_button")?.let { tap(it.bounds.center()) }
+        waitForAppToSettle(null, null)
+        // Other ad privacy feature
+        filterById("$chrome:id/more_button")?.let { tap(it.bounds.center()) }
+        filterById("$chrome:id/ack_button")?.let { tap(it.bounds.center()) }
         waitForAppToSettle(null, null)
         // Turn on Sync screen
         filterById("$chrome:id/negative_button")?.let { tap(it.bounds.center()) }
