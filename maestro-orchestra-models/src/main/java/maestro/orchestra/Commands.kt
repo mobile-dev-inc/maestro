@@ -603,6 +603,7 @@ data class EraseTextCommand(
 
 data class TakeScreenshotCommand(
     val path: String,
+    val targetComponentId: String? = null,
     override val label: String? = null,
     override val optional: Boolean = false,
 ) : Command {
