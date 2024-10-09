@@ -609,7 +609,11 @@ data class TakeScreenshotCommand(
 ) : Command {
 
     override fun description(): String {
-        return label ?: "Take screenshot $path"
+        return label ?: if (targetComponentId != null) {
+            "Take screenshot $path, cropped on component with id $targetComponentId"
+        } else {
+            "Take screenshot $path"
+        }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): TakeScreenshotCommand {
