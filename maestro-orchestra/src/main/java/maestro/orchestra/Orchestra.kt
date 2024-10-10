@@ -19,6 +19,8 @@
 
 package maestro.orchestra
 
+import com.github.romankh3.image.comparison.ImageComparison
+import com.github.romankh3.image.comparison.model.ImageComparisonState
 import kotlinx.coroutines.runBlocking
 import maestro.*
 import maestro.Filters.asFilter
@@ -46,8 +48,15 @@ import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.sink
+import java.awt.image.BufferedImage
 import java.io.File
+import java.io.IOException
 import java.lang.Long.max
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.imageio.ImageIO
 
 // TODO(bartkepacia): Use this in onCommandGeneratedOutput.
 //  Caveat:
@@ -267,6 +276,7 @@ class Orchestra(
             is PasteTextCommand -> pasteText()
             is SwipeCommand -> swipeCommand(command)
             is AssertCommand -> assertCommand(command)
+            is AssertVisualCommand -> assertVisualCommand(command)
             is AssertConditionCommand -> assertConditionCommand(command)
             is AssertNoDefectsWithAICommand -> assertNoDefectsWithAICommand(command)
             is AssertWithAICommand -> assertWithAICommand(command)
@@ -405,6 +415,51 @@ class Orchestra(
 
         false
     }
+
+    private fun assertVisualCommand(command: AssertVisualCommand): Boolean {
+        val baseline = command.baseline + ".png"
+        val thresholdDifferencePercentage = (100 - command.thresholdPercentage).toDouble()
+
+        val screenshotsDir = File(".maestro/visual_regression").apply { mkdirs() }
+
+        val actual = File(screenshotsDir, baseline)
+
+        val expected = File
+            .createTempFile("screenshot-${System.currentTimeMillis()}", ".png")
+            .also { it.deleteOnExit() }
+
+        maestro.takeScreenshot(expected.sink(), false)
+
+        if (!actual.exists()) {
+            expected.copyTo(actual, overwrite = true)
+            return true
+        }
+
+        val photoNow: BufferedImage = ImageIO.read(expected)
+        val oldPhoto: BufferedImage = ImageIO.read(actual)
+        val failedRegressionDir = File(".maestro/failed_visual_regression").apply { mkdirs() }
+        val regressionFailedFile = File(failedRegressionDir, baseline)
+        val comparison =
+            ImageComparison(photoNow, oldPhoto, regressionFailedFile)
+
+        comparison.apply {
+            allowingPercentOfDifferentPixels = thresholdDifferencePercentage
+            rectangleLineWidth = 10
+            pixelToleranceLevel = 50.00
+            minimalRectangleSize = 40
+        }
+
+        val comparisonState = comparison.compareImages()
+
+        if (ImageComparisonState.MISMATCH === comparisonState.imageComparisonState) {
+            throw MaestroException.AssertionFailure(
+                message = "Comparison error: ${command.description()} - threshold not met, current: ${100 - comparisonState.differencePercent}",
+                hierarchyRoot = maestro.viewHierarchy().root,
+            )
+        }
+        return true
+    }
+
 
     private fun evalScriptCommand(command: EvalScriptCommand): Boolean {
         command.scriptString.evaluateScripts(jsEngine)
