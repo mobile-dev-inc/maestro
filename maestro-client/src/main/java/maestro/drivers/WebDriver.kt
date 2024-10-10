@@ -403,6 +403,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         TODO("Not yet implemented")
     }
 
+    override fun installApp(path: String) {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
         private const val RETRY_FETCHING_CONTENT_DESCRIPTION = 10
