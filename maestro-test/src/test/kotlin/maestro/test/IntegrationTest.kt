@@ -1,6 +1,8 @@
 package maestro.test
 
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.mockkObject
 import maestro.KeyCode
 import maestro.Maestro
 import maestro.MaestroException
@@ -30,6 +32,11 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 import maestro.orchestra.util.Env.withDefaultEnvVars
+import kotlin.reflect.KClass
+import maestro.js.GraalJsEngine
+import maestro.utils.Env
+import org.graalvm.polyglot.PolyglotException
+import org.junit.jupiter.api.Disabled
 
 class IntegrationTest {
 
@@ -2483,7 +2490,7 @@ class IntegrationTest {
         // When
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2634,7 +2641,7 @@ class IntegrationTest {
         // When
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2725,10 +2732,16 @@ class IntegrationTest {
         // given
         val commands = readCommands("102_graaljs")
         val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
 
         // when
         Maestro(driver).use {
-            orchestra(it).runFlow(commands)
+            orchestra(
+                maestro = it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
         }
 
         // then
@@ -2738,6 +2751,111 @@ class IntegrationTest {
                 Event.InputText("bar"),
             )
         )
+        assertThat(receivedLogs).containsExactly("Hello from GraalJS")
+    }
+
+    @Test
+    fun `Case 102 - GraalJs config from env`() {
+        // given
+        mockEnv(GraalJsEngine.USE_GRAALJS_ENV to "")
+        val commands = readCommands("102_graaljs_env")
+        val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                maestro = it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // then
+        driver.assertEvents(
+            listOf(
+                Event.InputText("foo"),
+                Event.InputText("bar"),
+            )
+        )
+        assertThat(receivedLogs).containsExactly("Hello from GraalJS")
+    }
+
+    @Test
+    fun `Case 102 - GraalJs dangerous config should fail by default`() {
+        // given
+        mockEnv()
+        val commands = readCommands("102_graaljs_dangerous")
+        val driver = driver { }
+        val thrownErrors = mutableListOf<KClass<out Throwable>>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                maestro = it,
+                onCommandFailed = { _, _, e ->
+                    thrownErrors += e::class
+                    Orchestra.ErrorResolution.CONTINUE
+                },
+            ).runFlow(commands)
+        }
+
+        // then
+        assertThat(thrownErrors).containsExactly(PolyglotException::class)
+    }
+
+    @Test
+    fun `Case 102 - GraalJs dangerous config fails when set from maestro`() {
+        // given
+        // an empty system env
+        mockEnv()
+        // and dangerous config set from within maestro (both command line args and flow files)
+        val commands = readCommands("102_graaljs_dangerous_env").withEnv(
+            mapOf(
+                GraalJsEngine.HOST_ACCESS_ENV to "1",
+                GraalJsEngine.CLASS_LOOKUP_ENV to "y",
+            )
+        )
+        val driver = driver { }
+        val thrownErrors = mutableListOf<KClass<out Throwable>>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                maestro = it,
+                onCommandFailed = { _, _, e ->
+                    thrownErrors += e::class
+                    Orchestra.ErrorResolution.CONTINUE
+                },
+            ).runFlow(commands)
+        }
+
+        // then
+        // the dangerous vars set from within maestro are not taken into account
+        assertThat(thrownErrors).containsExactly(PolyglotException::class)
+    }
+
+    @Test
+    fun `Case 102 - GraalJs dangerous config should work when enabled in system env`() {
+        // given
+        mockEnv(GraalJsEngine.HOST_ACCESS_ENV to "1", GraalJsEngine.CLASS_LOOKUP_ENV to "")
+        val commands = readCommands("102_graaljs_dangerous")
+        val driver = driver { }
+        val receivedLogs = mutableListOf<String>()
+
+        // when
+        Maestro(driver).use {
+            orchestra(
+                maestro = it,
+                onCommandMetadataUpdate = { _, metadata ->
+                    receivedLogs += metadata.logMessages
+                }
+            ).runFlow(commands)
+        }
+
+        // then
+        assertThat(receivedLogs).containsExactly("0.2")
     }
 
     @Test
@@ -2751,7 +2869,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2810,7 +2928,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2836,7 +2954,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2864,7 +2982,7 @@ class IntegrationTest {
         // when
         Maestro(driver).use {
             orchestra(
-                it,
+                maestro = it,
                 onCommandMetadataUpdate = { _, metadata ->
                     receivedLogs += metadata.logMessages
                 }
@@ -2894,7 +3012,7 @@ class IntegrationTest {
         assertThrows<MaestroException.AssertionFailure> {
             val result = Maestro(driver).use {
                 orchestra(
-                    it,
+                    maestro = it,
                     onCommandMetadataUpdate = { _, metadata ->
                         receivedLogs += metadata.logMessages
                     }
@@ -2921,7 +3039,7 @@ class IntegrationTest {
         assertThrows<MaestroException.AssertionFailure> {
             val result = Maestro(driver).use {
                 orchestra(
-                    it,
+                    maestro = it,
                     onCommandMetadataUpdate = { _, metadata ->
                         receivedLogs += metadata.logMessages
                     }
@@ -3214,4 +3332,11 @@ class IntegrationTest {
             .withEnv(withEnv().withDefaultEnvVars(flowPath.toFile()))
     }
 
+    private fun mockEnv(vararg env: Pair<String, String?>) {
+        mockkObject(Env)
+        env.forEach {
+            every { Env.getSystemEnv(it.first) } returns it.second
+        }
+        every { Env.getSystemEnv() } returns env.toMap()
+    }
 }
