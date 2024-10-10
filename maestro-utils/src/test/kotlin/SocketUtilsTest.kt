@@ -1,4 +1,5 @@
 import maestro.utils.SocketUtils
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -55,7 +56,7 @@ class SocketUtilsTest {
             val ip = SocketUtils.localIp()
 
             assertNotNull(ip)
-            assertTrue(ip.startsWith("192"))
+            assertEquals(InetAddress.getLocalHost().hostAddress, ip)
         } finally {
             NetworkInterface::class.java.getDeclaredMethod("getNetworkInterfaces").apply {
                 isAccessible = true
