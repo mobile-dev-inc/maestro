@@ -836,7 +836,7 @@ class Orchestra(
             }
         }
 
-        maestro.inputText(command.text)
+        maestro.inputText(command.text, command.sensitive)
 
         return true
     }

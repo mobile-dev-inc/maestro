@@ -426,18 +426,37 @@ data class AssertWithAICommand(
 
 data class InputTextCommand(
     val text: String,
+    val sensitive: Boolean = false,
     override val label: String? = null,
     override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
-        return label ?: "Input text $text"
+        if (label != null) {
+            return label
+        }
+        val defaultLabelPrefix = "Input text "
+        if (sensitive) {
+            return defaultLabelPrefix + "".padEnd(text.length, '*')
+        } else {
+            return defaultLabelPrefix + text
+        }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): InputTextCommand {
         return copy(
             text = text.evaluateScripts(jsEngine)
         )
+    }
+
+    override fun toString(): String {
+        val thisText = if (sensitive) {
+            "".padEnd(text.length, '*')
+        } else {
+            text
+        }
+
+        return "InputTextCommand(text=$thisText, sensitive=$sensitive, label=$label, optional=$optional)"
     }
 }
 

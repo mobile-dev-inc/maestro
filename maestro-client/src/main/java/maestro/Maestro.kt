@@ -477,8 +477,13 @@ class Maestro(
         return driver.waitForAppToSettle(initialHierarchy, appId, waitToSettleTimeoutMs)
     }
 
-    fun inputText(text: String) {
-        LOGGER.info("Inputting text: $text")
+    fun inputText(text: String, sensitive: Boolean = false) {
+        LOGGER.info("Inputting text:".let {
+            if (sensitive)
+                "$it ${"".padEnd(text.length, '*')}"
+            else
+                "$it $text"
+        })
 
         driver.inputText(text)
         waitForAppToSettle()

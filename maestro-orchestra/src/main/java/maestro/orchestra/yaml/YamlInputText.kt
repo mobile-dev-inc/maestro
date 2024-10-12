@@ -5,6 +5,7 @@ import java.lang.UnsupportedOperationException
 
 data class YamlInputText(
     val text: String,
+    val sensitive: Boolean = false,
     val label: String? = null,
     val optional: Boolean = false,
 ) {
@@ -18,8 +19,10 @@ data class YamlInputText(
                 is String -> text
                 is Map<*, *> -> {
                     val input = text.getOrDefault("text", "") as String
+                    val sensitive = text.getOrDefault("sensitive", false) as Boolean
                     val label = text.getOrDefault("label", null) as String?
-                    return YamlInputText(input, label)
+                    val optional = text.getOrDefault("optional", false) as Boolean
+                    return YamlInputText(text = input, sensitive = sensitive, label = label, optional = optional)
                 }
                 is Int, is Long, is Char, is Boolean, is Float, is Double -> text.toString()
                 else -> throw UnsupportedOperationException("Cannot deserialize input text with data type ${text.javaClass}")

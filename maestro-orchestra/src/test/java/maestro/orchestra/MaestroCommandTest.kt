@@ -57,6 +57,19 @@ internal class MaestroCommandTest {
     }
 
     @Test
+    fun `description (sensitive text)`() {
+        // given
+        val maestroCommand = MaestroCommand(InputTextCommand("password", true))
+
+        // when
+        val description = maestroCommand.description()
+
+        // then
+        assertThat(description)
+            .isEqualTo("Input text ********")
+    }
+
+    @Test
     fun `toString (no commands)`() {
         // given
         val maestroCommand = MaestroCommand(null)

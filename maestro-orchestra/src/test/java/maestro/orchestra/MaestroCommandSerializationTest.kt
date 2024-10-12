@@ -266,6 +266,7 @@ internal class MaestroCommandSerializationTest {
             {
               "inputTextCommand" : {
                 "text" : "Hello, world!",
+                "sensitive" : false,
                 "optional" : false
               }
             }
