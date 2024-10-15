@@ -1,0 +1,24 @@
+appId: com.example.example
+name: Input text
+tags:
+    - android
+    - passing
+env:
+  INPUT: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+---
+- launchApp:
+    clearState: true
+- tapOn: Input Test
+- tapOn: Lorem Ipsum
+- evalScript: ${ output.start = Date.now() }
+- inputText: ${INPUT}
+- evalScript: ${ output.end = Date.now() }
+- evalScript: ${ output.duration = (output.end - output.start) / 1000 }
+- evalScript: ${ console.log("Input took " + output.duration + " seconds.") }
+- hideKeyboard
+- copyTextFrom: Lorem Ipsum
+- evalScript: ${ output.in = INPUT.split(" ") }
+- evalScript: ${ output.out = maestro.copiedText.split(" ") }
+- evalScript: ${ console.log('Differences found :', output.in.filter(x => !output.out.includes(x)), output.out.filter(x => !output.in.includes(x))) }
+- extendedWaitUntil:
+    visible: ${INPUT}
