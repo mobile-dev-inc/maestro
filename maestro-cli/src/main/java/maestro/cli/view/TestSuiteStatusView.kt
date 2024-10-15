@@ -131,7 +131,7 @@ object TestSuiteStatusView {
         return if (domain.contains("localhost")) {
             "http://localhost:3000/project/$projectId/maestro-tests/app/$appId"
         } else {
-            "https://copilot.mobile.dev/project/$projectId/maestro-tests/app/$appId"
+            "https://app.robintest.com/project/$projectId/maestro-tests/app/$appId"
         }
     }
 
