@@ -23,6 +23,7 @@ import maestro.cli.util.WorkspaceUtils
 import maestro.cli.view.ProgressBar
 import maestro.cli.view.TestSuiteStatusView
 import maestro.cli.view.TestSuiteStatusView.TestSuiteViewModel.Companion.toViewModel
+import maestro.cli.view.TestSuiteStatusView.robinUploadUrl
 import maestro.cli.view.TestSuiteStatusView.uploadUrl
 import maestro.cli.view.box
 import maestro.utils.TemporaryDirectory
@@ -135,7 +136,7 @@ class CloudInteractor(
                     println()
                     val project = requireNotNull(projectId)
                     val appId = response.appId
-                    val uploadUrl = uploadUrl(project, appId, client.domain)
+                    val uploadUrl = robinUploadUrl(project, appId, response.uploadId, client.domain)
                     val deviceMessage = if (response.deviceConfiguration != null) printDeviceInfo(response.deviceConfiguration) else ""
                     val appBinaryIdResponseId = if (appBinaryId != null) response.appBinaryId else null
                     return printMaestroCloudResponse(
