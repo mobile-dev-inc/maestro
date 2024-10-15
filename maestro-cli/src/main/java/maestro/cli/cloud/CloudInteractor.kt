@@ -138,7 +138,6 @@ class CloudInteractor(
                     val appId = response.appId
                     val uploadUrl = robinUploadUrl(project, appId, response.uploadId, client.domain)
                     val deviceMessage = if (response.deviceConfiguration != null) printDeviceInfo(response.deviceConfiguration) else ""
-                    val appBinaryIdResponseId = if (appBinaryId != null) response.appBinaryId else null
                     return printMaestroCloudResponse(
                         async,
                         authToken,
@@ -149,7 +148,7 @@ class CloudInteractor(
                         uploadUrl,
                         deviceMessage,
                         appId,
-                        appBinaryIdResponseId,
+                        response.appBinaryId,
                         response.uploadId,
                         projectId,
                     )
@@ -253,7 +252,7 @@ class CloudInteractor(
     private fun printDeviceInfo(deviceConfiguration: DeviceConfiguration): String {
         val platform = Platform.fromString(deviceConfiguration.platform)
 
-        val line1 = "Maestro Cloud device specs:\n* ${deviceConfiguration.displayInfo} - ${deviceConfiguration.deviceLocale}"
+        val line1 = "Robin device specs:\n* ${deviceConfiguration.displayInfo} - ${deviceConfiguration.deviceLocale}"
         val line2 = "To change OS version use this option: ${if (platform == Platform.IOS) "--ios-version=<version>" else "--android-api-level=<version>"}"
         val line3 = "To change device locale use this option: --device-locale=<device_locale>"
 
