@@ -603,14 +603,14 @@ data class EraseTextCommand(
 
 data class TakeScreenshotCommand(
     val path: String,
-    val targetComponentId: String? = null,
+    val cropOn: ElementSelector?,
     override val label: String? = null,
     override val optional: Boolean = false,
 ) : Command {
 
     override fun description(): String {
-        return label ?: if (targetComponentId != null) {
-            "Take screenshot $path, cropped on component with id $targetComponentId"
+        return label ?: if (cropOn != null) {
+            "Take screenshot $path, cropped to ${cropOn.description()}"
         } else {
             "Take screenshot $path"
         }
