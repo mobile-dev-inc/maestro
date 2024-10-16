@@ -17,5 +17,4 @@ internal class StringUtilsTest {
         // Then
         assertThat(regex.matches(input)).isTrue()
     }
-
 }
