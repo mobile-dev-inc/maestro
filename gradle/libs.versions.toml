@@ -35,6 +35,7 @@ jarchivelib = "1.2.0"
 junit = "5.10.2"
 kotlin = "1.8.22"
 kotlinResult = "1.1.18"
+kotlinRetry = "1.0.9"
 ktor = "2.3.6"
 mockk = "1.12.0"
 mozillaRhino = "1.7.14"
@@ -52,6 +53,7 @@ clikt = "4.2.2"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "coroutines" }
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html", version.ref = "kotlinx-html" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestJunit" }
@@ -88,7 +90,8 @@ jarchivelib = { module = "org.rauschig:jarchivelib", version.ref = "jarchivelib"
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
-kotlin-result = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlinResult" }
+kotlin-retry = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlinResult" }
+kotlin-result = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.ref = "kotlinRetry" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
