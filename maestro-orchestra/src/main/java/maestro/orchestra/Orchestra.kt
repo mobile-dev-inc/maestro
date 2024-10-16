@@ -46,8 +46,10 @@ import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.sink
+import java.awt.image.BufferedImage
 import java.io.File
 import java.lang.Long.max
+import javax.imageio.ImageIO
 
 // TODO(bartkepacia): Use this in onCommandGeneratedOutput.
 //  Caveat:
@@ -747,11 +749,16 @@ class Orchestra(
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
         val pathStr = command.path + ".png"
+        val cropped = command.cropOn?.let { findElement(it, optional = command.optional) }
         val file = screenshotsDir
             ?.let { File(it, pathStr) }
             ?: File(pathStr)
 
-        maestro.takeScreenshot(file, false)
+        if(cropped == null){
+            maestro.takeScreenshot(file.sink(), false)
+        }else{
+            maestro.takePartialScreenshot(sink = file.sink(), bounds = cropped.element.bounds, compressed = false)
+        }
 
         return false
     }
