@@ -42,6 +42,7 @@ data class YamlFluentCommand(
     val assertNotVisible: YamlElementSelectorUnion? = null,
     val assertTrue: YamlAssertTrue? = null,
     val assertNoDefectsWithAI: YamlAssertNoDefectsWithAI? = null,
+    val assertVisual: YamlAssertVisual? = null,
     val assertWithAI: YamlAssertWithAI? = null,
     val back: YamlActionBack? = null,
     val clearKeychain: YamlActionClearKeychain? = null,
@@ -134,6 +135,16 @@ data class YamlFluentCommand(
                         assertion = assertWithAI.assertion,
                         optional = assertWithAI.optional,
                         label = assertWithAI.label,
+                    )
+                )
+            )
+            assertVisual != null -> listOf(
+                MaestroCommand(
+                    AssertVisualCommand(
+                        baseline = assertVisual.baseline,
+                        thresholdPercentage = assertVisual.thresholdPercentage,
+                        optional = assertVisual.optional,
+                        label = assertVisual.label
                     )
                 )
             )
