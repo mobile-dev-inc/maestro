@@ -3,10 +3,12 @@ package maestro.orchestra.util
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import kotlin.random.Random
+import maestro.js.GraalJsEngine
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.DefineVariablesCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.MaestroConfig
+import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.util.Env.withDefaultEnvVars
 import maestro.orchestra.util.Env.withEnv
 import maestro.orchestra.util.Env.withInjectedShellEnvVars
@@ -60,4 +62,20 @@ class EnvTest {
 
         assertThat(withEnv).containsExactly(defineVariables, applyConfig)
     }
+
+    @Test
+    fun `evaluateScripts regex`() {
+        val engine = GraalJsEngine()
+        val inputs = listOf(
+            "${'$'}{console.log('Hello!')}",
+            "${'$'}{console.log('Hello Money! $')}",
+            "${'$'}{console.log('$')}",
+        )
+
+        val evaluated = inputs.map { it.evaluateScripts(engine) }
+
+        // "undefined" is the expected output when evaluating console.log successfully
+        assertThat(evaluated).containsExactly("undefined", "undefined", "undefined")
+    }
+
 }

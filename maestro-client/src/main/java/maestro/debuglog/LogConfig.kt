@@ -13,9 +13,11 @@ object LogConfig {
 
     private const val DEFAULT_FILE_LOG_PATTERN = "%d{HH:mm:ss.SSS} [%5level] %logger.%method: %msg%n"
     private const val DEFAULT_CONSOLE_LOG_PATTERN = "%highlight([%5level]) %msg%n"
+    private const val DEFAULT_LOG_LEVEL = "ALL"
 
     private val FILE_LOG_PATTERN: String = System.getenv("MAESTRO_CLI_LOG_PATTERN_FILE") ?: DEFAULT_FILE_LOG_PATTERN
     private val CONSOLE_LOG_PATTERN: String = System.getenv("MAESTRO_CLI_LOG_PATTERN_CONSOLE") ?: DEFAULT_CONSOLE_LOG_PATTERN
+    private val LOG_LEVEL: String = System.getenv("MAESTRO_CLI_LOG_LEVEL") ?: DEFAULT_LOG_LEVEL
 
     fun configure(logFileName: String, printToConsole: Boolean) {
         val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
@@ -27,7 +29,7 @@ object LogConfig {
             createAndAddConsoleAppender(loggerContext)
         }
 
-        loggerContext.getLogger("ROOT").level = Level.ALL
+        loggerContext.getLogger("ROOT").level = Level.toLevel(LOG_LEVEL, Level.ALL)
     }
 
     private fun createAndAddConsoleAppender(loggerContext: LoggerContext) {

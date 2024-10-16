@@ -8,7 +8,7 @@ import maestro.orchestra.MaestroCommand
 object Env {
 
     fun String.evaluateScripts(jsEngine: JsEngine): String {
-        val result = "(?<!\\\\)\\\$\\{([^\$]*)}".toRegex()
+        val result = "(?<!\\\\)\\\$\\{(.*?)}".toRegex()
             .replace(this) { match ->
                 val script = match.groups[1]?.value ?: ""
 
@@ -20,7 +20,7 @@ object Env {
             }
 
         return result
-            .replace("\\\\\\\$\\{([^\$]*)}".toRegex()) { match ->
+            .replace("\\\\\\\$\\{(.*?)}".toRegex()) { match ->
                 match.value.substringAfter('\\')
             }
     }

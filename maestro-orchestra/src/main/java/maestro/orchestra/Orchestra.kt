@@ -48,6 +48,7 @@ import okio.buffer
 import okio.sink
 import java.io.File
 import java.lang.Long.max
+import org.slf4j.LoggerFactory
 
 // TODO(bartkepacia): Use this in onCommandGeneratedOutput.
 //  Caveat:
@@ -169,6 +170,7 @@ class Orchestra(
                         command,
                         metadata.copy(logMessages = metadata.logMessages + msg)
                     )
+                    jsLogger.info(msg)
                 }
 
                 val evaluatedCommand = command.evaluateScripts(jsEngine)
@@ -1215,5 +1217,7 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+
+        private val jsLogger = LoggerFactory.getLogger("maestro.js.JsEngine.console.log")
     }
 }
