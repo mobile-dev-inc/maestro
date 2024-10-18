@@ -3100,7 +3100,25 @@ class IntegrationTest {
     }
 
     @Test
-    fun `Case 117 - Scroll until view is visible - with speed and timeout evaluate`() {
+    fun `Case 117 - Install app`() {
+        // Given
+        val commands = readCommands("116_install_app")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertHasEvent(Event.InstallApp)
+    }
+
+    @Test
+    fun `Case 118 - Scroll until view is visible - with speed and timeout evaluate`() {
         // Given
         val commands = readCommands("117_scroll_until_visible_speed")
         val expectedDuration = "601"
