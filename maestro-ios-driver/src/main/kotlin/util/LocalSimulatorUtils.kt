@@ -250,9 +250,6 @@ object LocalSimulatorUtils {
             logger.info("Reinstalling and launching $bundleId")
             uninstall(deviceId, bundleId)
             install(deviceId, tmpBundlePath)
-            launch(deviceId, bundleId, emptyList(), null)
-
-            ensureRunning(deviceId, bundleId)
             deleteFolderRecursively(tmpBundlePath.toFile())
             logger.info("App $bundleId reinstalled and launched")
         } else {
