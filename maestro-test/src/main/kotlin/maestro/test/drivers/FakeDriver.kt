@@ -81,7 +81,7 @@ class FakeDriver : Driver {
         )
     }
 
-    override fun setOrientation(orientation: String) {
+    override fun setOrientation(orientation: DeviceOrientation) {
         ensureOpen()
 
         events += Event.SetOrientation(orientation)
@@ -462,7 +462,7 @@ class FakeDriver : Driver {
         ) : Event()
 
         data class SetOrientation(
-            val orientation: String,
+            val orientation: DeviceOrientation,
         ) : Event()
 
         object TakeScreenshot : Event()

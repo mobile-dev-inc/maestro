@@ -601,7 +601,7 @@ class AndroidDriver(
         }
     }
 
-    override fun setOrientation(orientation: String) {
+    override fun setOrientation(orientation: DeviceOrientation) {
         // TODO(jmac) Implement and test
     }
 
