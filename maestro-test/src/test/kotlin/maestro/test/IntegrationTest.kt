@@ -3279,6 +3279,27 @@ class IntegrationTest {
       assertThat(action).isEqualTo(targetAction)
     }
 
+    @Test
+    fun `Case 122 - Set orientation`() {
+        // Given
+        val commands = readCommands("122_set_orientation")
+
+        val driver = driver {
+        }
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        driver.assertHasEvent(Event.SetOrientation("LANDSCAPE_LEFT"))
+        driver.assertHasEvent(Event.SetOrientation("LANDSCAPE_RIGHT"))
+        driver.assertHasEvent(Event.SetOrientation("PORTRAIT"))
+        driver.assertHasEvent(Event.SetOrientation("UPSIDE_DOWN"))
+        driver.assertHasEvent(Event.SetOrientation("LANDSCAPE"))
+    }
+
     private fun orchestra(
         maestro: Maestro,
     ) = Orchestra(

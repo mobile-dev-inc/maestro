@@ -416,6 +416,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
         )
     }
 
+    override fun setOrientation(orientation: String) {
+        // no-op for web
+    }
+
     override fun eraseText(charactersToErase: Int) {
         val driver = ensureOpen()
 
