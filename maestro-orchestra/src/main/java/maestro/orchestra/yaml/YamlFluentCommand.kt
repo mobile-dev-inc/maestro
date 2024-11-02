@@ -67,6 +67,7 @@ data class YamlFluentCommand(
     val clearState: YamlClearState? = null,
     val runFlow: YamlRunFlow? = null,
     val setLocation: YamlSetLocation? = null,
+    val setOrientation: YamlSetOrientation? = null,
     val repeat: YamlRepeatCommand? = null,
     val copyTextFrom: YamlElementSelectorUnion? = null,
     val runScript: YamlRunScript? = null,
@@ -203,6 +204,15 @@ data class YamlFluentCommand(
                         longitude = setLocation.longitude,
                         label = setLocation.label,
                         optional = setLocation.optional,
+                    )
+                )
+            )
+            setOrientation != null -> listOf(
+                MaestroCommand(
+                    SetOrientationCommand(
+                        orientation = setOrientation.orientation,
+                        label = setOrientation.label,
+                        optional = setOrientation.optional,
                     )
                 )
             )

@@ -601,6 +601,10 @@ class AndroidDriver(
         }
     }
 
+    override fun setOrientation(orientation: String) {
+        // TODO(jmac) Implement and test
+    }
+
     override fun eraseText(charactersToErase: Int) {
         runDeviceCall {
             blockingStubWithTimeout.eraseAllText(

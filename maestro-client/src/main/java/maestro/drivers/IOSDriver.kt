@@ -382,6 +382,12 @@ class IOSDriver(
         iosDevice.setLocation(latitude, longitude).expect {}
     }
 
+    override fun setOrientation(orientation: String) {
+        runDeviceCall {
+            iosDevice.setOrientation(orientation)
+        }
+    }
+
     override fun eraseText(charactersToErase: Int) {
         runDeviceCall { iosDevice.eraseText(charactersToErase) }
     }
