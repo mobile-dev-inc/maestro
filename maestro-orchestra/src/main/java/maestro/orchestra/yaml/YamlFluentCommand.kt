@@ -20,6 +20,7 @@
 package maestro.orchestra.yaml
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import maestro.DeviceOrientation
 import maestro.KeyCode
 import maestro.Point
 import maestro.TapRepeat
@@ -376,7 +377,7 @@ data class YamlFluentCommand(
             setOrientation != null -> listOf(
                 MaestroCommand(
                     SetOrientationCommand(
-                        orientation = setOrientation.orientation,
+                        orientation = DeviceOrientation.getByName(setOrientation.orientation) ?: throw SyntaxError("Unknown orientation: $setOrientation"),
                         label = setOrientation.label,
                         optional = setOrientation.optional,
                     )
