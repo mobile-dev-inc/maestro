@@ -275,6 +275,7 @@ class Service(
 
             for (i in 1..charactersToErase) {
                 uiDevice.pressDelete()
+                Thread.sleep(50) // Attempt to ensure perfect count of taps on emulators
             }
 
             responseObserver.onNext(eraseAllTextResponse { })
