@@ -1,0 +1,9 @@
+appId: com.example.example
+---
+- launchApp # For idempotence of sections
+
+- tapOn:
+    id: 'fabAddIcon'
+- copyTextFrom:
+    text: '\d+'
+- assertTrue: ${maestro.copiedText == '1'}
