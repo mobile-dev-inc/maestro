@@ -246,6 +246,8 @@ class Service(
             override fun onNext(value: MaestroAndroid.AddMediaRequest) {
                 if (outputStream == null) {
                     outputStream = MediaStorage.getOutputStream(
+                        InstrumentationRegistry.getInstrumentation()
+                            .context,
                         value.mediaName,
                         value.mediaExt
                     )

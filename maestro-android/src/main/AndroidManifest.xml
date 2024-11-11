@@ -11,6 +11,9 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:usesCleartextTraffic="true">
