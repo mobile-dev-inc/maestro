@@ -9,7 +9,8 @@ import java.io.InputStream
 import java.util.UUID
 import hierarchy.ViewHierarchy
 import maestro.utils.Insight
-import maestro.utils.Insights
+import maestro.utils.InsightsInterface
+import maestro.utils.NoopInsights
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -17,6 +18,7 @@ class LocalIOSDevice(
     override val deviceId: String?,
     private val xcTestDevice: XCTestIOSDevice,
     private val simctlIOSDevice: SimctlIOSDevice,
+    private val insights: InsightsInterface = NoopInsights
 ) : IOSDevice {
 
     private val executor by lazy { Executors.newSingleThreadScheduledExecutor() }
@@ -34,7 +36,7 @@ class LocalIOSDevice(
         val future = executor.schedule(
             {
                 if (isViewHierarchyInProgress) {
-                    Insights.report(
+                    insights.report(
                         Insight(
                             message = "Retrieving the hierarchy is taking longer than usual. This might be due to a " +
                                     "deep hierarchy in the current view. Please wait a bit more to complete the operation.",
