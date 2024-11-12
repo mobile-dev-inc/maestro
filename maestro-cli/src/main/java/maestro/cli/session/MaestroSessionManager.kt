@@ -28,7 +28,7 @@ import maestro.Maestro
 import maestro.cli.device.Device
 import maestro.cli.device.PickDeviceInteractor
 import maestro.cli.device.Platform
-import maestro.utils.Insights
+import maestro.utils.CliInsights
 import maestro.cli.util.ScreenReporter
 import maestro.drivers.AndroidDriver
 import maestro.drivers.IOSDriver
@@ -305,9 +305,9 @@ object MaestroSessionManager {
                 deviceId = deviceId,
                 xcTestDevice = xcTestDevice,
                 simctlIOSDevice = simctlIOSDevice,
-                insights = Insights
+                insights = CliInsights
             ),
-            insights = Insights
+            insights = CliInsights
         )
 
         return Maestro.ios(

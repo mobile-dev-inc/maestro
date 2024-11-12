@@ -33,7 +33,7 @@ import maestro.orchestra.CompositeCommand
 import maestro.orchestra.MaestroCommand
 import maestro.orchestra.Orchestra
 import maestro.orchestra.yaml.YamlCommandReader
-import maestro.utils.Insights
+import maestro.utils.CliInsights
 import org.slf4j.LoggerFactory
 import java.util.IdentityHashMap
 import maestro.cli.util.ScreenshotUtils
@@ -92,7 +92,7 @@ object MaestroCommandRunner {
 
         val orchestra = Orchestra(
             maestro = maestro,
-            insights = Insights,
+            insights = CliInsights,
             onCommandStart = { _, command ->
                 logger.info("${command.description()} RUNNING")
                 commandStatuses[command] = CommandStatus.RUNNING

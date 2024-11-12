@@ -1,6 +1,6 @@
 package maestro.utils
 
-interface InsightsInterface {
+interface Insights {
 
     fun report(insight: Insight)
 
@@ -9,7 +9,7 @@ interface InsightsInterface {
     fun unregisterListener(callback: (Insight) -> Unit)
 }
 
-object NoopInsights: InsightsInterface {
+object NoopInsights: Insights {
 
     override fun report(insight: Insight) {
         /* no-op */

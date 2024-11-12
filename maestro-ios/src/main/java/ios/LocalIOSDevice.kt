@@ -9,7 +9,7 @@ import java.io.InputStream
 import java.util.UUID
 import hierarchy.ViewHierarchy
 import maestro.utils.Insight
-import maestro.utils.InsightsInterface
+import maestro.utils.Insights
 import maestro.utils.NoopInsights
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -18,7 +18,7 @@ class LocalIOSDevice(
     override val deviceId: String?,
     private val xcTestDevice: XCTestIOSDevice,
     private val simctlIOSDevice: SimctlIOSDevice,
-    private val insights: InsightsInterface = NoopInsights
+    private val insights: Insights = NoopInsights
 ) : IOSDevice {
 
     private val executor by lazy { Executors.newSingleThreadScheduledExecutor() }

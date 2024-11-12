@@ -38,7 +38,7 @@ import maestro.orchestra.geo.Traveller
 import maestro.orchestra.util.Env.evaluateScripts
 import maestro.orchestra.yaml.YamlCommandReader
 import maestro.utils.Insight
-import maestro.utils.InsightsInterface
+import maestro.utils.Insights
 import maestro.utils.MaestroTimer
 import maestro.utils.NoopInsights
 import maestro.utils.StringUtils.toRegexSafe
@@ -77,7 +77,7 @@ class Orchestra(
     private val lookupTimeoutMs: Long = 17000L,
     private val optionalLookupTimeoutMs: Long = 7000L,
     private val httpClient: OkHttpClient? = null,
-    private val insights: InsightsInterface = NoopInsights,
+    private val insights: Insights = NoopInsights,
     private val onFlowStart: (List<MaestroCommand>) -> Unit = {},
     private val onCommandStart: (Int, MaestroCommand) -> Unit = { _, _ -> },
     private val onCommandComplete: (Int, MaestroCommand) -> Unit = { _, _ -> },

@@ -1,12 +1,12 @@
 package maestro.utils
 
-object Insights: InsightsInterface {
+object CliInsights: Insights {
 
     private var insight: Insight = Insight("", Insight.Level.NONE)
     private val listeners = mutableListOf<(Insight) -> Unit>()
 
     override fun report(insight: Insight) {
-        Insights.insight = insight
+        CliInsights.insight = insight
         listeners.forEach { it.invoke(insight) }
     }
 

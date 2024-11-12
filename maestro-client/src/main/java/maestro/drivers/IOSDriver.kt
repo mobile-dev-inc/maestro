@@ -40,7 +40,7 @@ import kotlin.collections.set
 
 class IOSDriver(
     private val iosDevice: IOSDevice,
-    private val insights: InsightsInterface = NoopInsights
+    private val insights: Insights = NoopInsights
 ) : Driver {
 
     private var appId: String? = null
