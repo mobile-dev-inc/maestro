@@ -41,3 +41,34 @@ To get started, take a look at [issues with the `good first issue` label][good f
 [good first issues]: https://github.com/mobile-dev-inc/maestro/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
 [blogpost]: https://blog.mobile.dev/introducing-maestro-painless-mobile-ui-automation-bee4992d13c1
 
+## Installation and Setup
+
+To get started with Maestro, follow these steps:
+
+### Prerequisites
+
+Before you can start using Maestro, ensure that you have the following installed:
+
+- **Java 8 or newer** – Maestro requires Java to run. You can download it from [Oracle's Java downloads page](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html).
+- **Android SDK** – For Android testing, ensure you have the Android SDK set up. You can download it from [here](https://developer.android.com/studio).
+- **Xcode** (for iOS testing) – To run tests on iOS, you'll need Xcode installed. Download it from the [Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12).
+
+### Installation
+
+1. **Clone the Repository**:  
+   Clone the Maestro repository to your local machine:
+   ```bash
+   git clone https://github.com/mobile-dev-inc/maestro.git
+   cd maestro
+### Install Dependencies:
+brew install gradle  # On macOS
+apt-get install gradle  # On Ubuntu
+
+### You can then build the project
+./gradlew build
+
+### Set Up Your Device
+adb devices
+
+### Run Tests
+./gradlew test
