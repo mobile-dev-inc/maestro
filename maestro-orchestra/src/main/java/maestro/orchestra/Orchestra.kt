@@ -212,8 +212,9 @@ class Orchestra(
                         ErrorResolution.FAIL -> return false
                         ErrorResolution.CONTINUE -> {} // Do nothing
                     }
+                } finally {
+                    insights.unregisterListener(callback)
                 }
-                insights.unregisterListener(callback)
             }
         return true
     }
