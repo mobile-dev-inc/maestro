@@ -47,7 +47,7 @@ tasks.withType<Jar> {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        create<MavenPublication>("myMavenPublication") {
             from(components["java"])
             groupId = "com.example"
             artifactId = "maestro"
