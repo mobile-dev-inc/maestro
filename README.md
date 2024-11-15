@@ -19,6 +19,7 @@ Build and Package
 
 To build and package the project, run the following commands:
 
+./gradlew build --stacktrace
 ./gradlew build
 ./gradlew jar
 
