@@ -210,7 +210,7 @@ class TestCommand : Callable<Int> {
 
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
-        val availableDevices = DeviceService.listConnectedDevices().map { it.instanceId }.toSet()
+        val availableDevices = DeviceService.listConnectedDevices(includeWeb = true).map { it.instanceId }.toSet()
         val deviceIds = getPassedOptionsDeviceIds()
             .filter { device ->
                 if (device !in availableDevices) {
