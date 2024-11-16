@@ -13,7 +13,6 @@ import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
 import okio.Sink
-import maestro.NamedSource
 import okio.buffer
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
@@ -30,8 +29,7 @@ import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
 import java.io.File
 import java.time.Duration
-import java.util.Random
-import java.util.UUID
+import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -219,7 +217,14 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
         val mouse = PointerInput(PointerInput.Kind.MOUSE, "default mouse")
         val actions = org.openqa.selenium.interactions.Sequence(mouse, 1)
-            .addAction(mouse.createPointerMove(Duration.ofMillis(400), PointerInput.Origin.viewport(), point.x, point.y - pixelsScrolled.toInt()))
+            .addAction(
+                mouse.createPointerMove(
+                    Duration.ofMillis(400),
+                    PointerInput.Origin.viewport(),
+                    point.x,
+                    point.y - pixelsScrolled.toInt()
+                )
+            )
 
         (driver as RemoteWebDriver).perform(listOf(actions))
 
@@ -252,11 +257,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun isKeyboardVisible(): Boolean {
-        TODO("Not yet implemented")
+        return false;
     }
 
     override fun swipe(start: Point, end: Point, durationMs: Long) {
-        // TODO validate implementation and ensure it works properly
         val driver = ensureOpen()
 
         val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
@@ -283,7 +287,6 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
-        // TODO validate implementation and ensure it works properly
         when (swipeDirection) {
             SwipeDirection.UP -> scroll("window.scrollY + Math.round(window.innerHeight / 2)", "window.scrollX")
             SwipeDirection.DOWN -> scroll("window.scrollY - Math.round(window.innerHeight / 2)", "window.scrollX")
@@ -357,11 +360,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun setProxy(host: String, port: Int) {
-        TODO("Not yet implemented")
+        // Do nothing
     }
 
     override fun resetProxy() {
-        TODO("Not yet implemented")
+        // Do nothing
     }
 
     override fun isShutdown(): Boolean {
@@ -396,11 +399,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun isAirplaneModeEnabled(): Boolean {
-        TODO("Not yet implemented")
+        return false;
     }
 
     override fun setAirplaneMode(enabled: Boolean) {
-        TODO("Not yet implemented")
+        // Do nothing
     }
 
     companion object {
