@@ -51,7 +51,7 @@ class IOSDriver(
     }
 
     override fun open() {
-        awaitLaunch()
+        iosDevice.open()
     }
 
     override fun close() {
@@ -457,20 +457,6 @@ class IOSDriver(
 
     private fun isScreenStatic(): Boolean {
         return runDeviceCall { iosDevice.isScreenStatic() }
-    }
-
-    private fun awaitLaunch() {
-        val startTime = System.currentTimeMillis()
-
-        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
-            runCatching {
-                iosDevice.open()
-                return
-            }
-            Thread.sleep(100)
-        }
-
-        throw IOSDriverTimeoutException("Maestro iOS driver did not start up in time")
     }
 
     private fun <T> runDeviceCall(call: () -> T): T {
