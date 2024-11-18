@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     api(libs.square.okio)
+    implementation(libs.micrometer.observation)
 
     testImplementation(libs.mockk)
     testImplementation(libs.junit.jupiter.api)
