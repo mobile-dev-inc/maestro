@@ -15,7 +15,10 @@ import java.util.concurrent.TimeUnit
 
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
-    private val httpInterceptor: HttpLoggingInterceptor? = null
+    private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.SECONDS)
+        .readTimeout(200, TimeUnit.SECONDS)
+        .build()
 ) {
     private val logger = LoggerFactory.getLogger(XCTestDriverClient::class.java)
 
@@ -31,7 +34,6 @@ class XCTestDriverClient(
         Runtime.getRuntime().addShutdownHook(Thread {
             isShuttingDown = true
         })
-        httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
     fun restartXCTestRunner() {
@@ -41,11 +43,6 @@ class XCTestDriverClient(
         logger.trace("XCTest Runner uninstalled, will install and start it")
         client = installer.start() ?: throw XCTestDriverUnreachable("Failed to start XCTest Driver")
     }
-
-    private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(1, TimeUnit.SECONDS)
-        .readTimeout(200, TimeUnit.SECONDS)
-        .build()
 
     class XCTestDriverUnreachable(message: String) : IOException(message)
 

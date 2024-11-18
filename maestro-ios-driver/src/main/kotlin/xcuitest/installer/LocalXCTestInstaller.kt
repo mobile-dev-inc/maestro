@@ -21,6 +21,10 @@ class LocalXCTestInstaller(
     private val host: String = "[::1]",
     private val enableXCTestOutputFileLogging: Boolean,
     private val defaultPort: Int,
+    private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.SECONDS)
+        .readTimeout(100, TimeUnit.SECONDS)
+        .build()
 ) : XCTestInstaller {
 
     private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
@@ -147,12 +151,6 @@ class LocalXCTestInstaller(
                 .build()
         }
 
-        val okHttpClient by lazy {
-            OkHttpClient.Builder()
-                .connectTimeout(1, TimeUnit.SECONDS)
-                .readTimeout(100, TimeUnit.SECONDS)
-                .build()
-        }
         val checkSuccessful = try {
             okHttpClient.newCall(request).execute().use {
                 logger.info("[Done] Perform XCUITest driver status check on $deviceId")
