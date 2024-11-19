@@ -9,45 +9,42 @@ import okhttp3.EventListener
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
+import java.net.InetSocketAddress
+import java.net.Proxy
 
 class MetricsEventListener(
     private val registry: Metrics,
     private val clientName: String,
 ) : EventListener() {
-    private val sample = registry.startTimer()
 
-    override fun callStart(call: Call) {
-        registry.counter(
-            "http.client.requests",
-            mapOf(
-                "client" to clientName,
-                "method" to call.request().method,
-                "url" to call.request().url.host
-            )
-        ).increment()
-    }
-
-    override fun callEnd(call: Call) {
-        sample.stop(
-            registry.timer(
-                "http.client.request.duration",
-                mapOf(
-                    "client" to clientName,
-                    "method" to call.request().method,
-                    "url" to call.request().url.host
-                )
-            )
-        )
-    }
-
-    override fun callFailed(call: Call, e: IOException) {
+    override fun connectFailed(
+        call: Call,
+        inetSocketAddress: InetSocketAddress,
+        proxy: Proxy,
+        protocol: Protocol?,
+        ioe: IOException
+    ) {
         registry.counter(
             "http.client.errors",
             mapOf(
                 "client" to clientName,
                 "method" to call.request().method,
                 "url" to call.request().url.host,
-                "exception" to e.javaClass.simpleName
+                "exception" to ioe.javaClass.simpleName,
+                "kind" to "connect"
+            )
+        ).increment()
+    }
+
+    override fun callFailed(call: Call, ioe: IOException) {
+        registry.counter(
+            "http.client.errors",
+            mapOf(
+                "client" to clientName,
+                "method" to call.request().method,
+                "url" to call.request().url.host,
+                "exception" to ioe.javaClass.simpleName,
+                "kind" to "call"
             )
         ).increment()
     }
@@ -78,6 +75,21 @@ object HttpClient {
             .connectTimeout(connectTimeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
             .readTimeout(readTimeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
             .writeTimeout(writeTimeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+            .addNetworkInterceptor(Interceptor { chain ->
+                val start = System.currentTimeMillis()
+                val response = chain.proceed(chain.request())
+                val duration = System.currentTimeMillis() - start
+                metrics.timer(
+                    "http.client.request.duration",
+                    mapOf(
+                        "client" to name,
+                        "method" to chain.request().method,
+                        "url" to chain.request().url.host,
+                        "status" to response.code.toString()
+                    )
+                ).record(duration, TimeUnit.MILLISECONDS)
+                response
+            })
             .protocols(protocols)
 
         b = networkInterceptors.map { b.addNetworkInterceptor(it) }.last()
