@@ -41,6 +41,7 @@ open class Metrics(
 ) {
     fun <T> measured(name: String, tags: Map<String, String?> = emptyMap(), block: () -> T): T {
         val timer = Timer.builder(prefixed(prefix, name)).tags(toTags(tags)).register(registry)
+        counter(prefixed(prefix, "$name.calls"), tags).increment()
 
         val t0 = System.currentTimeMillis()
         try {
@@ -64,10 +65,6 @@ open class Metrics(
     // get a metrics object that adds labels to all metrics
     fun withTags(tags: Map<String, String>): Metrics {
         return Metrics(registry, prefix, this.tags + tags)
-    }
-
-    fun startTimer(): Timer.Sample {
-        return Timer.start(registry)
     }
 
     fun counter(name: String, labels: Map<String, String?> = emptyMap()): Counter {

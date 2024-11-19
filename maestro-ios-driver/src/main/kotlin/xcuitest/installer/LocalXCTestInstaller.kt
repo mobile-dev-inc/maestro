@@ -2,6 +2,7 @@ package xcuitest.installer
 
 import maestro.utils.HttpClient
 import maestro.utils.MaestroTimer
+import maestro.utils.MetricsProvider
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -30,6 +31,7 @@ class LocalXCTestInstaller(
 ) : XCTestInstaller {
 
     private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
+    private val metrics = MetricsProvider.getInstance().withPrefix("xcuitest.installer").withTags(mapOf("kind" to "local", "deviceId" to deviceId, "host" to host))
 
     /**
      * If true, allow for using a xctest runner started from Xcode.
@@ -43,73 +45,77 @@ class LocalXCTestInstaller(
     private var xcTestProcess: Process? = null
 
     override fun uninstall(): Boolean {
-        // FIXME(bartekpacia): This method probably doesn't have to care about killing the XCTest Runner process.
-        //  Just uninstalling should suffice. It automatically kills the process.
+        return metrics.measured("uninstall") {
+            // FIXME(bartekpacia): This method probably doesn't have to care about killing the XCTest Runner process.
+            //  Just uninstalling should suffice. It automatically kills the process.
 
-        if (useXcodeTestRunner) {
-            logger.trace("Skipping uninstalling XCTest Runner as USE_XCODE_TEST_RUNNER is set")
-            return false
-        }
-
-        if (!isChannelAlive()) return false
-
-        fun killXCTestRunnerProcess() {
-            logger.trace("Will attempt to stop all alive XCTest Runner processes before uninstalling")
-
-            if (xcTestProcess?.isAlive == true) {
-                logger.trace("XCTest Runner process started by us is alive, killing it")
-                xcTestProcess?.destroy()
-            }
-            xcTestProcess = null
-
-            val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
-            if (pid != null) {
-                logger.trace("Killing XCTest Runner process with the `kill` command")
-                ProcessBuilder(listOf("kill", pid.toString()))
-                    .start()
-                    .waitFor()
+            if (useXcodeTestRunner) {
+                logger.trace("Skipping uninstalling XCTest Runner as USE_XCODE_TEST_RUNNER is set")
+                return@measured false
             }
 
-            logger.trace("All XCTest Runner processes were stopped")
+            if (!isChannelAlive()) return@measured false
+
+            fun killXCTestRunnerProcess() {
+                logger.trace("Will attempt to stop all alive XCTest Runner processes before uninstalling")
+
+                if (xcTestProcess?.isAlive == true) {
+                    logger.trace("XCTest Runner process started by us is alive, killing it")
+                    xcTestProcess?.destroy()
+                }
+                xcTestProcess = null
+
+                val pid = XCRunnerCLIUtils.pidForApp(UI_TEST_RUNNER_APP_BUNDLE_ID, deviceId)
+                if (pid != null) {
+                    logger.trace("Killing XCTest Runner process with the `kill` command")
+                    ProcessBuilder(listOf("kill", pid.toString()))
+                        .start()
+                        .waitFor()
+                }
+
+                logger.trace("All XCTest Runner processes were stopped")
+            }
+
+            killXCTestRunnerProcess()
+
+            logger.trace("Uninstalling XCTest Runner from device $deviceId")
+            true
         }
-
-        killXCTestRunnerProcess()
-
-        logger.trace("Uninstalling XCTest Runner from device $deviceId")
-        return true
     }
 
     override fun start(): XCTestClient? {
-        logger.info("start()")
+        return metrics.measured("start") {
+            logger.info("start()")
 
-        if (useXcodeTestRunner) {
-            logger.info("USE_XCODE_TEST_RUNNER is set. Will wait for XCTest runner to be started manually")
+            if (useXcodeTestRunner) {
+                logger.info("USE_XCODE_TEST_RUNNER is set. Will wait for XCTest runner to be started manually")
 
-            repeat(20) {
-                if (ensureOpen()) {
-                    return XCTestClient(host, defaultPort)
+                repeat(20) {
+                    if (ensureOpen()) {
+                        return@measured XCTestClient(host, defaultPort)
+                    }
+                    logger.info("==> Start XCTest runner to continue flow")
+                    Thread.sleep(500)
                 }
-                logger.info("==> Start XCTest runner to continue flow")
+                throw IllegalStateException("XCTest was not started manually")
+            }
+
+
+            logger.info("[Start] Install XCUITest runner on $deviceId")
+            startXCTestRunner()
+            logger.info("[Done] Install XCUITest runner on $deviceId")
+
+            val startTime = System.currentTimeMillis()
+
+            while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
+                runCatching {
+                    if (isChannelAlive()) return@measured XCTestClient(host, defaultPort)
+                }
                 Thread.sleep(500)
             }
-            throw IllegalStateException("XCTest was not started manually")
+
+            throw IOSDriverTimeoutException("iOS driver not ready in time, consider increasing timeout by configuring MAESTRO_DRIVER_STARTUP_TIMEOUT env variable")
         }
-
-
-        logger.info("[Start] Install XCUITest runner on $deviceId")
-        startXCTestRunner()
-        logger.info("[Done] Install XCUITest runner on $deviceId")
-
-        val startTime = System.currentTimeMillis()
-
-        while (System.currentTimeMillis() - startTime < getStartupTimeout()) {
-            runCatching {
-                if (isChannelAlive()) return XCTestClient(host, defaultPort)
-            }
-            Thread.sleep(500)
-        }
-
-        throw IOSDriverTimeoutException("iOS driver not ready in time, consider increasing timeout by configuring MAESTRO_DRIVER_STARTUP_TIMEOUT env variable")
     }
 
     class IOSDriverTimeoutException(message: String): RuntimeException(message)
