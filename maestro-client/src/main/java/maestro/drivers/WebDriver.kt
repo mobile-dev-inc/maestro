@@ -37,6 +37,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
     private var seleniumDriver: org.openqa.selenium.WebDriver? = null
     private var maestroWebScript: String? = null
+    private var lastSeenWindowHandles = setOf<String>()
 
     init {
         Maestro::class.java.getResourceAsStream("/maestro-web.js")?.let {
@@ -123,6 +124,8 @@ class WebDriver(val isStudio: Boolean) : Driver {
     override fun close() {
         seleniumDriver?.quit()
         seleniumDriver = null
+
+        lastSeenWindowHandles = setOf()
     }
 
     override fun deviceInfo(): DeviceInfo {
@@ -168,6 +171,8 @@ class WebDriver(val isStudio: Boolean) : Driver {
     override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
         ensureOpen()
 
+        detectWindowChange()
+
         // retrieve view hierarchy from DOM
         // There are edge cases where executeJS returns null, and we cannot get the hierarchy. In this situation
         // we retry multiple times until throwing an error eventually. (See issue #1936)
@@ -201,6 +206,20 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
 
         return parse(contentDesc as Map<String, Any>)
+    }
+
+    private fun detectWindowChange() {
+        // Checks whether there are any new window handles available and, if so, switches Selenium driver focus to it
+        val driver = ensureOpen()
+
+        if (lastSeenWindowHandles != driver.windowHandles) {
+            val newHandles = driver.windowHandles - lastSeenWindowHandles
+            lastSeenWindowHandles = driver.windowHandles
+
+            if (newHandles.isNotEmpty()) {
+                driver.switchTo().window(newHandles.first())
+            }
+        }
     }
 
     override fun clearAppState(appId: String) {
