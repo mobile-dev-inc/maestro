@@ -526,8 +526,6 @@ data class UploadStatus(
 
     enum class Status {
         PENDING,
-        PREPARING,
-        INSTALLING,
         RUNNING,
         SUCCESS,
         ERROR,

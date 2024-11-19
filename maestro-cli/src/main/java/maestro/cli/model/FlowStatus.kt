@@ -17,8 +17,6 @@ enum class FlowStatus {
 
         fun from(status: UploadStatus.Status) = when (status) {
             UploadStatus.Status.PENDING -> PENDING
-            UploadStatus.Status.PREPARING -> PREPARING
-            UploadStatus.Status.INSTALLING -> INSTALLING
             UploadStatus.Status.RUNNING -> RUNNING
             UploadStatus.Status.SUCCESS -> SUCCESS
             UploadStatus.Status.ERROR -> ERROR
