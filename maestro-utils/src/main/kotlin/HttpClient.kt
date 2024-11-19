@@ -67,7 +67,7 @@ object HttpClient {
         writeTimeout: Duration = 10.seconds,
         interceptors: List<Interceptor> = emptyList(),
         networkInterceptors: List<Interceptor> = emptyList(),
-        protocols: List<Protocol> = listOf(Protocol.HTTP_2),
+        protocols: List<Protocol> = listOf(Protocol.HTTP_1_1),
         metrics: Metrics = MetricsProvider.getInstance()
     ): OkHttpClient {
         var b = OkHttpClient.Builder()
@@ -92,8 +92,8 @@ object HttpClient {
             })
             .protocols(protocols)
 
-        b = networkInterceptors.map { b.addNetworkInterceptor(it) }.last()
-        b = interceptors.map { b.addInterceptor(it) }.last()
+        b = networkInterceptors.map { b.addNetworkInterceptor(it) }.lastOrNull() ?: b
+        b = interceptors.map { b.addInterceptor(it) }.lastOrNull() ?: b
 
         return b.build()
     }
