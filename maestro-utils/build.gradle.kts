@@ -9,6 +9,8 @@ plugins {
 
 dependencies {
     api(libs.square.okio)
+    implementation(libs.square.okhttp)
+    implementation(libs.micrometer.core)
     implementation(libs.micrometer.observation)
 
     testImplementation(libs.mockk)

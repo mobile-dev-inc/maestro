@@ -1,5 +1,6 @@
 package xcuitest.installer
 
+import maestro.utils.HttpClient
 import maestro.utils.MaestroTimer
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -14,17 +15,18 @@ import util.XCRunnerCLIUtils
 import xcuitest.XCTestClient
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class LocalXCTestInstaller(
     private val deviceId: String,
     private val host: String = "[::1]",
     private val enableXCTestOutputFileLogging: Boolean,
     private val defaultPort: Int,
-    private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(1, TimeUnit.SECONDS)
-        .readTimeout(100, TimeUnit.SECONDS)
-        .build()
+    private val httpClient: OkHttpClient = HttpClient.build(
+        name = "XCUITestDriverStatusCheck",
+        connectTimeout = 1.seconds,
+        readTimeout = 100.seconds,
+    )
 ) : XCTestInstaller {
 
     private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
@@ -144,15 +146,15 @@ class LocalXCTestInstaller(
             xctestAPIBuilder("status")
                 .build()
         }
-        val request by lazy {
-            Request.Builder()
-                .get()
-                .url(url)
-                .build()
+
+        val request by lazy {  Request.Builder()
+            .get()
+            .url(url)
+            .build()
         }
 
         val checkSuccessful = try {
-            okHttpClient.newCall(request).execute().use {
+            httpClient.newCall(request).execute().use {
                 logger.info("[Done] Perform XCUITest driver status check on $deviceId")
                 it.isSuccessful
             }

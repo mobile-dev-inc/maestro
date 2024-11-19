@@ -65,7 +65,7 @@ class AndroidDriver(
     private var open = false
     private val hostPort: Int = hostPort ?: DefaultDriverHostPort
 
-    private val metrics = MetricsProvider.getInstance().withPrefix("maestro.driver").withLabels(mapOf("platform" to "android"))
+    private val metrics = MetricsProvider.getInstance().withPrefix("maestro.driver").withTags(mapOf("platform" to "android"))
 
     private val channel = ManagedChannelBuilder.forAddress("localhost", this.hostPort)
         .usePlaintext()

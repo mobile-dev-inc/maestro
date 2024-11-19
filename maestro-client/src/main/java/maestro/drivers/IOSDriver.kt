@@ -43,7 +43,7 @@ class IOSDriver(
     private val insights: Insights = NoopInsights
 ) : Driver {
 
-    private val metrics = MetricsProvider.getInstance().withPrefix("maestro.driver").withLabels(mapOf("platform" to "ios"))
+    private val metrics = MetricsProvider.getInstance().withPrefix("maestro.driver").withTags(mapOf("platform" to "ios"))
 
     private var appId: String? = null
     private var proxySet = false
