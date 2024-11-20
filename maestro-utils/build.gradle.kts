@@ -4,6 +4,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.maestro.jvm.library)
     alias(libs.plugins.mavenPublish)
 }
 
