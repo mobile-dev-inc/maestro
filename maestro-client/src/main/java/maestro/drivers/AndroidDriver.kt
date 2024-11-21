@@ -197,7 +197,7 @@ class AndroidDriver(
         launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
-        metrics.measured("launchApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "launchApp", "appId" to appId)) {
             if(!open) // pick device flow, no open() invocation
                 open()
 
@@ -220,21 +220,21 @@ class AndroidDriver(
     }
 
     override fun stopApp(appId: String) {
-        metrics.measured("stopApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "stopApp", "appId" to appId)) {
             // Note: If the package does not exist, this call does *not* throw an exception
             shell("am force-stop $appId")
         }
     }
 
     override fun killApp(appId: String) {
-        metrics.measured("killApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "killApp", "appId" to appId)) {
             // Kill is the adb command needed to trigger System-initiated Process Death
             shell("am kill $appId")
         }
     }
 
     override fun clearAppState(appId: String) {
-        metrics.measured("clearAppState", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "clearAppState", "appId" to appId)) {
             if (!isPackageInstalled(appId)) {
                 return@measured
             }
@@ -248,7 +248,7 @@ class AndroidDriver(
     }
 
     override fun tap(point: Point) {
-        metrics.measured("tap") {
+        metrics.measured("operation", mapOf("command" to "tap")) {
             runDeviceCall {
                 blockingStubWithTimeout.tap(
                     tapRequest {
@@ -261,13 +261,13 @@ class AndroidDriver(
     }
 
     override fun longPress(point: Point) {
-        metrics.measured("longPress") {
+        metrics.measured("operation", mapOf("command" to "longPress")) {
             dadb.shell("input swipe ${point.x} ${point.y} ${point.x} ${point.y} 3000")
         }
     }
 
     override fun pressKey(code: KeyCode) {
-        metrics.measured("pressKey") {
+        metrics.measured("operation", mapOf("command" to "pressKey")) {
             val intCode: Int = when (code) {
                 KeyCode.ENTER -> 66
                 KeyCode.BACKSPACE -> 67
@@ -307,7 +307,7 @@ class AndroidDriver(
     }
 
     override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
-        return metrics.measured("contentDescriptor") {
+        return metrics.measured("operation", mapOf("command" to "contentDescriptor")) {
             val response = callViewHierarchy()
 
             val document = documentBuilderFactory
@@ -366,13 +366,13 @@ class AndroidDriver(
     }
 
     override fun scrollVertical() {
-        metrics.measured("scrollVertical") {
+        metrics.measured("operation", mapOf("command" to "scrollVertical")) {
             swipe(SwipeDirection.UP, 400)
         }
     }
 
     override fun isKeyboardVisible(): Boolean {
-        return metrics.measured("isKeyboardVisible") {
+        return metrics.measured("operation", mapOf("command" to "isKeyboardVisible")) {
             val root = contentDescriptor().let {
                 val deviceInfo = deviceInfo()
                 val filtered = it.filterOutOfBounds(
@@ -390,7 +390,7 @@ class AndroidDriver(
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
-        metrics.measured("swipeWithDirection", mapOf("direction" to swipeDirection.name, "durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "swipeWithDirection", "direction" to swipeDirection.name, "durationMs" to durationMs.toString())) {
             val deviceInfo = deviceInfo()
             when (swipeDirection) {
                 SwipeDirection.UP -> {
@@ -445,7 +445,7 @@ class AndroidDriver(
     }
 
     override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
-        metrics.measured("swipeWithElementPoint", mapOf("direction" to direction.name, "durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "swipeWithElementPoint", "direction" to direction.name, "durationMs" to durationMs.toString())) {
             val deviceInfo = deviceInfo()
             when (direction) {
                 SwipeDirection.UP -> {
@@ -472,20 +472,20 @@ class AndroidDriver(
     }
 
     private fun directionalSwipe(durationMs: Long, start: Point, end: Point) {
-        metrics.measured("directionalSwipe", mapOf("durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "directionalSwipe", "durationMs" to durationMs.toString())) {
             dadb.shell("input swipe ${start.x} ${start.y} ${end.x} ${end.y} $durationMs")
         }
     }
 
     override fun backPress() {
-        metrics.measured("backPress") {
+        metrics.measured("operation", mapOf("command" to "backPress")) {
             dadb.shell("input keyevent 4")
             Thread.sleep(300)
         }
     }
 
     override fun hideKeyboard() {
-        metrics.measured("hideKeyboard") {
+        metrics.measured("operation", mapOf("command" to "hideKeyboard")) {
             dadb.shell("input keyevent 4") // 'Back', which dismisses the keyboard before handing over to navigation
             Thread.sleep(300)
             waitForAppToSettle(null, null)
@@ -493,7 +493,7 @@ class AndroidDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        metrics.measured("takeScreenshot", mapOf("compressed" to compressed.toString())) {
+        metrics.measured("operation", mapOf("command" to "takeScreenshot", "compressed" to compressed.toString())) {
             runDeviceCall {
                 val response = blockingStubWithTimeout.screenshot(screenshotRequest {})
                 out.buffer().use {
@@ -504,7 +504,7 @@ class AndroidDriver(
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
-        return metrics.measured("startScreenRecording") {
+        return metrics.measured("operation", mapOf("command" to "startScreenRecording")) {
 
             val deviceScreenRecordingPath = "/sdcard/maestro-screenrecording.mp4"
 
@@ -533,7 +533,7 @@ class AndroidDriver(
     }
 
     override fun inputText(text: String) {
-        metrics.measured("inputText") {
+        metrics.measured("operation", mapOf("command" to "inputText")) {
             runDeviceCall {
                 blockingStubWithTimeout.inputText(inputTextRequest {
                     this.text = text
@@ -543,7 +543,7 @@ class AndroidDriver(
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
-        metrics.measured("openLink", mapOf("appId" to appId, "autoVerify" to autoVerify.toString(), "browser" to browser.toString())) {
+        metrics.measured("operation", mapOf("command" to "openLink", "appId" to appId, "autoVerify" to autoVerify.toString(), "browser" to browser.toString())) {
             if (browser) {
                 openBrowser(link)
             } else {
@@ -631,7 +631,7 @@ class AndroidDriver(
         .map { parts: Array<String> -> parts[1] }
 
     override fun setLocation(latitude: Double, longitude: Double) {
-        metrics.measured("setLocation") {
+        metrics.measured("operation", mapOf("command" to "setLocation")) {
             shell("appops set dev.mobile.maestro android:mock_location allow")
 
             runDeviceCall {
@@ -646,7 +646,7 @@ class AndroidDriver(
     }
 
     override fun eraseText(charactersToErase: Int) {
-        metrics.measured("eraseText", mapOf("charactersToErase" to charactersToErase.toString())) {
+        metrics.measured("operation", mapOf("command" to "eraseText", "charactersToErase" to charactersToErase.toString())) {
             runDeviceCall {
                 blockingStubWithTimeout.eraseAllText(
                     eraseAllTextRequest {
@@ -658,20 +658,20 @@ class AndroidDriver(
     }
 
     override fun setProxy(host: String, port: Int) {
-        metrics.measured("setProxy") {
+        metrics.measured("operation", mapOf("command" to "setProxy")) {
             shell("""settings put global http_proxy "${host}:${port}"""")
             proxySet = true
         }
     }
 
     override fun resetProxy() {
-        metrics.measured("resetProxy") {
+        metrics.measured("operation", mapOf("command" to "resetProxy")) {
             shell("settings put global http_proxy :0")
         }
     }
 
     override fun isShutdown(): Boolean {
-        return metrics.measured("isShutdown") {
+        return metrics.measured("operation", mapOf("command" to "isShutdown")) {
             channel.isShutdown
         }
     }
@@ -681,7 +681,7 @@ class AndroidDriver(
     }
 
     override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
-        return metrics.measured("waitForAppToSettle", mapOf("appId" to appId, "timeoutMs" to timeoutMs.toString())) {
+        return metrics.measured("operation", mapOf("command" to "waitForAppToSettle", "appId" to appId, "timeoutMs" to timeoutMs.toString())) {
             if (appId != null) {
                 waitForWindowToSettle(appId, initialHierarchy, timeoutMs)
             } else {
@@ -713,13 +713,13 @@ class AndroidDriver(
     }
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
-        return metrics.measured("waitUntilScreenIsStatic") {
+        return metrics.measured("operation", mapOf("command" to "waitUntilScreenIsStatic", "timeoutMs" to timeoutMs.toString())) {
             ScreenshotUtils.waitUntilScreenIsStatic(timeoutMs, SCREENSHOT_DIFF_THRESHOLD, this)
         }
     }
 
     override fun capabilities(): List<Capability> {
-        return metrics.measured("capabilities") {
+        return metrics.measured("operation", mapOf("command" to "capabilities")) {
             listOf(
                 Capability.FAST_HIERARCHY
             )
@@ -727,7 +727,7 @@ class AndroidDriver(
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        metrics.measured("setPermissions", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "setPermissions", "appId" to appId)) {
             val mutable = permissions.toMutableMap()
             mutable.remove("all")?.let { value ->
                 setAllPermissions(appId, value)
@@ -743,7 +743,7 @@ class AndroidDriver(
     }
 
     override fun addMedia(mediaFiles: List<File>) {
-        metrics.measured("addMedia", mapOf("mediaFilesCount" to mediaFiles.size.toString())) {
+        metrics.measured("operation", mapOf("command" to "addMedia", "mediaFilesCount" to mediaFiles.size.toString())) {
             LOGGER.info("[Start] Adding media files")
             mediaFiles.forEach { addMediaToDevice(it) }
             LOGGER.info("[Done] Adding media files")
@@ -751,7 +751,7 @@ class AndroidDriver(
     }
 
     override fun isAirplaneModeEnabled(): Boolean {
-        return metrics.measured("isAirplaneModeEnabled") {
+        return metrics.measured("operation", mapOf("command" to "isAirplaneModeEnabled")) {
             when (val result = shell("cmd connectivity airplane-mode").trim()) {
                 "No shell command implementation.", "" -> {
                     LOGGER.debug("Falling back to old airplane mode read method")
@@ -770,7 +770,7 @@ class AndroidDriver(
     }
 
     override fun setAirplaneMode(enabled: Boolean) {
-        metrics.measured("setAirplaneMode") {
+        metrics.measured("operation", mapOf("command" to "setAirplaneMode", "enabled" to enabled.toString())) {
             // fallback to old way on API < 28
             if (getDeviceApiLevel() < 28) {
                 val num = if (enabled) 1 else 0
@@ -800,7 +800,7 @@ class AndroidDriver(
     }
 
     fun setDeviceLocale(country: String, language: String): Int {
-        return metrics.measured("setDeviceLocale") {
+        return metrics.measured("operation", mapOf("command" to "setDeviceLocale", "country" to country, "language" to language)) {
             dadb.shell("pm grant dev.mobile.maestro android.permission.CHANGE_CONFIGURATION")
             val response =
                 dadb.shell("am broadcast -a dev.mobile.maestro.locale -n dev.mobile.maestro/.receivers.LocaleSettingReceiver --es lang $language --es country $country")
@@ -1027,7 +1027,7 @@ class AndroidDriver(
     }
 
     fun installMaestroDriverApp() {
-        metrics.measured("installMaestroDriverApp") {
+        metrics.measured("operation", mapOf("command" to "installMaestroDriverApp")) {
             uninstallMaestroDriverApp()
 
             val maestroAppApk = File.createTempFile("maestro-app", ".apk")
@@ -1070,7 +1070,7 @@ class AndroidDriver(
     }
 
     fun uninstallMaestroDriverApp() {
-        metrics.measured("uninstallMaestroDriverApp") {
+        metrics.measured("operation", mapOf("command" to "uninstallMaestroDriverApp")) {
             if (isPackageInstalled("dev.mobile.maestro")) {
                 uninstall("dev.mobile.maestro")
             }

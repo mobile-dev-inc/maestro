@@ -71,7 +71,7 @@ class IOSDriver(
     }
 
     override fun deviceInfo(): DeviceInfo {
-        return metrics.measured("deviceInfo") {
+        return metrics.measured("operation", mapOf("command" to "deviceInfo")) {
             runDeviceCall("deviceInfo") { iosDevice.deviceInfo().toCommonDeviceInfo() }
         }
     }
@@ -81,7 +81,7 @@ class IOSDriver(
         launchArguments: Map<String, Any>,
         sessionId: UUID?,
     ) {
-        metrics.measured("launchApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "launchApp", "appId" to appId)) {
             iosDevice.launch(appId, launchArguments, sessionId)
                 .onSuccess { this.appId = appId }
                 .getOrThrow {
@@ -91,44 +91,44 @@ class IOSDriver(
     }
 
     override fun stopApp(appId: String) {
-        metrics.measured("stopApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "stopApp", "appId" to appId)) {
             iosDevice.stop(appId)
         }
     }
 
     override fun killApp(appId: String) {
-        metrics.measured("killApp", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "killApp", "appId" to appId)) {
             // On iOS there is no Process Death like on Android so this command will be a synonym to the stop command
             stopApp(appId)
         }
     }
 
     override fun clearAppState(appId: String) {
-        metrics.measured("clearAppState", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "clearAppState", "appId" to appId)) {
             iosDevice.clearAppState(appId)
         }
     }
 
     override fun clearKeychain() {
-        metrics.measured("clearKeychain") {
+        metrics.measured("operation", mapOf("command" to "clearKeychain")) {
             iosDevice.clearKeychain().expect {}
         }
     }
 
     override fun tap(point: Point) {
-        metrics.measured("tap") {
+        metrics.measured("operation", mapOf("command" to "tap")) {
             runDeviceCall("tap") { iosDevice.tap(point.x, point.y) }
         }
     }
 
     override fun longPress(point: Point) {
-        metrics.measured("longPress") {
+        metrics.measured("operation", mapOf("command" to "longPress")) {
             runDeviceCall("longPress") { iosDevice.longPress(point.x, point.y, 3000) }
         }
     }
 
     override fun pressKey(code: KeyCode) {
-        metrics.measured("pressKey") {
+        metrics.measured("operation", mapOf("command" to "pressKey")) {
             val keyCodeNameMap = mapOf(
                 KeyCode.BACKSPACE to "delete",
                 KeyCode.ENTER to "return",
@@ -143,16 +143,16 @@ class IOSDriver(
                 keyCodeNameMap[code]?.let { name ->
                     iosDevice.pressKey(name)
                 }
-            }
 
-            buttonNameMap[code]?.let { name ->
-                iosDevice.pressButton(name)
+                buttonNameMap[code]?.let { name ->
+                    iosDevice.pressButton(name)
+                }
             }
         }
     }
 
     override fun contentDescriptor(excludeKeyboardElements: Boolean): TreeNode {
-        return metrics.measured("contentDescriptor") {
+        return metrics.measured("operation", mapOf("command" to "contentDescriptor")) {
             runDeviceCall("contentDescriptor") { viewHierarchy(excludeKeyboardElements) }
         }
     }
@@ -222,7 +222,7 @@ class IOSDriver(
     }
 
     override fun isKeyboardVisible(): Boolean {
-        return metrics.measured("isKeyboardVisible") {
+        return metrics.measured("operation", mapOf("command" to "isKeyboardVisible")) {
             runDeviceCall("isKeyboardVisible") { iosDevice.isKeyboardVisible() }
         }
     }
@@ -232,7 +232,7 @@ class IOSDriver(
         end: Point,
         durationMs: Long
     ) {
-        metrics.measured("swipe", mapOf("durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "swipe", "durationMs" to durationMs.toString())) {
             val deviceInfo = deviceInfo()
             val startPoint = start.coerceIn(maxWidth = deviceInfo.widthGrid, maxHeight = deviceInfo.heightGrid)
             val endPoint = end.coerceIn(maxWidth = deviceInfo.widthGrid, maxHeight = deviceInfo.heightGrid)
@@ -251,7 +251,7 @@ class IOSDriver(
     }
 
     override fun swipe(swipeDirection: SwipeDirection, durationMs: Long) {
-        metrics.measured("swipeWithDirection", mapOf("direction" to swipeDirection.name, "durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "swipeWithDirection", "direction" to swipeDirection.name, "durationMs" to durationMs.toString())) {
             val deviceInfo = deviceInfo()
             val width = deviceInfo.widthGrid
             val height = deviceInfo.heightGrid
@@ -309,7 +309,7 @@ class IOSDriver(
     }
 
     override fun swipe(elementPoint: Point, direction: SwipeDirection, durationMs: Long) {
-        metrics.measured("swipeWithElementPoint", mapOf("direction" to direction.name, "durationMs" to durationMs.toString())) {
+        metrics.measured("operation", mapOf("command" to "swipeWithElementPoint", "direction" to direction.name, "durationMs" to durationMs.toString())) {
             val deviceInfo = deviceInfo()
             val width = deviceInfo.widthGrid
             val height = deviceInfo.heightGrid
@@ -341,7 +341,7 @@ class IOSDriver(
     override fun backPress() {}
 
     override fun hideKeyboard() {
-        metrics.measured("hideKeyboard") {
+        metrics.measured("operation", mapOf("command" to "hideKeyboard")) {
             val deviceInfo = deviceInfo()
             val width = deviceInfo.widthGrid
             val height = deviceInfo.heightGrid
@@ -398,13 +398,13 @@ class IOSDriver(
     }
 
     override fun takeScreenshot(out: Sink, compressed: Boolean) {
-        metrics.measured("takeScreenshot") {
+        metrics.measured("operation", mapOf("command" to "takeScreenshot")) {
             runDeviceCall("takeScreenshot") { iosDevice.takeScreenshot(out, compressed) }
         }
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
-        return metrics.measured("startScreenRecording") {
+        return metrics.measured("operation", mapOf("command" to "startScreenRecording")) {
             val iosScreenRecording = iosDevice.startScreenRecording(out).expect {}
             object : ScreenRecording {
                 override fun close() = iosScreenRecording.close()
@@ -413,33 +413,32 @@ class IOSDriver(
     }
 
     override fun inputText(text: String) {
-        // silently fail if no XCUIElement has focus
-        metrics.measured("inputText") {
+        metrics.measured("operation", mapOf("command" to "inputText")) {
             // silently fail if no XCUIElement has focus
             runDeviceCall("inputText") { iosDevice.input(text = text) }
         }
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
-        metrics.measured("openLink", mapOf("appId" to appId.toString(), "autoVerify" to autoVerify.toString(), "browser" to browser.toString())) {
+        metrics.measured("operation", mapOf("command" to "openLink", "appId" to appId.toString(), "autoVerify" to autoVerify.toString(), "browser" to browser.toString())) {
             iosDevice.openLink(link).expect {}
         }
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
-        metrics.measured("setLocation") {
+        metrics.measured("operation", mapOf("command" to "setLocation")) {
             runDeviceCall("setLocation") { iosDevice.setLocation(latitude, longitude).expect {} }
         }
     }
 
     override fun eraseText(charactersToErase: Int) {
-        metrics.measured("eraseText") {
+        metrics.measured("operation", mapOf("command" to "eraseText")) {
             runDeviceCall("eraseText") { iosDevice.eraseText(charactersToErase) }
         }
     }
 
     override fun setProxy(host: String, port: Int) {
-        metrics.measured("setProxy") {
+        metrics.measured("operation", mapOf("command" to "setProxy")) {
             XCRunnerCLIUtils.setProxy(host, port)
             proxySet = true
         }
@@ -450,13 +449,13 @@ class IOSDriver(
     }
 
     override fun isShutdown(): Boolean {
-        return metrics.measured("isShutdown") {
+        return metrics.measured("operation", mapOf("command" to "isShutdown")) {
             iosDevice.isShutdown()
         }
     }
 
     override fun waitUntilScreenIsStatic(timeoutMs: Long): Boolean {
-        return metrics.measured("waitUntilScreenIsStatic", mapOf("timeoutMs" to timeoutMs.toString())) {
+        return metrics.measured("operation", mapOf("command" to "waitUntilScreenIsStatic", "timeoutMs" to timeoutMs.toString())) {
              MaestroTimer.retryUntilTrue(timeoutMs) {
                 val isScreenStatic = isScreenStatic()
 
@@ -467,7 +466,7 @@ class IOSDriver(
     }
 
     override fun waitForAppToSettle(initialHierarchy: ViewHierarchy?, appId: String?, timeoutMs: Int?): ViewHierarchy? {
-        return metrics.measured("waitForAppToSettle", mapOf("appId" to appId.toString(), "timeoutMs" to timeoutMs.toString())) {
+        return metrics.measured("operation", mapOf("command" to "waitForAppToSettle", "appId" to appId.toString(), "timeoutMs" to timeoutMs.toString())) {
             LOGGER.info("Waiting for animation to end with timeout $SCREEN_SETTLE_TIMEOUT_MS")
             val didFinishOnTime = waitUntilScreenIsStatic(SCREEN_SETTLE_TIMEOUT_MS)
 
@@ -480,7 +479,7 @@ class IOSDriver(
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
-        metrics.measured("setPermissions", mapOf("appId" to appId)) {
+        metrics.measured("operation", mapOf("command" to "setPermissions", "appId" to appId)) {
             runDeviceCall("setPermissions") {
                 iosDevice.setPermissions(appId, permissions)
             }
@@ -488,7 +487,7 @@ class IOSDriver(
     }
 
     override fun addMedia(mediaFiles: List<File>) {
-        metrics.measured("addMedia", mapOf("mediaFilesCount" to mediaFiles.size.toString())) {
+        metrics.measured("operation", mapOf("command" to "addMedia", "mediaFilesCount" to mediaFiles.size.toString())) {
             LOGGER.info("[Start] Adding media files")
             mediaFiles.forEach { addMediaToDevice(it) }
             LOGGER.info("[Done] Adding media files")
@@ -505,7 +504,7 @@ class IOSDriver(
     }
 
     private fun addMediaToDevice(mediaFile: File) {
-        metrics.measured("addMediaToDevice") {
+        metrics.measured("operation", mapOf("command" to "addMediaToDevice")) {
             val namedSource = NamedSource(
                 mediaFile.name,
                 mediaFile.source(),
