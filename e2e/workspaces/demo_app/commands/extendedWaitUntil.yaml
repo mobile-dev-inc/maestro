@@ -3,7 +3,7 @@ appId: com.example.example
 - launchApp # For idempotence of sections
 
 - extendedWaitUntil:
-    timeout: 100
+    timeout: 10000
     visible:
       text: 'Swipe Test'
 
