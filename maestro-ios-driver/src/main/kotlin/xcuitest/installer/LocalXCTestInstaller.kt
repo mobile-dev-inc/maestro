@@ -45,7 +45,7 @@ class LocalXCTestInstaller(
     private var xcTestProcess: Process? = null
 
     override fun uninstall(): Boolean {
-        return metrics.measured("uninstall") {
+        return metrics.measured("operation", mapOf("command" to "uninstall")) {
             // FIXME(bartekpacia): This method probably doesn't have to care about killing the XCTest Runner process.
             //  Just uninstalling should suffice. It automatically kills the process.
 
@@ -84,7 +84,7 @@ class LocalXCTestInstaller(
     }
 
     override fun start(): XCTestClient? {
-        return metrics.measured("start") {
+        return metrics.measured("operation", mapOf("command" to "start")) {
             logger.info("start()")
 
             if (useXcodeTestRunner) {
@@ -125,7 +125,9 @@ class LocalXCTestInstaller(
     }.getOrDefault(SERVER_LAUNCH_TIMEOUT_MS)
 
     override fun isChannelAlive(): Boolean {
-        return xcTestDriverStatusCheck()
+        return metrics.measured("operation", mapOf("command" to "isChannelAlive")) {
+        return@measured xcTestDriverStatusCheck()
+        }
     }
 
     private fun ensureOpen(): Boolean {
