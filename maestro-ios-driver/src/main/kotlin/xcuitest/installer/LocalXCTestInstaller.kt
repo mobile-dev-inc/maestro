@@ -2,6 +2,7 @@ package xcuitest.installer
 
 import maestro.utils.HttpClient
 import maestro.utils.MaestroTimer
+import maestro.utils.Metrics
 import maestro.utils.MetricsProvider
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -23,15 +24,16 @@ class LocalXCTestInstaller(
     private val host: String = "[::1]",
     private val enableXCTestOutputFileLogging: Boolean,
     private val defaultPort: Int,
+    private val metricsProvider: Metrics = MetricsProvider.getInstance(),
     private val httpClient: OkHttpClient = HttpClient.build(
         name = "XCUITestDriverStatusCheck",
         connectTimeout = 1.seconds,
         readTimeout = 100.seconds,
-    )
-) : XCTestInstaller {
+    ),
+    ) : XCTestInstaller {
 
     private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
-    private val metrics = MetricsProvider.getInstance().withPrefix("xcuitest.installer").withTags(mapOf("kind" to "local", "deviceId" to deviceId, "host" to host))
+    private val metrics = metricsProvider.withPrefix("xcuitest.installer").withTags(mapOf("kind" to "local", "deviceId" to deviceId, "host" to host))
 
     /**
      * If true, allow for using a xctest runner started from Xcode.

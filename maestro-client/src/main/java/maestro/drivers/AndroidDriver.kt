@@ -36,6 +36,7 @@ import maestro.android.AndroidAppFiles
 import maestro.android.AndroidLaunchArguments.toAndroidLaunchArguments
 import maestro.utils.BlockingStreamObserver
 import maestro.utils.MaestroTimer
+import maestro.utils.Metrics
 import maestro.utils.MetricsProvider
 import maestro.utils.ScreenshotUtils
 import maestro.utils.StringUtils.toRegexSafe
@@ -61,11 +62,12 @@ class AndroidDriver(
     private val dadb: Dadb,
     hostPort: Int? = null,
     private var emulatorName: String = "",
-) : Driver {
+    private val metricsProvider: Metrics = MetricsProvider.getInstance(),
+    ) : Driver {
     private var open = false
     private val hostPort: Int = hostPort ?: DefaultDriverHostPort
 
-    private val metrics = MetricsProvider.getInstance().withPrefix("maestro.driver").withTags(mapOf("platform" to "android", "emulatorName" to emulatorName))
+    private val metrics = metricsProvider.withPrefix("maestro.driver").withTags(mapOf("platform" to "android", "emulatorName" to emulatorName))
 
     private val channel = ManagedChannelBuilder.forAddress("localhost", this.hostPort)
         .usePlaintext()
