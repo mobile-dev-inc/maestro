@@ -17,22 +17,26 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import xcuitest.process.XCTestStarter
+
+const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
 
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
+    private val starter: XCTestStarter,
     private val httpInterceptor: HttpLoggingInterceptor? = null
 ) {
     private val logger = LoggerFactory.getLogger(XCTestDriverClient::class.java)
 
     private lateinit var client: XCTestClient
 
-    constructor(installer: XCTestInstaller, client: XCTestClient): this(installer) {
+    constructor(installer: XCTestInstaller, starter: XCTestStarter, client: XCTestClient): this(installer, starter) {
         this.client = client
     }
 
     private var isShuttingDown = false
 
-    private val networkErrorHandler by lazy { NetworkErrorHandler(installer) }
+    private val networkErrorHandler by lazy { NetworkErrorHandler(installer, starter) }
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -45,8 +49,10 @@ class XCTestDriverClient(
         logger.trace("Restarting XCTest Runner (uninstalling, installing and starting)")
         installer.uninstall()
 
-        logger.trace("XCTest Runner uninstalled, will install and start it")
-        client = installer.start() ?: throw XCTestDriverUnreachable("Failed to start XCTest Driver")
+        logger.trace("XCTest Runner uninstalled, will install")
+        val xcTestFile = installer.install()
+        client = starter.start(xcTestFile) ?: throw XCTestDriverUnreachable("Failed to start XCTest Driver")
+        // TODO: Ensure that it has started
     }
 
     private val okHttpClient = OkHttpClient.Builder()
@@ -179,11 +185,11 @@ class XCTestDriverClient(
     }
 
     fun isChannelAlive(): Boolean {
-        return installer.isChannelAlive()
+        return starter.isRunning()
     }
 
     fun close() {
-        installer.close()
+        installer.uninstall()
     }
 
     fun setPermissions(permissions: Map<String, String>) {

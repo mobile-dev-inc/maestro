@@ -9,9 +9,11 @@ import util.PrintUtils
 import xcuitest.XCTestClient
 import xcuitest.api.NetworkException.Companion.toUserNetworkException
 import xcuitest.installer.XCTestInstaller
+import xcuitest.process.XCTestStarter
 
 class NetworkErrorHandler(
     private val xcTestInstaller: XCTestInstaller,
+    private val xcTestStarter: XCTestStarter,
 ) {
     private val logger = LoggerFactory.getLogger(NetworkErrorHandler::class.java)
 
@@ -64,11 +66,12 @@ class NetworkErrorHandler(
     fun retryConnection(
         call: Call,
         response: Response,
-        reInitializeInstaller: (XCTestClient) -> Unit
+        updateClient: (XCTestClient) -> Unit
     ): Response {
         return if (retry < MAX_RETRY) {
-            xcTestInstaller.start()?.let {
-                reInitializeInstaller(it)
+            val xcTestFile = xcTestInstaller.install()
+            xcTestStarter.start(xcTestFile)?.let {
+                updateClient(it)
             }
             response.close()
             retry++
@@ -92,12 +95,13 @@ class NetworkErrorHandler(
     fun retryConnection(
         chain: Interceptor.Chain,
         networkException: NetworkException,
-        reInitializeInstaller: (XCTestClient) -> Unit
+        updateClient: (XCTestClient) -> Unit
     ): Response {
         logger.info("Got Network exception in application layer: $networkException")
         return if (networkException.shouldRetryDriverInstallation() && retry < MAX_RETRY) {
-            xcTestInstaller.start()?.let {
-                reInitializeInstaller(it)
+            val xcTestFile = xcTestInstaller.install()
+            xcTestStarter.start(xcTestFile)?.let {
+                updateClient(it)
             }
             retry++
             logger.info("ℹ️ Retrying connection to the XCUITest server for ${retry}...")

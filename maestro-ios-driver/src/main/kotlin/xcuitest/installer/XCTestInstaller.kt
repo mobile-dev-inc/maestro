@@ -1,16 +1,14 @@
 package xcuitest.installer
 
-import xcuitest.XCTestClient
+import java.io.File
 
-interface XCTestInstaller: AutoCloseable {
-    fun start(): XCTestClient?
-
+interface XCTestInstaller {
     /**
-     * Attempts to uninstall the XCTest Runner.
+     * Installs the XCTest Runner
      *
-     * @return true if the XCTest Runner was uninstalled, false otherwise.
+     * @return the file where the XCTest was installed
      */
-    fun uninstall(): Boolean
+    fun install(): File
 
-    fun isChannelAlive(): Boolean
+    fun uninstall()
 }

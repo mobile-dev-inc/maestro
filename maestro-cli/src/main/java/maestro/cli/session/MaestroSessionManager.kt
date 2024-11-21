@@ -40,6 +40,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
+import xcuitest.process.LocalXCTestStarter
 
 object MaestroSessionManager {
     private const val defaultHost = "localhost"
@@ -279,6 +280,10 @@ object MaestroSessionManager {
 
         val xcTestInstaller = LocalXCTestInstaller(
             deviceId = deviceId,
+        )
+
+        val xcTestStarter = LocalXCTestStarter(
+            deviceId = deviceId,
             host = defaultXctestHost,
             defaultPort = driverHostPort ?: defaultXcTestPort,
             enableXCTestOutputFileLogging = true,
@@ -286,6 +291,7 @@ object MaestroSessionManager {
 
         val xcTestDriverClient = XCTestDriverClient(
             installer = xcTestInstaller,
+            starter = xcTestStarter,
             client = XCTestClient(defaultXctestHost, driverHostPort ?: defaultXcTestPort),
         )
 

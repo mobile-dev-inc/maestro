@@ -10,7 +10,7 @@ class MockXCTestInstaller(
 
     private var attempts = 0
 
-    override fun start(): XCTestClient? {
+    override fun install(): XCTestClient? {
         attempts++
         for (i in 0..simulator.installationRetryCount) {
             assertThat(simulator.runningApps()).doesNotContain("dev.mobile.maestro-driver-iosUITests.xctrunner")
