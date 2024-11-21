@@ -41,7 +41,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import xcuitest.process.LocalXCTestStarter
+import xcuitest.starter.LocalXCTestStarter
 
 object MaestroSessionManager {
     private const val defaultHost = "localhost"

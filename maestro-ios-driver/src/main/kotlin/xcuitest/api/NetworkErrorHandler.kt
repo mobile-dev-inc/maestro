@@ -9,7 +9,7 @@ import util.PrintUtils
 import xcuitest.XCTestClient
 import xcuitest.api.NetworkException.Companion.toUserNetworkException
 import xcuitest.installer.XCTestInstaller
-import xcuitest.process.XCTestStarter
+import xcuitest.starter.XCTestStarter
 
 class NetworkErrorHandler(
     private val xcTestInstaller: XCTestInstaller,

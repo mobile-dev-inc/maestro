@@ -1,4 +1,4 @@
-package xcuitest.process
+package xcuitest.starter
 
 import java.io.File
 import xcuitest.XCTestClient
