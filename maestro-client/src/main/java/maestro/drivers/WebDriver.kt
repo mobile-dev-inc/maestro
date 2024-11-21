@@ -12,6 +12,8 @@ import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.ViewHierarchy
 import maestro.utils.ScreenshotUtils
+import maestro.web.record.JcodecVideoEncoder
+import maestro.web.record.WebScreenRecorder
 import okio.Sink
 import okio.buffer
 import org.openqa.selenium.By
@@ -33,11 +35,14 @@ import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
+
 class WebDriver(val isStudio: Boolean) : Driver {
 
     private var seleniumDriver: org.openqa.selenium.WebDriver? = null
     private var maestroWebScript: String? = null
     private var lastSeenWindowHandles = setOf<String>()
+
+    private var webScreenRecorder: WebScreenRecorder? = null
 
     init {
         Maestro::class.java.getResourceAsStream("/maestro-web.js")?.let {
@@ -126,6 +131,9 @@ class WebDriver(val isStudio: Boolean) : Driver {
         seleniumDriver = null
 
         lastSeenWindowHandles = setOf()
+
+        webScreenRecorder?.close()
+        webScreenRecorder = null
     }
 
     override fun deviceInfo(): DeviceInfo {
@@ -218,6 +226,8 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
             if (newHandles.isNotEmpty()) {
                 driver.switchTo().window(newHandles.first())
+
+                webScreenRecorder?.onWindowChange()
             }
         }
     }
@@ -358,7 +368,18 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun startScreenRecording(out: Sink): ScreenRecording {
-        TODO("Not yet implemented")
+        val driver = ensureOpen()
+        webScreenRecorder = WebScreenRecorder(
+            JcodecVideoEncoder(),
+            driver
+        )
+        webScreenRecorder?.startScreenRecording(out)
+
+        return object : ScreenRecording {
+            override fun close() {
+                webScreenRecorder?.close()
+            }
+        }
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
