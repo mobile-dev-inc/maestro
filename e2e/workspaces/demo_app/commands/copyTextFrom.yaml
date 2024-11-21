@@ -4,6 +4,7 @@ appId: com.example.example
 
 - tapOn:
     id: 'fabAddIcon'
+    retryTapIfNoChange: false
 - copyTextFrom:
     text: '\d+'
 - assertTrue: ${maestro.copiedText == '1'}
