@@ -137,16 +137,17 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun deviceInfo(): DeviceInfo {
-        val driver = ensureOpen()
+        val driver = ensureOpen() as JavascriptExecutor
 
-        val windowSize = driver.manage().window().size
+        val width = driver.executeScript("return window.innerWidth;") as Long
+        val height = driver.executeScript("return window.innerHeight;") as Long
 
         return DeviceInfo(
             platform = Platform.WEB,
-            widthPixels = windowSize.width,
-            heightPixels = windowSize.height,
-            widthGrid = windowSize.width,
-            heightGrid = windowSize.height,
+            widthPixels = width.toInt(),
+            heightPixels = height.toInt(),
+            widthGrid = width.toInt(),
+            heightGrid = height.toInt(),
         )
     }
 
