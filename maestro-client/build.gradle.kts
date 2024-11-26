@@ -92,6 +92,7 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.google.truth)
     testImplementation(libs.square.mock.server)
+    testImplementation(libs.mockk)
     testImplementation(libs.junit.jupiter.params)
 }
 

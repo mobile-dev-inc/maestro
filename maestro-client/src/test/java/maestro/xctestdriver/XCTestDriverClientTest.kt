@@ -2,6 +2,9 @@ package maestro.xctestdriver
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
 import maestro.ios.MockXCTestInstaller
 import maestro.utils.network.XCUITestServerError
 import okhttp3.mockwebserver.MockResponse
@@ -16,8 +19,18 @@ import xcuitest.XCTestDriverClient
 import xcuitest.api.DeviceInfo
 import xcuitest.api.Error
 import java.net.InetAddress
+import org.junit.jupiter.api.BeforeEach
+import xcuitest.starter.XCTestStarter
 
 class XCTestDriverClientTest {
+
+    private val mockXCTestStarter = mockk<XCTestStarter>()
+
+    @BeforeEach
+    fun setup() {
+        clearMocks(mockXCTestStarter)
+        every { mockXCTestStarter.start(any()) } returns XCTestClient("localhost", 22087)
+    }
 
     @Test
     fun `it should return correct message in case of TimeoutException with 3 retries`() {
@@ -35,6 +48,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
 
@@ -65,6 +79,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
 
@@ -96,6 +111,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
         val actualDeviceInfo = xcTestDriverClient.deviceInfo(httpUrl)
@@ -126,6 +142,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
 
@@ -157,6 +174,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
 
@@ -188,6 +206,7 @@ class XCTestDriverClientTest {
         val mockXCTestInstaller = MockXCTestInstaller(simulator)
         val xcTestDriverClient = XCTestDriverClient(
             mockXCTestInstaller,
+            mockXCTestStarter,
             XCTestClient("localhost", 22087)
         )
 

@@ -1,6 +1,7 @@
 package maestro.ios
 
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import xcuitest.XCTestClient
 import xcuitest.installer.XCTestInstaller
 
@@ -10,30 +11,20 @@ class MockXCTestInstaller(
 
     private var attempts = 0
 
-    override fun install(): XCTestClient? {
+    override fun install(): File {
         attempts++
         for (i in 0..simulator.installationRetryCount) {
             assertThat(simulator.runningApps()).doesNotContain("dev.mobile.maestro-driver-iosUITests.xctrunner")
         }
-        return if (simulator.shouldInstall) {
+        if (simulator.shouldInstall) {
             simulator.installXCTestDriver()
-            XCTestClient("localhost", 22807)
-        } else {
-            null
         }
+        return File("xctestrun")
     }
 
-    override fun uninstall(): Boolean {
+    override fun uninstall() {
         simulator.uninstallXCTestDriver()
-        return true
-    }
-
-    override fun isChannelAlive(): Boolean {
-        return simulator.isXCTestRunnerAlive()
-    }
-
-    override fun close() {
-        simulator.uninstallXCTestDriver()
+        return
     }
 
     fun assertInstallationRetries(expectedRetries: Int) {
@@ -48,8 +39,6 @@ class MockXCTestInstaller(
         private val runningApps = mutableListOf<String>()
 
         fun runningApps() = runningApps
-
-        fun isXCTestRunnerAlive() = runningApps.contains("dev.mobile.maestro-driver-iosUITests.xctrunner")
 
         fun uninstallXCTestDriver() = runningApps.clear()
 
