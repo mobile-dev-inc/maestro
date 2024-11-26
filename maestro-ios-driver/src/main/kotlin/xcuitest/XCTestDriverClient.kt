@@ -24,7 +24,6 @@ const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.x
 class XCTestDriverClient(
     private val installer: XCTestInstaller,
     private val starter: XCTestStarter,
-    private val httpInterceptor: HttpLoggingInterceptor? = null
 ) {
     private val logger = LoggerFactory.getLogger(XCTestDriverClient::class.java)
 
@@ -42,7 +41,6 @@ class XCTestDriverClient(
         Runtime.getRuntime().addShutdownHook(Thread {
             isShuttingDown = true
         })
-        httpInterceptor?.level = HttpLoggingInterceptor.Level.BODY
     }
 
     fun restartXCTestRunner() {
@@ -52,17 +50,11 @@ class XCTestDriverClient(
         logger.trace("XCTest Runner uninstalled, will install")
         val xcTestFile = installer.install()
         client = starter.start(xcTestFile) ?: throw XCTestDriverUnreachable("Failed to start XCTest Driver")
-        // TODO: Ensure that it has started
     }
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(1, TimeUnit.SECONDS)
         .readTimeout(200, TimeUnit.SECONDS)
-        .apply {
-            httpInterceptor?.let {
-                this.addInterceptor(it)
-            }
-        }
         .addRetryInterceptor()
         .addRetryAndShutdownInterceptor()
         .build()
