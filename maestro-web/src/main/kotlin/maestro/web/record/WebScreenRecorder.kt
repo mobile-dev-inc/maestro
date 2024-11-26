@@ -57,7 +57,7 @@ class WebScreenRecorder(
 
         val seleniumDevTools = driver.devTools
 
-        seleniumDevTools.createSession()
+        seleniumDevTools.createSessionIfThereIsNotOne()
 
         seleniumDevTools.send(Page.enable())
 
