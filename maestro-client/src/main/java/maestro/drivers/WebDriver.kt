@@ -25,6 +25,8 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.chromium.ChromiumDriverLogLevel
+import org.openqa.selenium.devtools.HasDevTools
+import org.openqa.selenium.devtools.v130.emulation.Emulation
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -330,10 +332,6 @@ class WebDriver(val isStudio: Boolean) : Driver {
         swipe(direction, durationMs)
     }
 
-    fun swipe(start: Point, end: Point) {
-        TODO("Not yet implemented")
-    }
-
     override fun backPress() {
         val driver = ensureOpen()
         driver.navigate().back()
@@ -384,7 +382,17 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
-        TODO("Not yet implemented")
+        val driver = ensureOpen() as HasDevTools
+
+        driver.devTools.createSessionIfThereIsNotOne()
+
+        driver.devTools.send(
+            Emulation.setGeolocationOverride(
+                Optional.of(latitude),
+                Optional.of(longitude),
+                Optional.of(0.0)
+            )
+        )
     }
 
     override fun eraseText(charactersToErase: Int) {
