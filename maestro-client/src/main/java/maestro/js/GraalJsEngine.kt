@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.logging.Handler
 import java.util.logging.LogRecord
+import maestro.utils.Env
+import org.graalvm.polyglot.HostAccess
 
 private val NULL_HANDLER = object : Handler() {
     override fun publish(record: LogRecord?) {}
@@ -70,6 +72,15 @@ class GraalJsEngine(
         return createContext().eval(source)
     }
 
+    private fun Context.Builder.setAccessConfigFromEnv(): Context.Builder {
+        val allowHostAccess = Env.getSystemEnv(HOST_ACCESS_ENV) != null
+        val allowClassLookup = Env.getSystemEnv(CLASS_LOOKUP_ENV) != null
+
+        return this
+            .allowHostClassLookup { allowClassLookup }
+            .allowHostAccess(if (allowHostAccess) HostAccess.ALL else HostAccess.EXPLICIT)
+    }
+
     private fun createContext(): Context {
         val outputStream = object : ByteArrayOutputStream() {
             override fun flush() {
@@ -82,6 +93,7 @@ class GraalJsEngine(
 
         val context = Context.newBuilder("js")
             .option("js.strict", "true")
+            .setAccessConfigFromEnv()
             .logHandler(NULL_HANDLER)
             .out(outputStream)
             .build()
@@ -117,5 +129,11 @@ class GraalJsEngine(
         )
 
         return context
+    }
+
+    companion object {
+        const val HOST_ACCESS_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_HOST_ACCESS"
+        const val CLASS_LOOKUP_ENV = "MAESTRO_CLI_DANGEROUS_GRAALJS_ALLOW_CLASS_LOOKUP"
+        const val USE_GRAALJS_ENV = "MAESTRO_USE_GRAALJS"
     }
 }

@@ -49,6 +49,7 @@ import okio.buffer
 import okio.sink
 import java.io.File
 import java.lang.Long.max
+import maestro.utils.Env
 
 // TODO(bartkepacia): Use this in onCommandGeneratedOutput.
 //  Caveat:
@@ -225,7 +226,7 @@ class Orchestra(
             jsEngine.close()
         }
         val shouldUseGraalJs =
-            config?.ext?.get("jsEngine") == "graaljs" || System.getenv("MAESTRO_USE_GRAALJS") == "true"
+            config?.ext?.get("jsEngine") == "graaljs" || Env.getSystemEnv(GraalJsEngine.USE_GRAALJS_ENV) != null
         val platform = maestro.cachedDeviceInfo.platform.toString().lowercase()
         jsEngine = if (shouldUseGraalJs) {
             httpClient?.let { GraalJsEngine(it, platform) } ?: GraalJsEngine(platform = platform)

@@ -11,5 +11,4 @@ object StringUtils {
             Regex.escape(this).toRegex(options)
         }
     }
-
 }

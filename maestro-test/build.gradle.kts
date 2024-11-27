@@ -28,6 +28,8 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
 
     testImplementation(libs.wiremock.jre8)
+
+    testImplementation(libs.mockk)
 }
 
 tasks.named<Test>("test") {
