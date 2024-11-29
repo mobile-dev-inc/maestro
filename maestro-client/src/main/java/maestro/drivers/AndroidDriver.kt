@@ -786,6 +786,12 @@ class AndroidDriver(
         }
     }
 
+    override fun installApp(path: String) {
+        val apkFile = File(path)
+        install(apkFile)
+    }
+
+
     private fun broadcastAirplaneMode(enabled: Boolean) {
         val command = "am broadcast -a android.intent.action.AIRPLANE_MODE --ez state $enabled"
         try {

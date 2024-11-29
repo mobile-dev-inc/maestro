@@ -298,12 +298,19 @@ class Orchestra(
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             is SetAirplaneModeCommand -> setAirplaneMode(command)
             is ToggleAirplaneModeCommand -> toggleAirplaneMode()
+            is InstallAppCommand -> installApp(command)
             else -> true
         }.also { mutating ->
             if (mutating) {
                 timeMsOfLastInteraction = System.currentTimeMillis()
             }
         }
+    }
+
+    private fun installApp(command: InstallAppCommand): Boolean {
+        maestro.installApp(command.path)
+
+        return true
     }
 
     private fun setAirplaneMode(command: SetAirplaneModeCommand): Boolean {

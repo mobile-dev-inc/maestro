@@ -79,6 +79,7 @@ data class YamlFluentCommand(
     val addMedia: YamlAddMedia? = null,
     val setAirplaneMode: YamlSetAirplaneMode? = null,
     val toggleAirplaneMode: YamlToggleAirplaneMode? = null,
+    val installApp: YamlInstallApp? = null,
 ) {
 
     @SuppressWarnings("ComplexMethod")
@@ -251,6 +252,14 @@ data class YamlFluentCommand(
                 val tapRepeat = TapRepeat(2, delay)
                 listOf(tapCommand(doubleTapOn, tapRepeat = tapRepeat))
             }
+            installApp != null -> listOf(
+                MaestroCommand(
+                    InstallAppCommand(
+                        path = installApp.path,
+                        label = installApp.label
+                    )
+                )
+            )
             setAirplaneMode != null -> listOf(MaestroCommand(SetAirplaneModeCommand(setAirplaneMode.value, setAirplaneMode.label, setAirplaneMode.optional)))
             toggleAirplaneMode != null -> listOf(MaestroCommand(ToggleAirplaneModeCommand(toggleAirplaneMode.label, toggleAirplaneMode.optional)))
             else -> throw SyntaxError("Invalid command: No mapping provided for $this")
@@ -727,6 +736,10 @@ data class YamlFluentCommand(
 
                 "assertNoDefectsWithAI" -> YamlFluentCommand(
                     assertNoDefectsWithAI = YamlAssertNoDefectsWithAI()
+                )
+
+                "installApp" -> YamlFluentCommand(
+                    installApp = YamlInstallApp()
                 )
 
                 else -> throw SyntaxError("Invalid command: \"$stringCommand\"")
