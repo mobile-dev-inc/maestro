@@ -51,6 +51,7 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.xml.parsers.DocumentBuilderFactory
@@ -76,6 +77,7 @@ class AndroidDriver(
     private val blockingStubWithTimeout get() = blockingStub.withDeadlineAfter(120, TimeUnit.SECONDS)
     private val asyncStub = MaestroDriverGrpc.newStub(channel)
     private val documentBuilderFactory = DocumentBuilderFactory.newInstance()
+    private val deviceCallSemaphore = Semaphore(1)
 
     private var instrumentationSession: AdbShellStream? = null
     private var proxySet = false
@@ -1143,6 +1145,7 @@ class AndroidDriver(
     }
 
     private fun <T> runDeviceCall(call: () -> T): T {
+        deviceCallSemaphore.acquire()
         return try {
             call()
         } catch (throwable: StatusRuntimeException) {
@@ -1152,6 +1155,8 @@ class AndroidDriver(
                 throw MaestroException.DriverTimeout("Android driver unreachable")
             }
             throw throwable
+        } finally {
+            deviceCallSemaphore.release()
         }
     }
 
