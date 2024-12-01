@@ -47,6 +47,7 @@ import okio.Buffer
 import okio.Sink
 import okio.buffer
 import okio.sink
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.Long.max
 
@@ -298,6 +299,7 @@ class Orchestra(
             is AddMediaCommand -> addMediaCommand(command.mediaPaths)
             is SetAirplaneModeCommand -> setAirplaneMode(command)
             is ToggleAirplaneModeCommand -> toggleAirplaneMode()
+            is RetryCommand -> retryCommand(command, config)
             else -> true
         }.also { mutating ->
             if (mutating) {
@@ -560,6 +562,24 @@ class Orchestra(
         return mutatiing
     }
 
+    private fun retryCommand(command: RetryCommand, config: MaestroConfig?): Boolean {
+        val maxAttempts = command.maxAttempts?.toIntOrNull() ?: 2
+
+        var attempt = 0
+        while(attempt < maxAttempts) {
+            try {
+                return runSubFlow(command.commands, config, command.config)
+            } catch (exception: Throwable) {
+                val message = "Retrying the commands due to an error while execution"
+                logger.error("Attempt $attempt failed for retry command", exception)
+                insights.report(Insight(message = message, Insight.Level.WARNING))
+            }
+            attempt++
+        }
+
+        return false
+    }
+
     private fun updateMetadata(rawCommand: MaestroCommand, metadata: CommandMetadata) {
         rawCommandToMetadata[rawCommand] = metadata
         onCommandMetadataUpdate(rawCommand, metadata)
@@ -719,14 +739,14 @@ class Orchestra(
     private fun runSubFlow(
         commands: List<MaestroCommand>,
         config: MaestroConfig?,
-        subflowConfig: MaestroConfig?
+        subflowConfig: MaestroConfig?,
     ): Boolean {
         executeDefineVariablesCommands(commands, config)
         // filter out DefineVariablesCommand to not execute it twice
         val filteredCommands = commands.filter { it.asCommand() !is DefineVariablesCommand }
 
-        var exception: Throwable? = null
         var flowSuccess = false
+        val onCompleteSuccess: Boolean
         try {
             val onStartSuccess = subflowConfig?.onFlowStart?.commands?.let {
                 executeSubflowCommands(it, config)
@@ -736,16 +756,13 @@ class Orchestra(
                 flowSuccess = executeSubflowCommands(filteredCommands, config)
             }
         } catch (e: Throwable) {
-            exception = e
+            throw e
         } finally {
-            val onCompleteSuccess = subflowConfig?.onFlowComplete?.commands?.let {
+            onCompleteSuccess = subflowConfig?.onFlowComplete?.commands?.let {
                 executeSubflowCommands(it, config)
             } ?: true
-
-            exception?.let { throw it }
-
-            return onCompleteSuccess && flowSuccess
         }
+        return onCompleteSuccess && flowSuccess
     }
 
     private fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
@@ -1219,5 +1236,6 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+        private val logger = LoggerFactory.getLogger(Orchestra::class.java)
     }
 }

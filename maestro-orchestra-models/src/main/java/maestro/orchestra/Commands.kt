@@ -801,6 +801,42 @@ data class RepeatCommand(
 
 }
 
+data class RetryCommand(
+    val maxAttempts: String? = null,
+    val commands: List<MaestroCommand>,
+    val config: MaestroConfig?,
+    override val label: String? = null,
+    override val optional: Boolean = false,
+) : CompositeCommand {
+
+    override fun subCommands(): List<MaestroCommand> {
+        return commands
+    }
+
+    override fun config(): MaestroConfig? {
+        return null
+    }
+
+    override fun description(): String {
+        val maxAttempts = maxAttempts?.toIntOrNull() ?: 1
+
+        return when {
+            label != null -> {
+                label
+            }
+            maxAttempts > 1 -> "Retry $maxAttempts times"
+            else -> "Retry indefinitely"
+        }
+    }
+
+    override fun evaluateScripts(jsEngine: JsEngine): Command {
+        return copy(
+            maxAttempts = maxAttempts?.evaluateScripts(jsEngine),
+        )
+    }
+
+}
+
 data class DefineVariablesCommand(
     val env: Map<String, String>,
     override val label: String? = null,
