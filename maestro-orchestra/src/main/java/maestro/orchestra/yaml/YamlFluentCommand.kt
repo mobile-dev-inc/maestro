@@ -340,9 +340,11 @@ data class YamlFluentCommand(
         }
 
 
+        val maxRetries = retry.maxRetries ?: "1"
+
         return MaestroCommand(
             RetryCommand(
-                maxAttempts = retry.maxAttempts ?: "2",
+                maxRetries = maxRetries,
                 commands = commands,
                 label = retry.label,
                 optional = retry.optional,

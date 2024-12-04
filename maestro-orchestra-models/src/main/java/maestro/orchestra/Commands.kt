@@ -802,7 +802,7 @@ data class RepeatCommand(
 }
 
 data class RetryCommand(
-    val maxAttempts: String? = null,
+    val maxRetries: String? = null,
     val commands: List<MaestroCommand>,
     val config: MaestroConfig?,
     override val label: String? = null,
@@ -818,20 +818,19 @@ data class RetryCommand(
     }
 
     override fun description(): String {
-        val maxAttempts = maxAttempts?.toIntOrNull() ?: 1
+        val maxAttempts = maxRetries?.toIntOrNull() ?: 1
 
         return when {
             label != null -> {
                 label
             }
-            maxAttempts > 1 -> "Retry $maxAttempts times"
-            else -> "Retry indefinitely"
+            else -> "Retry $maxAttempts times"
         }
     }
 
     override fun evaluateScripts(jsEngine: JsEngine): Command {
         return copy(
-            maxAttempts = maxAttempts?.evaluateScripts(jsEngine),
+            maxRetries = maxRetries?.evaluateScripts(jsEngine),
         )
     }
 

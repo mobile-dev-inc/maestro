@@ -1,7 +1,7 @@
 package maestro.orchestra.yaml
 
 data class YamlRetryCommand(
-    val maxAttempts: String? = null,
+    val maxRetries: String? = null,
     val file: String? = null,
     val commands: List<YamlFluentCommand>? = null,
     val env: Map<String, String> = emptyMap(),

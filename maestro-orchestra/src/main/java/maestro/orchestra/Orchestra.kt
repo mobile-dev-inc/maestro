@@ -563,15 +563,20 @@ class Orchestra(
     }
 
     private fun retryCommand(command: RetryCommand, config: MaestroConfig?): Boolean {
-        val maxAttempts = command.maxAttempts?.toIntOrNull() ?: 2
+        val maxRetries = (command.maxRetries?.toIntOrNull() ?: 1).coerceAtMost(MAX_RETRIES_ALLOWED)
 
         var attempt = 0
-        while(attempt < maxAttempts) {
+        while(attempt <= maxRetries) {
             try {
                 return runSubFlow(command.commands, config, command.config)
             } catch (exception: Throwable) {
-                val message = "Retrying the commands due to an error while execution"
-                logger.error("Attempt $attempt failed for retry command", exception)
+                if (attempt == maxRetries) {
+                    logger.error("Max retries ($maxRetries) reached. Commands failed.", exception)
+                    break
+                }
+
+                val message = "Retrying the commands due to an error: ${exception.message} while execution (Attempt ${attempt + 1})"
+                logger.error("Attempt ${attempt +1} failed for retry command", exception)
                 insights.report(Insight(message = message, Insight.Level.WARNING))
             }
             attempt++
@@ -1236,6 +1241,7 @@ class Orchestra(
         val REGEX_OPTIONS = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL, RegexOption.MULTILINE)
 
         private const val MAX_ERASE_CHARACTERS = 50
+        private const val MAX_RETRIES_ALLOWED = 3
         private val logger = LoggerFactory.getLogger(Orchestra::class.java)
     }
 }
