@@ -40,7 +40,7 @@ struct InputTextRouteHandler : HTTPHandler {
 
         // Return an error response if the keyboard is not presented
         if !isKeyboardPresented {
-            return AppError(type: .timeout, message: "Keyboard not presented within the timeout").httpResponse
+            return AppError(type: .timeout, message: "Keyboard not presented within 1 second timeout for input command").httpResponse
         }
         return nil
     }
