@@ -22,6 +22,7 @@ package maestro.drivers
 import com.github.michaelbull.result.expect
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.runCatching
 import hierarchy.AXElement
 import ios.IOSDevice
 import ios.IOSDeviceErrors
@@ -29,6 +30,7 @@ import maestro.*
 import maestro.UiElement.Companion.toUiElement
 import maestro.UiElement.Companion.toUiElementOrNull
 import maestro.utils.*
+import maestro.utils.network.XCUITestServerError
 import okio.Sink
 import okio.source
 import org.slf4j.LoggerFactory
@@ -415,8 +417,11 @@ class IOSDriver(
 
     override fun inputText(text: String) {
         metrics.measured("operation", mapOf("command" to "inputText")) {
-            // silently fail if no XCUIElement has focus
-            runDeviceCall("inputText") { iosDevice.input(text = text) }
+            try {
+                runDeviceCall("inputText") { iosDevice.input(text = text) }
+            } catch (badRequest: XCUITestServerError.BadRequest) {
+                LOGGER.info("Bad request for input text, reason: ${badRequest.message}")
+            }
         }
     }
 
@@ -434,7 +439,11 @@ class IOSDriver(
 
     override fun eraseText(charactersToErase: Int) {
         metrics.measured("operation", mapOf("command" to "eraseText")) {
-            runDeviceCall("eraseText") { iosDevice.eraseText(charactersToErase) }
+            try {
+                runDeviceCall("eraseText") { iosDevice.eraseText(charactersToErase) }
+            } catch (badRequest: XCUITestServerError.BadRequest) {
+                LOGGER.info("Bad request for erase text, reason: ${badRequest.message}")
+            }
         }
     }
 
