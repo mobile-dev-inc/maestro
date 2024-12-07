@@ -81,6 +81,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
             }
         )
 
+        seleniumDriver
+            ?.let { it as? HasDevTools }
+            ?.devTools
+            ?.createSessionIfThereIsNotOne()
+
         if (isStudio) {
             seleniumDriver?.get("https://maestro.mobile.dev")
         }
@@ -130,12 +135,15 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun close() {
-        seleniumDriver?.quit()
+        try {
+            seleniumDriver?.quit()
+            webScreenRecorder?.close()
+        } catch (e: Exception) {
+            // Swallow the exception to avoid crashing the whole process
+        }
+
         seleniumDriver = null
-
         lastSeenWindowHandles = setOf()
-
-        webScreenRecorder?.close()
         webScreenRecorder = null
     }
 
