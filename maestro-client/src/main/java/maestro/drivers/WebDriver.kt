@@ -21,16 +21,15 @@ import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.Keys
 import org.openqa.selenium.OutputType
 import org.openqa.selenium.TakesScreenshot
-import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
-import org.openqa.selenium.chrome.ChromeOptions
-import org.openqa.selenium.chromium.ChromiumDriverLogLevel
 import org.openqa.selenium.devtools.HasDevTools
 import org.openqa.selenium.devtools.v130.emulation.Emulation
+import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -64,21 +63,22 @@ class WebDriver(val isStudio: Boolean) : Driver {
         Logger.getLogger("org.openqa.selenium").level = Level.OFF
         Logger.getLogger("org.openqa.selenium.devtools.CdpVersionFinder").level = Level.OFF
 
-        val driverService = ChromeDriverService.Builder()
-            .withLogLevel(ChromiumDriverLogLevel.OFF)
-            .build()
-
-        seleniumDriver = ChromeDriver(
-            driverService,
-            ChromeOptions().apply {
-                addArguments("--remote-allow-origins=*")
-                addArguments("--disable-search-engine-choice-screen")
-                if (isStudio) {
-                    addArguments("--headless=new")
-                    addArguments("--window-size=1024,768")
-                }
-            }
-        )
+//        val driverService = ChromeDriverService.Builder()
+//            .withLogLevel(ChromiumDriverLogLevel.OFF)
+//            .build()
+//
+//        seleniumDriver = ChromeDriver(
+//            driverService,
+//            ChromeOptions().apply {
+//                addArguments("--remote-allow-origins=*")
+//                addArguments("--disable-search-engine-choice-screen")
+//                if (isStudio) {
+//                    addArguments("--headless=new")
+//                    addArguments("--window-size=1024,768")
+//                }
+//            }
+//        )
+        seleniumDriver = FirefoxDriver()
 
         if (isStudio) {
             seleniumDriver?.get("https://maestro.mobile.dev")
@@ -228,7 +228,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
             lastSeenWindowHandles = driver.windowHandles
 
             if (newHandles.isNotEmpty()) {
-                driver.switchTo().window(newHandles.first())
+                val newHandle = newHandles.first();
+                LOGGER.info("Detected a window change, switching to new window handle $newHandle")
+
+                driver.switchTo().window(newHandle)
 
                 webScreenRecorder?.onWindowChange()
             }
@@ -289,7 +292,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
     }
 
     override fun isKeyboardVisible(): Boolean {
-        return false;
+        return false
     }
 
     override fun swipe(start: Point, end: Point, durationMs: Long) {
@@ -458,5 +461,7 @@ class WebDriver(val isStudio: Boolean) : Driver {
     companion object {
         private const val SCREENSHOT_DIFF_THRESHOLD = 0.005
         private const val RETRY_FETCHING_CONTENT_DESCRIPTION = 10
+
+        private val LOGGER = LoggerFactory.getLogger(maestro.drivers.WebDriver::class.java)
     }
 }
