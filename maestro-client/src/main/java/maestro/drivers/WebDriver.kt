@@ -21,10 +21,12 @@ import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.Keys
 import org.openqa.selenium.OutputType
 import org.openqa.selenium.TakesScreenshot
+import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
+import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.chromium.ChromiumDriverLogLevel
 import org.openqa.selenium.devtools.HasDevTools
 import org.openqa.selenium.devtools.v130.emulation.Emulation
-import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -63,22 +65,21 @@ class WebDriver(val isStudio: Boolean) : Driver {
         Logger.getLogger("org.openqa.selenium").level = Level.OFF
         Logger.getLogger("org.openqa.selenium.devtools.CdpVersionFinder").level = Level.OFF
 
-//        val driverService = ChromeDriverService.Builder()
-//            .withLogLevel(ChromiumDriverLogLevel.OFF)
-//            .build()
-//
-//        seleniumDriver = ChromeDriver(
-//            driverService,
-//            ChromeOptions().apply {
-//                addArguments("--remote-allow-origins=*")
-//                addArguments("--disable-search-engine-choice-screen")
-//                if (isStudio) {
-//                    addArguments("--headless=new")
-//                    addArguments("--window-size=1024,768")
-//                }
-//            }
-//        )
-        seleniumDriver = FirefoxDriver()
+        val driverService = ChromeDriverService.Builder()
+            .withLogLevel(ChromiumDriverLogLevel.OFF)
+            .build()
+
+        seleniumDriver = ChromeDriver(
+            driverService,
+            ChromeOptions().apply {
+                addArguments("--remote-allow-origins=*")
+                addArguments("--disable-search-engine-choice-screen")
+                if (isStudio) {
+                    addArguments("--headless=new")
+                    addArguments("--window-size=1024,768")
+                }
+            }
+        )
 
         if (isStudio) {
             seleniumDriver?.get("https://maestro.mobile.dev")
