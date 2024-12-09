@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import dev.mobile.maestro.handlers.LocaleSettingHandler
 import org.apache.commons.lang3.LocaleUtils
+import java.io.EOFException
 import java.util.*
 
 class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
@@ -65,6 +66,10 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             Log.i(TAG, "Set locale: $locale")
             resultCode = RESULT_SUCCESS
             resultData = locale.toString()
+        } catch (e: EOFException) {
+            Log.e(TAG, "EOFException when setting locale", e)
+            resultCode = RESULT_UPDATE_EOF_FAILED
+            resultData = "Eof exception when set locale $locale, exception during updating configuration occurred: $e"
         } catch (e: Exception) {
             Log.e(TAG, "Failed to set locale", e)
             resultCode = RESULT_UPDATE_CONFIGURATION_FAILED
@@ -108,5 +113,6 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
         private const val RESULT_SUCCESS = 0
         private const val RESULT_LOCALE_NOT_VALID = 1
         private const val RESULT_UPDATE_CONFIGURATION_FAILED = 2
+        private const val RESULT_UPDATE_EOF_FAILED = 3
     }
 }
