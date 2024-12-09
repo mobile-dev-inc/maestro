@@ -25,10 +25,11 @@ enum Route: String, CaseIterable {
 
 struct XCTestHTTPServer {
     func start() async throws {
-        let port = ProcessInfo.processInfo.environment["PORT"]?.toUInt16()
+        let port = ProcessInfo.processInfo.environment["PORT"]?.toUInt16() ?? 22087
+        
         let acceptRemoteConnections = ProcessInfo.processInfo.environment["ACCEPT_REMOTE_CONNECTIONS"] == "true"
 
-        let address = acceptRemoteConnections ? .inet(port: port) : .loopback(port: port)
+        let server = HTTPServer(address: acceptRemoteConnections ? .inet6(port: port) : .loopback(port: port))
 
         for route in Route.allCases {
             let handler = await RouteHandlerFactory.createRouteHandler(route: route)
