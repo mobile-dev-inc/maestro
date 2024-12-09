@@ -7,18 +7,15 @@ import android.util.Log
 import dev.mobile.maestro.handlers.LocaleSettingHandler
 import org.apache.commons.lang3.LocaleUtils
 import java.util.*
-import org.slf4j.LoggerFactory
 import java.lang.Exception
 
 class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
-    val logger = LoggerFactory.getLogger(LocaleSettingReceiver::class.java)
 
     override fun onReceive(context: Context, intent: Intent) {
         var language = intent.getStringExtra(LANG)
         var country = intent.getStringExtra(COUNTRY)
 
         if (language == null || country == null) {
-            logger.warn("Setting locale en-US by default")
             Log.w(
                 TAG, "It is required to provide both language and country, for example: " +
                         "am broadcast -a dev.mobile.maestro --es lang ja --es country JP"
@@ -33,10 +30,12 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
         Log.i(TAG, "Obtained locale: $locale")
 
         try {
+            Log.i(TAG, "getting string extra for device locale")
             val script = intent.getStringExtra(SCRIPT)
             if (script != null) {
+                Log.i(TAG, "setting script with device locale")
                 Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
-                logger.info("Script added to locale")
+                Log.i(TAG, "script set for device locale")
             }
 
             if (!LocaleUtils.isAvailableLocale(locale)) {
@@ -69,7 +68,7 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
                 }
             }
         } catch (e: Exception) {
-            logger.error("Error while validating locale", e)
+            Log.e(TAG, "Failed to validate device locale", e)
             resultCode = RESULT_LOCALE_NOT_VALID
             resultData = "Failed to set locale $locale, the locale is not valid"
         }
@@ -80,7 +79,6 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             resultCode = RESULT_SUCCESS
             resultData = locale.toString()
         } catch (e: Exception) {
-            logger.error("Error while running set locale", e)
             Log.e(TAG, "Failed to set locale", e)
             resultCode = RESULT_UPDATE_CONFIGURATION_FAILED
             resultData = "Failed to set locale $locale, exception during updating configuration occurred: $e"
