@@ -29,7 +29,7 @@ struct XCTestHTTPServer {
         
         let acceptRemoteConnections = ProcessInfo.processInfo.environment["ACCEPT_REMOTE_CONNECTIONS"] == "true"
 
-        let server = HTTPServer(address: acceptRemoteConnections ? .inet6(port: port) : .loopback(port: port))
+        let server = HTTPServer(address: acceptRemoteConnections ? .inet6(port: port) : .loopback(port: port), timeout: 100)
 
         for route in Route.allCases {
             let handler = await RouteHandlerFactory.createRouteHandler(route: route)

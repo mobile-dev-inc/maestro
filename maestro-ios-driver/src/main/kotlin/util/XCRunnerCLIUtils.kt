@@ -1,7 +1,6 @@
 package util
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import maestro.utils.MaestroTimer
 import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.nio.file.Files
@@ -142,7 +141,7 @@ object XCRunnerCLIUtils {
             ),
             waitForCompletion = false,
             outputFile = outputFile,
-            params = mapOf("TEST_RUNNER_PORT" to port.toString(), "ACCEPT_REMOTE_CONNECTIONS" to acceptRemoteConnections.toString())
+            envVars = mapOf("TEST_RUNNER_PORT" to port.toString(), "ACCEPT_REMOTE_CONNECTIONS" to acceptRemoteConnections.toString())
         )
     }
 }
