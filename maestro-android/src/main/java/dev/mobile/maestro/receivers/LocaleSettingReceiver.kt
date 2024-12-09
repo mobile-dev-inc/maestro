@@ -6,17 +6,23 @@ import android.content.Intent
 import android.util.Log
 import dev.mobile.maestro.handlers.LocaleSettingHandler
 import org.apache.commons.lang3.LocaleUtils
-import java.io.EOFException
 import java.util.*
+import org.slf4j.LoggerFactory
+import java.lang.Exception
 
 class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
+    val logger = LoggerFactory.getLogger(LocaleSettingReceiver::class.java)
+
     override fun onReceive(context: Context, intent: Intent) {
         var language = intent.getStringExtra(LANG)
         var country = intent.getStringExtra(COUNTRY)
 
         if (language == null || country == null) {
-            Log.w(TAG, "It is required to provide both language and country, for example: " +
-                    "am broadcast -a dev.mobile.maestro --es lang ja --es country JP")
+            logger.warn("Setting locale en-US by default")
+            Log.w(
+                TAG, "It is required to provide both language and country, for example: " +
+                        "am broadcast -a dev.mobile.maestro --es lang ja --es country JP"
+            )
             Log.i(TAG, "Set en-US by default.")
             language = "en"
             country = "US"
@@ -26,39 +32,45 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
 
         Log.i(TAG, "Obtained locale: $locale")
 
-        val script = intent.getStringExtra(SCRIPT)
-        if (script != null) {
-            Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
-        }
-
-        if (!LocaleUtils.isAvailableLocale(locale)) {
-            val approximateMatchesLc = matchLocales(language, country)
-
-            if (approximateMatchesLc.isNotEmpty() && script.isNullOrBlank()) {
-                Log.i(
-                    TAG,
-                    "The locale $locale is not known. Selecting the closest known one ${approximateMatchesLc[0]} instead"
-                )
-                locale = approximateMatchesLc[0]
-            } else {
-                val approximateMatchesL = matchLocales(language)
-                if (approximateMatchesL.isEmpty()) {
-                    Log.e(
-                        TAG,
-                        "The locale $locale is not known. Only the following locales are available: ${LocaleUtils.availableLocaleList()}"
-                    )
-                } else {
-                    Log.e(
-                        TAG,
-                        "The locale $locale is not known. " +
-                                "The following locales are available for the $language language: $approximateMatchesL" +
-                                "The following locales are available altogether: ${LocaleUtils.availableLocaleList()}"
-                    )
-                }
-                resultCode = RESULT_LOCALE_NOT_VALID
-                resultData = "Failed to set locale $locale, the locale is not valid"
-                return
+        try {
+            val script = intent.getStringExtra(SCRIPT)
+            if (script != null) {
+                Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
             }
+
+            if (!LocaleUtils.isAvailableLocale(locale)) {
+                val approximateMatchesLc = matchLocales(language, country)
+
+                if (approximateMatchesLc.isNotEmpty() && script.isNullOrBlank()) {
+                    Log.i(
+                        TAG,
+                        "The locale $locale is not known. Selecting the closest known one ${approximateMatchesLc[0]} instead"
+                    )
+                    locale = approximateMatchesLc[0]
+                } else {
+                    val approximateMatchesL = matchLocales(language)
+                    if (approximateMatchesL.isEmpty()) {
+                        Log.e(
+                            TAG,
+                            "The locale $locale is not known. Only the following locales are available: ${LocaleUtils.availableLocaleList()}"
+                        )
+                    } else {
+                        Log.e(
+                            TAG,
+                            "The locale $locale is not known. " +
+                                    "The following locales are available for the $language language: $approximateMatchesL" +
+                                    "The following locales are available altogether: ${LocaleUtils.availableLocaleList()}"
+                        )
+                    }
+                    resultCode = RESULT_LOCALE_NOT_VALID
+                    resultData = "Failed to set locale $locale, the locale is not valid"
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error while validating locale", e)
+            resultCode = RESULT_LOCALE_NOT_VALID
+            resultData = "Failed to set locale $locale, the locale is not valid"
         }
 
         try {
@@ -66,11 +78,8 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             Log.i(TAG, "Set locale: $locale")
             resultCode = RESULT_SUCCESS
             resultData = locale.toString()
-        } catch (e: EOFException) {
-            Log.e(TAG, "EOFException when setting locale", e)
-            resultCode = RESULT_UPDATE_EOF_FAILED
-            resultData = "Eof exception when set locale $locale, exception during updating configuration occurred: $e"
         } catch (e: Exception) {
+            logger.error("Error while running set locale", e)
             Log.e(TAG, "Failed to set locale", e)
             resultCode = RESULT_UPDATE_CONFIGURATION_FAILED
             resultData = "Failed to set locale $locale, exception during updating configuration occurred: $e"
