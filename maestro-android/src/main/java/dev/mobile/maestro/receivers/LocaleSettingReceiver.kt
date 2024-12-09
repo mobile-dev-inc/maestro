@@ -36,6 +36,7 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             val script = intent.getStringExtra(SCRIPT)
             if (script != null) {
                 Locale.Builder().setLocale(locale).setScript(script).build().also { locale = it }
+                logger.info("Script added to locale")
             }
 
             if (!LocaleUtils.isAvailableLocale(locale)) {
@@ -122,6 +123,5 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
         private const val RESULT_SUCCESS = 0
         private const val RESULT_LOCALE_NOT_VALID = 1
         private const val RESULT_UPDATE_CONFIGURATION_FAILED = 2
-        private const val RESULT_UPDATE_EOF_FAILED = 3
     }
 }

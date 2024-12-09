@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import org.lsposed.hiddenapibypass.HiddenApiBypass
-import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
 import java.util.*
 
@@ -22,8 +21,7 @@ class LocaleSettingHandler(context: Context) : AbstractSettingHandler(context, l
         NoSuchMethodException::class,
         InvocationTargetException::class,
         IllegalAccessException::class,
-        NoSuchFieldException::class,
-        EOFException::class
+        NoSuchFieldException::class
     )
     private fun setLocaleWith(locale: Locale) {
         var activityManagerNativeClass = Class.forName("android.app.ActivityManagerNative")
