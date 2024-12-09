@@ -69,8 +69,8 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to validate device locale", e)
-            resultCode = RESULT_LOCALE_NOT_VALID
-            resultData = "Failed to set locale $locale, the locale is not valid"
+            resultCode = RESULT_LOCALE_VALIDATION_FAILED
+            resultData = "Failed to set locale $locale: ${e.message}"
         }
 
         try {
@@ -121,5 +121,6 @@ class LocaleSettingReceiver : BroadcastReceiver(), HasAction {
         private const val RESULT_SUCCESS = 0
         private const val RESULT_LOCALE_NOT_VALID = 1
         private const val RESULT_UPDATE_CONFIGURATION_FAILED = 2
+        private const val RESULT_LOCALE_VALIDATION_FAILED = 3
     }
 }
