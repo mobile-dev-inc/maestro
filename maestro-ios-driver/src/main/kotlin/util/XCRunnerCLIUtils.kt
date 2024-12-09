@@ -121,7 +121,7 @@ object XCRunnerCLIUtils {
         return runningApps(deviceId)[bundleId]
     }
 
-    fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String, port: Int, enableXCTestOutputFileLogging: Boolean = false): Process {
+    fun runXcTestWithoutBuild(deviceId: String, xcTestRunFilePath: String, port: Int, enableXCTestOutputFileLogging: Boolean = false, acceptRemoteConnections: Boolean = false): Process {
         val date = dateFormatter.format(LocalDateTime.now())
         val outputFile = if (enableXCTestOutputFileLogging) {
             File(logDirectory, "xctest_runner_$date.log")
@@ -142,7 +142,7 @@ object XCRunnerCLIUtils {
             ),
             waitForCompletion = false,
             outputFile = outputFile,
-            params = mapOf("TEST_RUNNER_PORT" to port.toString())
+            params = mapOf("TEST_RUNNER_PORT" to port.toString(), "ACCEPT_REMOTE_CONNECTIONS" to acceptRemoteConnections.toString())
         )
     }
 }
