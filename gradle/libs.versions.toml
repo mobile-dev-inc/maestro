@@ -42,7 +42,8 @@ micrometerCore = "1.13.4"
 mockk = "1.12.0"
 mozillaRhino = "1.7.14"
 picocli = "4.6.3"
-selenium = "4.13.0"
+selenium = "4.26.0"
+selenium-devtools = "4.26.0"
 skiko = "0.8.18"
 slf4j = "1.7.36"
 squareOkhttp = "4.12.0"
@@ -53,6 +54,7 @@ logback = "1.2.6"
 coroutines = "1.8.0"
 kotlinx-html = "0.8.0"
 clikt = "4.2.2"
+jcodec = "0.2.5"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -114,6 +116,7 @@ mozilla-rhino = { module = "org.mozilla:rhino", version.ref = "mozillaRhino" }
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
 selenium = { module = "org.seleniumhq.selenium:selenium-java", version.ref = "selenium" }
+selenium-devtools = { module = "org.seleniumhq.selenium:selenium-devtools-v130", version.ref = "selenium-devtools" }
 skiko-macos-arm64 = { module = "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64", version.ref = "skiko" }
 skiko-macos-x64 = { module = "org.jetbrains.skiko:skiko-awt-runtime-macos-x64", version.ref = "skiko" }
 skiko-linux-arm64 = { module = "org.jetbrains.skiko:skiko-awt-runtime-linux-arm64", version.ref = "skiko" }
@@ -127,6 +130,8 @@ square-okio = { module = "com.squareup.okio:okio", version.ref = "squareOkio" }
 square-mock-server = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "squareMockWebServer" }
 wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
+jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 [bundles]
 
