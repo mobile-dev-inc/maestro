@@ -49,7 +49,7 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jansi)
     implementation(libs.jcodec)
-    implementation(libs.jcodec.awt)
+    implementation(libs.jcodec.javase)
     implementation(libs.square.okhttp)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
