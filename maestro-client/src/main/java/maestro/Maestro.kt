@@ -183,10 +183,9 @@ class Maestro(
         tapRepeat: TapRepeat? = null,
         waitToSettleTimeoutMs: Int? = null
     ) {
-        LOGGER.info("Tapping on element: ${tapRepeat ?: ""} $element")
-
         val hierarchyBeforeTap = waitForAppToSettle(initialHierarchy, appId, waitToSettleTimeoutMs) ?: initialHierarchy
-
+        
+        LOGGER.info("Tapping on element: ${tapRepeat ?: ""} $element")
         val center = (
                 hierarchyBeforeTap
                     .refreshElement(element.treeNode)
@@ -473,8 +472,9 @@ class Maestro(
     fun waitForAppToSettle(
         initialHierarchy: ViewHierarchy? = null,
         appId: String? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = 20000
     ): ViewHierarchy? {
+        LOGGER.info("Waiting for app to settle with timeout ${waitToSettleTimeoutMs}ms")
         return driver.waitForAppToSettle(initialHierarchy, appId, waitToSettleTimeoutMs)
     }
 
