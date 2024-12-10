@@ -74,9 +74,11 @@ class WebDriver(val isStudio: Boolean) : Driver {
             ChromeOptions().apply {
                 addArguments("--remote-allow-origins=*")
                 addArguments("--disable-search-engine-choice-screen")
+                addArguments("--lang=en")
                 if (isStudio) {
                     addArguments("--headless=new")
                     addArguments("--window-size=1024,768")
+                    setExperimentalOption("detach", true)
                 }
             }
         )
