@@ -30,6 +30,7 @@ class LocalXCTestInstaller(
         connectTimeout = 1.seconds,
         readTimeout = 100.seconds,
     ),
+    private val acceptRemoteConnections: Boolean = false,
     ) : XCTestInstaller {
 
     private val logger = LoggerFactory.getLogger(LocalXCTestInstaller::class.java)
@@ -202,6 +203,7 @@ class LocalXCTestInstaller(
             xcTestRunFilePath = xctestRunFile.absolutePath,
             port = defaultPort,
             enableXCTestOutputFileLogging = enableXCTestOutputFileLogging,
+            acceptRemoteConnections = acceptRemoteConnections,
         )
         logger.info("[Done] Running XcUITest with `xcodebuild test-without-building`")
     }
