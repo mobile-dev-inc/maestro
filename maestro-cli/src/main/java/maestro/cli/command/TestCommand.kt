@@ -59,6 +59,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.absolutePathString
 import kotlin.math.roundToInt
+import maestro.cli.device.Platform
 
 @CommandLine.Command(
     name = "test",
@@ -150,6 +151,15 @@ class TestCommand : Callable<Int> {
     )
     private var excludeTags: List<String> = emptyList()
 
+    @Option(names = ["-p", "--platform"], description = ["Select a platform to run on"])
+    var platform: String? = null
+
+    @Option(
+        names = ["--device", "--udid"],
+        description = ["Device ID to run on explicitly, can be a comma separated list of IDs: --device \"Emulator_1,Emulator_2\" "],
+    )
+    var deviceId: String? = null
+
     @CommandLine.Spec
     lateinit var commandSpec: CommandLine.Model.CommandSpec
 
@@ -210,16 +220,23 @@ class TestCommand : Callable<Int> {
 
         val onlySequenceFlows = plan.sequence.flows.isNotEmpty() && plan.flowsToRun.isEmpty() // An edge case
 
-        val availableDevices = DeviceService.listConnectedDevices().map { it.instanceId }.toSet()
+        val connectedDevices = DeviceService.listConnectedDevices()
+        val availableDevicesIds = connectedDevices.map { it.instanceId }.toSet()
+
         val deviceIds = getPassedOptionsDeviceIds()
             .filter { device ->
-                if (device !in availableDevices) {
+                if (device !in availableDevicesIds) {
                     throw CliError("Device $device was requested, but it is not connected.")
                 } else {
                     true
                 }
             }
-            .ifEmpty { availableDevices }
+            .ifEmpty {
+                val platform = platform ?: parent?.platform
+                connectedDevices
+                    .filter { platform == null || it.platform == Platform.fromString(platform) }
+                    .map { it.instanceId }.toSet()
+            }
             .toList()
 
         val missingDevices = requestedShards - deviceIds.size
@@ -282,7 +299,7 @@ class TestCommand : Callable<Int> {
         if (passed == total) 0 else 1
     }
 
-    private suspend fun runShardSuite(
+    private fun runShardSuite(
         effectiveShards: Int,
         deviceIds: List<String>,
         shardIndex: Int,
@@ -299,7 +316,7 @@ class TestCommand : Callable<Int> {
             port = parent?.port,
             driverHostPort = driverHostPort,
             deviceId = deviceId,
-            platform = parent?.platform,
+            platform = platform ?: parent?.platform,
         ) { session ->
             val maestro = session.maestro
             val device = session.device
@@ -415,7 +432,7 @@ class TestCommand : Callable<Int> {
         val arguments = if (isWebFlow()) {
             PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n")
             "chromium"
-        } else parent?.deviceId
+        } else deviceId ?: parent?.deviceId
         val deviceIds = arguments
             .orEmpty()
             .split(",")
