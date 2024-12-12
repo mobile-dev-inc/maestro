@@ -14,7 +14,7 @@ dependencies {
     implementation(libs.selenium)
     implementation(libs.selenium.devtools)
     implementation(libs.jcodec)
-    implementation(libs.jcodec.javase)
+    implementation(libs.jcodec.awt)
 }
 
 java {

@@ -133,7 +133,6 @@ object DeviceService {
     private fun listDevices(includeWeb: Boolean): List<Device> {
         return listAndroidDevices() +
                 listIOSDevices() +
-                listWebDevices() +
                 if (includeWeb) {
                     listWebDevices()
                 } else {
