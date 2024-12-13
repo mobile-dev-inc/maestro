@@ -413,7 +413,7 @@ class TestCommand : Callable<Int> {
 
     private fun getPassedOptionsDeviceIds(): List<String> {
         val arguments = if (isWebFlow()) {
-            PrintUtils.warn("Web support is an experimental feature and may be removed in future versions.\n")
+            PrintUtils.warn("Web support is in Beta. We would appreciate your feedback!\n")
             "chromium"
         } else parent?.deviceId
         val deviceIds = arguments
