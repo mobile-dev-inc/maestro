@@ -293,9 +293,16 @@ class WebDriver(val isStudio: Boolean) : Driver {
 
         val xPath = executeJS("return window.maestro.createXPathFromElement(document.activeElement)") as String
         val element = driver.findElement(By.ByXPath(xPath))
-        val key = KeyCode.mapToSeleniumKey(code)
-            ?: throw IllegalArgumentException("Keycode $code is not supported on web")
+        val key = mapToSeleniumKey(code)
         element.sendKeys(key)
+    }
+
+    private fun mapToSeleniumKey(code: KeyCode): Keys {
+        return when (code) {
+            KeyCode.ENTER -> Keys.ENTER
+            KeyCode.BACKSPACE -> Keys.BACK_SPACE
+            else -> error("Keycode $code is not supported on web")
+        }
     }
 
     override fun scrollVertical() {
