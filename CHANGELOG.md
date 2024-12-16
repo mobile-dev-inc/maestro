@@ -3,6 +3,8 @@
 ## Unreleased
 
 ## 1.39.5
+
+Fixes:
 - Fix: Failure on how the assertConditionCommand was being handled on Robin([#2171](https://github.com/mobile-dev-inc/maestro/pull/2171))
 
 ## 1.39.4
