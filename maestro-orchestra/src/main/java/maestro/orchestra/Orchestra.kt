@@ -1338,27 +1338,6 @@ class Orchestra(
 
     class CommandWarned(override val message: String) : Exception(message)
 
-    sealed class Action {
-        data class TapPoint(val point: maestro.Point) : Action();
-
-        sealed class SwipePoint : Action() {
-            data class WithDirection(
-                val direction: SwipeDirection,
-                val startPoint: maestro.Point
-            ) : SwipePoint()
-
-            data class WithEndPoint(
-                val startPoint: maestro.Point,
-                val endPoint: maestro.Point
-            ) : SwipePoint()
-        }
-
-        data class MultipleSwipePoint(
-            val direction: SwipeDirection,
-            val points: List<maestro.Point>
-        ) : Action()
-    }
-
     data class CommandMetadata(
         val numberOfRuns: Int? = null,
         val evaluatedCommand: MaestroCommand? = null,
