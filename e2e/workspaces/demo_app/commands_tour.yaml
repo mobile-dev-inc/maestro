@@ -133,6 +133,12 @@ env:
 
 - runFlow:
     when:
+      true: ${RUN_ONLY == "" || RUN_ONLY == "retry"}
+    file: commands/retry.yaml
+    label: retry
+
+- runFlow:
+    when:
       true: ${RUN_ONLY == "" || RUN_ONLY == "runFlow"}
     file: commands/runFlow.yaml
     label: runFlow
