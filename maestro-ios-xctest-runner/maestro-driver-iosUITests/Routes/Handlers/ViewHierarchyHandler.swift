@@ -80,8 +80,12 @@ struct ViewHierarchyHandler: HTTPHandler {
     }
 
     func getHierarchyWithFallback(_ element: XCUIElement) throws -> AXElement {
+        logger.info("Starting getHierarchyWithFallback for element: \(element.debugDescription)")
+
         do {
             var hierarchy = try elementHierarchy(xcuiElement: element)
+            logger.info("Successfully retrieved element hierarchy. Depth: \(hierarchy.depth())")
+
             if hierarchy.depth() < snapshotMaxDepth {
                 return hierarchy
             }
@@ -118,11 +122,17 @@ struct ViewHierarchyHandler: HTTPHandler {
                 }
 
                 let alerts = logger.measure(message: "Fetch alert hierarchy") {
-                    fullScreenAlertHierarchy(element)
+                    fullScreenAlertHierarchy(element) {
+                        logger.info("Alert hierarchy fetched successfully.")
+                    } else {
+                        logger.warning("No alerts found in app hierarchy.")
+                    }
                 }
 
-                let other = try logger.measure(message: "Fetch other custom element from window") {
-                    try customWindowElements(element)
+                let other = try? customWindowElements(element) {
+                    logger.info("Custom window elements fetched successfully.")
+                } else {
+                    logger.warning("No custom window elements found.")
                 }
                 return AXElement(children: [
                     other,
