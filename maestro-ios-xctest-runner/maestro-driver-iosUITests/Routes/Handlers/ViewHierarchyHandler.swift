@@ -37,8 +37,10 @@ struct ViewHierarchyHandler: HTTPHandler {
             let body = try JSONEncoder().encode(viewHierarchy)
             return HTTPResponse(statusCode: .ok, body: body)
         } catch let error as AppError {
+            logger.error("AppError in handleRequest, RequestBody:\(requestBody) Error:\(error)");
             return error.httpResponse
         } catch let error {
+            logger.error("Error in handleRequest, RequestBody:\(requestBody) Error:\(error)");
             return AppError(message: "Snapshot failure while getting view hierarchy. Error: \(error.localizedDescription)").httpResponse
         }
     }
@@ -122,17 +124,7 @@ struct ViewHierarchyHandler: HTTPHandler {
                 }
 
                 let alerts = logger.measure(message: "Fetch alert hierarchy") {
-                    fullScreenAlertHierarchy(element) {
-                        logger.info("Alert hierarchy fetched successfully.")
-                    } else {
-                        logger.warning("No alerts found in app hierarchy.")
-                    }
-                }
-
-                let other = try? customWindowElements(element) {
-                    logger.info("Custom window elements fetched successfully.")
-                } else {
-                    logger.warning("No custom window elements found.")
+                    fullScreenAlertHierarchy(element)
                 }
                 return AXElement(children: [
                     other,
