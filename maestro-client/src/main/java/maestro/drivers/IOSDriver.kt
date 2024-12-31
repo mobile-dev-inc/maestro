@@ -415,7 +415,6 @@ class IOSDriver(
 
     override fun inputText(text: String) {
         metrics.measured("operation", mapOf("command" to "inputText")) {
-            // silently fail if no XCUIElement has focus
             runDeviceCall("inputText") { iosDevice.input(text = text) }
         }
     }
@@ -528,8 +527,10 @@ class IOSDriver(
         return try {
             call()
         } catch (socketTimeoutException: SocketTimeoutException) {
-            throw MaestroException.DriverTimeout("iOS driver timed out while doing $callName call")
+            LOGGER.error("Got socket timeout processing $callName command", socketTimeoutException)
+            throw socketTimeoutException
         } catch (appCrashException: IOSDeviceErrors.AppCrash) {
+            LOGGER.error("Detected app crash during $callName command", appCrashException)
             throw MaestroException.AppCrash(appCrashException.errorMessage)
         }
     }
