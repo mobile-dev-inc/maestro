@@ -819,12 +819,16 @@ class Orchestra(
             ?.let { File(it, pathStr) }
             ?: File(pathStr)
 
-        if(cropped == null){
+        if (cropped == null) {
             maestro.takeScreenshot(file.sink(), false)
-        }else{
+        } else {
             maestro.takePartialScreenshot(sink = file.sink(), bounds = cropped.element.bounds, compressed = false)
+            if (cropped == null){
+                maestro.takeScreenshot(file.sink(), false)
+            } else {
+                maestro.takePartialScreenshot(sink = file.sink(), bounds = cropped.element.bounds, compressed = false)
+            }
         }
-
         return false
     }
 
