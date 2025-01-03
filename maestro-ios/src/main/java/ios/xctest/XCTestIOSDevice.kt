@@ -177,6 +177,10 @@ class XCTestIOSDevice(
         error("Not supported")
     }
 
+    override fun setOrientation(orientation: String) {
+        execute { client.setOrientation(orientation) }
+    }
+
     override fun isShutdown(): Boolean {
         return !client.isChannelAlive()
     }

@@ -431,6 +431,12 @@ class IOSDriver(
         }
     }
 
+    override fun setOrientation(orientation: DeviceOrientation) {
+        metrics.measured("operation", mapOf("command" to "setOrientation")) {
+            runDeviceCall("setOrientation") { iosDevice.setOrientation(orientation.camelCaseName) }
+        }
+    }
+
     override fun eraseText(charactersToErase: Int) {
         metrics.measured("operation", mapOf("command" to "eraseText")) {
             runDeviceCall("eraseText") { iosDevice.eraseText(charactersToErase) }

@@ -2,6 +2,7 @@ package maestro.drivers
 
 import maestro.Capability
 import maestro.DeviceInfo
+import maestro.DeviceOrientation
 import maestro.Driver
 import maestro.KeyCode
 import maestro.Maestro
@@ -424,6 +425,10 @@ class WebDriver(val isStudio: Boolean) : Driver {
                 Optional.of(0.0)
             )
         )
+    }
+
+    override fun setOrientation(orientation: DeviceOrientation) {
+        // no-op for web
     }
 
     override fun eraseText(charactersToErase: Int) {
