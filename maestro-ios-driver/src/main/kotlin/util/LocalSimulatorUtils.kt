@@ -437,6 +437,7 @@ object LocalSimulatorUtils {
 
         if (permissionsArgument.isNotEmpty()) {
             try {
+                logger.info("[Start] Setting permissions via pinned applesimutils")
                 runCommand(
                     listOf(
                         "$homedir/.maestro/deps/applesimutils",
@@ -448,9 +449,10 @@ object LocalSimulatorUtils {
                         permissionsArgument
                     )
                 )
-                logger.info("[Done] Setting permissions through applesimutils")
+                logger.info("[Done] Setting permissions pinned applesimutils")
             } catch (e: Exception) {
-                logger.error("Exception while setting permissions through applesimutils ${e.message}", e)
+                logger.error("Exception while setting permissions through pinned applesimutils ${e.message}", e)
+                logger.info("[Start] Setting permissions via applesimutils as fallback")
                 runCommand(
                     listOf(
                         "applesimutils",
@@ -462,6 +464,7 @@ object LocalSimulatorUtils {
                         permissionsArgument
                     )
                 )
+                logger.info("[Done] Setting permissions via applesimutils as fallback")
             }
         }
     }
