@@ -416,7 +416,7 @@ object LocalSimulatorUtils {
         )
     }
 
-    fun setPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
+    fun setAppleSimutilsPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
         val permissionsMap = permissions.toMutableMap()
         if (permissionsMap.containsKey("all")) {
             val value = permissionsMap.remove("all")

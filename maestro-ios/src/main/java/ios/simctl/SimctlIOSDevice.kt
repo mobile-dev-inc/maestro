@@ -1,6 +1,7 @@
 package ios.simctl
 
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.runCatching
 import hierarchy.ViewHierarchy
 import ios.IOSDevice
@@ -167,13 +168,19 @@ class SimctlIOSDevice(
     }
 
     override fun setPermissions(id: String, permissions: Map<String, String>) {
-        logger.info("[Start] Setting permissions through applesimutils")
-        LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
-        logger.info("[Done] Setting permissions through applesimutils")
+        val formattedPermissions = permissions.entries.joinToString(separator = ", ") { "${it.key}=${it.value}" }
 
-        logger.info("[Start] Setting Permissions through simctl")
+        runCatching {
+            logger.info("[Start] Setting permissions $formattedPermissions through applesimutils")
+            LocalSimulatorUtils.setAppleSimutilsPermissions(deviceId, id, permissions)
+            logger.info("[Done] Setting permissions through applesimutils")
+        }.onFailure {
+            logger.error("Failed setting permissions $permissions via applesimutils", it)
+        }
+
+        logger.info("[Start] Setting Permissions $formattedPermissions through simctl")
         LocalSimulatorUtils.setSimctlPermissions(deviceId, id, permissions)
-        logger.info("[Done] Setting Permissions through simctl")
+        logger.info("[Done] Setting Permissions $formattedPermissions through simctl")
     }
 
     override fun eraseText(charactersToErase: Int) {
