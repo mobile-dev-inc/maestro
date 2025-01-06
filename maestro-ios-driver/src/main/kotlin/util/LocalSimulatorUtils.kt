@@ -436,7 +436,6 @@ object LocalSimulatorUtils {
             .joinToString(",")
 
         if (permissionsArgument.isNotEmpty()) {
-            logger.info("[Start] Setting permissions through applesimutils")
             try {
                 runCommand(
                     listOf(
@@ -465,11 +464,9 @@ object LocalSimulatorUtils {
                 )
             }
         }
-
-        setSimctlPermissions(deviceId, bundleId, permissions)
     }
 
-    private fun setSimctlPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
+    fun setSimctlPermissions(deviceId: String, bundleId: String, permissions: Map<String, String>) {
         val permissionsMap = permissions.toMutableMap()
 
         permissionsMap.remove("all")?.let { value ->

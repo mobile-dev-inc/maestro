@@ -9,6 +9,7 @@ import xcuitest.api.DeviceInfo
 import okio.Sink
 import okio.buffer
 import okio.source
+import org.slf4j.LoggerFactory
 import util.IOSLaunchArguments.toIOSLaunchArguments
 import util.LocalSimulatorUtils
 import java.io.File
@@ -20,6 +21,11 @@ import java.util.UUID
 class SimctlIOSDevice(
     override val deviceId: String,
 ) : IOSDevice {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(SimctlIOSDevice::class.java)
+    }
+
     private var screenRecording: LocalSimulatorUtils.ScreenRecording? = null
 
     override fun open() {
@@ -161,7 +167,13 @@ class SimctlIOSDevice(
     }
 
     override fun setPermissions(id: String, permissions: Map<String, String>) {
+        logger.info("[Start] Setting permissions through applesimutils")
         LocalSimulatorUtils.setPermissions(deviceId, id, permissions)
+        logger.info("[Done] Setting permissions through applesimutils")
+
+        logger.info("[Start] Setting Permissions through simctl")
+        LocalSimulatorUtils.setSimctlPermissions(deviceId, id, permissions)
+        logger.info("[Done] Setting Permissions through simctl")
     }
 
     override fun eraseText(charactersToErase: Int) {
