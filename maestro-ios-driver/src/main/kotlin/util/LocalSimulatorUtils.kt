@@ -436,6 +436,7 @@ object LocalSimulatorUtils {
             .joinToString(",")
 
         if (permissionsArgument.isNotEmpty()) {
+            logger.info("[Start] Setting permissions through applesimutils")
             try {
                 runCommand(
                     listOf(
@@ -448,7 +449,9 @@ object LocalSimulatorUtils {
                         permissionsArgument
                     )
                 )
+                logger.info("[Done] Setting permissions through applesimutils")
             } catch (e: Exception) {
+                logger.error("Exception while setting permissions through applesimutils ${e.message}", e)
                 runCommand(
                     listOf(
                         "applesimutils",
