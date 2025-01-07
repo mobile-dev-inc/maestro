@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# if [ "$(basename "$PWD")" != "maestro" ]; then
-# 	echo "This script must be run from the maestro root directory"
-# 	exit 1
-# fi
+if [ "$(basename "$PWD")" != "maestro" ]; then
+	echo "This script must be run from the maestro root directory"
+	exit 1
+fi
 
 rm -rf ./build/Products
 
