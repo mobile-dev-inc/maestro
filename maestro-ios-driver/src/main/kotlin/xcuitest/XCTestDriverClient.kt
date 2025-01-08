@@ -145,6 +145,10 @@ class XCTestDriverClient(
         ))
     }
 
+    fun setOrientation(orientation: String) {
+        executeJsonRequest("setOrientation", SetOrientationRequest(orientation))
+    }
+
     fun pressKey(name: String) {
         executeJsonRequest("pressKey", PressKeyRequest(name))
     }
