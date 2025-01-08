@@ -208,7 +208,8 @@ data class YamlFluentCommand(
                     InputTextCommand(
                         text = inputText.text,
                         label = inputText.label,
-                        optional = inputText.optional
+                        optional = inputText.optional,
+                        redact = inputText.redact
                     )
                 )
             )
@@ -219,7 +220,8 @@ data class YamlFluentCommand(
                         inputType = InputRandomType.TEXT,
                         length = inputRandomText.length,
                         label = inputRandomText.label,
-                        optional = inputRandomText.optional
+                        optional = inputRandomText.optional,
+                        redact = inputRandomText.redact
                     )
                 )
             )
@@ -230,7 +232,8 @@ data class YamlFluentCommand(
                         inputType = InputRandomType.NUMBER,
                         length = inputRandomNumber.length,
                         label = inputRandomNumber.label,
-                        optional = inputRandomNumber.optional
+                        optional = inputRandomNumber.optional,
+                        redact = inputRandomNumber.redact
                     )
                 )
             )
@@ -240,7 +243,8 @@ data class YamlFluentCommand(
                     InputRandomCommand(
                         inputType = InputRandomType.TEXT_EMAIL_ADDRESS,
                         label = inputRandomEmail.label,
-                        optional = inputRandomEmail.optional
+                        optional = inputRandomEmail.optional,
+                        redact = inputRandomEmail.redact
                     )
                 )
             )
@@ -250,7 +254,8 @@ data class YamlFluentCommand(
                     InputRandomCommand(
                         inputType = InputRandomType.TEXT_PERSON_NAME,
                         label = inputRandomPersonName.label,
-                        optional = inputRandomPersonName.optional
+                        optional = inputRandomPersonName.optional,
+                        redact = inputRandomPersonName.redact
                     )
                 )
             )
