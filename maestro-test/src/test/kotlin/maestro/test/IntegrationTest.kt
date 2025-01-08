@@ -31,6 +31,7 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 import maestro.orchestra.util.Env.withDefaultEnvVars
+import javax.imageio.ImageIO
 
 class IntegrationTest {
 
@@ -3278,6 +3279,44 @@ class IntegrationTest {
 
       assertThat(action).isEqualTo(targetAction)
     }
+
+    @Test
+    fun `Case 122 - Take cropped screenshot`() {
+        // Given
+        val commands = readCommands("122_take_cropped_screenshot")
+        val boundHeight = 100
+        val boundWidth = 100
+
+        val driver = driver {
+            element {
+                id = "element_id"
+                bounds = Bounds(0,0,boundHeight,boundWidth)
+            }
+        }
+
+        val device = driver.deviceInfo()
+        val dpr = device.heightPixels / device.heightGrid
+
+        // When
+        Maestro(driver).use {
+            orchestra(it).runFlow(commands)
+        }
+
+        // Then
+        // No test failure
+        driver.assertEvents(
+            listOf(
+                Event.TakeScreenshot,
+            )
+        )
+        val file = File("122_take_cropped_screenshot_with_filename.png")
+        val image = ImageIO.read(file)
+
+        assert(file.exists())
+        assert(image.width == (boundWidth * dpr))
+        assert(image.height == (boundHeight * dpr))
+    }
+
 
     private fun orchestra(
         maestro: Maestro,
