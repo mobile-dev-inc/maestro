@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fix: Respect --host and --port arguments (for Windows WSL and Docker)
+- Fix: Improve iOS permissions and logging
+- Feature: Improve support for non-Chrome web support
+- Fix: Pass launch arguments to web page
+
 ## 1.39.8
 
 - Fix: Debug message not showing up when we execute commands on maestro cli anymore
