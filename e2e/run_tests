@@ -23,11 +23,13 @@ _h3() {
 
 platform="${1:-}"
 if [ "$platform" = "android" ]; then
-	exclude_tags="ios,ai"
+	exclude_tags="ios,ai,web"
 elif [ "$platform" = "ios" ]; then
-	exclude_tags="android,ai"
+	exclude_tags="android,ai,web"
+elif [ "$platform" = "web" ]; then
+  exclude_tags="android,ios,ai"
 else
-	echo "usage: $0 <android|ios>"
+	echo "usage: $0 <android|ios|web>"
 	exit 1 
 fi
 
@@ -49,7 +51,7 @@ for workspace_dir in ./workspaces/*; do
 	    _h3 "$app_name" "passing" "$line"
 	done < pipe &
 
-	maestro --verbose --platform "$platform" test --include-tags passing --exclude-tags "$exclude_tags" "$workspace_dir" 1>pipe 2>&1 || WORKSPACE_PASS=false
+	maestro --verbose --platform "$platform" test --headless --include-tags passing --exclude-tags "$exclude_tags" "$workspace_dir" 1>pipe 2>&1 || WORKSPACE_PASS=false
 
 	if [ "$WORKSPACE_PASS" = "false" ]; then
         _h2 "$app_name" "FAIL! Expected all pass, but at least some failed instead"
@@ -71,7 +73,7 @@ for workspace_dir in ./workspaces/*; do
 	    _h3 "$app_name" "failing" "$line"
 	done < pipe &
 
-	maestro --verbose --platform "$platform" test --include-tags failing --exclude-tags "$exclude_tags" "$workspace_dir" 1>pipe 2>&1 && WORKSPACE_PASS=false
+	maestro --verbose --platform "$platform" test --headless --include-tags failing --exclude-tags "$exclude_tags" "$workspace_dir" 1>pipe 2>&1 && WORKSPACE_PASS=false
 
 	if [ "$WORKSPACE_PASS" = "false" ]; then
 		_h2 "$app_name" "FAIL! Expected all to fail, but at least some passed instead"

@@ -1,0 +1,7 @@
+url: https://example.com
+tags:
+  - web
+  - passing
+---
+- launchApp
+- assertVisible: Example Domain
