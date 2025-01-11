@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "44F995232C9D6F8800D15B50"
-               BuildableName = "maestro-driver.app"
-               BlueprintName = "maestro-driver"
+               BuildableName = "maestro-driver-ios.app"
+               BlueprintName = "maestro-driver-ios"
                ReferencedContainer = "container:maestro-driver-ios.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -35,8 +35,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "52049BF2293503A200807AA3"
-               BuildableName = "maestro-driverUITests.xctest"
-               BlueprintName = "maestro-driverUITests"
+               BuildableName = "maestro-driver-iosUITests.xctest"
+               BlueprintName = "maestro-driver-iosUITests"
                ReferencedContainer = "container:maestro-driver-ios.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -57,8 +57,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "44F995232C9D6F8800D15B50"
-            BuildableName = "maestro-driver.app"
-            BlueprintName = "maestro-driver"
+            BuildableName = "maestro-driver-ios.app"
+            BlueprintName = "maestro-driver-ios"
             ReferencedContainer = "container:maestro-driver-ios.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -74,8 +74,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "44F995232C9D6F8800D15B50"
-            BuildableName = "maestro-driver.app"
-            BlueprintName = "maestro-driver"
+            BuildableName = "maestro-driver-ios.app"
+            BlueprintName = "maestro-driver-ios"
             ReferencedContainer = "container:maestro-driver-ios.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

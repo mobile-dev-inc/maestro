@@ -201,17 +201,17 @@ class LocalXCTestInstaller(
 
         logger.info("[Start] Writing xctest run file")
         val tempDir = File(tempDir).apply { mkdir() }
-        val xctestRunFile = File("${tempDir}/maestro-driver-config.xctestrun")
+        val xctestRunFile = File("${tempDir}/maestro-driver-ios-config.xctestrun")
         writeFileToDestination(XCTEST_RUN_PATH, xctestRunFile, isTV)
         logger.info("[Done] Writing xctest run file")
 
-        logger.info("[Start] Writing maestro-driverUITests-Runner app")
-        extractZipToApp("maestro-driverUITests-Runner", UI_TEST_RUNNER_PATH, isTV)
-        logger.info("[Done] Writing maestro-driverUITests-Runner app")
+        logger.info("[Start] Writing maestro-driver-iosUITests-Runner app")
+        extractZipToApp("maestro-driver-iosUITests-Runner", UI_TEST_RUNNER_PATH, isTV)
+        logger.info("[Done] Writing maestro-driver-iosUITests-Runner app")
 
-        logger.info("[Start] Writing maestro-driver app")
+        logger.info("[Start] Writing maestro-driver-ios app")
         extractZipToApp("maestro-driver", UI_TEST_HOST_PATH, isTV)
-        logger.info("[Done] Writing maestro-driver app")
+        logger.info("[Done] Writing maestro-driver-ios app")
 
         logger.info("[Start] Running XcUITest with `xcodebuild test-without-building`")
         xcTestProcess = XCRunnerCLIUtils.runXcTestWithoutBuild(
@@ -261,10 +261,10 @@ class LocalXCTestInstaller(
     }
 
     companion object {
-        private const val UI_TEST_RUNNER_PATH = "maestro-driverUITests-Runner.zip"
-        private const val XCTEST_RUN_PATH = "maestro-driver-config.xctestrun"
-        private const val UI_TEST_HOST_PATH = "maestro-driver.zip"
-        private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driverUITests.xctrunner"
+        private const val UI_TEST_RUNNER_PATH = "maestro-driver-iosUITests-Runner.zip"
+        private const val XCTEST_RUN_PATH = "maestro-driver-ios-config.xctestrun"
+        private const val UI_TEST_HOST_PATH = "maestro-driver-ios.zip"
+        private const val UI_TEST_RUNNER_APP_BUNDLE_ID = "dev.mobile.maestro-driver-iosUITests.xctrunner"
 
         private const val SERVER_LAUNCH_TIMEOUT_MS = 120000L
         private const val MAESTRO_DRIVER_STARTUP_TIMEOUT = "MAESTRO_DRIVER_STARTUP_TIMEOUT"

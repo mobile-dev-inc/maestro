@@ -58,9 +58,9 @@ They are placed in `maestro-android/build/outputs/apk`, and are copied over to `
 
 Maestro requires 3 artifacts to run on iOS:
 
-- `maestro-driver` - the host app for the test runner. Does nothing and is not installed.
-- `maestro-driverUITests-Runner.app` - the test runner app. Starts an HTTP server inside an infinite XCTest. 
-- `maestro-driver-config.xctestrun` - the configuration file required to run the test runner app.
+- `maestro-driver-ios` - the host app for the test runner. Does nothing and is not installed.
+- `maestro-driver-iosUITests-Runner.app` - the test runner app. Starts an HTTP server inside an infinite XCTest. 
+- `maestro-driver-ios-config.xctestrun` - the configuration file required to run the test runner app.
 
 These artifacts are built by the `build-maestro-ios-runner.sh` script. It places them in `maestro-ios-driver/src/main/resources`.
 

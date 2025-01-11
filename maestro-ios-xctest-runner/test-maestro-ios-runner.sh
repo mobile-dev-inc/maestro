@@ -6,13 +6,13 @@ if [ "$(basename "$PWD")" != "maestro" ]; then
 	exit 1
 fi
 
-if [ ! -d ./build/Products/Debug-iphonesimulator/maestro-driver-UITests-Runner.app ]; then
-  echo "XCTest runner app not found in ./build/Products/Debug-iphonesimulator/maestro-driver-UITests-Runner.app"
+if [ ! -d ./build/Products/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app ]; then
+  echo "XCTest runner app not found in ./build/Products/Debug-iphonesimulator/maestro-driver-iosUITests-Runner.app"
   exit 1
 fi
 
-if [ ! -d ./build/Products/Debug-iphonesimulator/maestro-driver.app ]; then
-  echo "Dummy test app not found in ./build/Products/Debug-iphonesimulator/maestro-driver.app"
+if [ ! -d ./build/Products/Debug-iphonesimulator/maestro-driver-ios.app ]; then
+  echo "Dummy test app not found in ./build/Products/Debug-iphonesimulator/maestro-driver-ios.app"
   exit 1
 fi
 
