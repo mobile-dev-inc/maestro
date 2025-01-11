@@ -210,7 +210,7 @@ class LocalXCTestInstaller(
         logger.info("[Done] Writing maestro-driver-iosUITests-Runner app")
 
         logger.info("[Start] Writing maestro-driver-ios app")
-        extractZipToApp("maestro-driver", UI_TEST_HOST_PATH, isTV)
+        extractZipToApp("maestro-driver-ios", UI_TEST_HOST_PATH, isTV)
         logger.info("[Done] Writing maestro-driver-ios app")
 
         logger.info("[Start] Running XcUITest with `xcodebuild test-without-building`")
