@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,10 @@
 		32762AFA2966DC8300FB69BD /* SwipeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32762AF92966DC8300FB69BD /* SwipeRequest.swift */; };
 		32ECCB262980449200A1A0A0 /* TouchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32ECCB252980449200A1A0A0 /* TouchRequest.swift */; };
 		32ECCB28298044C200A1A0A0 /* TouchRouteHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32ECCB27298044C200A1A0A0 /* TouchRouteHandler.swift */; };
+		44E007512D32EFA80038CC62 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44E0074B2D32EFA80038CC62 /* Preview Assets.xcassets */; };
+		44E007522D32EFA80038CC62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44E0074D2D32EFA80038CC62 /* Assets.xcassets */; };
+		44E007532D32EFA80038CC62 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E0074E2D32EFA80038CC62 /* ContentView.swift */; };
+		44E007542D32EFA80038CC62 /* maestro_driverApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E0074F2D32EFA80038CC62 /* maestro_driverApp.swift */; };
 		52047F782A7A638E00BF982D /* StatusHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52047F772A7A638E00BF982D /* StatusHandler.swift */; };
 		52049BF8293503A200807AA3 /* maestro_driver_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52049BF7293503A200807AA3 /* maestro_driver_iosUITests.swift */; };
 		522785812A54410D008DBC0A /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 522785802A54410D008DBC0A /* AppError.swift */; };
@@ -75,6 +79,10 @@
 		32762AF92966DC8300FB69BD /* SwipeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeRequest.swift; sourceTree = "<group>"; };
 		32ECCB252980449200A1A0A0 /* TouchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchRequest.swift; sourceTree = "<group>"; };
 		32ECCB27298044C200A1A0A0 /* TouchRouteHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchRouteHandler.swift; sourceTree = "<group>"; };
+		44E0074B2D32EFA80038CC62 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		44E0074D2D32EFA80038CC62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		44E0074E2D32EFA80038CC62 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		44E0074F2D32EFA80038CC62 /* maestro_driverApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maestro_driverApp.swift; sourceTree = "<group>"; };
 		44F995242C9D6F8800D15B50 /* maestro-driver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "maestro-driver.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52047F772A7A638E00BF982D /* StatusHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHandler.swift; sourceTree = "<group>"; };
 		52049BF3293503A200807AA3 /* maestro-driverUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maestro-driverUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,10 +129,6 @@
 		F328D3E52A2A98E7000546D3 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		44F995252C9D6F8800D15B50 /* maestro-driver */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "maestro-driver"; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		44F995212C9D6F8800D15B50 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -145,11 +149,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		44E0074C2D32EFA80038CC62 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				44E0074B2D32EFA80038CC62 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		44E007502D32EFA80038CC62 /* maestro-driver */ = {
+			isa = PBXGroup;
+			children = (
+				44E0074C2D32EFA80038CC62 /* Preview Content */,
+				44E0074D2D32EFA80038CC62 /* Assets.xcassets */,
+				44E0074E2D32EFA80038CC62 /* ContentView.swift */,
+				44E0074F2D32EFA80038CC62 /* maestro_driverApp.swift */,
+			);
+			path = "maestro-driver";
+			sourceTree = "<group>";
+		};
 		52049BCA2935039F00807AA3 = {
 			isa = PBXGroup;
 			children = (
 				52049BF6293503A200807AA3 /* maestro-driver-iosUITests */,
-				44F995252C9D6F8800D15B50 /* maestro-driver */,
+				44E007502D32EFA80038CC62 /* maestro-driver */,
 				52049BD42935039F00807AA3 /* Products */,
 				5279BFD42935ECE20056C609 /* Frameworks */,
 			);
@@ -289,9 +312,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				44F995252C9D6F8800D15B50 /* maestro-driver */,
-			);
 			name = "maestro-driver";
 			packageProductDependencies = (
 			);
@@ -367,6 +387,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44E007512D32EFA80038CC62 /* Preview Assets.xcassets in Resources */,
+				44E007522D32EFA80038CC62 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,6 +406,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44E007532D32EFA80038CC62 /* ContentView.swift in Sources */,
+				44E007542D32EFA80038CC62 /* maestro_driverApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -641,7 +665,6 @@
 		52049C04293503A200807AA3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -670,7 +693,6 @@
 		52049C05293503A200807AA3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
