@@ -183,8 +183,10 @@ class LocalXCTestInstaller(
             for (device in entry.value) {
                 if (device.udid != deviceId) continue
                 if (device.deviceTypeIdentifier == null) continue
-                logger.trace("Device is an AppleTV")
-                return device.deviceTypeIdentifier.contains("Apple-TV")
+                if (device.deviceTypeIdentifier.contains("Apple-TV") == true) {
+                    logger.trace("Device is an AppleTV")
+                    return true
+                }
             }
         }
 
