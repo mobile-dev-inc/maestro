@@ -40,4 +40,9 @@ object Env {
         return if (defaultEnvVars.isEmpty()) this
         else this + defaultEnvVars
     }
+
+    fun Map<String, String>.withInjectedApiKey(apiKey: String?): Map<String, String> {
+        return if (this.containsKey("ROBIN_LOGIN_BY")) this + mapOf("ROBIN_API_KEY" to apiKey.orEmpty())
+        else this
+    }
 }
