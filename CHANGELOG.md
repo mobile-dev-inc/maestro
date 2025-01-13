@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.39.9
+
+- Revert: Error in showing keyboard during input and erase commands on iOS
+- Fix: applesimutils affecting granting location permission
+- Fix: Setting host and port from the optional arguments
+
 ## 1.39.8
 
 - Fix: Debug message not showing up when we execute commands on maestro cli anymore
