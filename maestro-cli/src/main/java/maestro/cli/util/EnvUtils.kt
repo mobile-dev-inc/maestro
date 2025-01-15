@@ -76,7 +76,7 @@ object EnvUtils {
     }
 
     fun isWindows(): Boolean {
-        return OS_NAME.startsWith("Windows")
+        return OS_NAME.lowercase().startsWith("windows")
     }
 
     /**
