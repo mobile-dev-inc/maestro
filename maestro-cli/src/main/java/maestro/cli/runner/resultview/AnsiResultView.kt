@@ -261,7 +261,7 @@ class AnsiResultView(
             }
         } else {
             return when (status) {
-                CommandStatus.COMPLETED -> "\u221A "
+                CommandStatus.COMPLETED -> "☻ "
                 CommandStatus.FAILED -> "X "
                 CommandStatus.RUNNING -> "> "
                 CommandStatus.PENDING -> "  "
