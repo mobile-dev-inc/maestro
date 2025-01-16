@@ -46,7 +46,7 @@ export default function InteractableDevice({
   return (
     <GestureDiv
       className={clsx(
-        "relative rounded-lg overflow-hidden w-full",
+        "rounded-lg overflow-hidden w-full",
         enableGestureControl ? "border-2 box-content border-pink-500" : ""
       )}
       style={{
