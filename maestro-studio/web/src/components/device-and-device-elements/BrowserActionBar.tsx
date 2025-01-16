@@ -45,7 +45,6 @@ const BrowserActionBar = ({currentUrl, onUrlUpdated, isLoading}: {
         onFocus={() => setIsEditing(true)}
         onBlur={() => setIsEditing(false)}
         onKeyDown={(e) => {
-          // on enter update url
           if (e.key === 'Enter' && isEditing && editedUrl) {
             onUrlUpdated(editedUrl);
             e.currentTarget.blur();
