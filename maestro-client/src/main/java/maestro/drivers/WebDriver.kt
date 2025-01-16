@@ -370,7 +370,7 @@ class WebDriver(
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
         val driver = ensureOpen()
 
-        driver.get(link)
+        driver.get(if (link.startsWith("http")) link else "https://$link")
     }
 
     override fun hideKeyboard() {
