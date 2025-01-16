@@ -250,7 +250,7 @@ class AnsiResultView(
     }
 
     private fun status(status: CommandStatus): String {
-        if (useEmojis) {
+        if (useEmojis && false) {
             return when (status) {
                 CommandStatus.COMPLETED -> "✅ "
                 CommandStatus.FAILED -> "❌ "
@@ -261,7 +261,7 @@ class AnsiResultView(
             }
         } else {
             return when (status) {
-                CommandStatus.COMPLETED -> "☻ "
+                CommandStatus.COMPLETED -> "+ "
                 CommandStatus.FAILED -> "X "
                 CommandStatus.RUNNING -> "> "
                 CommandStatus.PENDING -> "  "
