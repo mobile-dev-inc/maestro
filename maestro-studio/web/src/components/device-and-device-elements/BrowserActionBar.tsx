@@ -1,6 +1,5 @@
 import React, {useLayoutEffect} from "react";
 import {twMerge} from "tailwind-merge";
-import clsx from "clsx";
 import {Input} from "../design-system/input";
 
 const GlobeIcon = ({ className }: { className?: string }) => (
