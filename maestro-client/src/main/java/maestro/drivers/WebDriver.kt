@@ -221,8 +221,11 @@ class WebDriver(
             return TreeNode(attributes = attributes, children = children.map { parse(it) })
         }
 
-
-        return parse(contentDesc as Map<String, Any>)
+        val root = parse(contentDesc as Map<String, Any>)
+        seleniumDriver?.currentUrl?.let { url ->
+            root.attributes["url"] = url
+        }
+        return root
     }
 
     private fun detectWindowChange() {
