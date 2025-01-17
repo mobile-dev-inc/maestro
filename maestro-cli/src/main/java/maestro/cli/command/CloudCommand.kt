@@ -37,6 +37,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import maestro.orchestra.util.Env.withDefaultEnvVars
+import maestro.orchestra.util.Env.withInjectedApiKey
 import kotlin.io.path.absolutePathString
 
 @CommandLine.Command(
@@ -191,6 +192,7 @@ class CloudCommand : Callable<Int> {
         env = env
             .withInjectedShellEnvVars()
             .withDefaultEnvVars(flowsFile)
+            .withInjectedApiKey(apiKey)
 
         return CloudInteractor(
             client = ApiClient(apiUrl),
