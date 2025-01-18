@@ -435,7 +435,7 @@ class Orchestra(
 
     private fun evalScriptCommand(command: EvalScriptCommand): Boolean {
         command.scriptString.evaluateScripts(jsEngine)
-
+        waitForTimersIfGraal()
         // We do not actually know if there were any mutations, but we assume there were
         return true
     }
