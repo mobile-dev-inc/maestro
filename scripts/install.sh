@@ -62,7 +62,6 @@ export MAESTRO_DIR
 # Local variables
 maestro_tmp_folder="${MAESTRO_DIR}/tmp"
 maestro_bash_profile="${HOME}/.bash_profile"
-maestro_profile="${HOME}/.profile"
 maestro_bashrc="${HOME}/.bashrc"
 maestro_zshrc="${ZDOTDIR:-${HOME}}/.zshrc"
 
