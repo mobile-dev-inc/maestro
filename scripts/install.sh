@@ -113,6 +113,15 @@ if [[ "$cygwin" == 'true' ]]; then
 fi
 unzip -qo "$maestro_zip_file" -d "$maestro_tmp_folder"
 
+# Empty destinations
+echo "* Remove previous installation (if any)"
+if [[ -d "$MAESTRO_DIR/lib" ]]; then
+  rm -rf "${MAESTRO_DIR:?}/lib"
+fi
+if [[ -d "$MAESTRO_DIR/bin" ]]; then
+  rm -rf "${MAESTRO_DIR:?}/bin"
+fi
+
 # Copy in place
 echo "* Copying archive contents..."
 cp -rf "${maestro_tmp_folder}"/maestro/* "$MAESTRO_DIR"
