@@ -211,6 +211,16 @@ object FlowCommandSchema {
         )
     }
 
+    /**
+     * Types that compile to a JVM primitive when they are not nullable. Jackson fills a missing one with
+     * the JVM default instead of raising, so the parser can fill it in and the schema must not call it
+     * required. Nullable forms box and are excluded by the nullability check before this set is consulted.
+     */
+    private val jvmPrimitives = setOf(
+        Int::class, Long::class, Double::class, Float::class, Boolean::class, Short::class,
+        Byte::class, Char::class,
+    )
+
     private fun argumentsOf(type: KClass<*>): List<ArgumentSchema> {
         return type.primaryConstructor?.parameters.orEmpty()
             .mapNotNull { parameter ->
@@ -220,10 +230,16 @@ object FlowCommandSchema {
                 ArgumentSchema(
                     name = name,
                     kind = if (values != null) ArgumentKind.ENUM else kindOf(argumentType),
-                    // Required in YAML means the parser cannot fill it in: no Kotlin default AND not
-                    // nullable. A nullable parameter without a default still deserializes when the key
-                    // is absent, because Jackson supplies null -- `- launchApp` alone is valid YAML.
-                    required = !parameter.isOptional && !parameter.type.isMarkedNullable,
+                    // Required in YAML means the parser cannot fill it in: no Kotlin default, not
+                    // nullable, and not a JVM primitive. A nullable parameter without a default still
+                    // deserializes when the key is absent, because Jackson supplies null -- `- launchApp`
+                    // alone is valid YAML. A non-nullable primitive does too: Jackson hands the creator
+                    // the JVM default rather than failing, so `count: Int` with no default silently
+                    // becomes 0 and `flag: Boolean` becomes false. Only reference types actually raise
+                    // MissingKotlinParameterException, so only they can be called required.
+                    required = !parameter.isOptional &&
+                        !parameter.type.isMarkedNullable &&
+                        argumentType !in jvmPrimitives,
                     values = values,
                     aliases = annotationOf(JsonAlias::class, parameter, type)?.value?.toList()?.ifEmpty { null },
                 )

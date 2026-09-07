@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.truth.Truth.assertThat
 import maestro.orchestra.LaunchAppCommand
@@ -118,10 +119,12 @@ class FlowCommandSchemaEvolutionTest {
             "text", "count", "big", "ratio", "flag", "items", "mapping", "anything", "target", "nested",
         )
         assertThat(arguments.getValue("text")).isEqualTo(argument("text", ArgumentKind.STRING, required = true))
-        assertThat(arguments.getValue("count")).isEqualTo(argument("count", ArgumentKind.NUMBER, required = true))
-        assertThat(arguments.getValue("big")).isEqualTo(argument("big", ArgumentKind.NUMBER, required = true))
-        assertThat(arguments.getValue("ratio")).isEqualTo(argument("ratio", ArgumentKind.NUMBER, required = true))
-        assertThat(arguments.getValue("flag")).isEqualTo(argument("flag", ArgumentKind.BOOLEAN, required = true))
+        // Not required, despite having no default and not being nullable: see the primitive case pinned
+        // by `a non-nullable primitive is not required, because Jackson fills it in`.
+        assertThat(arguments.getValue("count")).isEqualTo(argument("count", ArgumentKind.NUMBER, required = false))
+        assertThat(arguments.getValue("big")).isEqualTo(argument("big", ArgumentKind.NUMBER, required = false))
+        assertThat(arguments.getValue("ratio")).isEqualTo(argument("ratio", ArgumentKind.NUMBER, required = false))
+        assertThat(arguments.getValue("flag")).isEqualTo(argument("flag", ArgumentKind.BOOLEAN, required = false))
         assertThat(arguments.getValue("items")).isEqualTo(argument("items", ArgumentKind.ARRAY, required = false))
         assertThat(arguments.getValue("anything")).isEqualTo(argument("anything", ArgumentKind.ANY, required = false))
         assertThat(arguments.getValue("target")).isEqualTo(argument("target", ArgumentKind.SELECTOR, required = false))
@@ -130,6 +133,40 @@ class FlowCommandSchemaEvolutionTest {
         // inside either. Pinned so that stops being a surprise if a command starts relying on it.
         assertThat(arguments.getValue("mapping").kind).isEqualTo(ArgumentKind.OBJECT)
         assertThat(arguments.getValue("nested").kind).isEqualTo(ArgumentKind.OBJECT)
+    }
+
+    /**
+     * `required` is derived from the Kotlin constructor, and the obvious rule -- no default and not
+     * nullable -- is wrong for primitives. Jackson hands the creator the JVM default for a missing
+     * `Int` or `Boolean` and only raises for a missing reference type, so the schema would otherwise
+     * tell a consumer an argument is mandatory that the parser is happy to fill in.
+     *
+     * Asserted against Jackson rather than restated, so this stays true if the module's behaviour changes.
+     */
+    @Test
+    fun `a non-nullable primitive is not required, because Jackson fills it in`() {
+        val mapper = jacksonObjectMapper()
+        val arguments = FlowCommandSchema.schemaOf("newMixed", YamlNewMixedTypes::class)
+            .arguments.associateBy { it.name }
+
+        // Omitting the primitives parses, and they arrive as the JVM defaults.
+        val filledIn = mapper.readValue(
+            """{"text":"a","items":[],"mapping":{}}""",
+            YamlNewMixedTypes::class.java,
+        )
+        assertThat(filledIn.count).isEqualTo(0)
+        assertThat(filledIn.big).isEqualTo(0L)
+        assertThat(filledIn.ratio).isEqualTo(0.0)
+        assertThat(filledIn.flag).isFalse()
+        listOf("count", "big", "ratio", "flag").forEach {
+            assertThat(arguments.getValue(it).required).isFalse()
+        }
+
+        // A reference type in the same position does raise, and stays required.
+        assertThrows<MissingKotlinParameterException> {
+            mapper.readValue("""{"count":1,"big":1,"ratio":1.0,"flag":true}""", YamlNewMixedTypes::class.java)
+        }
+        assertThat(arguments.getValue("text").required).isTrue()
     }
 
     @Test
