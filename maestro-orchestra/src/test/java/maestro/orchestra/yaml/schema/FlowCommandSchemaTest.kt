@@ -11,8 +11,8 @@ import maestro.device.DeviceOrientation
 import maestro.orchestra.yaml.MaestroFlowParser
 import maestro.orchestra.yaml.YamlFluentCommand
 import maestro.orchestra.yaml.stringCommands
-import maestro.utils.TempFileHandler
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KClass
@@ -239,13 +239,17 @@ class FlowCommandSchemaTest {
         return arguments.entries.joinToString(prefix = "$name:\n", separator = "\n") { "  ${it.key}: ${it.value}" }
     }
 
+    /** Cleaned up by JUnit after each test, so nothing here has to be closed or left to deleteOnExit. */
+    @TempDir
+    private lateinit var tempDir: Path
+
     /**
      * A real flow on disk. `runFlow`, `runScript` and `retry` take a path in a plain `String` argument
      * and read it during `toCommands`, so a literal placeholder makes them fail for a reason that has
      * nothing to do with the schema.
      */
     private val referencedFlow: String by lazy {
-        TempFileHandler().createTempFile(suffix = ".yaml")
+        tempDir.resolve("referenced.yaml").toFile()
             .apply { writeText("appId: com.example.app\n---\n- back\n") }
             .absolutePath
     }
