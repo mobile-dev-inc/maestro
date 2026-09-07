@@ -34,8 +34,6 @@ data class YamlElementSelector(
     val retryTapIfNoChange: Boolean? = null,
     val waitUntilVisible: Boolean? = null,
     val point: String? = null,
-    val start: String? = null,
-    val end: String? = null,
     val below: YamlElementSelectorUnion? = null,
     val above: YamlElementSelectorUnion? = null,
     val leftOf: YamlElementSelectorUnion? = null,
