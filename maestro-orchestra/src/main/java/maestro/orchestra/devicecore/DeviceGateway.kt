@@ -278,6 +278,20 @@ class RealDeviceGateway(
         }
     }
 
+    override fun stopApp(appId: String) {
+        val d = device ?: error("device-core driver used before connect()")
+        try {
+            runBlocking { d.stopApp(AppId(appId)) }
+        } catch (t: Throwable) {
+            throw DeviceCoreErrorMapper.mapInfraThrow(t, "stopApp $appId")
+        }
+    }
+
+    // device-core collapses killApp onto stopApp via `am force-stop`.
+    override fun killApp(appId: String) {
+        stopApp(appId)
+    }
+
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         val d = device ?: error("device-core driver used before connect()")
         try {
