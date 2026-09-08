@@ -1,7 +1,7 @@
 package maestro.orchestra.yaml
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonAnySetter
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonLocation
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.MaestroCommand
@@ -18,7 +18,11 @@ class ConfigParseError(
 
 data class YamlConfig(
     val name: String?,
-    @JsonAlias("appId") private val _appId: String?,
+    // Named `_appId` only because the class exposes a computed `appId` below and Kotlin will not let a
+    // constructor parameter and a property share a name. `@JsonProperty` makes `appId` the wire name, so
+    // that collision stays an implementation detail: `appId:` is what a flow writes, `_appId:` is not
+    // accepted, and a schema derived from this type advertises `appId` rather than the private spelling.
+    @JsonProperty("appId") private val _appId: String?,
 
     val url: String?, // Raw url from YAML - preserved to distinguish web vs app configs
     val tags: List<String>? = emptyList(),
