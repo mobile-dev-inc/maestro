@@ -552,7 +552,7 @@ class OrchestraListenerDispatchTest {
     }
 
     @Test
-    fun `assertScreenshot writes its diff beside a reference reached through a parent segment`() {
+    fun `assertScreenshot writes its diff into the bundle, not beside the reference`() {
         val commands = listOf(
             MaestroCommand(takeScreenshotCommand = TakeScreenshotCommand(path = "login/../home")),
             MaestroCommand(
@@ -569,7 +569,11 @@ class OrchestraListenerDispatchTest {
         }
 
         assertThat(e.message).contains("threshold not met")
-        assertThat(tempDir.resolve("${BundleLayout.TAKE_SCREENSHOT_DIR}/home_diff.png").toFile().exists()).isTrue()
+        // Beside the reference is where it used to go, and why Cloud never had it.
+        assertThat(tempDir.resolve("${BundleLayout.TAKE_SCREENSHOT_DIR}/home_diff.png").toFile().exists()).isFalse()
+        val diffs = tempDir.resolve(BundleLayout.SCREENSHOT_DIFF_DIR).toFile().listFiles().orEmpty()
+        assertThat(diffs).hasLength(1)
+        assertThat(diffs.single().name).endsWith("home_diff.png")
     }
 
     @Test

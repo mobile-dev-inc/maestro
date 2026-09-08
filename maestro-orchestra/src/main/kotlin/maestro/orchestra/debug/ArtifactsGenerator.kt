@@ -102,16 +102,36 @@ internal class ArtifactsGenerator(
     }
 
     /**
-     * Allocate (and record) a command-output file through the collector, attributed
-     * to the running command. Null when no bundle is produced ([artifactsDir] null) —
-     * the caller then writes CWD-relative, as before.
+     * Allocate (and record) a file for the running command — the one path by which a command
+     * produces anything.
+     *
+     * [name] is the flow-supplied or framework-chosen name *without* an extension; the kind's
+     * own [ArtifactFormat] supplies that. Validation runs on [name] as given, before the
+     * extension is appended: afterwards a path naming no file (".", "..") looks like one.
+     *
+     * [STEP_SCOPED] kinds are prefixed with the producing step's index, which is what stops a
+     * retried assertion overwriting its own earlier attempts. Flow-named command output keeps
+     * exactly the path the flow asked for.
+     *
+     * Non-null: with no bundle the file is CWD-relative and unrecorded, as before, so no call
+     * site can reintroduce a raw-`File` fallback of its own.
      */
-    fun allocateCommandArtifact(kind: ArtifactKind, path: String, commandName: String): File? {
-        val collector = collector ?: return null
-        return collector.allocateCommandOutput(
-            kind, path, commandName, currentCommandMetadata?.sequenceNumber,
-        )
+    fun allocate(kind: ArtifactKind, name: String): File {
+        val label = kind.commandLabel()
+        ArtifactCollector.validateCommandPath(name, label)
+        val sequenceNumber = currentCommandMetadata?.sequenceNumber
+        val scoped = if (kind in STEP_SCOPED && sequenceNumber != null) {
+            "step-${StepArtifactNaming.index(sequenceNumber)}-$name"
+        } else {
+            name
+        }
+        val fileName = "$scoped${ArtifactCollector.extensionFor(kind)}"
+        val collector = collector ?: return File(fileName)
+        return collector.allocateCommandOutput(kind, fileName, label, sequenceNumber)
     }
+
+    /** An artifact this run already produced, or null. Records nothing. */
+    fun locate(kind: ArtifactKind, name: String): File? = collector?.locate(kind, name)
 
     override fun onCommandFinished(
         cmd: MaestroCommand,
@@ -323,5 +343,16 @@ internal class ArtifactsGenerator(
 
     companion object {
         private val logger = LoggerFactory.getLogger(ArtifactsGenerator::class.java)
+
+        /** Framework-named kinds, whose name must carry the step to stay unique across retries. */
+        private val STEP_SCOPED = setOf(ArtifactKind.SCREENSHOT_DIFF)
+
+        /** The command a kind belongs to, for the "invalid path for X" message. */
+        private fun ArtifactKind.commandLabel(): String = when (this) {
+            ArtifactKind.TAKE_SCREENSHOT -> "takeScreenshot"
+            ArtifactKind.START_SCREEN_RECORDING -> "startRecording"
+            ArtifactKind.SCREENSHOT_DIFF -> "assertScreenshot"
+            else -> name
+        }
     }
 }

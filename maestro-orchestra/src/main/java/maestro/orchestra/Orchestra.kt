@@ -130,7 +130,15 @@ class DefaultFlowController : FlowController {
  */
 class Orchestra(
     private val maestro: Maestro,
-    private val artifactsDir: Path? = null,
+    /**
+     * Where this run's artifact bundle is written; null for callers that keep nothing
+     * (interactive runners), which write command output CWD-relative as before.
+     *
+     * Deliberately not a `val`: a command body that can name this directory can work out a
+     * path outside it, which is how the assertScreenshot diff came to be written into the
+     * workspace. Commands reach artifacts only through [Artifacts].
+     */
+    artifactsDir: Path? = null,
     private val captureFullArtifacts: Boolean = false,
     private val listeners: List<OrchestraListener> = emptyList(),
     private val lookupTimeoutMs: Long = 17000L,
@@ -176,6 +184,13 @@ class Orchestra(
     // artifactsDir is set and populates debugOutput either way.
     private val artifactsGenerator: ArtifactsGenerator =
         ArtifactsGenerator(artifactsDir, maestro, captureFullArtifacts, onStepScreenshotCaptured)
+
+    /**
+     * The only artifact surface a command implementation gets — deliberately not the artifacts
+     * directory itself, since a command that can name the directory can work out a path
+     * outside it.
+     */
+    private val artifacts: Artifacts = Artifacts(artifactsGenerator)
     private val effectiveListeners: List<OrchestraListener> = listOf(artifactsGenerator) + listeners
 
     private var commandSequenceCounter: Int = 0
@@ -648,9 +663,9 @@ class Orchestra(
         val path = normalizeScreenshotPath(command.path)
 
         val candidates = buildList {
-            command.flowPath?.let { add(it.resolve(path).toFile()) }
-            artifactsDir?.let { add(it.resolve(BundleLayout.TAKE_SCREENSHOT_DIR).resolve(path).normalize().toFile()) }
-            add(File(path))
+            command.flowPath?.let { add(it.resolve(path).toFile()) } // funnel-exempt: read
+            artifacts.existing(ArtifactKind.TAKE_SCREENSHOT, path)?.let { add(it) }
+            add(File(path)) // funnel-exempt: read
         }.distinctBy { it.canonicalPath }
 
         val expectedFile = candidates.firstOrNull { it.exists() }
@@ -693,7 +708,10 @@ class Orchestra(
             debugMessage = "The assertScreenshot command requires a valid image file. Supported formats include PNG, JPEG, GIF, BMP, TIFF, and WBMP. The file at ${expectedFile.absolutePath} could not be read."
         )
 
-        val diffFile = expectedFile.resolveSibling("${expectedFile.nameWithoutExtension}_diff.png")
+        // The reference is an INPUT read from the workspace; the diff is this run's OUTPUT.
+        // Deriving the diff's location from the reference's is what put it outside the bundle,
+        // where Cloud discards it with the workspace.
+        val diffFile = artifacts.file(ArtifactKind.SCREENSHOT_DIFF, "${expectedFile.nameWithoutExtension}_diff")
 
         when (val result = ScreenshotMatch.compare(expectedImage, actualImage, thresholdPercentage, diffFile)) {
             is ScreenshotMatch.Result.Match -> return false // Screenshots are non-interactive
@@ -705,7 +723,9 @@ class Orchestra(
             is ScreenshotMatch.Result.Mismatch -> throw MaestroException.AssertionFailure(
                 message = "Comparison error: ${command.description()} - threshold not met, current: ${result.matchPercent}%",
                 hierarchyRoot = maestro.viewHierarchy().root,
-                debugMessage = "Screenshot comparison failed. Check the diff image at ${diffFile.absolutePath} to see the differences. Adjust the thresholdPercentage if the differences are acceptable."
+                debugMessage = "Screenshot comparison failed. Check the diff image in this run's artifacts under " +
+                    "${BundleLayout.SCREENSHOT_DIFF_DIR}/${diffFile.name} to see the differences. " +
+                    "Adjust the thresholdPercentage if the differences are acceptable."
             )
         }
     }
@@ -1198,11 +1218,7 @@ class Orchestra(
     }
 
     private suspend fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
-        ArtifactCollector.validateCommandPath(command.path, "takeScreenshot")
-        // Generator owns the bundle path and records the file; null means no bundle (write CWD-relative).
-        val outFile = artifactsGenerator
-            .allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "${command.path}.png", "takeScreenshot")
-            ?: File("${command.path}.png")
+        val outFile = artifacts.file(ArtifactKind.TAKE_SCREENSHOT, command.path)
         val fileSink = artifactSink(outFile, command.path, "takeScreenshot")
 
         val cropOn = command.cropOn
@@ -1224,11 +1240,8 @@ class Orchestra(
     }
 
     private suspend fun startRecordingCommand(command: StartRecordingCommand): Boolean {
-        ArtifactCollector.validateCommandPath(command.path, "startRecording")
         // Recorded at start; the file is finalized at stopRecording.
-        val outFile = artifactsGenerator
-            .allocateCommandArtifact(ArtifactKind.START_SCREEN_RECORDING, "${command.path}.mp4", "startRecording")
-            ?: File("${command.path}.mp4")
+        val outFile = artifacts.file(ArtifactKind.START_SCREEN_RECORDING, command.path)
         screenRecording = maestro.startScreenRecording(artifactSink(outFile, command.path, "startRecording"))
         return false
     }
