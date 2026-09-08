@@ -287,7 +287,7 @@ class RealDeviceGateway(
         }
     }
 
-    // device-core collapses killApp onto stopApp via `am force-stop`.
+    // device-core serves kill and stop through the same verb.
     override fun killApp(appId: String) {
         stopApp(appId)
     }
