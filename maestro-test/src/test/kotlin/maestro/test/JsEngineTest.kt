@@ -2,10 +2,12 @@ package maestro.test
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.findAll
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
@@ -410,6 +412,37 @@ abstract class JsEngineTest {
         // Then: flows that catch their own HTTP failures still see a message, and it is the new one
         assertThat(result.toString()).contains("timed out after 250 ms")
         assertThat(result.toString()).contains("MAESTRO_JS_HTTP_TIMEOUT")
+    }
+
+    @Test
+    fun `HTTP - the timeout param shapes the client without touching the request`(wiremockInfo: WireMockRuntimeInfo) {
+        // Given
+        val port = wiremockInfo.httpPort
+        stubFor(post(urlPathEqualTo("/json")).willReturn(okJson("""{"message": "POST endpoint"}""")))
+
+        val script = """
+            var response = http.post('http://localhost:$port/json', {
+                body: JSON.stringify({ payload: 'Value' }),
+                headers: { 'X-Trace': 'abc' },
+                timeout: 10000
+            })
+
+            json(response.body).message
+        """.trimIndent()
+
+        // When
+        val result = engine.evaluateScript(script)
+
+        // Then: the request still succeeds through the derived client...
+        assertThat(result.toString()).isEqualTo("POST endpoint")
+
+        // ...and `timeout` reached the client only — never the body, the URL or the headers
+        val recorded = findAll(postRequestedFor(urlPathEqualTo("/json")))
+        assertThat(recorded).hasSize(1)
+        assertThat(recorded.single().bodyAsString).isEqualTo("""{"payload":"Value"}""")
+        assertThat(recorded.single().url).isEqualTo("/json")
+        assertThat(recorded.single().getHeader("X-Trace")).isEqualTo("abc")
+        assertThat(recorded.single().headers.keys().map { it.lowercase() }).doesNotContain("timeout")
     }
 
     /**
