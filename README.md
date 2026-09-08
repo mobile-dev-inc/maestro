@@ -122,7 +122,7 @@ Pricing for Maestro Cloud is completely transparent and can be found on the [pri
 
 ## Resources & Community
 
-- 💬 [Join the Slack Community](https://maestrodev.typeform.com/to/FelIEe8A)
+- 💬 [Join the Slack Community](https://slack.maestro.dev)
 - 📘 [Documentation](https://docs.maestro.dev)
 - 📰 [Blog](https://maestro.dev/blog?utm_source=github-readme)
 - 🐦 [Follow us on X](https://twitter.com/maestro__dev)
