@@ -31,6 +31,14 @@ on:
           - 'android'
           - 'ios'
           - 'web'
+      gpu_mode:
+        description: 'TEMP (root-cause): emulator hw.gpu.mode. Empty = swiftshader_indirect.'
+        type: string
+        default: ''
+      emu_features:
+        description: 'TEMP (root-cause): emulator -feature arg, e.g. -GLDMA,-GLDMA2,-GuestAngle. Empty = none.'
+        type: string
+        default: ''
   pull_request:
 
 # Cancel an in-progress run when a new one starts on the same ref + same trigger + same dispatch
@@ -399,7 +407,7 @@ jobs:
           cat << EOF >> ~/.config/.android/avd/MyAVD.avd/config.ini
           hw.cpu.ncore=4
           hw.gpu.enabled=yes
-          hw.gpu.mode=swiftshader_indirect
+          hw.gpu.mode=${{ inputs.gpu_mode || 'swiftshader_indirect' }}
           hw.ramSize=4192
           disk.dataPartition.size=6442450944
           vm.heapSize=112M
@@ -410,8 +418,15 @@ jobs:
 
       - name: Run AVD
         run: |
+          # TEMP (root-cause): allow a -feature override to probe the surfaceflinger
+          # ReadColorBufferDma abort on the ps16k image. Empty on pull_request.
+          FEATURE_ARG=""
+          EMU_FEATURES="${{ inputs.emu_features }}"
+          [ -n "$EMU_FEATURES" ] && FEATURE_ARG="-feature $EMU_FEATURES"
+          echo "emulator feature override: ${FEATURE_ARG:-<none>}"
           emulator @MyAVD \
             -verbose -no-snapshot -no-window -no-audio -no-boot-anim -accel on -no-metrics -camera-back emulated \
+            $FEATURE_ARG \
             >~/emulator_stdout.log \
             2>~/emulator_stderr.log &
 
