@@ -310,7 +310,7 @@ jobs:
     env:
       ANDROID_HOME: /home/runner/androidsdk
       ANDROID_SDK_ROOT: /home/runner/androidsdk
-      ANDROID_AVD_HOME: /home/runner/.config/.android/avd/
+      ANDROID_AVD_HOME: /home/runner/.android/avd/
       MAESTRO_APP: ${{ inputs.app }}
       MAESTRO_FLOW_PATH: ${{ needs.validate-inputs.outputs.flow_path }}
 
@@ -345,7 +345,8 @@ jobs:
       - name: Set up Android Command-line Tools
         run: |
           # v13 - see https://stackoverflow.com/a/78890086/7009800
-          sh .github/scripts/install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip
+          # 12.x writes target=android-0 for API 37 (breaks gfxstream); use a current build.
+          sh .github/scripts/install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" >> $GITHUB_PATH
 
       - name: Set up Android SDK components
@@ -396,7 +397,7 @@ jobs:
           
           echo "HOME=$HOME"
           
-          cat << EOF >> ~/.config/.android/avd/MyAVD.avd/config.ini
+          cat << EOF >> ~/.android/avd/MyAVD.avd/config.ini
           hw.cpu.ncore=4
           hw.gpu.enabled=yes
           hw.gpu.mode=swiftshader_indirect
