@@ -45,7 +45,7 @@ on:
 # inputs. PR pushes cancel earlier PR runs on the same branch; manual dispatches with different
 # android_version / platform / app / flow stay independent so we can validate combinations in parallel.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}
   cancel-in-progress: true
 
 jobs:
