@@ -47,13 +47,17 @@ on:
         description: 'TEMP (root-cause): full system-image id to use verbatim, overriding android_version mapping.'
         type: string
         default: ''
+      img_channel:
+        description: 'TEMP (root-cause): sdkmanager channel for the SYSTEM IMAGE only (separate from emu_channel). Empty = same as emu_channel.'
+        type: string
+        default: ''
   pull_request:
 
 # Cancel an in-progress run when a new one starts on the same ref + same trigger + same dispatch
 # inputs. PR pushes cancel earlier PR runs on the same branch; manual dispatches with different
 # android_version / platform / app / flow stay independent so we can validate combinations in parallel.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}-${{ inputs.emu_channel || '' }}-${{ inputs.image_override || '' }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}-${{ inputs.emu_channel || '' }}-${{ inputs.image_override || '' }}-${{ inputs.img_channel || '' }}
   cancel-in-progress: true
 
 jobs:
@@ -380,9 +384,11 @@ jobs:
           echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
           sdkmanager --install "platform-tools"
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-          # TEMP (root-cause): install the image from the same channel so canary-only
-          # builds (e.g. android-37.2 final) can be probed.
-          sdkmanager --channel="$CH" --install "$ANDROID_OS_IMAGE"
+          # TEMP (root-cause): install the image from its own channel (defaults to the
+          # emulator channel) so a canary-only image can pair with a stable emulator.
+          IMG_CH="${{ inputs.img_channel || inputs.emu_channel || '0' }}"
+          yes | sdkmanager --channel="$IMG_CH" --licenses
+          sdkmanager --channel="$IMG_CH" --install "$ANDROID_OS_IMAGE"
 
       - name: Build demo_app # Or fetch cached version
         uses: ./.github/actions/build-demo-app
