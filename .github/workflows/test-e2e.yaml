@@ -43,13 +43,17 @@ on:
         description: 'TEMP (root-cause): sdkmanager channel for the emulator package (0=stable,1=beta,2=dev,3=canary). Empty = 0.'
         type: string
         default: ''
+      image_override:
+        description: 'TEMP (root-cause): full system-image id to use verbatim, overriding android_version mapping.'
+        type: string
+        default: ''
   pull_request:
 
 # Cancel an in-progress run when a new one starts on the same ref + same trigger + same dispatch
 # inputs. PR pushes cancel earlier PR runs on the same branch; manual dispatches with different
 # android_version / platform / app / flow stay independent so we can validate combinations in parallel.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}-${{ inputs.emu_channel || '' }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}-${{ inputs.emu_channel || '' }}-${{ inputs.image_override || '' }}
   cancel-in-progress: true
 
 jobs:
@@ -330,11 +334,16 @@ jobs:
       - name: Resolve Android system image
         run: |
           version="${{ inputs.android_version || 'android-32' }}"
-          # API 37 only ships a 16 KB page-size (ps16k) image.
-          case "$version" in
-            android-37) image="system-images;android-37.1;google_apis_ps16k;x86_64" ;;
-            *)          image="system-images;$version;google_apis;x86_64" ;;
-          esac
+          override="${{ inputs.image_override }}"
+          if [ -n "$override" ]; then
+            image="$override"
+          else
+            # API 37 only ships a 16 KB page-size (ps16k) image.
+            case "$version" in
+              android-37) image="system-images;android-37.1;google_apis_ps16k;x86_64" ;;
+              *)          image="system-images;$version;google_apis;x86_64" ;;
+            esac
+          fi
           echo "Resolved $version -> $image"
           echo "ANDROID_OS_IMAGE=$image" >> "$GITHUB_ENV"
 
