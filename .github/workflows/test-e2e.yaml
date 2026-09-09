@@ -39,13 +39,17 @@ on:
         description: 'TEMP (root-cause): emulator -feature arg, e.g. -GLDMA,-GLDMA2,-GuestAngle. Empty = none.'
         type: string
         default: ''
+      emu_channel:
+        description: 'TEMP (root-cause): sdkmanager channel for the emulator package (0=stable,1=beta,2=dev,3=canary). Empty = 0.'
+        type: string
+        default: ''
   pull_request:
 
 # Cancel an in-progress run when a new one starts on the same ref + same trigger + same dispatch
 # inputs. PR pushes cancel earlier PR runs on the same branch; manual dispatches with different
 # android_version / platform / app / flow stay independent so we can validate combinations in parallel.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.android_version || '' }}-${{ inputs.platform || '' }}-${{ inputs.app || '' }}-${{ inputs.flow || '' }}-${{ inputs.gpu_mode || '' }}-${{ inputs.emu_features || '' }}-${{ inputs.emu_channel || '' }}
   cancel-in-progress: true
 
 jobs:
@@ -358,8 +362,12 @@ jobs:
 
       - name: Set up Android SDK components
         run: |
-          yes | sdkmanager --licenses
-          sdkmanager --install emulator
+          # TEMP (root-cause): allow installing the emulator from a newer channel
+          # to test whether a newer emulator fixes the API 37 ps16k gralloc abort.
+          CH="${{ inputs.emu_channel || '0' }}"
+          yes | sdkmanager --channel="$CH" --licenses
+          sdkmanager --channel="$CH" --install emulator
+          emulator -version | head -1 || true
           echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
           sdkmanager --install "platform-tools"
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
