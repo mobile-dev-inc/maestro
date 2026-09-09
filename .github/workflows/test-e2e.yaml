@@ -380,7 +380,9 @@ jobs:
           echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
           sdkmanager --install "platform-tools"
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-          sdkmanager --install "$ANDROID_OS_IMAGE"
+          # TEMP (root-cause): install the image from the same channel so canary-only
+          # builds (e.g. android-37.2 final) can be probed.
+          sdkmanager --channel="$CH" --install "$ANDROID_OS_IMAGE"
 
       - name: Build demo_app # Or fetch cached version
         uses: ./.github/actions/build-demo-app
