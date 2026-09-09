@@ -38,8 +38,15 @@ internal object StepArtifactNaming {
         return leaf !is CompositeCommand && leaf.visible()
     }
 
+    /**
+     * The 1-based, zero-padded step index shared by every step-prefixed bundle name, so a diff,
+     * a screenshot and a hierarchy from one step share a prefix and correlate on sight.
+     */
+    fun index(sequenceNumber: Int): String =
+        (sequenceNumber + 1).toString().padStart(MIN_INDEX_WIDTH, '0')
+
     fun stem(sequenceNumber: Int, command: MaestroCommand?): String {
-        val index = (sequenceNumber + 1).toString().padStart(MIN_INDEX_WIDTH, '0')
+        val index = index(sequenceNumber)
         val slug = command?.let(::slug)
         return if (slug.isNullOrEmpty()) "step-$index" else "step-$index-$slug"
     }

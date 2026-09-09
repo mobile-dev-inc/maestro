@@ -696,7 +696,10 @@ class Orchestra(
             debugMessage = "The assertScreenshot command requires a valid image file. Supported formats include PNG, JPEG, GIF, BMP, TIFF, and WBMP. The file at ${expectedFile.absolutePath} could not be read."
         )
 
-        val diffFile = expectedFile.resolveSibling("${expectedFile.nameWithoutExtension}_diff.png")
+        // The reference is an INPUT the flow reads from its own directory; the diff is this
+        // run's OUTPUT. Deriving the diff's location from the reference's is what put it in the
+        // workspace, which Cloud deletes with the machine.
+        val diffFile = artifacts.file(ArtifactKind.SCREENSHOT_DIFF, "${expectedFile.nameWithoutExtension}_diff")
 
         when (val result = ScreenshotMatch.compare(expectedImage, actualImage, thresholdPercentage, diffFile)) {
             is ScreenshotMatch.Result.Match -> return false // Screenshots are non-interactive
@@ -708,7 +711,9 @@ class Orchestra(
             is ScreenshotMatch.Result.Mismatch -> throw MaestroException.AssertionFailure(
                 message = "Comparison error: ${command.description()} - threshold not met, current: ${result.matchPercent}%",
                 hierarchyRoot = maestro.viewHierarchy().root,
-                debugMessage = "Screenshot comparison failed. Check the diff image at ${diffFile.absolutePath} to see the differences. Adjust the thresholdPercentage if the differences are acceptable."
+                debugMessage = "Screenshot comparison failed. Check the diff image in this run's artifacts under " +
+                    "${BundleLayout.SCREENSHOT_DIFF_DIR}/${diffFile.name} to see the differences. " +
+                    "Adjust the thresholdPercentage if the differences are acceptable."
             )
         }
     }
