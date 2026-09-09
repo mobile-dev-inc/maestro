@@ -332,14 +332,14 @@ class BundleWriterTest {
     @Test
     fun `registers takeScreenshot and startRecording folders as collections`() {
         // Command output is allocated through the generator (as Orchestra does via
-        // allocateCommandArtifact); the collector folds same-kind files into one entry.
+        // artifacts.file); the registry folds same-kind files into one entry.
         val gen = BundleWriter(artifactsDir = tempDir, maestro = mockMaestro())
         val cmd = MaestroCommand(tapOnElement = null)
         gen.onFlowStart()
         gen.onCommandStart(cmd, sequenceNumber = 0)
-        gen.allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "login/home.png", "takeScreenshot")!!.writeBytes(byteArrayOf(1))
-        gen.allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "splash.png", "takeScreenshot")!!.writeBytes(byteArrayOf(1))
-        gen.allocateCommandArtifact(ArtifactKind.START_SCREEN_RECORDING, "clip.mp4", "startRecording")!!.writeBytes(byteArrayOf(1))
+        gen.artifacts.file(ArtifactKind.TAKE_SCREENSHOT, "login/home").writeBytes(byteArrayOf(1))
+        gen.artifacts.file(ArtifactKind.TAKE_SCREENSHOT, "splash").writeBytes(byteArrayOf(1))
+        gen.artifacts.file(ArtifactKind.START_SCREEN_RECORDING, "clip").writeBytes(byteArrayOf(1))
         gen.onFlowEnd()
 
         val takeScreenshot = gen.artifactManifest.entries
@@ -665,7 +665,7 @@ class BundleWriterTest {
 
         gen.onFlowStart()
         gen.onCommandStart(cmd, sequenceNumber = 0)
-        gen.allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "checkout.png", "takeScreenshot")!!.writeBytes(byteArrayOf(1))
+        gen.artifacts.file(ArtifactKind.TAKE_SCREENSHOT, "checkout").writeBytes(byteArrayOf(1))
         gen.onCommandFinished(cmd, CommandOutcome.Completed, 100L, 150L)
         gen.onFlowEnd()
 
@@ -701,7 +701,7 @@ class BundleWriterTest {
         gen.onCommandStart(first, sequenceNumber = 0)
         gen.onCommandFinished(first, CommandOutcome.Completed, 100L, 150L)
         gen.onCommandStart(second, sequenceNumber = 1)
-        gen.allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "checkout.png", "takeScreenshot")!!.writeBytes(byteArrayOf(1))
+        gen.artifacts.file(ArtifactKind.TAKE_SCREENSHOT, "checkout").writeBytes(byteArrayOf(1))
         gen.onCommandFinished(second, CommandOutcome.Completed, 150L, 200L)
         gen.onFlowEnd()
 
@@ -729,20 +729,6 @@ class BundleWriterTest {
         val screenshotArtifact = artifacts.single { it.type == ArtifactKind.SCREENSHOT }
         assertThat(screenshotArtifact.path).isEqualTo("screenshots/step-001-scroll.png")
         assertThat(tempDir.resolve(screenshotArtifact.path).exists()).isTrue()
-    }
-
-    @Test
-    fun `allocateCommandArtifact returns null and records nothing when artifactsDir is null`() {
-        val gen = BundleWriter(artifactsDir = null, maestro = mockMaestro())
-        val cmd = MaestroCommand(tapOnElement = null)
-
-        gen.onFlowStart()
-        gen.onCommandStart(cmd, sequenceNumber = 0)
-        assertThat(gen.allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "checkout.png", "takeScreenshot")).isNull()
-        gen.onCommandFinished(cmd, CommandOutcome.Completed, 100L, 150L)
-        gen.onFlowEnd()
-
-        assertThat(gen.debugOutput.commands[cmd]!!.artifacts).isEmpty()
     }
 
     @Test

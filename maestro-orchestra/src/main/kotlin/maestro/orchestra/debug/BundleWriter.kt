@@ -64,7 +64,9 @@ internal class BundleWriter(
     /** The run's artifact manifest; populated at [onFlowEnd], empty when [artifactsDir] is null. */
     var artifactManifest: ArtifactManifest = ArtifactManifest()
         private set
-    private var collector: ArtifactRegistry? = null
+    /** Visible to [Artifacts], which registers on a command's behalf. Null until flow start. */
+    internal var registry: ArtifactRegistry? = null
+        private set
     private var logCapture: ScopedLogCapture? = null
     private var fullRunRecording: ScreenRecording? = null
     private var fullRunRecordingFile: File? = null
@@ -80,8 +82,8 @@ internal class BundleWriter(
     override fun onFlowStart() {
         if (artifactsDir == null) return
         try {
-            val collector = ArtifactRegistry(artifactsDir).also { this.collector = it }
-            val logFile = collector.allocate(ArtifactKind.MAESTRO_LOG, ArtifactFormat.TXT, BundleLayout.MAESTRO_LOG)
+            val registry = ArtifactRegistry(artifactsDir).also { this.registry = it }
+            val logFile = registry.allocate(ArtifactKind.MAESTRO_LOG, ArtifactFormat.TXT, BundleLayout.MAESTRO_LOG)
             logCapture = ScopedLogCapture.start(logFile)
             flowStartMs = System.currentTimeMillis()
             appUnderTest = null
@@ -112,17 +114,11 @@ internal class BundleWriter(
         if (captureFullArtifacts && StepArtifactNaming.capturesScreenshot(cmd)) captureStepScreenshot(metadata)
     }
 
-    /**
-     * Allocate (and record) a command-output file through the collector, attributed
-     * to the running command. Null when no bundle is produced ([artifactsDir] null) —
-     * the caller then writes CWD-relative, as before.
-     */
-    fun allocateCommandArtifact(kind: ArtifactKind, path: String, commandName: String): File? {
-        val collector = collector ?: return null
-        return collector.allocateCommandOutput(
-            kind, path, commandName, currentCommandMetadata?.sequenceNumber,
-        )
-    }
+    /** The executing command's step, or null outside a command. Visible to [Artifacts]. */
+    internal val currentSequenceNumber: Int? get() = currentCommandMetadata?.sequenceNumber
+
+    /** Where a command puts anything it produces — see [Artifacts]. */
+    val artifacts: Artifacts = Artifacts(this)
 
     override fun onCommandFinished(
         cmd: MaestroCommand,
@@ -172,7 +168,7 @@ internal class BundleWriter(
     }
 
     override fun onAIArtifactGenerated(screenshot: Buffer, defectCount: Int) {
-        val collector = collector ?: return
+        val collector = registry ?: return
         val meta = currentCommandMetadata ?: return
         try {
             val destFile = collector.allocate(
@@ -192,13 +188,13 @@ internal class BundleWriter(
         // Capture the resting screen before the recording is torn down.
         if (captureFullArtifacts) captureFinalScreenshot()
         stopFullRunRecording()
-        val collector = collector
-        if (artifactsDir != null && collector != null) {
+        val registry = registry
+        if (artifactsDir != null && registry != null) {
             // Per execution, keyed by sequence number — the same records the manifest
             // reads, so commands.json can't drift and each attempt keeps its own shot.
             debugOutput.executedSteps.forEach { step ->
                 step.artifacts.clear()
-                step.artifacts.addAll(collector.artifactsForStep(step.sequenceNumber))
+                step.artifacts.addAll(registry.artifactsForStep(step.sequenceNumber))
             }
             try {
                 TestOutputWriter.saveCommands(
@@ -206,7 +202,7 @@ internal class BundleWriter(
                     debugOutput = debugOutput,
                     commandsFilename = BundleLayout.COMMANDS_JSON,
                 )
-                collector.adopt(ArtifactKind.COMMAND_METADATA, BundleLayout.COMMANDS_JSON, ArtifactFormat.JSON)
+                registry.adopt(ArtifactKind.COMMAND_METADATA, BundleLayout.COMMANDS_JSON, ArtifactFormat.JSON)
             } catch (e: Exception) {
                 logger.warn("Failed to write commands.json under $artifactsDir", e)
             }
@@ -219,13 +215,13 @@ internal class BundleWriter(
             logCapture = null
         }
 
-        if (artifactsDir != null && collector != null) {
+        if (artifactsDir != null && registry != null) {
             // Device logs + crash/ANR land under logs/ and are adopted flow-level
             // (no owning command) so they appear in the manifest like any artifact.
             capturer?.collect(appUnderTest, flowStartMs).orEmpty()
-                .forEach { collector.adoptDeviceArtifact(it) }
+                .forEach { registry.adoptDeviceArtifact(it) }
             capturer = null
-            artifactManifest = collector.manifest()
+            artifactManifest = registry.manifest()
             try {
                 TestOutputWriter.saveManifest(artifactsDir, artifactManifest)
             } catch (e: Exception) {
@@ -249,7 +245,7 @@ internal class BundleWriter(
     }
 
     private fun captureStepHierarchy(metadata: CommandDebugMetadata) {
-        val collector = collector ?: return
+        val collector = registry ?: return
         try {
             val tree = runBlocking { maestro.viewHierarchy() }.root
             val destFile = collector.allocate(
@@ -285,7 +281,7 @@ internal class BundleWriter(
      * never destroys a frame already there), returning the bundle-relative path or null on failure.
      */
     private fun captureScreenshot(relativePath: String, sequenceNumber: Int?): String? {
-        val collector = collector ?: return null
+        val collector = registry ?: return null
         val destFile = collector.allocate(
             ArtifactKind.SCREENSHOT,
             ArtifactFormat.PNG,
@@ -309,7 +305,7 @@ internal class BundleWriter(
     }
 
     private fun startFullRunRecording() {
-        val collector = collector ?: return
+        val collector = registry ?: return
         try {
             val destFile = collector.allocate(ArtifactKind.SCREEN_RECORDING, ArtifactFormat.MP4, BundleLayout.SCREEN_RECORDING)
             fullRunRecordingFile = destFile

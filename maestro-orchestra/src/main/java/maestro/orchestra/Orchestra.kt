@@ -176,6 +176,9 @@ class Orchestra(
     // artifactsDir is set and populates debugOutput either way.
     private val bundleWriter: BundleWriter =
         BundleWriter(artifactsDir, maestro, captureFullArtifacts, onStepScreenshotCaptured)
+    /** Where a command puts anything it produces. The only artifact surface commands use. */
+    private val artifacts = bundleWriter.artifacts
+
     private val effectiveListeners: List<OrchestraListener> = listOf(bundleWriter) + listeners
 
     private var commandSequenceCounter: Int = 0
@@ -649,7 +652,7 @@ class Orchestra(
 
         val candidates = buildList {
             command.flowPath?.let { add(it.resolve(path).toFile()) }
-            artifactsDir?.let { add(it.resolve(BundleLayout.TAKE_SCREENSHOT_DIR).resolve(path).normalize().toFile()) }
+            artifacts.existing(ArtifactKind.TAKE_SCREENSHOT, path)?.let { add(it) }
             add(File(path))
         }.distinctBy { it.canonicalPath }
 
@@ -1198,11 +1201,7 @@ class Orchestra(
     }
 
     private suspend fun takeScreenshotCommand(command: TakeScreenshotCommand): Boolean {
-        ArtifactRegistry.validateCommandPath(command.path, "takeScreenshot")
-        // Generator owns the bundle path and records the file; null means no bundle (write CWD-relative).
-        val outFile = bundleWriter
-            .allocateCommandArtifact(ArtifactKind.TAKE_SCREENSHOT, "${command.path}.png", "takeScreenshot")
-            ?: File("${command.path}.png")
+        val outFile = artifacts.file(ArtifactKind.TAKE_SCREENSHOT, command.path)
         val fileSink = artifactSink(outFile, command.path, "takeScreenshot")
 
         val cropOn = command.cropOn
@@ -1224,11 +1223,8 @@ class Orchestra(
     }
 
     private suspend fun startRecordingCommand(command: StartRecordingCommand): Boolean {
-        ArtifactRegistry.validateCommandPath(command.path, "startRecording")
         // Recorded at start; the file is finalized at stopRecording.
-        val outFile = bundleWriter
-            .allocateCommandArtifact(ArtifactKind.START_SCREEN_RECORDING, "${command.path}.mp4", "startRecording")
-            ?: File("${command.path}.mp4")
+        val outFile = artifacts.file(ArtifactKind.START_SCREEN_RECORDING, command.path)
         screenRecording = maestro.startScreenRecording(artifactSink(outFile, command.path, "startRecording"))
         return false
     }
