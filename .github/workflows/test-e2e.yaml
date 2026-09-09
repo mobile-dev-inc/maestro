@@ -345,7 +345,11 @@ jobs:
       - name: Set up Android Command-line Tools
         run: |
           # v13 - see https://stackoverflow.com/a/78890086/7009800
-          sh .github/scripts/install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip
+          # cmdline-tools 12.x (build 12266719) mis-parses the API 37 image version and makes
+          # avdmanager write `target=android-0` into the AVD .ini, which misconfigures gfxstream
+          # and makes the guest SIGABRT in surfaceflinger (mapper.ranchu ReadColorBufferDma). A
+          # current cmdline-tools build resolves the target correctly. Bumped 12266719 -> 15859902.
+          sh .github/scripts/install_android_sdk https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" >> $GITHUB_PATH
 
       - name: Set up Android SDK components
@@ -383,6 +387,12 @@ jobs:
             --package "$ANDROID_OS_IMAGE" \
             --name "MyAVD"
 
+          # Root-cause guard: an outdated avdmanager writes `target=android-0` here, which
+          # silently misconfigures gfxstream and makes the guest SIGABRT at boot. Surface it.
+          echo "=== avdmanager version + AVD target ==="
+          avdmanager --version 2>/dev/null || true
+          grep -H '^target=' ~/.config/.android/avd/MyAVD.ini || echo "no target= line found"
+
           echo "DEBUG INFO"
           
           avdmanager list avd
@@ -415,6 +425,12 @@ jobs:
             >~/emulator_stdout.log \
             2>~/emulator_stderr.log &
 
+      - name: Start logcat capture (diagnostics)
+        run: |
+          adb wait-for-device
+          nohup adb logcat -b all -v threadtime >~/logcat.txt 2>&1 &
+          echo "logcat capture started (pid $!)"
+
       - name: Wait for AVD to start up and configure CI pre-conditions
         run: bash .github/scripts/setup_android_device.sh
 
@@ -426,6 +442,33 @@ jobs:
         working-directory: ${{ github.workspace }}/e2e
         timeout-minutes: 30
         run: ./run_tests android
+
+      - name: Collect crash diagnostics
+        if: always()
+        run: |
+          set +e
+          {
+            echo "=== crash summary for $ANDROID_OS_IMAGE ==="
+            echo "target: $(grep -h '^target=' ~/.config/.android/avd/MyAVD.ini 2>/dev/null)"
+            echo "-- surfaceflinger SIG(ABRT|KILL) via init --"
+            grep -acE "Service 'surfaceflinger' \(pid [0-9]+\) received SIG" ~/logcat.txt
+            echo "-- zygote SIGKILL cycles --"
+            grep -acE "Service 'zygote' \(pid [0-9]+\) received SIGKILL" ~/logcat.txt
+            echo "-- ReadColorBufferDma asserts --"
+            grep -ac "hasReadColorBufferDma" ~/logcat.txt
+          } | tee ~/crash_summary.txt
+
+      - name: Upload Android diagnostics
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: android-diagnostics
+          path: |
+            ~/logcat.txt
+            ~/emulator_stdout.log
+            ~/crash_summary.txt
+          retention-days: 7
+          include-hidden-files: true
 
       - name: Upload ~/.maestro artifacts
         uses: actions/upload-artifact@v7
