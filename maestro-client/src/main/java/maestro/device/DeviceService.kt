@@ -12,10 +12,9 @@ import maestro.utils.TempFileHandler
 import okio.buffer
 import okio.source
 import org.slf4j.LoggerFactory
-import util.DeviceCtlResponse
-import util.LocalIOSDevice
 import util.LocalSimulatorUtils
 import util.SimctlList
+import util.IOSDeviceIdentifierResolver
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -359,7 +358,7 @@ object DeviceService {
         val simctlList = try {
             localSimulatorUtils.list()
         } catch (ignored: Exception) {
-            return emptyList()
+            return listIOSConnectedDevices()
         }
 
         val runtimeNameByIdentifier = simctlList
@@ -376,34 +375,22 @@ object DeviceService {
     }
 
     fun listIOSConnectedDevices(): List<Device.Connected> {
-        val connectedIphoneList = try {
-            LocalIOSDevice().listDeviceViaDeviceCtl()
-        } catch (ignored: Exception) {
-            // devicectl is unavailable on older Xcode/macOS (needs Xcode 15 / macOS 13.5+),
-            // where it produces no output. Physical-device enumeration is optional, so degrade
-            // gracefully rather than aborting the whole device list (as simctl already does above).
-            return emptyList()
-        }
+        val resolver = IOSDeviceIdentifierResolver()
 
-        return connectedIphoneList.mapNotNull { device ->
-            val udid = device.hardwareProperties?.udid
-            if (device.connectionProperties.tunnelState != DeviceCtlResponse.ConnectionProperties.CONNECTED || udid == null) {
-                return@mapNotNull null
+        return try {
+            resolver.listDevices().map { udid ->
+                Device.Connected(
+                    instanceId = udid,
+                    description = udid,
+                    platform = Platform.IOS,
+                    deviceType = Device.DeviceType.REAL,
+                    deviceSpec = DeviceSpec.Ios.DEFAULT
+                )
             }
-
-            val description = listOfNotNull(
-                device.deviceProperties?.name,
-                device.deviceProperties?.osVersionNumber,
-                device.identifier
-            ).joinToString(" - ")
-
-            Device.Connected(
-                instanceId = udid,
-                description = description,
-                platform = Platform.IOS,
-                deviceType = Device.DeviceType.REAL,
-                deviceSpec = DeviceSpec.Ios.DEFAULT
-            )
+        } catch (ignored: Exception) {
+            // Physical-device enumeration is optional, so degrade gracefully
+            // rather than aborting the whole device list (as simctl already does above).
+            emptyList()
         }
     }
 

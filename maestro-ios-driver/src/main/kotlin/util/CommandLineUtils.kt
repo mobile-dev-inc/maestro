@@ -53,4 +53,24 @@ object CommandLineUtils {
 
         return process
     }
+
+    fun runCommandAndReturnOutput(parts: List<String>): String {
+        logger.info("Running command line operation: $parts")
+        val process = ProcessBuilder(*parts.toTypedArray())
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        if (!process.waitFor(5, TimeUnit.MINUTES)) {
+            throw TimeoutException()
+        }
+
+        return if (process.exitValue() == 0) {
+            process.inputStream.bufferedReader().readText()
+        } else {
+            val errorOutput = process.errorStream.source().buffer().readUtf8()
+            logger.error("Process failed with exit code ${process.exitValue()}")
+            logger.error("Error output: $errorOutput")
+            throw IllegalStateException(errorOutput)
+        }
+    }
 }

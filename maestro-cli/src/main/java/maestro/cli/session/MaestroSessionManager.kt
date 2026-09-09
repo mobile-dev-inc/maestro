@@ -392,9 +392,10 @@ object MaestroSessionManager {
         val tempFileHandler = TempFileHandler()
         val deviceController = when (deviceType) {
             Device.DeviceType.REAL -> {
-                val device = util.LocalIOSDevice().listDeviceViaDeviceCtl(deviceId)
-                val deviceCtlDevice = DeviceControlIOSDevice(deviceId = device.identifier)
-                deviceCtlDevice
+                // Verify device exists and get proper UDID
+                val resolver = util.IOSDeviceIdentifierResolver()
+                val udid = resolver.getUDID(deviceId)
+                DeviceControlIOSDevice(deviceId = udid)
             }
             Device.DeviceType.SIMULATOR -> {
                 val simctlIOSDevice = SimctlIOSDevice(
@@ -423,6 +424,11 @@ object MaestroSessionManager {
             client = XCTestClient(defaultXctestHost, driverHostPort ?: defaultXcTestPort),
             reinstallDriver = reinstallDriver,
         )
+
+        // Inject XCTestDriverClient into DeviceControlIOSDevice for real devices
+        if (deviceController is ios.devicectl.DeviceControlIOSDevice) {
+            deviceController.setXCTestClient(xcTestDriverClient)
+        }
 
         val xcRunnerCLIUtils = XCRunnerCLIUtils(tempFileHandler = tempFileHandler)
         val xcTestDevice = XCTestIOSDevice(

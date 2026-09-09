@@ -534,7 +534,9 @@ class TestCommand : Callable<Int> {
     private fun selectPort(effectiveShards: Int): Int {
         val userPort = driverHostPort ?: parent?.driverHostPort
         if (userPort != null) {
-            if (!isPortAvailable(userPort)) {
+            // When using an external XCTest runner, we don't need to bind to the port
+            val useExternalRunner = !System.getenv("USE_XCODE_TEST_RUNNER").isNullOrEmpty()
+            if (!useExternalRunner && !isPortAvailable(userPort)) {
                 throw CliError("Requested driver host port $userPort is not available")
             }
             return userPort
