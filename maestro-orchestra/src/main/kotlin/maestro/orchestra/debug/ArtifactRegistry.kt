@@ -32,12 +32,7 @@ internal class ArtifactRegistry(artifactsDir: Path) {
     /** A kind the manifest reports as one folder entry with a member count. */
     private data class Collection(val dir: String, val format: ArtifactFormat)
 
-    private val collectionKinds: Map<ArtifactKind, Collection> = mapOf(
-        ArtifactKind.TAKE_SCREENSHOT to Collection(BundleLayout.TAKE_SCREENSHOT_DIR, ArtifactFormat.PNG),
-        ArtifactKind.START_SCREEN_RECORDING to Collection(BundleLayout.START_RECORDING_DIR, ArtifactFormat.MP4),
-        ArtifactKind.SCREENSHOT to Collection(BundleLayout.STEP_SCREENSHOTS_DIR, ArtifactFormat.PNG),
-        ArtifactKind.SCREEN_HIERARCHY to Collection(BundleLayout.SCREEN_HIERARCHY_DIR, ArtifactFormat.JSON),
-    )
+    private val collectionKinds: Map<ArtifactKind, Collection> get() = COLLECTION_KINDS
 
     private data class Record(
         val kind: ArtifactKind,
@@ -99,6 +94,25 @@ internal class ArtifactRegistry(artifactsDir: Path) {
             artifactsDir.relativize(resolved).joinToString("/"),
             sequenceNumber = sequenceNumber,
         )
+    }
+
+    /**
+     * Read-only lookup of an artifact this run already produced, inside the folder this registry
+     * owns for [kind]. Registers nothing and creates nothing; null when the kind owns no folder,
+     * the path escapes it, or the file is not there.
+     */
+    fun locate(kind: ArtifactKind, path: String): File? {
+        val collection = collectionKinds[kind] ?: return null
+        val folder = artifactsDir.resolve(collection.dir)
+        val resolved = try {
+            folder.resolve(path).toFile().canonicalFile.toPath()
+        } catch (e: IOException) {
+            return null
+        } catch (e: InvalidPathException) {
+            return null
+        }
+        if (!resolved.startsWith(folder) || resolved == folder) return null
+        return resolved.toFile().takeIf { it.isFile }
     }
 
     /** Record a file written outside the generator's own path (device logs, crash/ANR) that already lives in the artifacts folder. */
@@ -177,6 +191,22 @@ internal class ArtifactRegistry(artifactsDir: Path) {
          * — after it, a path naming no file looks like one. Holds with or without a bundle, so it
          * cannot need a collector instance; where the path lands is [allocateCommandOutput]'s call.
          */
+        /**
+         * Which kinds the manifest reports as one folder entry, and the folder they live in. In
+         * the companion because a name's folder and extension are settled before any registry
+         * exists (with no bundle there is none) — the one place the layout is encoded.
+         */
+        private val COLLECTION_KINDS: Map<ArtifactKind, Collection> = mapOf(
+            ArtifactKind.TAKE_SCREENSHOT to Collection(BundleLayout.TAKE_SCREENSHOT_DIR, ArtifactFormat.PNG),
+            ArtifactKind.START_SCREEN_RECORDING to Collection(BundleLayout.START_RECORDING_DIR, ArtifactFormat.MP4),
+            ArtifactKind.SCREENSHOT to Collection(BundleLayout.STEP_SCREENSHOTS_DIR, ArtifactFormat.PNG),
+            ArtifactKind.SCREEN_HIERARCHY to Collection(BundleLayout.SCREEN_HIERARCHY_DIR, ArtifactFormat.JSON),
+        )
+
+        /** The extension a [kind]'s own format implies, e.g. PNG -> ".png". */
+        fun extensionFor(kind: ArtifactKind): String =
+            COLLECTION_KINDS[kind]?.format?.let { ".${it.name.lowercase()}" }.orEmpty()
+
         fun validateCommandPath(path: String, commandName: String) {
             if (path.isBlank()) {
                 throw invalidCommandPath(path, commandName, "the path is empty")
