@@ -36,9 +36,17 @@ class Artifacts internal constructor(
         // before the extension is appended, or "." becomes "..png" and stops looking like one.
         if (kind in FLOW_NAMED) ArtifactRegistry.validateCommandPath(name, label)
 
-        val fileName = "$name${ArtifactRegistry.extensionFor(kind)}"
+        // A framework-named artifact carries its step, or two attempts of one retried command
+        // write the same file — which is how a flow that failed four times produced one diff.
+        val sequenceNumber = writer.currentSequenceNumber
+        val scoped = if (kind in STEP_SCOPED && sequenceNumber != null) {
+            "step-${StepArtifactNaming.index(sequenceNumber)}-$name"
+        } else {
+            name
+        }
+        val fileName = "$scoped${ArtifactRegistry.extensionFor(kind)}"
         val registry = writer.registry ?: return File(fileName)
-        return registry.allocateCommandOutput(kind, fileName, label, writer.currentSequenceNumber)
+        return registry.allocateCommandOutput(kind, fileName, label, sequenceNumber)
     }
 
     /** An artifact of [kind] this run already produced under [name], or null. Registers nothing. */
@@ -48,10 +56,14 @@ class Artifacts internal constructor(
         /** Kinds whose name comes from the flow, so it can be empty, "." or "..". */
         private val FLOW_NAMED = setOf(ArtifactKind.TAKE_SCREENSHOT, ArtifactKind.START_SCREEN_RECORDING)
 
+        /** Kinds the framework names, where the step keeps retries of one command apart. */
+        private val STEP_SCOPED = setOf(ArtifactKind.SCREENSHOT_DIFF)
+
         /** The command a kind belongs to, for the "invalid path for X" message. */
         private fun ArtifactKind.commandLabel(): String = when (this) {
             ArtifactKind.TAKE_SCREENSHOT -> "takeScreenshot"
             ArtifactKind.START_SCREEN_RECORDING -> "startRecording"
+            ArtifactKind.SCREENSHOT_DIFF -> "assertScreenshot"
             else -> name
         }
     }

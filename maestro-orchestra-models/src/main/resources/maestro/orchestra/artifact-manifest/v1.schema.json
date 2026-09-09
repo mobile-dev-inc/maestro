@@ -63,6 +63,10 @@
           "description": "Output of the takeScreenshot command, under the run-root takeScreenshot/ folder."
         },
         {
+          "const": "SCREENSHOT_DIFF",
+          "description": "Visual diff PNGs produced by failed assertScreenshot commands, in the run-root assertScreenshot/ folder. Named for the producing step, so a retried assertion keeps every attempt. The reference image itself is workspace input and is not part of the bundle."
+        },
+        {
           "const": "SCREEN_RECORDING",
           "description": "The whole-run MP4 recording at the run-root screen-recording.mp4. Flag-gated; emitted by the worker, not the local CLI."
         },

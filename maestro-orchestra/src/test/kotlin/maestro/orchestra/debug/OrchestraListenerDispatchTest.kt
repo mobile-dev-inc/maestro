@@ -16,6 +16,7 @@ import maestro.device.Platform
 import maestro.js.JsEngine
 import maestro.orchestra.ApplyConfigurationCommand
 import maestro.orchestra.AssertConditionCommand
+import maestro.orchestra.ArtifactKind
 import maestro.orchestra.AssertScreenshotCommand
 import maestro.orchestra.Condition
 import maestro.orchestra.DefineVariablesCommand
@@ -552,7 +553,39 @@ class OrchestraListenerDispatchTest {
     }
 
     @Test
-    fun `assertScreenshot writes its diff beside a reference reached through a parent segment`() {
+    fun `a retried assertScreenshot keeps a diff per attempt`() {
+        // The reported flow wrapped the assertion in `Retry 3 times`; it failed on all four
+        // attempts and, with the name taken only from the reference, they overwrote one file.
+        val commands = listOf(
+            MaestroCommand(takeScreenshotCommand = TakeScreenshotCommand(path = "home")),
+            MaestroCommand(
+                retryCommand = RetryCommand(
+                    maxRetries = "3",
+                    config = null,
+                    commands = listOf(
+                        MaestroCommand(
+                            assertScreenshotCommand = AssertScreenshotCommand(
+                                path = "home",
+                                thresholdPercentage = "99",
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val orchestra = Orchestra(maestro = mockMaestroWithScreenshots(changing = true), artifactsDir = tempDir)
+
+        assertThrows<MaestroException.AssertionFailure> {
+            runBlocking { orchestra.runFlow(commands) }
+        }
+
+        val diffs = tempDir.resolve(BundleLayout.SCREENSHOT_DIFF_DIR).toFile().listFiles().orEmpty()
+        assertThat(diffs).hasLength(4)
+        assertThat(diffs.map { it.name }.toSet()).hasSize(4)
+    }
+
+    @Test
+    fun `assertScreenshot writes its diff into the bundle, not beside the reference`() {
         val commands = listOf(
             MaestroCommand(takeScreenshotCommand = TakeScreenshotCommand(path = "login/../home")),
             MaestroCommand(
@@ -569,7 +602,14 @@ class OrchestraListenerDispatchTest {
         }
 
         assertThat(e.message).contains("threshold not met")
-        assertThat(tempDir.resolve("${BundleLayout.TAKE_SCREENSHOT_DIR}/home_diff.png").toFile().exists()).isTrue()
+        // Beside the reference is where it used to go, and why Cloud never had it.
+        assertThat(tempDir.resolve("${BundleLayout.TAKE_SCREENSHOT_DIR}/home_diff.png").toFile().exists()).isFalse()
+        val diffs = tempDir.resolve(BundleLayout.SCREENSHOT_DIFF_DIR).toFile().listFiles().orEmpty()
+        assertThat(diffs).hasLength(1)
+        assertThat(diffs.single().name).endsWith("home_diff.png")
+        // Registered, so whatever reads the manifest — the Cloud uploader included — sees it.
+        assertThat(tempDir.resolve(BundleLayout.MANIFEST_JSON).toFile().readText())
+            .contains(ArtifactKind.SCREENSHOT_DIFF.name)
     }
 
     @Test
