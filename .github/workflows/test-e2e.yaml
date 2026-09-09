@@ -415,6 +415,16 @@ jobs:
             >~/emulator_stdout.log \
             2>~/emulator_stderr.log &
 
+      - name: Start logcat capture (diagnostics)
+        run: |
+          # Capture the full log ring from as early as possible so a boot-time
+          # framework crash (surfaceflinger/system_server) is visible even if the
+          # device only briefly reports booted. Backgrounded like the emulator, so
+          # it survives into later steps and is uploaded on always().
+          adb wait-for-device
+          nohup adb logcat -b all -v threadtime >~/logcat.txt 2>&1 &
+          echo "logcat capture started (pid $!)"
+
       - name: Wait for AVD to start up and configure CI pre-conditions
         run: bash .github/scripts/setup_android_device.sh
 
@@ -426,6 +436,43 @@ jobs:
         working-directory: ${{ github.workspace }}/e2e
         timeout-minutes: 30
         run: ./run_tests android
+
+      - name: Collect crash diagnostics
+        if: always()
+        run: |
+          set +e
+          {
+            echo "=== crash summary for $ANDROID_OS_IMAGE ==="
+            echo "-- zygote SIGKILL cycles (framework restarts) --"
+            grep -acE "Service 'zygote' \(pid [0-9]+\) received SIGKILL" ~/logcat.txt
+            echo "-- surfaceflinger SIG(ABRT|KILL) via init --"
+            grep -acE "Service 'surfaceflinger' \(pid [0-9]+\) received SIG" ~/logcat.txt
+            echo "-- system_server death notices --"
+            grep -acE "Process system_server .* has died|ComposerService remote \(surfaceflinger\) died" ~/logcat.txt
+            echo "-- distinct fatal / abort lines (top 30) --"
+            grep -aE "hasReadColorBufferDma|Fatal signal|FATAL EXCEPTION IN SYSTEM|Abort message:|received SIGABRT" ~/logcat.txt \
+              | sed -E 's/^[0-9-]+ [0-9:.]+ +[0-9]+ +[0-9]+ +[A-Z] //' | sort | uniq -c | sort -rn | head -30
+            echo "-- emulator renderer selection --"
+            grep -iE "gles_mode_selected|vulkan_mode_selected|GPU Version|Using .* for VkEmulation|swiftshader|ANGLE" ~/emulator_stdout.log | head -20
+          } | tee ~/crash_summary.txt
+          echo "=== pulling tombstones ==="
+          adb root || true
+          sleep 3
+          adb pull /data/tombstones ~/tombstones || true
+
+      - name: Upload Android diagnostics
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: android-diagnostics-${{ inputs.android_version || 'pr' }}
+          path: |
+            ~/logcat.txt
+            ~/emulator_stdout.log
+            ~/emulator_stderr.log
+            ~/crash_summary.txt
+            ~/tombstones
+          retention-days: 7
+          include-hidden-files: true
 
       - name: Upload ~/.maestro artifacts
         uses: actions/upload-artifact@v7
