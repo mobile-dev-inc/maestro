@@ -35,6 +35,7 @@ import maestro.MediaExt
 import maestro.NamedSource
 import maestro.Point
 import maestro.ScreenRecording
+import maestro.utils.network.XCUITestServerError
 import maestro.SwipeDirection
 import maestro.TreeNode
 import maestro.UiElement.Companion.toUiElement
@@ -152,6 +153,21 @@ class IOSDriver(
     override fun tap(point: Point) {
         metrics.measured("operation", mapOf("command" to "tap")) {
             runDeviceCall("tap") { iosDevice.tap(point.x, point.y) }
+        }
+    }
+
+    override fun doubleTap(point: Point, intervalMs: Long) {
+        metrics.measured("operation", mapOf("command" to "doubleTap")) {
+            runDeviceCall("doubleTap") {
+                try {
+                    iosDevice.doubleTap(point.x, point.y, intervalMs)
+                } catch (badRequest: XCUITestServerError.BadRequest) {
+                    // A driver build predating the doubleTouch route 404s here.
+                    throw UnsupportedOperationException(
+                        "The installed XCUITest runner has no doubleTouch route", badRequest
+                    )
+                }
+            }
         }
     }
 
@@ -507,7 +523,7 @@ class IOSDriver(
     }
 
     override fun capabilities(): List<Capability> {
-        return emptyList()
+        return listOf(Capability.ATOMIC_DOUBLE_TAP)
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {

@@ -53,6 +53,9 @@ open class FakeDriver : Driver {
 
     private var currentText: String = ""
 
+    // Capabilities this fake reports. Empty by default so the standard tap paths are exercised.
+    var reportedCapabilities: List<Capability> = emptyList()
+
     private var airplaneMode: Boolean = false
 
     private var darkMode: Boolean = false
@@ -161,6 +164,19 @@ open class FakeDriver : Driver {
         layout.dispatchClick(point.x, point.y)
 
         events += Event.Tap(point)
+    }
+
+    override fun doubleTap(point: Point, intervalMs: Long) {
+        ensureOpen()
+
+        if (Capability.ATOMIC_DOUBLE_TAP !in reportedCapabilities) {
+            throw UnsupportedOperationException("Atomic double tap is not supported by this driver")
+        }
+
+        layout.dispatchClick(point.x, point.y)
+        layout.dispatchClick(point.x, point.y)
+
+        events += Event.DoubleTap(point, intervalMs)
     }
 
     override fun longPress(point: Point) {
@@ -398,7 +414,7 @@ open class FakeDriver : Driver {
     }
 
     override fun capabilities(): List<Capability> {
-        return emptyList()
+        return reportedCapabilities
     }
 
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
@@ -458,6 +474,11 @@ open class FakeDriver : Driver {
 
         data class Tap(
             val point: Point
+        ) : Event(), UserInteraction
+
+        data class DoubleTap(
+            val point: Point,
+            val intervalMs: Long
         ) : Event(), UserInteraction
 
         data class LongPress(

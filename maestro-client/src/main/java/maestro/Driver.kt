@@ -51,6 +51,9 @@ interface Driver {
 
     fun longPress(point: Point)
 
+    fun doubleTap(point: Point, intervalMs: Long): Unit =
+        throw UnsupportedOperationException("Atomic double tap is not supported by this driver")
+
     fun pressKey(code: KeyCode)
 
     fun contentDescriptor(excludeKeyboardElements: Boolean = false): TreeNode

@@ -58,6 +58,10 @@ class LocalIOSDevice(
         return xcTestDevice.tap(x, y)
     }
 
+    override fun doubleTap(x: Int, y: Int, intervalMs: Long) {
+        return xcTestDevice.doubleTap(x, y, intervalMs)
+    }
+
     override fun longPress(x: Int, y: Int, durationMs: Long) {
         xcTestDevice.longPress(x, y, durationMs)
     }

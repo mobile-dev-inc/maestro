@@ -322,6 +322,7 @@ data class TapOnElementCommand(
     val repeat: TapRepeat? = null,
     val waitToSettleTimeoutMs: Int? = null,
     val relativePoint: String? = null, // New parameter for element-relative coordinates
+    val singleGestureTap: Boolean? = null,
     override val label: String? = null,
     override val optional: Boolean = false,
 ) : Command {
@@ -372,6 +373,7 @@ data class TapOnPointV2Command(
     val longPress: Boolean? = null,
     val repeat: TapRepeat? = null,
     val waitToSettleTimeoutMs: Int? = null,
+    val singleGestureTap: Boolean? = null,
     override val label: String? = null,
     override val optional: Boolean = false,
 ) : Command {

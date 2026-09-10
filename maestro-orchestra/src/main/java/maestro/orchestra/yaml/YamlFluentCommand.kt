@@ -806,6 +806,7 @@ data class YamlFluentCommand(
         val label = (tapOn as? YamlElementSelector)?.label
         val optional = (tapOn as? YamlElementSelector)?.optional ?: false
 
+        val singleGestureTap = (tapOn as? YamlElementSelector)?.singleGestureTap
         val delay = (tapOn as? YamlElementSelector)?.delay?.toLong()
         val repeat = tapRepeat ?: (tapOn as? YamlElementSelector)?.repeat?.let {
             val count = if (it <= 0) 1 else it
@@ -834,6 +835,7 @@ data class YamlFluentCommand(
                         label = label,
                         optional = optional,
                         relativePoint = point, // Parameter for element-relative coordinates
+                        singleGestureTap = singleGestureTap,
                     )
                 )
             } else {
@@ -847,6 +849,7 @@ data class YamlFluentCommand(
                         waitToSettleTimeoutMs = waitToSettleTimeoutMs,
                         label = label,
                         optional = optional,
+                        singleGestureTap = singleGestureTap,
                     )
                 )
             }
@@ -861,6 +864,7 @@ data class YamlFluentCommand(
                     waitToSettleTimeoutMs = waitToSettleTimeoutMs,
                     label = label,
                     optional = optional,
+                    singleGestureTap = singleGestureTap,
                 )
             )
         }

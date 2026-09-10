@@ -14,6 +14,8 @@ class RouteHandlerFactory {
             return InputTextRouteHandler()
         case .touch:
             return TouchRouteHandler()
+        case .doubleTouch:
+            return DoubleTouchRouteHandler()
         case .screenshot:
             return ScreenshotHandler()
         case .isScreenStatic:

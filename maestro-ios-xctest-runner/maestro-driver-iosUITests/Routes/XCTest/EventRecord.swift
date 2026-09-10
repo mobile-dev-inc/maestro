@@ -28,6 +28,22 @@ final class EventRecord: NSObject {
         return add(path)
     }
 
+    // Two paths, not one re-pressed path: re-pressing after a lift reads as a single
+    // continuous touch and never raises tapCount to 2, so no double-tap recognizer fires.
+    func addDoubleTapEvent(at point: CGPoint, interval: TimeInterval, holdDuration: TimeInterval? = nil) -> Self {
+        let hold = holdDuration ?? Self.defaultTapDuration
+
+        var first = PointerEventPath.pathForTouch(at: point)
+        first.offset += hold
+        first.liftUp()
+
+        var second = PointerEventPath.pathForTouch(at: point, offset: hold + interval)
+        second.offset += hold
+        second.liftUp()
+
+        return add(first).add(second)
+    }
+
     func addSwipeEvent(start: CGPoint, end: CGPoint, duration: TimeInterval) -> Self {
         var path = PointerEventPath.pathForTouch(at: start)
         path.offset += Self.defaultTapDuration

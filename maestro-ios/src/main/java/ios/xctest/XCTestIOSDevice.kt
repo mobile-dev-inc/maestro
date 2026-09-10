@@ -51,6 +51,16 @@ class XCTestIOSDevice(
         }
     }
 
+    override fun doubleTap(x: Int, y: Int, intervalMs: Long) {
+        execute {
+            client.doubleTap(
+                x = x.toFloat(),
+                y = y.toFloat(),
+                interval = intervalMs.toDouble() / 1000
+            )
+        }
+    }
+
     override fun longPress(x: Int, y: Int, durationMs: Long) {
         execute {
             client.tap(

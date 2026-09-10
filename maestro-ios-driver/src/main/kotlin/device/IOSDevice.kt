@@ -37,6 +37,9 @@ interface IOSDevice : AutoCloseable {
 
     fun tap(x: Int, y: Int)
 
+    fun doubleTap(x: Int, y: Int, intervalMs: Long): Unit =
+        throw UnsupportedOperationException("Atomic double tap is not supported by this device")
+
     fun longPress(x: Int, y: Int, durationMs: Long)
 
     fun scroll(

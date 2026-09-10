@@ -1343,6 +1343,7 @@ class Orchestra(
                 longPress = command.longPress ?: false,
                 tapRepeat = command.repeat,
                 waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
+                singleGestureTap = command.singleGestureTap ?: false,
             )
         } else {
             // Default behavior: tap at element center
@@ -1355,6 +1356,7 @@ class Orchestra(
                 appId = config?.appId,
                 tapRepeat = command.repeat,
                 waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
+                singleGestureTap = command.singleGestureTap ?: false,
             )
         }
 
@@ -1397,7 +1399,8 @@ class Orchestra(
                 retryIfNoChange = command.retryIfNoChange ?: false,
                 longPress = command.longPress ?: false,
                 tapRepeat = command.repeat,
-                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
+                singleGestureTap = command.singleGestureTap ?: false
             )
         } else {
             val (x, y) = point.split(",")
@@ -1411,7 +1414,8 @@ class Orchestra(
                 retryIfNoChange = command.retryIfNoChange ?: false,
                 longPress = command.longPress ?: false,
                 tapRepeat = command.repeat,
-                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
+                singleGestureTap = command.singleGestureTap ?: false
             )
         }
 

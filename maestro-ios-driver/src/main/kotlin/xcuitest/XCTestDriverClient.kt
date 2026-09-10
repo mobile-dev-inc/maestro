@@ -186,6 +186,18 @@ class XCTestDriverClient(
         ))
     }
 
+    fun doubleTap(
+        x: Float,
+        y: Float,
+        interval: Double? = null,
+    ) {
+        executeJsonRequest("doubleTouch", DoubleTouchRequest(
+            x = x,
+            y = y,
+            interval = interval
+        ))
+    }
+
     fun setOrientation(orientation: String) {
         executeJsonRequest("setOrientation", SetOrientationRequest(orientation))
     }

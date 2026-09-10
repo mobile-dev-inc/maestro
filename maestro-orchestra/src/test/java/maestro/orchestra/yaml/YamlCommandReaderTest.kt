@@ -834,6 +834,21 @@ internal class YamlCommandReaderTest {
     }
 
     @Test
+    fun `doubleTapOn singleGestureTap - present, false, absent, and on the point form`(
+        @YamlFile("035_singleGestureTap.yaml") commands: List<Command>
+    ) {
+        // Opted in
+        assertThat((commands[1] as TapOnElementCommand).singleGestureTap).isTrue()
+
+        // Explicitly opted out, and absent - both must stay non-true so the default path runs
+        assertThat((commands[2] as TapOnElementCommand).singleGestureTap).isFalse()
+        assertThat((commands[3] as TapOnElementCommand).singleGestureTap).isNull()
+
+        // The point form parses to TapOnPointV2Command and must carry the flag too
+        assertThat((commands[4] as TapOnPointV2Command).singleGestureTap).isTrue()
+    }
+
+    @Test
     fun setPermissions(
         @YamlFile("030_setPermissions.yaml") commands: List<Command>
     ) {

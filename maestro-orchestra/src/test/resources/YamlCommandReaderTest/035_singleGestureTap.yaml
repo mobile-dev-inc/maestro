@@ -1,0 +1,13 @@
+appId: com.example.app
+---
+- doubleTapOn:
+    text: Submit
+    singleGestureTap: true
+- doubleTapOn:
+    text: Submit
+    singleGestureTap: false
+- doubleTapOn:
+    text: Submit
+- doubleTapOn:
+    point: 50%,90%
+    singleGestureTap: true

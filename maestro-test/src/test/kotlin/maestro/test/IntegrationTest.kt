@@ -39,6 +39,7 @@ import maestro.orchestra.Orchestra
 import maestro.orchestra.RunFlowCommand
 import maestro.orchestra.RetryCommand
 import maestro.orchestra.ScrollUntilVisibleCommand
+import maestro.Capability
 import maestro.orchestra.TapOnElementCommand
 import maestro.orchestra.TapOnPointV2Command
 import maestro.orchestra.SwipeCommand
@@ -3061,6 +3062,81 @@ class IntegrationTest {
         // Then
         // No test failure
         driver.assertEventCount(Event.Tap(Point(50, 50)), 2)
+    }
+
+    @Test
+    fun `Case 101 - doubleTapOn with singleGestureTap uses one atomic gesture`() {
+        // Given
+        val commands = readCommands("101_doubleTapOn_singleGesture")
+
+        val driver = driver {
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+        driver.reportedCapabilities = listOf(Capability.ATOMIC_DOUBLE_TAP)
+
+        // When
+        Maestro(driver).use {
+            runBlocking {
+                orchestra(it).runFlow(commands)
+            }
+        }
+
+        // Then
+        driver.assertEventCount(Event.DoubleTap(Point(50, 50), TapOnElementCommand.DEFAULT_REPEAT_DELAY), 1)
+        driver.assertEventCount(Event.Tap(Point(50, 50)), 0)
+    }
+
+    @Test
+    fun `Case 101 - doubleTapOn point with singleGestureTap uses one atomic gesture`() {
+        // Given
+        val commands = readCommands("101_doubleTapOn_point_singleGesture")
+
+        val driver = driver {
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+        driver.reportedCapabilities = listOf(Capability.ATOMIC_DOUBLE_TAP)
+
+        // When
+        Maestro(driver).use {
+            runBlocking {
+                orchestra(it).runFlow(commands)
+            }
+        }
+
+        // Then
+        driver.assertEventCount(Event.DoubleTap(Point(50, 50), TapOnElementCommand.DEFAULT_REPEAT_DELAY), 1)
+        driver.assertEventCount(Event.Tap(Point(50, 50)), 0)
+    }
+
+    @Test
+    fun `Case 101 - doubleTapOn without singleGestureTap is unchanged`() {
+        // Given
+        val commands = readCommands("101_doubleTapOn")
+
+        val driver = driver {
+            element {
+                text = "Button"
+                bounds = Bounds(0, 0, 100, 100)
+            }
+        }
+        driver.reportedCapabilities = listOf(Capability.ATOMIC_DOUBLE_TAP)
+
+        // When
+        Maestro(driver).use {
+            runBlocking {
+                orchestra(it).runFlow(commands)
+            }
+        }
+
+        // Then
+        driver.assertEventCount(Event.Tap(Point(50, 50)), 2)
+        driver.assertEventCount(Event.DoubleTap(Point(50, 50), TapOnElementCommand.DEFAULT_REPEAT_DELAY), 0)
     }
 
     @Test

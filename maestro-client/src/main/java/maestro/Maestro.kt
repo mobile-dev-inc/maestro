@@ -221,7 +221,8 @@ class Maestro(
         longPress: Boolean = false,
         appId: String? = null,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false
     ) {
         LOGGER.info("Tapping on element: ${tapRepeat ?: ""} $element")
 
@@ -251,7 +252,8 @@ class Maestro(
             longPress = longPress,
             initialHierarchy = hierarchyBeforeTap,
             tapRepeat = tapRepeat,
-            waitToSettleTimeoutMs = waitToSettleTimeoutMs
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs,
+            singleGestureTap = singleGestureTap
         )
 
         if (waitUntilVisible) {
@@ -270,7 +272,8 @@ class Maestro(
                     retryIfNoChange = false,
                     waitUntilVisible = false,
                     longPress = longPress,
-                    tapRepeat = tapRepeat
+                    tapRepeat = tapRepeat,
+                    singleGestureTap = singleGestureTap
                 )
             }
         }
@@ -338,7 +341,8 @@ class Maestro(
         retryIfNoChange: Boolean = false,
         longPress: Boolean = false,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false
     ) {
         val deviceInfo = runInterruptible(Dispatchers.IO) { driver.deviceInfo() }
         val x = deviceInfo.widthGrid * percentX / 100
@@ -349,7 +353,8 @@ class Maestro(
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
             tapRepeat = tapRepeat,
-            waitToSettleTimeoutMs = waitToSettleTimeoutMs
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs,
+            singleGestureTap = singleGestureTap
         )
     }
 
@@ -359,7 +364,8 @@ class Maestro(
         retryIfNoChange: Boolean = false,
         longPress: Boolean = false,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false
     ) {
         performTap(
             x = x,
@@ -367,7 +373,8 @@ class Maestro(
             retryIfNoChange = retryIfNoChange,
             longPress = longPress,
             tapRepeat = tapRepeat,
-            waitToSettleTimeoutMs = waitToSettleTimeoutMs
+            waitToSettleTimeoutMs = waitToSettleTimeoutMs,
+            singleGestureTap = singleGestureTap
         )
     }
 
@@ -382,16 +389,45 @@ class Maestro(
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false
     ) {
         recentScroll = false // consume the scroll hint (MA-4135)
 
         val capabilities = runInterruptible(Dispatchers.IO) { driver.capabilities() }
 
         if (Capability.FAST_HIERARCHY in capabilities) {
-            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs)
+            hierarchyBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs, singleGestureTap, capabilities)
         } else {
-            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs)
+            screenshotBasedTap(x, y, retryIfNoChange, longPress, initialHierarchy, tapRepeat, waitToSettleTimeoutMs, singleGestureTap, capabilities)
+        }
+    }
+
+    private suspend fun performTapRepeat(
+        x: Int,
+        y: Int,
+        tapRepeat: TapRepeat,
+        singleGestureTap: Boolean,
+        capabilities: List<Capability>
+    ) {
+        if (singleGestureTap && tapRepeat.repeat == 2 && Capability.ATOMIC_DOUBLE_TAP in capabilities) {
+            try {
+                runInterruptible(Dispatchers.IO) { driver.doubleTap(Point(x, y), tapRepeat.delay) }
+                return
+            } catch (ignored: UnsupportedOperationException) {
+                LOGGER.info("Driver cannot deliver a single-gesture double tap, tapping twice instead")
+            }
+        }
+
+        for (i in 0 until tapRepeat.repeat) {
+
+            // subtract execution duration from tap delay
+            val duration = measureTimeMillis {
+                runInterruptible(Dispatchers.IO) { driver.tap(Point(x, y)) }
+            }
+            val tapDelay = if (duration >= tapRepeat.delay) 0 else tapRepeat.delay - duration
+
+            if (tapRepeat.repeat > 1) delay(tapDelay) // do not wait for single taps
         }
     }
 
@@ -402,7 +438,9 @@ class Maestro(
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false,
+        capabilities: List<Capability> = emptyList()
     ) {
         LOGGER.info("Tapping at ($x, $y) using hierarchy based logic for wait")
 
@@ -413,16 +451,7 @@ class Maestro(
             if (longPress) {
                 runInterruptible(Dispatchers.IO) { driver.longPress(Point(x, y)) }
             } else if (tapRepeat != null) {
-                for (i in 0 until tapRepeat.repeat) {
-
-                    // subtract execution duration from tap delay
-                    val duration = measureTimeMillis {
-                        runInterruptible(Dispatchers.IO) { driver.tap(Point(x, y)) }
-                    }
-                    val tapDelay = if (duration >= tapRepeat.delay) 0 else tapRepeat.delay - duration
-
-                    if (tapRepeat.repeat > 1) delay(tapDelay) // do not wait for single taps
-                }
+                performTapRepeat(x, y, tapRepeat, singleGestureTap, capabilities)
             } else {
                 runInterruptible(Dispatchers.IO) { driver.tap(Point(x, y)) }
             }
@@ -442,7 +471,9 @@ class Maestro(
         longPress: Boolean = false,
         initialHierarchy: ViewHierarchy? = null,
         tapRepeat: TapRepeat? = null,
-        waitToSettleTimeoutMs: Int? = null
+        waitToSettleTimeoutMs: Int? = null,
+        singleGestureTap: Boolean = false,
+        capabilities: List<Capability> = emptyList()
     ) {
         LOGGER.info("Try tapping at ($x, $y) using hierarchy based logic for wait")
 
@@ -454,16 +485,7 @@ class Maestro(
             if (longPress) {
                 runInterruptible(Dispatchers.IO) { driver.longPress(Point(x, y)) }
             } else if (tapRepeat != null) {
-                for (i in 0 until tapRepeat.repeat) {
-
-                    // subtract execution duration from tap delay
-                    val duration = measureTimeMillis {
-                        runInterruptible(Dispatchers.IO) { driver.tap(Point(x, y)) }
-                    }
-                    val tapDelay = if (duration >= tapRepeat.delay) 0 else tapRepeat.delay - duration
-
-                    if (tapRepeat.repeat > 1) delay(tapDelay) // do not wait for single taps
-                }
+                performTapRepeat(x, y, tapRepeat, singleGestureTap, capabilities)
             } else {
                 runInterruptible(Dispatchers.IO) { driver.tap(Point(x, y)) }
             }
