@@ -162,7 +162,15 @@ sites by `grep -n 'mapOf("all"' Orchestra.kt` each time rather than trusting a r
 
 ## Handoff (at G1)
 
-Once G1 is green: hand to **`remote-differential-batch`** for the corpus run, passing
-`--cli-3x-dir <this worktree>`. Its smoke gate is the go/no-go for the full fan-out; when the smoke
-folder can, pick one that exercises a newly-wired verb so smoke proves the verb lights up rather than
-walls. Then `triage-batch` / `triage-one` on the `genuine-fidelity` bucket. This skill ends here.
+**Open the PR at G1 — do not wait for the corpus.** Once G1 is green and the seam's unit tests pass,
+commit (pin bump + gateway wiring, one commit) and open the PR right away: `## Why` / `## Approach`
+/ `## Verification` (G1 + the unit suite), no attribution trailers. G1 is the seam between the cheap
+local half and the expensive remote half, and the PR belongs on the local side — the fidelity corpus
+is a SEPARATE, slower deliverable whose wall list lands as a follow-up, not a gate on the PR. The
+smoke gate below still catches gross wiring errors before any fan-out, so a reviewable PR and the
+corpus run proceed in parallel; serializing the PR behind a multi-hour run buys nothing.
+
+Then hand to **`remote-differential-batch`** for the corpus run, passing `--cli-3x-dir <this worktree>`.
+Its smoke gate is the go/no-go for the full fan-out; when the smoke folder can, pick one that
+exercises a newly-wired verb so smoke proves the verb lights up rather than walls. Then
+`triage-batch` / `triage-one` on the `genuine-fidelity` bucket. This skill ends here.
