@@ -6,8 +6,10 @@ import dev.mobile.devicecore.prototype.api.AppId
 import dev.mobile.devicecore.prototype.api.Device
 import dev.mobile.devicecore.prototype.api.DeviceProvider
 import dev.mobile.devicecore.prototype.api.Direction
+import dev.mobile.devicecore.prototype.api.Grant
 import dev.mobile.devicecore.prototype.api.IOS_SIM
 import dev.mobile.devicecore.prototype.api.Locator
+import dev.mobile.devicecore.prototype.api.Permission
 import dev.mobile.devicecore.prototype.api.Screen
 import dev.mobile.devicecore.prototype.api.Key
 import dev.mobile.devicecore.prototype.api.Relation
@@ -292,13 +294,54 @@ class RealDeviceGateway(
         stopApp(appId)
     }
 
+    /**
+     * device-core 0018 retyped this contract: `setPermission` now takes a typed
+     * `Map<Permission, Grant>`, and the reserved `all` key is its own verb, `setDeclaredPermissions`
+     * (a blanket grant/reset over the app's whole declared runtime set). So Maestro's
+     * `Map<String, String>` is split here, not passed through:
+     *
+     *  - the `all` entry → [dev.mobile.devicecore.prototype.api.Device.setDeclaredPermissions];
+     *  - every other entry → a [Permission] (the platform string, wrapped verbatim — device-core owns
+     *    name resolution) mapped to the typed [Grant], applied via `setPermission`.
+     *
+     * This is the seam Orchestra's DEFAULT injections land on — `all:allow` before launch, `all:unset`
+     * on clearState — so the split's correctness is what keeps every launch/clearState flow working,
+     * not just explicit `setPermissions`. Blanket first, then any named overrides.
+     */
     override fun setPermissions(appId: String, permissions: Map<String, String>) {
         val d = device ?: error("device-core driver used before connect()")
+        val id = AppId(appId)
+        val declaredGrant = permissions.entries
+            .firstOrNull { it.key.equals("all", ignoreCase = true) }
+            ?.let { grantOf(it.value) }
+        val named = permissions
+            .filterKeys { !it.equals("all", ignoreCase = true) }
+            .map { (name, value) -> Permission(name) to grantOf(value) }
+            .toMap()
         try {
-            runBlocking { d.setPermission(AppId(appId), permissions) }
+            runBlocking {
+                if (declaredGrant != null) d.setDeclaredPermissions(id, declaredGrant)
+                if (named.isNotEmpty()) d.setPermission(id, named)
+            }
         } catch (t: Throwable) {
             throw DeviceCoreErrorMapper.mapInfraThrow(t, "setPermissions $appId")
         }
+    }
+
+    /**
+     * Maestro's permission-grant string → device-core's typed [Grant]. `allow`/`deny`/`unset` map to
+     * the three states directly. `location`'s scoped values (`inuse`/`always`) have no device-core
+     * axis — [Grant] carries no while-in-use/background distinction — so both DEGRADE to [Grant.Allow]
+     * (a plain grant): walling here would fail every location flow 2.x passes, and Allow preserves the
+     * grant while losing only the scope, which device-core cannot express anyway. Any other value is
+     * walled honestly rather than guessed. Case-insensitive; the value is never silently defaulted.
+     */
+    private fun grantOf(value: String): Grant = when (value.lowercase()) {
+        "allow" -> Grant.Allow
+        "deny" -> Grant.Deny
+        "unset" -> Grant.Reset
+        "inuse", "always" -> Grant.Allow
+        else -> throw MaestroException.NotImplemented("setPermissions grant value '$value'")
     }
 
     override fun openLink(link: String, appId: String?, autoVerify: Boolean, browser: Boolean) {
@@ -447,20 +490,54 @@ class RealDeviceGateway(
         ScrollDirection.RIGHT -> Direction.RIGHT
     }
 
+    /**
+     * VISIBLE waits on device-core's `Locator.waitFor`; NOT_VISIBLE on `Locator.waitUntilGone`
+     * (device-core's inverse-postcondition verb — its `Acted` is the target GONE, its `Absent` is the
+     * target STILL PRESENT). The two share one envelope but read through opposite verdicts, so the
+     * verdict is picked by mode: [WaitOutcomeVerdict.toException] for VISIBLE,
+     * [WaitOutcomeVerdict.goneToException] for NOT_VISIBLE. iOS `waitUntilGone` throws
+     * NotImplementedError → mapped to NotImplemented, so iOS assertNotVisible walls honestly.
+     */
     override fun assertVisibility(selector: ElementSelector, mode: AssertMode, timeoutMs: Long): ChosenElement? {
-        if (mode == AssertMode.NOT_VISIBLE) {
-            // device-core has no waitFor(GONE) verb yet — never answer a wait-question with a racy read.
-            throw MaestroException.NotImplemented("assertNotVisible / waitFor(GONE)")
-        }
         val sel = SelectorTranslator.translate(selector)
+        val op = if (mode == AssertMode.VISIBLE) "assertVisible" else "assertNotVisible"
         val evidence = try {
-            // iOS IosLocator.waitFor throws NotImplementedError -> mapped to NotImplemented (no platform branch).
-            runBlocking { screen.locatorFor(sel).waitFor(timeoutMs) }
+            runBlocking {
+                when (mode) {
+                    AssertMode.VISIBLE -> screen.locatorFor(sel).waitFor(timeoutMs)
+                    AssertMode.NOT_VISIBLE -> screen.locatorFor(sel).waitUntilGone(timeoutMs)
+                }
+            }
         } catch (t: Throwable) {
-            throw DeviceCoreErrorMapper.mapInfraThrow(t, "assertVisible ${selector.description()}")
+            throw DeviceCoreErrorMapper.mapInfraThrow(t, "$op ${selector.description()}")
         }
-        WaitOutcomeVerdict.toException(evidence, selector.description(), timeoutMs)?.let { throw it }
+        val verdict = when (mode) {
+            AssertMode.VISIBLE -> WaitOutcomeVerdict.toException(evidence, selector.description(), timeoutMs)
+            AssertMode.NOT_VISIBLE -> WaitOutcomeVerdict.goneToException(evidence, selector.description(), timeoutMs)
+        }
+        verdict?.let { throw it }
         return chosenElementOfAction(evidence, sel)
+    }
+
+    override fun waitForAnimationToEnd(timeout: String?) = settle()
+
+    override fun waitForAppToSettle(appId: String?, waitToSettleTimeoutMs: Int?) = settle()
+
+    /**
+     * Both legacy settle verbs route to device-core's `Screen.waitForSettle()`, which observes the
+     * surface to rest (or a derived cap) and REPORTS — it injects nothing and gates nothing, so a
+     * surface that never settles is not a failure here, matching 2.x `waitForAppToSettle`'s
+     * best-effort contract. The legacy `timeout` / `appId` / `waitToSettleTimeoutMs` and the deleted
+     * `ViewHierarchy` diffing have no device-core equivalent (it derives its own cap), so they are
+     * dropped. The returned evidence is not read: settle carries no pass/fail verdict. iOS
+     * `waitForSettle` throws NotImplementedError → mapped to NotImplemented, so iOS walls honestly.
+     */
+    private fun settle() {
+        try {
+            runBlocking { screen.waitForSettle() }
+        } catch (t: Throwable) {
+            throw DeviceCoreErrorMapper.mapInfraThrow(t, "waitForSettle")
+        }
     }
 
     // --- Every other verb inherits its throwing default from the interface (see [notImplemented]).

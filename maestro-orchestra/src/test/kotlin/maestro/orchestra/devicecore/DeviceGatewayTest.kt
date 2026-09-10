@@ -2,8 +2,10 @@ package maestro.orchestra.devicecore
 
 import com.google.common.truth.Truth.assertThat
 import dev.mobile.devicecore.prototype.api.AbsentVia
+import dev.mobile.devicecore.prototype.api.Grant
 import dev.mobile.devicecore.prototype.api.InjectionUnavailable
 import dev.mobile.devicecore.prototype.api.Outcome
+import dev.mobile.devicecore.prototype.api.Permission
 import dev.mobile.devicecore.prototype.api.Travel
 import maestro.DeviceUnreachableException
 import maestro.KeyCode
@@ -65,10 +67,24 @@ class DeviceGatewayTest {
     }
 
     @Test
-    fun `assertVisibility NOT_VISIBLE throws NotImplemented (no device-core GONE verb)`() {
+    fun `assertVisibility NOT_VISIBLE passes when device-core reports the target gone`() {
+        // device-core waitUntilGone Acted = the target WENT = the not-visible assertion holds. Default
+        // goneOutcome is Acted, so no throw.
         val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("kwyjibo") }
         val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
-        assertThrows<MaestroException.NotImplemented> {
+        d.assertVisibility(ElementSelector(textRegex = "kwyjibo"), AssertMode.NOT_VISIBLE, timeoutMs = 1000L)  // no throw
+        assertThat(provider.lastGoneSelector).isNotNull()
+    }
+
+    @Test
+    fun `assertVisibility NOT_VISIBLE fails with AssertionFailure when the target is still present`() {
+        // device-core waitUntilGone Absent = the target STAYED = the not-visible assertion is false.
+        // The polarity is inverted vs waitFor: here Absent is the FAILURE, not the pass-adjacent arm.
+        val provider = FakeDeviceProvider(
+            goneOutcome = { Outcome.Absent(AbsentVia.CAP_WHILE_QUIET, capMs = 1000L) },
+        ) { DeviceCoreEvidence.resolvedVisible("kwyjibo") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        assertThrows<MaestroException.AssertionFailure> {
             d.assertVisibility(ElementSelector(textRegex = "kwyjibo"), AssertMode.NOT_VISIBLE, timeoutMs = 1000L)
         }
     }
@@ -243,15 +259,19 @@ class DeviceGatewayTest {
     }
 
     @Test
-    fun `waitForAnimationToEnd is not implemented`() {
-        val d = unimplementedDriver()
-        assertThrows<MaestroException.NotImplemented> { d.waitForAnimationToEnd(null) }
+    fun `waitForAnimationToEnd routes to device-core Screen waitForSettle`() {
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        d.waitForAnimationToEnd(null)  // no throw; the legacy timeout has no device-core equivalent
+        assertThat(provider.settleCount).isEqualTo(1)
     }
 
     @Test
-    fun `waitForAppToSettle is not implemented`() {
-        val d = unimplementedDriver()
-        assertThrows<MaestroException.NotImplemented> { d.waitForAppToSettle() }
+    fun `waitForAppToSettle routes to device-core Screen waitForSettle`() {
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        d.waitForAppToSettle()  // no throw; appId / timeout params are dropped
+        assertThat(provider.settleCount).isEqualTo(1)
     }
 
     @Test
@@ -293,25 +313,66 @@ class DeviceGatewayTest {
     }
 
     @Test
-    fun `stopApp is not implemented`() {
-        val d = unimplementedDriver()
-        assertThrows<MaestroException.NotImplemented> { d.stopApp("com.example.example") }
+    fun `stopApp routes to device-core`() {
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        d.stopApp("com.example.example")
+        assertThat(provider.stoppedApps).containsExactly("com.example.example")
     }
 
     @Test
-    fun `killApp is not implemented`() {
-        val d = unimplementedDriver()
-        assertThrows<MaestroException.NotImplemented> { d.killApp("com.example.example") }
+    fun `killApp routes to device-core stop (kill and stop share one verb)`() {
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        d.killApp("com.example.example")
+        assertThat(provider.stoppedApps).containsExactly("com.example.example")
     }
 
     @Test
-    fun `setPermissions passes the grants map through to device-core`() {
+    fun `setPermissions routes the reserved all key to setDeclaredPermissions`() {
+        // device-core 0018: "all" is the blanket verb, not a setPermission key. allow -> Grant.Allow.
         val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
         val d = driver(provider)
         d.connect(DeviceCoreTarget(Platform.ANDROID), "com.example.example")
         d.setPermissions("com.example.example", mapOf("all" to "allow"))
+        assertThat(provider.declaredPermissions)
+            .containsExactly("com.example.example" to Grant.Allow)
+        // The "all" key never reaches the per-permission setPermission verb.
+        assertThat(provider.grantedPermissions).isEmpty()
+    }
+
+    @Test
+    fun `setPermissions unset on all routes to setDeclaredPermissions Reset`() {
+        // The clearState injection (Orchestra.kt) is `all:unset` -> Grant.Reset. G3's live case.
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider)
+        d.connect(DeviceCoreTarget(Platform.ANDROID), "com.example.example")
+        d.setPermissions("com.example.example", mapOf("all" to "unset"))
+        assertThat(provider.declaredPermissions)
+            .containsExactly("com.example.example" to Grant.Reset)
+    }
+
+    @Test
+    fun `setPermissions translates a named permission to a typed Permission-Grant`() {
+        // A non-"all" key names a single Permission (the platform string, wrapped verbatim) and its
+        // grant string maps to the typed Grant; it routes to setPermission, not setDeclaredPermissions.
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider)
+        d.connect(DeviceCoreTarget(Platform.ANDROID), "com.example.example")
+        d.setPermissions("com.example.example", mapOf("android.permission.CAMERA" to "deny"))
         assertThat(provider.grantedPermissions)
-            .containsExactly("com.example.example" to mapOf("all" to "allow"))
+            .containsExactly("com.example.example" to mapOf(Permission("android.permission.CAMERA") to Grant.Deny))
+        assertThat(provider.declaredPermissions).isEmpty()
+    }
+
+    @Test
+    fun `setPermissions walls an unmappable grant value rather than guessing`() {
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
+        val d = driver(provider)
+        d.connect(DeviceCoreTarget(Platform.ANDROID), "com.example.example")
+        assertThrows<MaestroException.NotImplemented> {
+            d.setPermissions("com.example.example", mapOf("android.permission.CAMERA" to "sometimes"))
+        }
     }
 
     @Test

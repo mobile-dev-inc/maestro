@@ -25,7 +25,9 @@ class FlowMatrixLaunchModifiersTest {
         assertThat(result.success).isTrue()
         assertThat(provider.deviceCalls).containsExactly(
             "clearState:com.example.app",
-            "setPermission:com.example.app:{all=allow}",
+            // device-core 0018: the default `all:allow` injection is the blanket verb, not a
+            // setPermission key.
+            "setDeclaredPermissions:com.example.app:Allow",
             "launchApp:com.example.app",
         ).inOrder()
     }

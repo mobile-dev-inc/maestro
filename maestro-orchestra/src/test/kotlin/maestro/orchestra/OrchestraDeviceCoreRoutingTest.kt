@@ -500,14 +500,9 @@ class OrchestraDeviceCoreRoutingTest {
         assertThat(e.message).contains("setLocation")
     }
 
-    @Test
-    fun `assertNotVisible over the real driver throws NotImplemented naming the GONE verb`() {
-        val e = assertThrows(MaestroException.NotImplemented::class.java) {
-            runReal(realOrchestra(), MaestroCommand(assertConditionCommand = AssertConditionCommand(
-                Condition(notVisible = ElementSelector(textRegex = "kwyjibo")))))
-        }
-        assertThat(e.message).contains("assertNotVisible")
-    }
+    // (assertNotVisible is now served by device-core's Locator.waitUntilGone — its routing is covered
+    // by `assertNotVisible routes through the driver with NOT_VISIBLE mode` above, and its verdict by
+    // DeviceGatewayTest's NOT_VISIBLE pass/fail cases. It no longer walls over the real driver.)
 
     @Test
     fun `group C - assertion failure payload is built without a device hierarchy read`() {

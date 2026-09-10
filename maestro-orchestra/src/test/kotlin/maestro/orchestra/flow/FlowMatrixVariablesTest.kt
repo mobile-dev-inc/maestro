@@ -74,10 +74,11 @@ class FlowMatrixVariablesTest {
             )
         }
 
-        // assertNotVisible now throws NotImplemented (device-core has no waitFor(GONE)) — the throw
-        // moves up from inputText to the first assertNotVisible. The env-substituted launchApp, two
-        // env-selector taps and two env-selector VISIBLE asserts still ran before it.
-        assertThat(exception.message).contains("assertNotVisible")
+        // assertNotVisible is now wired (device-core Locator.waitUntilGone), so the flow advances
+        // past both assertNotVisible, inputText and openLink; the wall now falls on the first still-
+        // unimplemented verb, setLocation. The env-substituted launchApp, two env-selector taps and
+        // two env-selector VISIBLE asserts still ran before it.
+        assertThat(exception.message).contains("setLocation")
         assertThat(provider.launchedApps).containsExactly("com.example.app")
         assertThat(provider.tapCount).isEqualTo(2)
     }
