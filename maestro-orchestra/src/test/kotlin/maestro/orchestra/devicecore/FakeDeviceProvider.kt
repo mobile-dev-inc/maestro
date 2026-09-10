@@ -8,6 +8,8 @@ import dev.mobile.devicecore.prototype.api.Device
 import dev.mobile.devicecore.prototype.api.DeviceEnvError
 import dev.mobile.devicecore.prototype.api.DeviceProvider
 import dev.mobile.devicecore.prototype.api.Direction
+import dev.mobile.devicecore.prototype.api.Grant
+import dev.mobile.devicecore.prototype.api.Permission
 import dev.mobile.devicecore.prototype.api.Relation
 import dev.mobile.devicecore.prototype.api.Travel
 import dev.mobile.devicecore.prototype.api.Diagnostic
@@ -71,6 +73,11 @@ class FakeDeviceProvider(
     // passes an explicit lambda. Declared before [evidenceFor] so the trailing-lambda call still
     // binds the lambda to [evidenceFor].
     private val waitOutcome: ((Selector) -> Outcome)? = null,
+    // The waitUntilGone (assertNotVisible) Outcome. Default Acted -> the target is GONE, which is
+    // waitUntilGone's PASS (its polarity is inverted vs waitFor). A test drives the not-visible
+    // FAILURE by returning Outcome.Absent (target still present). Declared before [evidenceFor] so
+    // the trailing-lambda call still binds the lambda to [evidenceFor].
+    private val goneOutcome: (Selector) -> Outcome = { Outcome.Acted(FoundVia.IMMEDIATE) },
     private val evidenceFor: (Selector) -> ElementEvidence,
 ) : DeviceProvider {
     var connectCount: Int = 0
@@ -86,15 +93,23 @@ class FakeDeviceProvider(
     var lastPressedKey: Key? = null
     var lastSwipe: Travel? = null
     var lastOpenedLink: String? = null
+    var lastGoneSelector: Selector? = null
+    var settleCount: Int = 0
     var closed: Boolean = false
     val launchedApps = mutableListOf<String>()
+    val stoppedApps = mutableListOf<String>()
 
-    /** Every device-lifecycle call in arrival order ("clearState:<app>", "setPermission:<app>:<grants>",
-     *  "launchApp:<app>") — the order is the semantic contract for launchApp modifiers (clear resets
-     *  grants, so grant-after-clear), so tests assert on this list, not on the per-verb lists alone. */
+    /** Every device-lifecycle call in arrival order ("clearState:<app>",
+     *  "setDeclaredPermissions:<app>:<grant>", "setPermission:<app>:<grants>", "launchApp:<app>") —
+     *  the order is the semantic contract for launchApp modifiers (clear resets grants, so
+     *  grant-after-clear), so tests assert on this list, not on the per-verb lists alone. The "all"
+     *  key routes to setDeclaredPermissions; every other key to setPermission (device-core 0018). */
     val deviceCalls = mutableListOf<String>()
     val clearedApps = mutableListOf<String>()
-    val grantedPermissions = mutableListOf<Pair<String, Map<String, String>>>()
+    /** Named-permission grants that reached device-core's typed `setPermission` (never the "all" key). */
+    val grantedPermissions = mutableListOf<Pair<String, Map<Permission, Grant>>>()
+    /** Blanket grants that reached `setDeclaredPermissions` — where the reserved "all" key lands. */
+    val declaredPermissions = mutableListOf<Pair<String, Grant>>()
 
     /** Snapshot of `devicecore.ios.bundleId` taken AT connect() time, to prove set-before-connect
      *  ordering rather than merely that the property is set by the time the test asserts on it. */
@@ -120,6 +135,10 @@ class FakeDeviceProvider(
                 override suspend fun swipe(travel: Travel): ActionEvidence {
                     lastSwipe = travel
                     return CANNED_TAP.copy(target = "swipe:$travel")
+                }
+                override suspend fun waitForSettle(): ActionEvidence {
+                    settleCount++
+                    return CANNED_TAP.copy(target = "waitForSettle")
                 }
             }
 
@@ -147,16 +166,25 @@ class FakeDeviceProvider(
                 deviceCalls.add("clearState:${appId.value}")
             }
 
-            override suspend fun setPermission(appId: AppId, grants: Map<String, String>) {
+            override suspend fun setPermission(appId: AppId, grants: Map<Permission, Grant>) {
                 grantedPermissions.add(appId.value to grants)
-                deviceCalls.add("setPermission:${appId.value}:$grants")
+                val rendered = grants.entries.joinToString(", ", "{", "}") { "${it.key.name}=${it.value}" }
+                deviceCalls.add("setPermission:${appId.value}:$rendered")
+            }
+
+            override suspend fun setDeclaredPermissions(appId: AppId, grant: Grant) {
+                declaredPermissions.add(appId.value to grant)
+                deviceCalls.add("setDeclaredPermissions:${appId.value}:$grant")
             }
 
             override suspend fun openLink(url: String) {
                 lastOpenedLink = url
             }
 
-            override suspend fun stopApp(appId: AppId) = Unit
+            override suspend fun stopApp(appId: AppId) {
+                stoppedApps.add(appId.value)
+                deviceCalls.add("stopApp:${appId.value}")
+            }
 
             override fun close() {
                 closed = true
@@ -210,6 +238,14 @@ class FakeDeviceProvider(
             // A test that drives the waited verdict directly passes an explicit waitOutcome lambda.
             val outcome = waitOutcome?.invoke(sel) ?: outcomeFromEvidence(evidenceFor(sel))
             return CANNED_TAP.copy(outcome = outcome, target = sel.toString())
+        }
+
+        // Inverse-postcondition wait: Acted = target gone (pass), Absent = still present (fail).
+        // Defaults to Acted (gone); a test drives the not-visible failure via [goneOutcome].
+        override suspend fun waitUntilGone(timeoutMs: Long): ActionEvidence {
+            if (delayMs > 0) delay(delayMs)
+            lastGoneSelector = sel
+            return CANNED_TAP.copy(outcome = goneOutcome(sel), target = sel.toString())
         }
 
         override fun nth(index: Int): Locator = locator(Selector.Nth(sel, index))

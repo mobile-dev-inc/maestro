@@ -24,8 +24,12 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAESTRO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "Publishing device-core (implementation, drivers-core) to mavenLocal from $DC ..." >&2
-( cd "$DC" && ./gradlew :implementation:publishToMavenLocal :drivers-core:publishToMavenLocal )
+# :implementation-assembly-android is a source-less subproject that packs the android-instrumentation
+# assembly APK; :implementation depends on it (runtimeOnly), so its POM references it as a maven
+# coordinate. It must be published alongside or the maestro build cannot resolve implementation's
+# runtime classpath (Could not find …:implementation-assembly-android:<ver>).
+echo "Publishing device-core (implementation, implementation-assembly-android, drivers-core) to mavenLocal from $DC ..." >&2
+( cd "$DC" && ./gradlew :implementation:publishToMavenLocal :implementation-assembly-android:publishToMavenLocal :drivers-core:publishToMavenLocal )
 
 # Determine the exact published version. Prefer querying device-core's own gradle
 # (do NOT guess from mavenLocal timestamps).
