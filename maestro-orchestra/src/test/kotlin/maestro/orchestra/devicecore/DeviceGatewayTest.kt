@@ -157,6 +157,34 @@ class DeviceGatewayTest {
     }
 
     @Test
+    fun `readText reads the resolved element's text off device-core inspect`() {
+        // copyTextFrom's read: the selector resolves and its text comes from inspect()'s
+        // ElementEvidence.matched, NOT a hierarchy dump.
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.resolvedWithText("field", "Hello World") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        assertThat(d.readText(ElementSelector(idRegex = "field"))).isEqualTo("Hello World")
+        assertThat(provider.lastInspectedSelector).isNotNull()
+    }
+
+    @Test
+    fun `readText returns null when the resolved element carries no copyable text`() {
+        // Resolved but no matched text (ElementEvidence.matched.value is null) -> null, which
+        // copyTextFrom turns into UnableToCopyTextFromElement.
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.resolvedVisible("field") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        assertThat(d.readText(ElementSelector(idRegex = "field"))).isNull()
+    }
+
+    @Test
+    fun `readText surfaces an Absent element as ElementNotFound`() {
+        // An element device-core cannot resolve is not-found, the same as tap's Absent — ElementNotFound
+        // (which copyTextFrom's `optional` then governs), never a silent empty copy.
+        val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("field") }
+        val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
+        assertThrows<MaestroException.ElementNotFound> { d.readText(ElementSelector(idRegex = "field")) }
+    }
+
+    @Test
     fun `inputText writes to the focused node via device-core`() {
         val provider = FakeDeviceProvider { DeviceCoreEvidence.absent("x") }
         val d = driver(provider).apply { connect(DeviceCoreTarget(Platform.ANDROID), null) }
@@ -238,6 +266,18 @@ class DeviceGatewayTest {
         assertThrows<MaestroException.NotImplemented> {
             d.swipeFromCenter(SwipeDirection.UP, 400, null)
         }
+    }
+
+    @Test
+    fun `swipe anchored to an element is not implemented (device-core has no element-anchored swipe)`() {
+        // device-core owns element resolution but has no element-anchored swipe verb yet, so an
+        // element+direction swipe walls with its own message rather than degrading to a targetless
+        // directional that would drop the anchor.
+        val d = unimplementedDriver()
+        val e = assertThrows<MaestroException.NotImplemented> {
+            d.swipe(ElementSelector(idRegex = "row"), SwipeDirection.UP, duration = 400, waitToSettleTimeoutMs = null)
+        }
+        assertThat(e.message).isEqualTo("element-anchored swipe")
     }
 
     @Test

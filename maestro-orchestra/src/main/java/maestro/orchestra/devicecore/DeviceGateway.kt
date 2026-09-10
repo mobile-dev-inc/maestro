@@ -13,6 +13,7 @@ import dev.mobile.devicecore.prototype.api.Permission
 import dev.mobile.devicecore.prototype.api.Screen
 import dev.mobile.devicecore.prototype.api.Key
 import dev.mobile.devicecore.prototype.api.Relation
+import dev.mobile.devicecore.prototype.api.Resolution
 import dev.mobile.devicecore.prototype.api.Selector
 import dev.mobile.devicecore.prototype.api.Travel
 import dev.mobile.devicecore.prototype.api.TargetId
@@ -102,6 +103,16 @@ interface DeviceGateway {
      */
     fun hierarchy(): Nothing = notImplemented("hierarchy")
 
+    /**
+     * Reads the resolved element's text — device-core's `Locator.inspect()` verdict, off
+     * [dev.mobile.devicecore.prototype.api.ElementEvidence.matched] →
+     * [dev.mobile.devicecore.prototype.api.MatchedText.text]. Backs `copyTextFrom`, which used to
+     * reach for the never-built [hierarchy]. Returns null when the element resolves but carries no
+     * copyable text; an absent element throws [MaestroException.ElementNotFound], so `copyTextFrom`'s
+     * `optional` governs warn-vs-fail exactly as legacy `findElement` did.
+     */
+    fun readText(selector: ElementSelector): String? = notImplemented("readText")
+
     fun takeScreenshot(out: Sink, compressed: Boolean, cropOn: ElementSelector? = null): Unit =
         notImplemented("takeScreenshot")
     fun startScreenRecording(out: Sink): ScreenRecording = notImplemented("startScreenRecording")
@@ -146,6 +157,21 @@ interface DeviceGateway {
 
     fun swipeFromCenter(swipeDirection: SwipeDirection, durationMs: Long, waitToSettleTimeoutMs: Int?): Unit =
         notImplemented("swipeFromCenter")
+
+    /**
+     * Element-anchored directional swipe: a swipe that STARTS from a resolved element, travelling
+     * [swipeDirection]. device-core owns element resolution but ships no element-anchored swipe verb
+     * yet (the drafted `Locator.swipe(Direction)` isn't realized), so this walls honestly. It is its
+     * own overload precisely so the anchor cannot be dropped: routing an element-anchored swipe onto
+     * the targetless variadic [swipe] with direction only slips past that overload's point/relative
+     * wall-guard and serves a plain directional, silently discarding the element.
+     */
+    fun swipe(
+        elementSelector: ElementSelector,
+        swipeDirection: SwipeDirection,
+        duration: Long,
+        waitToSettleTimeoutMs: Int? = null,
+    ): Unit = throw MaestroException.NotImplemented("element-anchored swipe")
 
     /** Legacy scrollUntilVisible, served whole by device-core's `Locator.scrollTo` — a swipe loop
      *  bounded by [timeoutMs] that stops when the locator resolves. The scroll mechanics (cadence,
@@ -384,6 +410,30 @@ class RealDeviceGateway(
         return chosenElementOfAction(action, sel)
     }
 
+    /**
+     * copyTextFrom's read: resolve the selector and read its text off device-core's `inspect()`
+     * verdict ([dev.mobile.devicecore.prototype.api.ElementEvidence.matched] → `MatchedText.text`) —
+     * never a hierarchy dump. An [dev.mobile.devicecore.prototype.api.Resolution.Absent] element is
+     * not-found ([MaestroException.ElementNotFound], the same taxonomy as tap's Absent); a resolved
+     * element with no matched text returns null, which copyTextFrom turns into
+     * [MaestroException.UnableToCopyTextFromElement]. Infra throws route through [DeviceCoreErrorMapper.mapInfraThrow].
+     */
+    override fun readText(selector: ElementSelector): String? {
+        val sel = SelectorTranslator.translate(selector)
+        val evidence = try {
+            runBlocking { screen.locatorFor(sel).inspect() }
+        } catch (t: Throwable) {
+            throw DeviceCoreErrorMapper.mapInfraThrow(t, "readText ${selector.description()}")
+        }
+        if (evidence.resolution is Resolution.Absent) {
+            throw MaestroException.ElementNotFound(
+                message = "No visible element found: ${selector.description()}",
+                debugMessage = "device-core inspect resolved Absent for ${selector.description()}",
+            )
+        }
+        return evidence.matched.value?.text
+    }
+
     override fun inputText(text: String) {
         // device-core's inputText ignores the selector and writes to the FOCUSED editable node
         // (FocusedSetTextInputTextStrategy) — matching legacy's targetless inputText, whose focus is
@@ -433,9 +483,9 @@ class RealDeviceGateway(
     }
 
     /** Targetless directional swipe, served by device-core's `Screen.swipe(Travel)`. Only the
-     *  direction-only form is served; a swipe with explicit start/end points or relative anchors
-     *  (or one anchored to an element — Orchestra routes those here too, dropping the element) has
-     *  no device-core verb yet, so it walls honestly rather than degrading to a plain directional. */
+     *  direction-only form is served; a swipe with explicit start/end points or relative anchors has
+     *  no device-core verb yet, so it walls honestly rather than degrading to a plain directional.
+     *  (An element-anchored swipe walls at its own [swipe] overload — it is never routed here.) */
     override fun swipe(
         swipeDirection: SwipeDirection?,
         startPoint: Point?,

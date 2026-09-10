@@ -41,6 +41,7 @@ class OrchestraLegacyEngineRemovalTest {
     private class SeamFakeDriver : DeviceGateway {
         val tapped = mutableListOf<ElementSelector>()
         val asserted = mutableListOf<Pair<ElementSelector, AssertMode>>()
+        val readFrom = mutableListOf<ElementSelector>()
 
         override fun connect(target: DeviceCoreTarget, appId: String?) {}
         override fun close() {}
@@ -50,6 +51,14 @@ class OrchestraLegacyEngineRemovalTest {
             SelectorTranslator.translate(selector) // unsupported fields throw NotImplemented, as on device
             tapped += selector
             return null
+        }
+
+        // readText is a BUILT verb now (device-core inspect()); mirror the real driver — translate the
+        // selector like on device and return the resolved element's text.
+        override fun readText(selector: ElementSelector): String? {
+            SelectorTranslator.translate(selector)
+            readFrom += selector
+            return "field text"
         }
 
         override fun assertVisibility(selector: ElementSelector, mode: AssertMode, timeoutMs: Long): ChosenElement? {
@@ -210,12 +219,14 @@ class OrchestraLegacyEngineRemovalTest {
     }
 
     @Test
-    fun `copyTextFrom throws NotImplemented instead of silently copying empty text`() {
+    fun `copyTextFrom resolves the element's text through the seam's readText, never the never-built hierarchy`() {
+        // copyTextFrom used to reach for the roadmap hierarchy() dump and wall; it now reads the
+        // resolved element's text off the seam's readText (device-core inspect()). The fake booms on
+        // hierarchy, so reaching it would fail loudly — success proves the read routes through readText.
         val driver = SeamFakeDriver()
-        val e = assertThrows(MaestroException.NotImplemented::class.java) {
-            run(driver, MaestroCommand(copyTextCommand = CopyTextFromCommand(selector = ElementSelector(idRegex = "field"))))
-        }
-        assertThat(e.message).contains("hierarchy")
+        val result = run(driver, MaestroCommand(copyTextCommand = CopyTextFromCommand(selector = ElementSelector(idRegex = "field"))))
+        assertThat(result.success).isTrue()
+        assertThat(driver.readFrom).containsExactly(ElementSelector(idRegex = "field"))
     }
 
     @Test

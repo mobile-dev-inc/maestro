@@ -1468,9 +1468,13 @@ class Orchestra(
                 // Swiping from a resolved element needs that element's on-screen geometry (its bounds
                 // center, or a relative point within it) as the swipe start — geometry the legacy
                 // matching engine resolved Maestro-side. Device-core owns element resolution now and
-                // has no element-anchored swipe yet (roadmap), so route through the seam swipe verb to
-                // surface NotImplemented rather than resolving bounds here.
+                // has no element-anchored swipe yet (roadmap; the drafted Locator.swipe(Direction)
+                // isn't realized), so route through the seam's element-anchored swipe overload, which
+                // walls with NotImplemented. Passing only the direction to the targetless variadic
+                // swipe would slip past its point/relative wall-guard and serve a plain directional,
+                // silently dropping the anchor.
                 driver.swipe(
+                    elementSelector = elementSelector,
                     swipeDirection = direction,
                     duration = command.duration,
                     waitToSettleTimeoutMs = command.waitToSettleTimeoutMs,
@@ -1505,11 +1509,18 @@ class Orchestra(
     }
 
     private suspend fun copyTextFromCommand(command: CopyTextFromCommand): Boolean {
-        // Copying an element's text reads that element's text/hint/accessibility attributes from the
-        // on-device view tree — the device hierarchy, which the seam does not expose yet (device-core
-        // has no serializable tree; roadmap). Route through the seam so this surfaces NotImplemented
-        // instead of silently copying empty text.
-        driver.hierarchy()
+        // Copying an element's text reads that element's text off device-core's inspect() verdict via
+        // the seam's readText — NOT the never-built hierarchy() dump. An absent element surfaces as
+        // ElementNotFound (honored by `optional`, like legacy findElement); a resolved element with no
+        // copyable text is UnableToCopyTextFromElement, matching legacy copyTextFrom's resolveText.
+        copiedText = driver.readText(command.selector)
+            ?: throw MaestroException.UnableToCopyTextFromElement(
+                "Element does not contain text to copy: ${command.selector.description()}"
+            )
+        jsEngine.setCopiedText(copiedText)
+
+        // Internal variable setting - no UI effect
+        return false
     }
 
     private fun setClipboardCommand(command: SetClipboardCommand): Boolean {

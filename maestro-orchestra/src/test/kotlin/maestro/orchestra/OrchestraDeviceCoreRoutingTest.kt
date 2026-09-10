@@ -41,6 +41,8 @@ class OrchestraDeviceCoreRoutingTest {
     private class RecordingDeviceGateway(
         /** Injected verdict for [assertVisibility]: throw an AssertionFailure to simulate a false verdict. */
         private val onAssert: (ElementSelector, AssertMode) -> Unit = { _, _ -> },
+        /** The text [readText] returns for a selector — the inspect()-side read copyTextFrom uses. */
+        private val textFor: (ElementSelector) -> String? = { "copied text" },
     ) : DeviceGateway {
         val launched = mutableListOf<String>()
         val launchArgs = mutableListOf<Map<String, Any>>()
@@ -55,6 +57,7 @@ class OrchestraDeviceCoreRoutingTest {
         val asserted = mutableListOf<Pair<ElementSelector, AssertMode>>()
         val assertedSelectors = mutableListOf<Selector>()
         val assertedTimeouts = mutableListOf<Long>()
+        val readTexts = mutableListOf<ElementSelector>()
 
         override fun connect(target: DeviceCoreTarget, appId: String?) {}
         override fun close() {}
@@ -82,6 +85,7 @@ class OrchestraDeviceCoreRoutingTest {
             throw AssertionError("W1.3 must not route a built verb onto roadmap DeviceGateway.$verb")
 
         override fun hierarchy(): Nothing = boom("hierarchy")
+        override fun readText(selector: ElementSelector): String? { readTexts += selector; return textFor(selector) }
         override fun takeScreenshot(out: Sink, compressed: Boolean, cropOn: ElementSelector?) = boom("takeScreenshot")
         override fun startScreenRecording(out: Sink): ScreenRecording = boom("startScreenRecording")
         override fun longPress(selector: ElementSelector, timeoutMs: Long): ChosenElement? { longPressed += selector; return null }
@@ -481,6 +485,42 @@ class OrchestraDeviceCoreRoutingTest {
         val result = run(driver, MaestroCommand(swipeCommand = SwipeCommand(direction = SwipeDirection.UP)))
         assertThat(result.success).isTrue()
         assertThat(driver.swipes).containsExactly(SwipeDirection.UP)
+    }
+
+    @Test
+    fun `group B - an element-anchored swipe walls, never degrading to a targetless directional`() {
+        // An element+direction swipe needs the element's on-screen geometry as the swipe start, which
+        // device-core owns and has no verb for yet (the drafted Locator.swipe(Direction) isn't
+        // realized). It must WALL honestly, never silently drop the anchor and serve a plain
+        // directional swipe. Routed to the seam's element-anchored swipe overload, which the recording
+        // gateway leaves at its throwing default — the targetless directional verb is never reached.
+        val driver = RecordingDeviceGateway()
+        val e = assertThrows(MaestroException.NotImplemented::class.java) {
+            run(driver, MaestroCommand(swipeCommand = SwipeCommand(
+                elementSelector = ElementSelector(idRegex = "row"),
+                direction = SwipeDirection.UP,
+            )))
+        }
+        assertThat(e.message).isEqualTo("element-anchored swipe")
+        // The anchor was NOT degraded to a targetless directional: the served swipe verb never ran.
+        assertThat(driver.swipes).isEmpty()
+    }
+
+    @Test
+    fun `group A - copyTextFrom reads element text via readText (inspect), never the roadmap hierarchy`() {
+        // copyTextFrom resolves the selector and reads its text off device-core's inspect() verdict
+        // (readText), NOT the never-built hierarchy() dump. The recording gateway BOOMS on hierarchy,
+        // so reaching it would fail loudly; a following pasteText proves the text actually flowed into
+        // the JS `copiedText` and back out through inputText.
+        val driver = RecordingDeviceGateway(textFor = { "Copied Value" })
+        val result = run(
+            driver,
+            MaestroCommand(copyTextCommand = CopyTextFromCommand(selector = ElementSelector(idRegex = "field"))),
+            MaestroCommand(pasteTextCommand = PasteTextCommand()),
+        )
+        assertThat(result.success).isTrue()
+        assertThat(driver.readTexts).containsExactly(ElementSelector(idRegex = "field"))
+        assertThat(driver.inputTexts).containsExactly("Copied Value")
     }
 
     @Test

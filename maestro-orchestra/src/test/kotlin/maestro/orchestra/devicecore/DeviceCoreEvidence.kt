@@ -3,11 +3,13 @@ package maestro.orchestra.devicecore
 import dev.mobile.devicecore.prototype.api.Actionability
 import dev.mobile.devicecore.prototype.api.ElementEvidence
 import dev.mobile.devicecore.prototype.api.EvidenceSource
+import dev.mobile.devicecore.prototype.api.MatchedText
 import dev.mobile.devicecore.prototype.api.Resolution
 import dev.mobile.devicecore.prototype.api.ResolvedChannel
 import dev.mobile.devicecore.prototype.api.SearchedSurface
 import dev.mobile.devicecore.prototype.api.Signal
 import dev.mobile.devicecore.prototype.api.Sourced
+import dev.mobile.devicecore.prototype.api.TextChannel
 
 /**
  * A tiny test factory building real device-core [ElementEvidence] values — no mocks, no
@@ -28,6 +30,29 @@ object DeviceCoreEvidence {
             stable = Signal(false, EvidenceSource.UNAVAILABLE),
         ),
         bounds = Sourced(null, EvidenceSource.UNAVAILABLE),
+    )
+
+    /** Resolved and carrying a matched text value — what `inspect()` reads for copyTextFrom. */
+    fun resolvedWithText(target: String, text: String): ElementEvidence = ElementEvidence(
+        target = target,
+        resolution = Resolution.Resolved(ResolvedChannel.TEXT),
+        actionability = Actionability(
+            attached = Signal(true, EvidenceSource.MEASURED),
+            visible = Signal(true, EvidenceSource.MEASURED),
+            enabled = Signal(true, EvidenceSource.MEASURED),
+            hittable = Signal(true, EvidenceSource.MEASURED),
+            stable = Signal(false, EvidenceSource.UNAVAILABLE),
+        ),
+        bounds = Sourced(null, EvidenceSource.UNAVAILABLE),
+        matched = Sourced(
+            MatchedText(
+                text = text,
+                channel = TextChannel.VALUE,
+                displayed = Sourced(text, EvidenceSource.MEASURED),
+                truncated = Signal(false, EvidenceSource.UNAVAILABLE),
+            ),
+            EvidenceSource.MEASURED,
+        ),
     )
 
     /** Not found anywhere on screen. */
