@@ -526,7 +526,6 @@ jobs:
           # The CLI launches the emulator like a user does: with a window and audio. The runner has
           # neither, so give it a virtual display and the PulseAudio client library qemu links against.
           sudo apt-get install -y -qq xvfb libpulse0 >/dev/null
-          ldd "$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64" | grep 'not found' || echo "qemu: all shared libraries resolved"
           xvfb-run -a maestro --verbose start-device \
             --platform android \
             --device-model "${{ matrix.device }}" \
@@ -555,10 +554,15 @@ jobs:
             echo "::error::start-device exited 0 but no device is online"
             exit 1
           fi
+          # adbd goes offline for a moment right after boot; wait until a shell answers.
+          for i in $(seq 1 60); do
+            booted=$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            [ "$booted" = "1" ] && break
+            sleep 2
+          done
           expected="Maestro_ANDROID_${{ matrix.device }}_android-${{ steps.range.outputs.max }}"
           actual=$(adb -s "$serial" emu avd name | head -n1 | tr -d '\r')
           sdk=$(adb -s "$serial" shell getprop ro.build.version.sdk | tr -d '\r')
-          booted=$(adb -s "$serial" shell getprop sys.boot_completed | tr -d '\r')
           echo "avd=$actual sdk=$sdk boot_completed=$booted"
           [ "$actual" = "$expected" ] || { echo "::error::booted AVD '$actual', expected '$expected'"; exit 1; }
           [ "$sdk" = "${{ steps.range.outputs.max_api }}" ] || { echo "::error::device reports SDK $sdk, expected ${{ steps.range.outputs.max_api }}"; exit 1; }
