@@ -80,7 +80,9 @@ sealed class DeviceSpec {
         }
 
         override val platform = Platform.ANDROID
-        override val osVersion: Int get() = os.removePrefix("android-").toIntOrNull() ?: 0
+        // os is android-<major>[.<minor>]; from API 37 Google ships minor platform
+        // versions (android-37.1). The API level is the integer major part.
+        override val osVersion: Int get() = os.removePrefix("android-").substringBefore(".").toIntOrNull() ?: 0
         override val deviceName: String get() {
             val tag = systemImage.split(";")[2]
             return "Maestro_ANDROID_${model}_${os}" + if (tag == DEFAULT_TAG) "" else "_$tag"
@@ -88,11 +90,17 @@ sealed class DeviceSpec {
 
         /** The sdkmanager/avdmanager package to actually use; always non-null. */
         val systemImage: String get() =
-            systemImageOverride ?: "system-images;$os;$DEFAULT_TAG;${cpuArchitecture.value}"
+            systemImageOverride ?: "system-images;$os;$tag;${cpuArchitecture.value}"
+
+        // From API 37 the system image ships only as the 16 KB page-size variant, so the
+        // tag switches from google_apis to google_apis_ps16k there.
+        private val tag: String get() = if (osVersion >= MIN_PS16K_API) PS16K_TAG else DEFAULT_TAG
 
         companion object {
             val DEFAULT: Android = Android(model = "pixel_6", os = "android-33")
             private const val DEFAULT_TAG = "google_apis"
+            private const val PS16K_TAG = "google_apis_ps16k"
+            private const val MIN_PS16K_API = 37
         }
     }
 

@@ -71,6 +71,31 @@ internal class DeviceSpecTest {
     }
 
     @Test
+    fun `systemImage uses the ps16k tag from API 37`() {
+        val spec = DeviceSpec.Android(model = "pixel_6", os = "android-37.1",
+            cpuArchitecture = CPU_ARCHITECTURE.X86_64)
+        assertThat(spec.systemImage).isEqualTo("system-images;android-37.1;google_apis_ps16k;x86_64")
+    }
+
+    @Test
+    fun `systemImage keeps google_apis below API 37`() {
+        val spec = DeviceSpec.Android(model = "pixel_6", os = "android-36")
+        assertThat(spec.systemImage).isEqualTo("system-images;android-36;google_apis;arm64-v8a")
+    }
+
+    @Test
+    fun `deviceName is suffixed with the ps16k tag for API 37 and above`() {
+        val spec = DeviceSpec.Android(model = "pixel_6", os = "android-37.1")
+        assertThat(spec.deviceName).isEqualTo("Maestro_ANDROID_pixel_6_android-37.1_google_apis_ps16k")
+    }
+
+    @Test
+    fun `Android osVersion parses the major part of a minor-versioned platform`() {
+        val spec = DeviceSpec.Android(model = "pixel_6", os = "android-37.1")
+        assertThat(spec.osVersion).isEqualTo(37)
+    }
+
+    @Test
     fun `systemImageOverride with fewer than 4 segments throws`() {
         assertThrows<IllegalArgumentException> {
             DeviceSpec.Android(model = "pixel_6", os = "android-34",
