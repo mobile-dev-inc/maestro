@@ -107,6 +107,14 @@ tasks.named("compileKotlin", KotlinCompilationTask::class.java) {
     }
 }
 
+tasks.named("processResources") {
+    mustRunAfter(":maestro-android:copyMaestroAndroid")
+}
+
+tasks.matching { it.name == "sourcesJar" }.configureEach {
+    mustRunAfter(":maestro-android:copyMaestroAndroid")
+}
+
 mavenPublishing {
     publishToMavenCentral(true)
     signAllPublications()
