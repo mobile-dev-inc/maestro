@@ -20,9 +20,9 @@ One commit per logical step. Don't bundle the gradle bump and the APK rebuild �
 
 ## The declared range
 
-`maestro-android/supported-apis.properties` (`min=`/`max=`) is the driver's claim of which API levels it supports. Two things read it:
+`maestro-android/supported-apis.properties` (`min=`, `max=`, `device=`) is the driver's claim of which API levels it supports, and the device model CI proves them on. Two things read it:
 
-- `test-e2e.yaml`'s `test-start-device` job boots `android-<max>` on every PR through `maestro start-device` (the CLI's own provisioning path, which `test-android` never exercises) and fails the PR if a device cannot be created or booted there. It is part of `e2e-gate`.
+- `test-e2e.yaml`'s `test-start-device` job boots every level from `min` to `max` on `device` on every PR through `maestro start-device` (the CLI's own provisioning path, which `test-android` never exercises) and fails the PR if one cannot be created or booted. It is part of `e2e-gate`.
 - The copilot device-readiness harness, through the `maestro` submodule: the device catalog may not list an OS above `max`.
 
 `compileSdk` moves first (Commit 1). `max` moves last (Commit 3), only once the corpus is green at the new API. The job also asserts `max <= compileSdk`, so a range advanced ahead of the SDK bump is red on its own.
@@ -165,19 +165,19 @@ This is the commit the copilot harness reads through the submodule; nothing abov
 
 ## Step 6: watch the start-device check
 
-The push starts a new `pull_request` run of `test-e2e.yaml`. Its `test-start-device` job now boots `android-<new>` on each device profile through `maestro start-device`.
+The push starts a new `pull_request` run of `test-e2e.yaml`. Its `test-start-device` job now has an `android-<new>` cell on the declared device.
 
 ```bash
 gh pr checks <pr_number> --watch
 ```
 
-Green: go to Step 7. Red on a `Start device on Android (...)` check: read the job log (`gh run view <run_id> --log-failed`). Two causes, two fix targets:
+Green: go to Step 7. Red on the `Start device on Android (android-<new>)` check: read the job log (`gh run view <run_id> --log-failed`). Two causes, two fix targets:
 
 - **The CLI cannot provision the image** — `DeviceSpec` derives a package that does not exist (minor-versioned platforms like `android-37.1`, variant tags like `google_apis_ps16k`), `osVersion` parses to 0, `avdmanager` gets the wrong arguments. Fix in `maestro-client/.../device/DeviceSpec.kt`, `DeviceService.kt` or `maestro-cli/.../device/DeviceCreateUtil.kt`, with a unit test, one concern per commit, consent per fix as in Step 5:
   ```bash
   git commit -m "feat(device): support API <new> in start-device"
   ```
-- **The runner's cmdline-tools cannot serve the image or the device profile** — `avdmanager` writes `target=android-0`, the profile is unknown. Bump `ANDROID_CMDLINE_TOOLS_ZIP` in `test-e2e.yaml` (allowed: it is test-rig tooling) in its own `ci(e2e):` commit.
+- **The runner's cmdline-tools cannot serve the image or the device profile** — `avdmanager` writes `target=android-0`, or `No device found matching --device <model>`. Bump `ANDROID_CMDLINE_TOOLS_ZIP` in `test-e2e.yaml` (allowed: it is test-rig tooling) in its own `ci(e2e):` commit.
 
 Push and watch again. Loop until green. The same three-iterations-without-progress rule as below applies here.
 
