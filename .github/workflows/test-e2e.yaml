@@ -316,7 +316,6 @@ jobs:
       ANDROID_HOME: /home/runner/androidsdk
       ANDROID_SDK_ROOT: /home/runner/androidsdk
       ANDROID_AVD_HOME: /home/runner/.android/avd/
-      ANDROID_OS_IMAGE: system-images;${{ inputs.android_version || 'android-32' }};google_apis;x86_64
       MAESTRO_APP: ${{ inputs.app }}
       MAESTRO_FLOW_PATH: ${{ needs.validate-inputs.outputs.flow_path }}
 
@@ -330,6 +329,10 @@ jobs:
       - name: Clone repository (only needed for the e2e directory)
         uses: actions/checkout@v6
 
+      # From API 37 the x86_64 image ships only as google_apis_ps16k; derive the tag here
+      # rather than hardcoding it, so a new API level needs no workflow edit.
+      - name: Resolve Android system image
+        run: echo "ANDROID_OS_IMAGE=$(bash .github/scripts/android_system_image.sh "${{ inputs.android_version || 'android-32' }}")" >> "$GITHUB_ENV"
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -536,6 +539,18 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v6
 
+      # The CLI derives the system image (and, from API 37, the google_apis_ps16k tag) and
+      # names the AVD after it. Derive the same image and expected AVD name here so the
+      # pre-install matches what the CLI creates and the Verify step checks the right name.
+      - name: Resolve system image and expected AVD name
+        run: |
+          image=$(bash .github/scripts/android_system_image.sh "$OS")
+          tag=$(printf '%s' "$image" | cut -d';' -f3)
+          avd="Maestro_ANDROID_${DEVICE}_${OS}"
+          [ "$tag" != "google_apis" ] && avd="${avd}_${tag}"
+          echo "ANDROID_OS_IMAGE=$image" >> "$GITHUB_ENV"
+          echo "EXPECTED_AVD=$avd" >> "$GITHUB_ENV"
+
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
@@ -555,7 +570,7 @@ jobs:
           sdkmanager --install "platform-tools"
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
           # Pre-install the image the CLI derives; a different derivation fails on the y/n prompt (no stdin).
-          sdkmanager --install "system-images;$OS;google_apis;x86_64"
+          sdkmanager --install "$ANDROID_OS_IMAGE"
           # The CLI finds the emulator through adb; on a dev machine a server is normally already up.
           "$ANDROID_HOME/platform-tools/adb" start-server
 
@@ -589,7 +604,7 @@ jobs:
           # The CLI swallows the emulator's output. Relaunch the AVD it created, the same way the
           # CLI does plus -verbose, and print why it does or does not come up.
           adb devices
-          avd="Maestro_ANDROID_${DEVICE}_${OS}"
+          avd="$EXPECTED_AVD"
           emulator -list-avds
           (emulator -avd "$avd" -netdelay none -netspeed full -verbose >~/emulator.log 2>&1 &)
           sleep 90
@@ -619,7 +634,7 @@ jobs:
             echo "::error::start-device exited 0 but no device came online"
             exit 1
           fi
-          expected="Maestro_ANDROID_${DEVICE}_${OS}"
+          expected="$EXPECTED_AVD"
           api="${OS#android-}"; api="${api%%.*}"
           # Assert boot first: a device that never finished booting makes the AVD-name and SDK
           # reads below return empty, which would otherwise fail with a misleading name mismatch.
