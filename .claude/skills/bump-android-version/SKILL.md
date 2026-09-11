@@ -20,7 +20,7 @@ One commit per logical step. Don't bundle the gradle bump and the APK rebuild �
 
 ## The declared range
 
-`supported-platforms.properties` (`android.min=`/`android.max=`) is the driver's claim of which API levels it supports. Two things read it:
+`maestro-android/supported-apis.properties` (`min=`/`max=`) is the driver's claim of which API levels it supports. Two things read it:
 
 - `test-e2e.yaml`'s `test-start-device` job boots `android-<max>` on every PR through `maestro start-device` (the CLI's own provisioning path, which `test-android` never exercises) and fails the PR if a device cannot be created or booted there. It is part of `e2e-gate`.
 - The copilot device-readiness harness, through the `maestro` submodule: the device catalog may not list an OS above `max`.
@@ -32,9 +32,9 @@ One commit per logical step. Don't bundle the gradle bump and the APK rebuild �
 - Working tree clean (`git status`).
 - `main` up to date: `git fetch origin && git checkout main && git pull --ff-only origin main`.
 - The workflow's `workflow_dispatch` inputs `android_version` (and optional `app` / `flow`) must exist on the branch.
-- `android_version` is a free-form `android-<N>` or `android-<N>.<M>` string. `validate-inputs` rejects anything below `min` in `supported-platforms.properties` and enforces no ceiling, so `android-<new>` dispatches without touching the workflow. There is no enum to extend.
+- `android_version` is a free-form `android-<N>` or `android-<N>.<M>` string. `validate-inputs` rejects anything below `min` in `supported-apis.properties` and enforces no ceiling, so `android-<new>` dispatches without touching the workflow. There is no enum to extend.
 - From API 37 Google ships minor platform versions (`android-37.1`) and sometimes only a variant image tag (`google_apis_ps16k`). Both jobs derive `system-images;<version>;google_apis;x86_64`; if the new API has no such image, the derivation in `test-e2e.yaml` (test-android's `ANDROID_OS_IMAGE`, test-start-device's pre-install and `--device-os`) needs a rule for that level. That is a workflow-shape edit in its own `ci(e2e):` commit before the first dispatch.
-- Read the current declared range: `cat supported-platforms.properties`. `android.max` should equal the current `compileSdk`; if it doesn't, tell the user before starting.
+- Read the current declared range: `cat maestro-android/supported-apis.properties`. `max` should equal the current `compileSdk`; if it doesn't, tell the user before starting.
 - Branch name: `bump-android-api-<old>-<new>` (e.g. `bump-android-api-34-36`).
 
 ```bash
@@ -47,7 +47,7 @@ Read current values from `maestro-android/build.gradle.kts` (`compileSdk` and `t
 
 > Current `compileSdk` / `targetSdk` = `<N>`. What's the new API level?
 
-Edit both lines. Also `rg -n "compileSdk\s*=|targetSdk\s*=" --type kotlin --type-add 'kotlin:*.kts'` to catch consistent occurrences in other modules — only update those that intentionally track the same SDK. Leave `supported-platforms.properties` alone here; it moves in Commit 3. Commit:
+Edit both lines. Also `rg -n "compileSdk\s*=|targetSdk\s*=" --type kotlin --type-add 'kotlin:*.kts'` to catch consistent occurrences in other modules — only update those that intentionally track the same SDK. Leave `supported-apis.properties` alone here; it moves in Commit 3. Commit:
 
 ```bash
 git add maestro-android/build.gradle.kts <other touched files>
@@ -153,10 +153,10 @@ Keep a running list per iteration: run id, which `passing/` flows went red, root
 
 ## Commit 3: advance the declared range
 
-Only after Step 4 is green at `android-<new>`. Edit `android.max=` in `supported-platforms.properties` to `<new>` (leave `android.min=` alone) and commit it on its own. `max` may carry the minor platform version the image actually has (`android.max=37.1`); its integer part is the API level:
+Only after Step 4 is green at `android-<new>`. Edit `max=` in `maestro-android/supported-apis.properties` to `<new>` (leave `min=` alone) and commit it on its own. `max` may carry the minor platform version the image actually has (`max=37.1`); its integer part is the API level:
 
 ```bash
-git add supported-platforms.properties
+git add maestro-android/supported-apis.properties
 git commit -m "chore(android): declare API <new> supported"
 git push
 ```
@@ -195,7 +195,7 @@ gh pr ready <pr_number>
 ```markdown
 ## API <old> → <new>
 
-**Range:** `supported-platforms.properties` android.max <old> → <new>. compileSdk/targetSdk <old> → <new>.
+**Range:** `supported-apis.properties` max <old> → <new>. compileSdk/targetSdk <old> → <new>.
 
 ### Commits
 - `<sha>` chore(android): bump compile/target SDK from <old> to <new>

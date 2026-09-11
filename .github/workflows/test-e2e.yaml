@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       android_version:
-        # Free-form: floor is `android.min` in supported-platforms.properties, no ceiling (a bump tests max+1 first).
+        # Free-form: floor is `min` in maestro-android/supported-apis.properties, no ceiling (a bump tests max+1 first).
         description: 'Android API level to test against, e.g. android-36'
         required: false
         type: string
@@ -63,7 +63,7 @@ jobs:
             exit 1
           fi
           api="${suffix%%.*}"
-          min=$(sed -n 's/^android\.min=//p' supported-platforms.properties)
+          min=$(sed -n 's/^min=//p' maestro-android/supported-apis.properties)
           if [ "$api" -lt "$min" ]; then
             echo "::error::android_version must be >= android-$min, the driver's declared min (got: $version)"
             exit 1
@@ -431,7 +431,7 @@ jobs:
           retention-days: 7
           include-hidden-files: true
 
-  # Boots `android.max` from supported-platforms.properties through `maestro start-device`, the CLI
+  # Boots `max` from maestro-android/supported-apis.properties through `maestro start-device`, the CLI
   # provisioning path test-android bypasses. Red blocks the PR via e2e-gate.
   test-start-device:
     name: Start device on Android (${{ matrix.device }})
@@ -471,12 +471,12 @@ jobs:
       - name: Read the driver's declared API range
         id: range
         run: |
-          file=supported-platforms.properties
-          min=$(sed -n 's/^android\.min=//p' "$file")
-          max=$(sed -n 's/^android\.max=//p' "$file")
+          file=maestro-android/supported-apis.properties
+          min=$(sed -n 's/^min=//p' "$file")
+          max=$(sed -n 's/^max=//p' "$file")
           # max may carry a minor platform version (37.1); its integer part is the API level.
           if ! printf '%s' "$min" | grep -qE '^[0-9]+$' || ! printf '%s' "$max" | grep -qE '^[0-9]+(\.[0-9]+)?$'; then
-            echo "::error::$file must declare android.min=<N> and android.max=<N> or <N>.<M> (got min='$min' max='$max')"
+            echo "::error::$file must declare min=<N> and max=<N> or <N>.<M> (got min='$min' max='$max')"
             exit 1
           fi
           max_api="${max%%.*}"
