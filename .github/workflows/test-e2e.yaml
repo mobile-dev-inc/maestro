@@ -524,8 +524,12 @@ jobs:
         run: |
           # The CLI launches the emulator like a user does: with a window and audio. The runner has
           # neither, so give it a virtual display and the PulseAudio client library qemu links against.
+          # Xvfb must outlive this step: the emulator keeps its window on it while later steps verify.
           sudo apt-get install -y -qq xvfb libpulse0 >/dev/null
-          xvfb-run -a maestro --verbose start-device \
+          Xvfb :99 -screen 0 1280x1024x24 >/dev/null 2>&1 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          export DISPLAY=:99
+          maestro --verbose start-device \
             --platform android \
             --device-model "${{ matrix.device }}" \
             --device-os "android-${{ steps.range.outputs.max }}"
@@ -538,7 +542,7 @@ jobs:
           adb devices
           avd="Maestro_ANDROID_${{ matrix.device }}_android-${{ steps.range.outputs.max }}"
           emulator -list-avds
-          (xvfb-run -a emulator -avd "$avd" -netdelay none -netspeed full -verbose >~/emulator.log 2>&1 &)
+          (emulator -avd "$avd" -netdelay none -netspeed full -verbose >~/emulator.log 2>&1 &)
           sleep 90
           adb devices
           echo "=== emulator.log (tail) ==="
