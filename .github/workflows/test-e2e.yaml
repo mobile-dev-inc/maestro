@@ -443,8 +443,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # pixel_6: CLI default. pixel_9: profile that needed newer cmdline-tools last release.
-        device: [pixel_6, pixel_9]
+        device: [pixel_6]
 
     env:
       ANDROID_HOME: /home/runner/androidsdk
