@@ -432,6 +432,8 @@ jobs:
           include-hidden-files: true
 
   # Reads maestro-android/supported-apis.properties once; test-start-device's matrix comes from here.
+  # A pull request boots max plus any level it adds; a device change, a new file, or a manual
+  # dispatch boots the whole range.
   range:
     name: Read the driver's declared API range
     runs-on: ubuntu-latest
@@ -442,6 +444,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - id: read
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           file=maestro-android/supported-apis.properties
           min=$(sed -n 's/^min=//p' "$file")
@@ -463,10 +468,37 @@ jobs:
             echo "::error::$file declares max=$max but maestro-android/build.gradle.kts has compileSdk=$compile_sdk"
             exit 1
           fi
-          # Every level from min to max; the top entry keeps max's minor version, if any.
-          os_list=$(seq "$min" "$((max_api - 1))" | sed 's/^/"android-/; s/$/"/' | paste -sd, -)
-          os_list="[${os_list:+$os_list,}\"android-$max\"]"
-          echo "Driver declares android-$min..android-$max on $device (compileSdk $compile_sdk): $os_list"
+
+          # Every declared level; the top entry keeps max's minor version, if any.
+          all=$(seq "$min" "$((max_api - 1))" | sed 's/^/android-/'; echo "android-$max")
+
+          # What this run boots.
+          selected="$all"; reason="whole range ($EVENT)"
+          if [ "$EVENT" = "pull_request" ]; then
+            git fetch -q --depth=1 origin "$BASE_SHA"
+            if base=$(git show "$BASE_SHA:$file" 2>/dev/null); then
+              bmin=$(printf '%s\n' "$base" | sed -n 's/^min=//p')
+              bmax=$(printf '%s\n' "$base" | sed -n 's/^max=//p')
+              bdevice=$(printf '%s\n' "$base" | sed -n 's/^device=//p')
+              if [ "$bdevice" = "$device" ]; then
+                bmax_api="${bmax%%.*}"
+                selected=$(printf '%s\n' "$all" | while read -r os; do
+                  api="${os#android-}"; api="${api%%.*}"
+                  if [ "$os" = "android-$max" ] || [ "$api" -lt "${bmin:-0}" ] || [ "$api" -gt "${bmax_api:-0}" ]; then
+                    echo "$os"
+                  fi
+                done)
+                reason="max plus levels this PR adds (base declared $bmin..$bmax)"
+              else
+                reason="device changed ($bdevice -> $device)"
+              fi
+            else
+              reason="file is new in this PR"
+            fi
+          fi
+
+          os_list="[$(printf '%s\n' "$selected" | sed 's/^/"/; s/$/"/' | paste -sd, -)]"
+          echo "Driver declares android-$min..android-$max on $device (compileSdk $compile_sdk). Booting $reason: $os_list"
           echo "device=$device" >> "$GITHUB_OUTPUT"
           echo "os_list=$os_list" >> "$GITHUB_OUTPUT"
 

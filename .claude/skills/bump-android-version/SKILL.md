@@ -22,7 +22,7 @@ One commit per logical step. Don't bundle the gradle bump and the APK rebuild â€
 
 `maestro-android/supported-apis.properties` (`min=`, `max=`, `device=`) is the driver's claim of which API levels it supports, and the device model CI proves them on. Two things read it:
 
-- `test-e2e.yaml`'s `test-start-device` job boots every level from `min` to `max` on `device` on every PR through `maestro start-device` (the CLI's own provisioning path, which `test-android` never exercises) and fails the PR if one cannot be created or booted. It is part of `e2e-gate`.
+- `test-e2e.yaml`'s `test-start-device` job boots `max` on `device` on every PR through `maestro start-device` (the CLI's own provisioning path, which `test-android` never exercises), plus every level the PR adds to the range; a `device` change or a manual dispatch boots the whole range. It fails the PR if a cell cannot be created or booted. It is part of `e2e-gate`.
 - The copilot device-readiness harness, through the `maestro` submodule: the device catalog may not list an OS above `max`.
 
 `compileSdk` moves first (Commit 1). `max` moves last (Commit 3), only once the corpus is green at the new API. The job also asserts `max <= compileSdk`, so a range advanced ahead of the SDK bump is red on its own.
