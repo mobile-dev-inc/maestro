@@ -37,7 +37,7 @@ concurrency:
 env:
   # cmdline-tools for the GitHub runner (test-android, test-start-device). Test-rig tooling, not a
   # fleet pin; the fleet's pins live in maestro-device. Bump when a new image or device profile needs it.
-  ANDROID_CMDLINE_TOOLS_ZIP: https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip
+  ANDROID_CMDLINE_TOOLS_ZIP: https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip
 
 jobs:
   validate-inputs:
@@ -311,7 +311,7 @@ jobs:
     env:
       ANDROID_HOME: /home/runner/androidsdk
       ANDROID_SDK_ROOT: /home/runner/androidsdk
-      ANDROID_AVD_HOME: /home/runner/.config/.android/avd/
+      ANDROID_AVD_HOME: /home/runner/.android/avd/
       ANDROID_OS_IMAGE: system-images;${{ inputs.android_version || 'android-32' }};google_apis;x86_64
       MAESTRO_APP: ${{ inputs.app }}
       MAESTRO_FLOW_PATH: ${{ needs.validate-inputs.outputs.flow_path }}
@@ -391,7 +391,7 @@ jobs:
           
           echo "HOME=$HOME"
           
-          cat << EOF >> ~/.config/.android/avd/MyAVD.avd/config.ini
+          cat << EOF >> "$ANDROID_AVD_HOME/MyAVD.avd/config.ini"
           hw.cpu.ncore=4
           hw.gpu.enabled=yes
           hw.gpu.mode=swiftshader_indirect
@@ -508,6 +508,8 @@ jobs:
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
           # Pre-install the image the CLI derives; a different derivation fails on the y/n prompt (no stdin).
           sdkmanager --install "system-images;android-${{ steps.range.outputs.max }};google_apis;x86_64"
+          # The CLI finds the emulator through adb; on a dev machine a server is normally already up.
+          "$ANDROID_HOME/platform-tools/adb" start-server
 
       - name: Download Maestro build from previous job
         uses: actions/download-artifact@v8
@@ -523,10 +525,25 @@ jobs:
         run: |
           # The CLI runs the emulator with a window; xvfb gives the headless runner a display.
           sudo apt-get install -y -qq xvfb >/dev/null
-          xvfb-run -a maestro start-device \
+          xvfb-run -a maestro --verbose start-device \
             --platform android \
             --device-model "${{ matrix.device }}" \
             --device-os "android-${{ steps.range.outputs.max }}"
+
+      - name: Emulator diagnostics
+        if: failure()
+        run: |
+          # The CLI swallows the emulator's output. Relaunch the AVD it created, the same way the
+          # CLI does plus -verbose, and print why it does or does not come up.
+          adb devices
+          avd="Maestro_ANDROID_${{ matrix.device }}_android-${{ steps.range.outputs.max }}"
+          emulator -list-avds
+          (xvfb-run -a emulator -avd "$avd" -netdelay none -netspeed full -verbose >~/emulator.log 2>&1 &)
+          sleep 90
+          adb devices
+          echo "=== emulator.log (tail) ==="
+          tail -n 80 ~/emulator.log || true
+          adb emu kill || true
 
       - name: Verify the booted device is the one the CLI was asked for
         run: |
