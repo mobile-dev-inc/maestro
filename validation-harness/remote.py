@@ -148,7 +148,23 @@ def remote_run_script(remote_dir, device_bin, cli_2x, cli_3x, out_dir,
         f"{_REMOTE_ENV_PREAMBLE}{run} > {q(log)} 2>&1; "
         f"rc=$?; echo \"$rc\" > {q(done_sentinel)}"
     )
-    return f"cd {_remote_path(remote_dir)} && nohup bash -c {q(inner)} > /dev/null 2>&1 &"
+    return f"cd {_remote_path(remote_dir)} && nohup bash -c {q(inner)} < /dev/null > /dev/null 2>&1 &"
+
+
+def host_fetch_script(remote_dir, folders, key_path, bucket,
+                      python_bin="/opt/homebrew/bin/python3", script="host_fetch.py"):
+    """Build the synchronous host-side GCS fetch invocation (see host_fetch.py).
+
+    Runs in the host's <remote_dir> so the folder args are remote-relative
+    (corpus/<i>/<basename>), matching the run script. Synchronous: its exit
+    status is the ssh_run return code, so dispatch can see a token-mint failure.
+    """
+    q = shlex.quote
+    folder_args = " ".join(q(f) for f in folders)
+    return (
+        f"cd {_remote_path(remote_dir)} && "
+        f"{q(python_bin)} {q(script)} --key {q(key_path)} --bucket {q(bucket)} {folder_args}"
+    )
 
 
 # Catastrophic rm -rf targets: the harness only ever creates

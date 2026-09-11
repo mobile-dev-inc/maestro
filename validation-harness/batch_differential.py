@@ -50,6 +50,11 @@ DEFAULTS = {
     # bare `python3` on the hosts is macOS 3.9; the harness needs >=3.10, which
     # is installed at the brew path. See remote_run_script's python_bin.
     "remote_python": "/opt/homebrew/bin/python3",
+    # on-host GCS fetch: the service-account key lives on the host (never
+    # touches the laptop or the repo) and names the bucket holding the corpus
+    # artifacts (app binaries + workspace.zip) that dispatch no longer pushes.
+    "sa_key": os.environ.get("MAESTRO_REPLAY_SA_KEY", ""),
+    "gcs_bucket": os.environ.get("MAESTRO_REPLAY_GCS_BUCKET", ""),
 }
 
 _DEVICE_BIN_REL = "build/install/maestro-device/bin/maestro-device"
@@ -159,9 +164,15 @@ def _renamed_tree(bin_path, alias):
 
 def dispatch_host(host, entry, creds, artifacts, remote_root, transport,
                   remote_python="/opt/homebrew/bin/python3", keep_scratch=False,
-                  manifest_path=None):
+                  manifest_path=None,
+                  sa_key="",
+                  gcs_bucket=""):
     platform = entry["platform"]
     remote_dir = f"{remote_root}/{host}"
+
+    if not sa_key or not gcs_bucket:
+        raise ValueError("GCS fetch needs a bucket and SA key: set --gcs-bucket/--sa-key or MAESTRO_REPLAY_GCS_BUCKET/MAESTRO_REPLAY_SA_KEY")
+
     if not claim_host(creds, platform, transport):
         return {"host": host, "status": "skipped-busy", "remote_dir": remote_dir}
 
@@ -205,20 +216,34 @@ def dispatch_host(host, entry, creds, artifacts, remote_root, transport,
     if manifest_path and os.path.isfile(manifest_path):
         transport.scp_put(creds, manifest_path, f"{remote_dir}/manifest.json")
         manifest_remote = "manifest.json"
-    # the host's folder slice. SF-4: namespace each folder by its index so two
-    # folders that share a basename (e.g. run_1) don't overwrite each other. The
-    # original basename is PRESERVED inside corpus/<i>/ so run_differential's runId
-    # (derived from the basename) is unchanged.
+    # Push ONLY metadata.json per folder — the app binary + workspace come from
+    # GCS via host_fetch.py below. SF-4 namespacing is preserved: corpus/<i>/<basename>
+    # keeps the runId stable even when two folders share a basename.
+    folder_rel = []
     for i, folder in enumerate(entry["folders"]):
-        transport.ssh_run(creds, f"mkdir -p {remote_dir}/corpus/{i}")
-        transport.scp_put(creds, folder, f"{remote_dir}/corpus/{i}/")
+        base = os.path.basename(os.path.normpath(folder))
+        dest_dir = f"{remote_dir}/corpus/{i}/{base}"
+        transport.ssh_run(creds, f"mkdir -p {dest_dir}")
+        transport.scp_put(creds, os.path.join(folder, "metadata.json"),
+                          f"{dest_dir}/metadata.json")
+        folder_rel.append(f"corpus/{i}/{base}")
+
+    # Ship the host-side fetcher and run it once (token minted once, reused).
+    transport.scp_put(creds, os.path.join(here, "host_fetch.py"), f"{remote_dir}/host_fetch.py")
+    fetch = transport.host_fetch_script(
+        remote_dir=remote_dir, folders=folder_rel,
+        key_path=sa_key, bucket=gcs_bucket, python_bin=remote_python,
+    )
+    fetch_res = transport.ssh_run(creds, fetch)
+    if getattr(fetch_res, "returncode", 0) != 0:
+        return {"host": host, "status": "fetch-failed", "remote_dir": remote_dir}
 
     script = transport.remote_run_script(
         remote_dir=remote_dir,
         device_bin="art/maestro-device/bin/maestro-device",
         cli_2x="art/2x/bin/maestro", cli_3x="art/3x/bin/maestro",
         out_dir="out",
-        folders=[f"corpus/{i}/{os.path.basename(f)}" for i, f in enumerate(entry["folders"])],
+        folders=folder_rel,                         # unchanged: corpus/<i>/<basename>
         done_sentinel="out/DONE", log="out/run.log",
         python_bin=remote_python,
         keep_scratch=keep_scratch,
@@ -255,7 +280,9 @@ def cmd_dispatch(args, transport=remote):
         hosts_state.append(dispatch_host(host, entry, creds, art_trees, args.remote_root, transport,
                                          remote_python=args.remote_python,
                                          keep_scratch=keep_remote,
-                                         manifest_path=manifest_path))
+                                         manifest_path=manifest_path,
+                                         sa_key=getattr(args, "sa_key", DEFAULTS["sa_key"]),
+                                         gcs_bucket=getattr(args, "gcs_bucket", DEFAULTS["gcs_bucket"])))
 
     state = {"smoke": bool(getattr(args, "smoke", False)), "hosts": hosts_state,
              "remote_root": args.remote_root}
@@ -428,6 +455,10 @@ def main(argv=None) -> int:
     d.add_argument("--keep-remote", dest="keep_remote", action="store_true",
                    help="tell the remote run to keep per-run scratch + leaked sim clones "
                         "on the host for debugging (self-cleaned by default)")
+    d.add_argument("--sa-key", default=DEFAULTS["sa_key"], dest="sa_key",
+                   help="service-account key path ON THE HOST for GCS fetch")
+    d.add_argument("--gcs-bucket", default=DEFAULTS["gcs_bucket"], dest="gcs_bucket",
+                   help="GCS bucket holding the corpus artifacts")
     d.set_defaults(func=cmd_dispatch, keep_remote=False)
 
     c = sub.add_parser("collect", help="verified tar-pull + merge + triage list + remote cleanup")

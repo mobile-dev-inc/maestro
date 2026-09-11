@@ -61,6 +61,24 @@ def test_remote_run_script_invokes_run_differential_and_touches_done():
     assert s.rstrip().endswith("&")
 
 
+def test_remote_run_script_redirects_stdin_from_dev_null():
+    # Backgrounded nohup inherits the SSH session's stdin, which delays SSH return
+    # by ~3-4 minutes (channel-close timeout). Redirect stdin from /dev/null so the
+    # SSH session returns promptly after the remote command detaches.
+    s = remote_run_script(
+        remote_dir="~/scratch/host",
+        device_bin="art/maestro-device/bin/maestro-device",
+        cli_2x="art/2x/bin/maestro", cli_3x="art/3x/bin/maestro",
+        out_dir="out", folders=["corpus/run_a"],
+        done_sentinel="out/DONE", log="out/run.log",
+    )
+    # stdin redirect must appear before stdout/stderr redirect and the trailing &
+    assert "< /dev/null" in s
+    stdin_idx = s.index("< /dev/null")
+    stdout_idx = s.index("> /dev/null 2>&1 &")
+    assert stdin_idx < stdout_idx
+
+
 def test_remote_run_script_sentinel_carries_exit_status():
     # 3b: an unconditional `touch DONE` can't distinguish a clean finish from a
     # crash-at-startup (e.g. a ModuleNotFoundError before any flow runs) — which is
@@ -549,3 +567,44 @@ def test_tar_tolerates_dead_symlink_where_scp_r_would_abort(tmp_path):
     base = os.path.basename(str(run))
     rc = sp.run(["tar", "-C", parent, "-cf", "/dev/null", base]).returncode
     assert rc == 0
+
+
+# --- Task 5: host_fetch_script invocation builder ---
+
+def test_host_fetch_script_builds_synchronous_invocation():
+    s = remote.host_fetch_script(
+        remote_dir="/tmp/maestro-differential/007",
+        folders=["corpus/0/run_1", "corpus/1/run_2"],
+        key_path="/path/to/sa-key.json",
+        bucket="test-bucket",
+        python_bin="/opt/homebrew/bin/python3",
+    )
+    # Exact output: safe strings without special chars are unquoted, structure is locked
+    assert s == "cd /tmp/maestro-differential/007 && /opt/homebrew/bin/python3 host_fetch.py --key /path/to/sa-key.json --bucket test-bucket corpus/0/run_1 corpus/1/run_2"
+    # Synchronous: no nohup, no trailing &
+    assert "nohup" not in s
+    assert not s.rstrip().endswith("&")
+
+
+def test_host_fetch_script_quotes_home_relative_root():
+    s = remote.host_fetch_script(
+        remote_dir="~/scratch/007", folders=["corpus/0/run_1"],
+        key_path="/k.json", bucket="test-bucket")
+    # ~/ stays bare for remote expansion, exact command structure
+    assert s == "cd ~/scratch/007 && /opt/homebrew/bin/python3 host_fetch.py --key /k.json --bucket test-bucket corpus/0/run_1"
+    assert "nohup" not in s and not s.rstrip().endswith("&")
+
+
+def test_host_fetch_script_quotes_unsafe_characters():
+    # shlex.quote adds quotes only when needed; prove it engages for spaces
+    s = remote.host_fetch_script(
+        remote_dir="/tmp/test",
+        folders=["corpus/0/run 1", "corpus/1/run 2"],
+        key_path="/k.json",
+        bucket="my bucket"
+    )
+    # Arguments with spaces must be quoted by shlex.quote for shell safety
+    assert "'my bucket'" in s
+    assert "'corpus/0/run 1'" in s
+    assert "'corpus/1/run 2'" in s
+    assert "nohup" not in s and not s.rstrip().endswith("&")

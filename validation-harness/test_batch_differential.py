@@ -218,10 +218,12 @@ class FakeTransport:
     def __init__(self, idle=True):
         self.idle = idle
         self.ssh_calls = []; self.scp_calls = []; self.run_scripts = []
+        self.fetch_scripts = []; self.ssh_rc = 0
     # mirror remote.* surface used by dispatch
     def ssh_run(self, creds, script, runner=None, timeout=None):
         self.ssh_calls.append(script)
-        class R: stdout = "idle-probe-output"; stderr=""; returncode=0
+        rc = self.ssh_rc
+        class R: stdout = "idle-probe-output"; stderr=""; returncode = rc
         return R()
     def scp_put(self, creds, local, remote_path, runner=None):
         self.scp_calls.append((local, remote_path))
@@ -229,6 +231,8 @@ class FakeTransport:
     def host_is_idle(self, platform, out): return self.idle
     def remote_run_script(self, **kw):
         self.run_scripts.append(kw); return "nohup ... &"
+    def host_fetch_script(self, **kw):
+        self.fetch_scripts.append(kw); return "cd ... && host_fetch.py ..."
 
 def _write_manifests(tmp_path):
     work = tmp_path / "bo"; work.mkdir()
@@ -260,7 +264,8 @@ def test_dispatch_smoke_hits_one_ios_one_android_and_stops(tmp_path):
     work, inv = _write_manifests(tmp_path)
     t = FakeTransport(idle=True)
     args = bd._ns(work_dir=work, inventory=inv, smoke=True,
-                  remote_root="~/scratch/dcdiff")
+                  remote_root="~/scratch/dcdiff",
+                  sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     state = bd.cmd_dispatch(args, transport=t)
     assert set(e["status"] for e in state["hosts"]) == {"running"}
     assert len(state["hosts"]) == 2                      # exactly one per platform
@@ -272,7 +277,8 @@ def test_dispatch_smoke_hits_one_ios_one_android_and_stops(tmp_path):
 def test_dispatch_skips_busy_host_never_self_selects(tmp_path):
     work, inv = _write_manifests(tmp_path)
     t = FakeTransport(idle=False)
-    args = bd._ns(work_dir=work, inventory=inv, smoke=True, remote_root="~/scratch")
+    args = bd._ns(work_dir=work, inventory=inv, smoke=True, remote_root="~/scratch",
+                  sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     state = bd.cmd_dispatch(args, transport=t)
     assert all(e["status"] == "skipped-busy" for e in state["hosts"])
     assert t.run_scripts == []                            # nothing ran on a busy host
@@ -288,14 +294,67 @@ def test_dispatch_namespaces_colliding_basenames(tmp_path):
     # overwrite each other (and collide as runIds). Each must land distinctly.
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1", "/proj_b/run_1"]}
-    res = bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t)
+    res = bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                           sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     assert res["status"] == "running"
+    # push shape changed: only metadata.json per folder now (app + workspace come
+    # from GCS), but the namespacing invariant (SF-4) still holds — each folder's
+    # metadata.json lands at a distinct path, no collision.
     corpus_targets = [rp for (lp, rp) in t.scp_calls if "corpus" in rp]
     assert len(corpus_targets) == 2
     assert len(set(corpus_targets)) == 2          # distinct scp targets, no collision
+    assert all(rp.endswith("/metadata.json") for rp in corpus_targets)
     rs = t.run_scripts[0]
     assert len(set(rs["folders"])) == 2           # distinct run-script folder args
     assert rs["folders"] == ["corpus/0/run_1", "corpus/1/run_1"]
+
+def test_dispatch_pushes_only_metadata_not_whole_folder(tmp_path):
+    t = FakeTransport(idle=True)
+    entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1", "/proj_b/run_2"]}
+    res = bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                           sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
+    assert res["status"] == "running"
+    corpus_scps = [(lp, rp) for (lp, rp) in t.scp_calls if "corpus" in rp]
+    # exactly one push per folder, and it is metadata.json — not the folder itself
+    assert len(corpus_scps) == 2
+    assert all(lp.endswith("/metadata.json") for lp, rp in corpus_scps)
+    assert all(rp.endswith("/metadata.json") for lp, rp in corpus_scps)
+    assert {rp for _, rp in corpus_scps} == {
+        "~/scratch/m2-1/corpus/0/run_1/metadata.json",
+        "~/scratch/m2-1/corpus/1/run_2/metadata.json",
+    }
+
+
+def test_dispatch_ships_host_fetch_and_invokes_it(tmp_path):
+    t = FakeTransport(idle=True)
+    entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
+    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
+    assert any(rp.endswith("/host_fetch.py") for _, rp in t.scp_calls)
+    assert len(t.fetch_scripts) == 1
+    fk = t.fetch_scripts[0]
+    assert fk["folders"] == ["corpus/0/run_1"]
+    assert fk["bucket"] == "test-bucket"
+    assert fk["key_path"] == "/path/to/sa-key.json"
+
+
+def test_dispatch_run_script_folders_unchanged(tmp_path):
+    t = FakeTransport(idle=True)
+    entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1", "/proj_b/run_1"]}
+    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
+    assert t.run_scripts[0]["folders"] == ["corpus/0/run_1", "corpus/1/run_1"]
+
+
+def test_dispatch_marks_fetch_failed_on_nonzero_fetch(tmp_path):
+    t = FakeTransport(idle=True)
+    t.ssh_rc = 1                                   # host_fetch returns non-zero (token mint failed)
+    entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
+    res = bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                           sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
+    assert res["status"] == "fetch-failed"
+    assert t.run_scripts == []                      # never ran the diff
+
 
 def test_dispatch_ships_manifest_and_passes_it_to_run_script(tmp_path):
     # Fix 2: the batch path emitted no provenance.json because manifest.json was
@@ -306,7 +365,8 @@ def test_dispatch_ships_manifest_and_passes_it_to_run_script(tmp_path):
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
     bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
-                     manifest_path=str(manifest))
+                     manifest_path=str(manifest),
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     manifest_scps = [(lp, rp) for (lp, rp) in t.scp_calls if lp == str(manifest)]
     assert manifest_scps == [(str(manifest), "~/scratch/m2-1/manifest.json")]
     # and the run script references the shipped copy by its remote-relative path
@@ -318,7 +378,8 @@ def test_dispatch_omits_manifest_when_absent(tmp_path):
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
     bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
-                     manifest_path=str(tmp_path / "nope.json"))
+                     manifest_path=str(tmp_path / "nope.json"),
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     assert not any("manifest.json" in rp for (_, rp) in t.scp_calls)
     assert t.run_scripts[0].get("manifest") is None
 
@@ -329,7 +390,8 @@ def test_cmd_dispatch_ships_workdir_manifest(tmp_path):
     work, inv = _write_manifests(tmp_path)
     t = FakeTransport(idle=True)
     args = bd._ns(work_dir=work, inventory=inv, smoke=True,
-                  remote_root="~/scratch/dcdiff")
+                  remote_root="~/scratch/dcdiff",
+                  sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     bd.cmd_dispatch(args, transport=t)
     manifest_targets = [rp for (lp, rp) in t.scp_calls if lp.endswith("manifest.json")]
     assert manifest_targets                                  # at least one host got it
@@ -342,7 +404,8 @@ def test_dispatch_defaults_remote_python_to_brew(tmp_path):
     # interpreter (>=3.10) so run_folder.py's PEP-604 unions import cleanly.
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
-    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t)
+    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     assert t.run_scripts[0]["python_bin"] == "/opt/homebrew/bin/python3"
 
 
@@ -350,7 +413,8 @@ def test_dispatch_threads_remote_python_override(tmp_path):
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
     bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
-                     remote_python="/usr/bin/python3.11")
+                     remote_python="/usr/bin/python3.11",
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     assert t.run_scripts[0]["python_bin"] == "/usr/bin/python3.11"
 
 
@@ -359,7 +423,8 @@ def test_dispatch_cleans_cli_staging_before_scp(tmp_path):
     # nest as art/maestro/maestro. Clean the staging path before each CLI scp.
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
-    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t)
+    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     staging_cleans = [s for s in t.ssh_calls
                       if "rm -rf ~/scratch/m2-1/art/maestro" in s and "mv" not in s]
     assert len(staging_cleans) == 2               # once per CLI tree (2x, 3x)
@@ -371,7 +436,8 @@ def test_dispatch_clears_stale_remote_out_before_run(tmp_path):
     # batch's runs.
     t = FakeTransport(idle=True)
     entry = {"platform": "ANDROID", "folders": ["/proj_a/run_1"]}
-    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t)
+    bd.dispatch_host("m2-1", entry, _CREDS, _ART, "~/scratch", t,
+                     sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     out_clears = [s for s in t.ssh_calls if "rm -rf ~/scratch/m2-1/out" in s]
     assert len(out_clears) == 1                       # out/ is cleared exactly once
     # it must happen BEFORE the detached run script is issued
@@ -610,7 +676,8 @@ def test_dispatch_keep_remote_threads_keep_scratch_to_the_run(tmp_path):
     work, inv = _write_manifests(tmp_path)
     t = FakeTransport(idle=True)
     args = bd._ns(work_dir=work, inventory=inv, smoke=True,
-                  remote_root="/tmp/maestro-differential", keep_remote=True)
+                  remote_root="/tmp/maestro-differential", keep_remote=True,
+                  sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     bd.cmd_dispatch(args, transport=t)
     assert all(rs["keep_scratch"] is True for rs in t.run_scripts)
 
@@ -619,6 +686,7 @@ def test_dispatch_defaults_to_self_cleaning_run(tmp_path):
     work, inv = _write_manifests(tmp_path)
     t = FakeTransport(idle=True)
     args = bd._ns(work_dir=work, inventory=inv, smoke=True,
-                  remote_root="/tmp/maestro-differential", keep_remote=False)
+                  remote_root="/tmp/maestro-differential", keep_remote=False,
+                  sa_key="/path/to/sa-key.json", gcs_bucket="test-bucket")
     bd.cmd_dispatch(args, transport=t)
     assert all(rs["keep_scratch"] is False for rs in t.run_scripts)
