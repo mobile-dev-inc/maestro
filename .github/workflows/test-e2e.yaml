@@ -523,8 +523,10 @@ jobs:
 
       - name: Create and boot the device with maestro start-device
         run: |
-          # The CLI runs the emulator with a window; xvfb gives the headless runner a display.
-          sudo apt-get install -y -qq xvfb >/dev/null
+          # The CLI launches the emulator like a user does: with a window and audio. The runner has
+          # neither, so give it a virtual display and the PulseAudio client library qemu links against.
+          sudo apt-get install -y -qq xvfb libpulse0 >/dev/null
+          ldd "$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64" | grep 'not found' || echo "qemu: all shared libraries resolved"
           xvfb-run -a maestro --verbose start-device \
             --platform android \
             --device-model "${{ matrix.device }}" \
