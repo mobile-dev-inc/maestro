@@ -64,6 +64,10 @@ jobs:
           fi
           api="${suffix%%.*}"
           min=$(sed -n 's/^min=//p' maestro-android/supported-apis.properties)
+          if ! printf '%s' "$min" | grep -qE '^[0-9]+$'; then
+            echo "::error::maestro-android/supported-apis.properties: min malformed (got '$min', expected min=<N>)"
+            exit 1
+          fi
           if [ "$api" -lt "$min" ]; then
             echo "::error::android_version must be >= android-$min, the driver's declared min (got: $version)"
             exit 1
@@ -469,25 +473,23 @@ jobs:
             exit 1
           fi
 
-          # Every declared level; the top entry keeps max's minor version, if any.
-          all=$(seq "$min" "$((max_api - 1))" | sed 's/^/android-/'; echo "android-$max")
-
-          # What this run boots.
-          selected="$all"; reason="whole range ($EVENT)"
+          # What this run boots. select_api_levels.sh does the range expansion and the
+          # base-diff selection (unit-tested); this step decides which call to make.
+          selected=$(bash .github/scripts/select_api_levels.sh "$min" "$max")
+          reason="whole range ($EVENT)"
           if [ "$EVENT" = "pull_request" ]; then
-            git fetch -q --depth=1 origin "$BASE_SHA"
-            if base=$(git show "$BASE_SHA:$file" 2>/dev/null); then
+            # A failed fetch leaves us unable to tell what the PR changed. Boot only max
+            # rather than the whole range, so a base that isn't fetchable (force-pushed
+            # base, shallow-fetch limits) doesn't spin up every emulator on an unrelated PR.
+            if ! git fetch -q --depth=1 origin "$BASE_SHA"; then
+              selected="android-$max"
+              reason="base $BASE_SHA unfetchable; booting max only"
+            elif base=$(git show "$BASE_SHA:$file" 2>/dev/null); then
               bmin=$(printf '%s\n' "$base" | sed -n 's/^min=//p')
               bmax=$(printf '%s\n' "$base" | sed -n 's/^max=//p')
               bdevice=$(printf '%s\n' "$base" | sed -n 's/^device=//p')
               if [ "$bdevice" = "$device" ]; then
-                bmax_api="${bmax%%.*}"
-                selected=$(printf '%s\n' "$all" | while read -r os; do
-                  api="${os#android-}"; api="${api%%.*}"
-                  if [ "$os" = "android-$max" ] || [ "$api" -lt "${bmin:-0}" ] || [ "$api" -gt "${bmax_api:-0}" ]; then
-                    echo "$os"
-                  fi
-                done)
+                selected=$(bash .github/scripts/select_api_levels.sh "$min" "$max" "$bmin" "$bmax")
                 reason="max plus levels this PR adds (base declared $bmin..$bmax)"
               else
                 reason="device changed ($bdevice -> $device)"
@@ -599,25 +601,34 @@ jobs:
       - name: Verify the booted device is the one the CLI was asked for
         run: |
           adb devices
-          serial=$(adb devices | awk 'NR > 1 && $2 == "device" { print $1; exit }')
-          if [ -z "$serial" ]; then
-            echo "::error::start-device exited 0 but no device is online"
-            exit 1
-          fi
-          # adbd goes offline for a moment right after boot; wait until a shell answers.
+          # adbd goes offline for a moment right after boot, so fetch the serial inside the
+          # loop too: a device that is momentarily offline reappears rather than failing the job.
+          serial=""
+          booted=""
           for i in $(seq 1 60); do
-            booted=$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            [ "$booted" = "1" ] && break
+            serial=$(adb devices | awk 'NR > 1 && $2 == "device" { print $1; exit }')
+            if [ -n "$serial" ]; then
+              # || true: if the device flips offline mid-poll the pipeline fails under
+              # pipefail; swallow it so the loop retries instead of aborting the step.
+              booted=$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+              [ "$booted" = "1" ] && break
+            fi
             sleep 2
           done
+          if [ -z "$serial" ]; then
+            echo "::error::start-device exited 0 but no device came online"
+            exit 1
+          fi
           expected="Maestro_ANDROID_${DEVICE}_${OS}"
           api="${OS#android-}"; api="${api%%.*}"
+          # Assert boot first: a device that never finished booting makes the AVD-name and SDK
+          # reads below return empty, which would otherwise fail with a misleading name mismatch.
+          [ "$booted" = "1" ] || { echo "::error::device did not finish booting (sys.boot_completed=$booted)"; exit 1; }
           actual=$(adb -s "$serial" emu avd name | head -n1 | tr -d '\r')
           sdk=$(adb -s "$serial" shell getprop ro.build.version.sdk | tr -d '\r')
           echo "avd=$actual sdk=$sdk boot_completed=$booted"
           [ "$actual" = "$expected" ] || { echo "::error::booted AVD '$actual', expected '$expected'"; exit 1; }
           [ "$sdk" = "$api" ] || { echo "::error::device reports SDK $sdk, expected $api"; exit 1; }
-          [ "$booted" = "1" ] || { echo "::error::sys.boot_completed=$booted"; exit 1; }
 
       - name: Stop the emulator
         if: always()
