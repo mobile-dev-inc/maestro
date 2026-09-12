@@ -149,7 +149,7 @@ class LocalXCTestInstaller(
 
     private fun ensureOpen(): Boolean {
         val timeout = 120_000L
-        logger.info("ensureOpen(): Will spend $timeout ms waiting for the channel to become alive")
+        logger.info("ensureOpen(): Will spend $timeout ms waiting for the channel at $host:$defaultPort to become alive")
         val result = MaestroTimer.retryUntilTrue(timeout, 200, onException = {
             logger.error("ensureOpen() failed with exception: $it")
         }) { isChannelAlive() }
@@ -158,37 +158,25 @@ class LocalXCTestInstaller(
     }
 
     private fun xcTestDriverStatusCheck(): Boolean {
-        logger.info("[Start] Perform XCUITest driver status check on $deviceId")
         fun xctestAPIBuilder(pathSegment: String): HttpUrl.Builder {
             return HttpUrl.Builder()
                 .scheme("http")
-                .host("127.0.0.1")
+                .host(host)
                 .addPathSegment(pathSegment)
                 .port(defaultPort)
         }
 
-        val url by lazy {
-            xctestAPIBuilder("status")
-                .build()
-        }
-
-        val request by lazy {  Request.Builder()
+        val url = xctestAPIBuilder("status").build()
+        val request = Request.Builder()
             .get()
             .url(url)
             .build()
-        }
 
-        val checkSuccessful = try {
-            httpClient.newCall(request).execute().use {
-                logger.info("[Done] Perform XCUITest driver status check on $deviceId")
-                it.isSuccessful
-            }
+        return try {
+            httpClient.newCall(request).execute().use { it.isSuccessful }
         } catch (ignore: IOException) {
-            logger.info("[Failed] Perform XCUITest driver status check on $deviceId, exception: $ignore")
             false
         }
-
-        return checkSuccessful
     }
 
     private fun startXCTestRunner(deviceId: String, preBuiltRunner: Boolean) {

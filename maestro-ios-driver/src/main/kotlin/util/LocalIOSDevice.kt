@@ -40,7 +40,7 @@ class LocalIOSDevice(private val deviceCtlProcess: DeviceCtlProcess = DeviceCtlP
     fun listDeviceViaDeviceCtl(deviceId: String): DeviceCtlResponse.Device {
         val tempOutput = File.createTempFile("devicectl_response", ".json")
         try {
-            ProcessBuilder(listOf("xcrun" , "devicectl", "--json-output", tempOutput.path, "list", "devices"))
+            ProcessBuilder(listOf("xcrun", "devicectl", "--json-output", tempOutput.path, "list", "devices"))
                 .redirectError(ProcessBuilder.Redirect.PIPE).start().apply {
                     waitFor()
                 }

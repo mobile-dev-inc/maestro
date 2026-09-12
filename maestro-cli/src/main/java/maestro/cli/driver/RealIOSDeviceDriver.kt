@@ -17,8 +17,15 @@ class RealIOSDeviceDriver(private val teamId: String?, private val destination: 
 
         val currentCliVersion = EnvUtils.CLI_VERSION ?: throw IllegalStateException("CLI version is unavailable.")
 
-        if (force) {
+        val useXcodeTestRunner = !System.getenv("USE_XCODE_TEST_RUNNER").isNullOrEmpty()
+
+        if (force || !useXcodeTestRunner) {
             buildDriver(driverDirectory, message = "Building iOS driver for $destination...")
+            return
+        }
+
+        if (useXcodeTestRunner) {
+            message("USE_XCODE_TEST_RUNNER is set, skipping driver build")
             return
         }
 
