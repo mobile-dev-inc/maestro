@@ -818,6 +818,8 @@ data class YamlFluentCommand(
             else it
         }
 
+        val duration = (tapOn as? YamlElementSelector)?.duration
+
         return if (point != null) {
             val elementSelector = toElementSelector(tapOn)
             
@@ -829,6 +831,7 @@ data class YamlFluentCommand(
                         retryIfNoChange = retryIfNoChange,
                         waitUntilVisible = waitUntilVisible,
                         longPress = longPress,
+                        duration = duration,
                         repeat = repeat,
                         waitToSettleTimeoutMs = waitToSettleTimeoutMs,
                         label = label,
@@ -843,6 +846,7 @@ data class YamlFluentCommand(
                         point = point,
                         retryIfNoChange = retryIfNoChange,
                         longPress = longPress,
+                        duration = duration,
                         repeat = repeat,
                         waitToSettleTimeoutMs = waitToSettleTimeoutMs,
                         label = label,
@@ -857,6 +861,7 @@ data class YamlFluentCommand(
                     retryIfNoChange = retryIfNoChange,
                     waitUntilVisible = waitUntilVisible,
                     longPress = longPress,
+                    duration = duration,
                     repeat = repeat,
                     waitToSettleTimeoutMs = waitToSettleTimeoutMs,
                     label = label,
